@@ -95,14 +95,12 @@ type filecoinReader struct {
 	offset    int64
 	size      int64
 	id        uint64
+
+	// Reads remaining data from current range.
+	rangeReader *rangeReader
 }
 
 func (r *filecoinReader) Read(p []byte) (int, error) {
-	logger.Infof("buffer size: %v", len(p))
-
-	buf := bytes.NewBuffer(p)
-	buf.Reset()
-
 	if r.offset >= r.size {
 		return 0, io.EOF
 	}
@@ -114,13 +112,75 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 		readLen = remainingBytes
 	}
 
+	buf := bytes.NewBuffer(p)
+	buf.Reset()
+
+	n, err := r.writeToN(buf, readLen)
+	return int(n), err
+}
+
+// WriteTo is implemented in order to directly handle io.Copy operations
+// rather than allow small, separate Read operations.
+func (r *filecoinReader) WriteTo(w io.Writer) (int64, error) {
+	if r.offset >= r.size {
+		return 0, io.EOF
+	}
+	// Read all remaining bytes and write them to w.
+	return r.writeToN(w, r.size-r.offset)
+}
+
+func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
+	var read int64
+	// If there is a rangeReader from the previous read that can be used to
+	// continue reading more data, then use it instead of doing another
+	// findFileRanges and Retrieve for more reads from this same range.
+	if r.rangeReader != nil {
+		// If continuing from the previous read, keep reading from this rangeReader.
+		if r.offset == r.rangeReader.offset {
+			// Reading data leftover from previous read into w.
+			n, err := r.rangeReader.writeToN(w, readLen)
+			if err != nil && !errors.Is(err, io.EOF) {
+				return 0, err
+			}
+			r.offset += n
+			readLen -= n
+			read += n
+			if r.rangeReader.remaining == 0 {
+				// No data left in range reader.
+				r.rangeReader.close()
+				r.rangeReader = nil
+			}
+			if readLen == 0 {
+				// Read all requested data from leftover in rangeReader.
+				return read, nil
+			}
+			// No more leftover data to read, but readLen additional bytes
+			// still needed. Will read more data from next range(s).
+		} else {
+			// Trying to read from outside of rangeReader's range. Must have
+			// seeked out of current range. Close rangeReader and read new
+			// range.
+			r.rangeReader.close()
+			r.rangeReader = nil
+		}
+	}
+
+	// Get next range(s) to read from.
+
+	// Get all ranges, from current offset, that are covered by readLen.
 	fileRanges, err := findFileRanges(r.db, r.id, r.offset, r.offset+readLen)
 	if err != nil {
 		return 0, fmt.Errorf("failed to retrieve file range deals: %w", err)
 	}
 
-	read := 0
+	var rr *rangeReader
+
+	// Read from each range until readLen bytes read.
 	for _, fileRange := range fileRanges {
+		if rr != nil {
+			rr.close()
+			rr = nil
+		}
 		if readLen == 0 {
 			// this shouldn't happen
 			logger.Warnw("retrieval reader retrieved file ranges beyond end of range", "fileRangeStart", fileRange.Offset, "fileRangeEnd", fileRange.Offset+fileRange.Length)
@@ -135,6 +195,10 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 		if rangeReadLen > remainingRange {
 			rangeReadLen = remainingRange
 		}
+		// Range starts at fileRange.Offset, has total length fileRange.Length,
+		// and has remainingRange bytes left to read. Now read rangeReadLen
+		// bytes of the remaining bytes this range.
+
 		if fileRange.JobID == nil {
 			return read, UnableToServeRangeError{Start: r.offset, End: r.offset + rangeReadLen, Err: ErrNoJobRecord}
 		}
@@ -142,7 +206,9 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 		if err != nil || len(providers) == 0 {
 			return read, UnableToServeRangeError{Start: r.offset, End: r.offset + rangeReadLen, Err: ErrNoFilecoinDeals}
 		}
-		err = r.retriever.Retrieve(r.ctx, cid.Cid(fileRange.CID), offsetInRange, offsetInRange+rangeReadLen, providers, buf)
+
+		// Get a reader that reads until the end of the range.
+		rd, err := r.retriever.RetrieveReader(r.ctx, cid.Cid(fileRange.CID), offsetInRange, offsetInRange+remainingRange, providers)
 		if err != nil {
 			return read, UnableToServeRangeError{
 				Start: r.offset,
@@ -150,15 +216,42 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 				Err:   fmt.Errorf("unable to retrieve data from filecoin: %w", err),
 			}
 		}
-		r.offset += rangeReadLen
-		readLen -= rangeReadLen
-		read += int(rangeReadLen)
+		rr = &rangeReader{
+			offset:    r.offset,
+			reader:    rd,
+			remaining: remainingRange,
+		}
+
+		// Reading readLen of the remaining bytes in this range.
+		n, err := rr.writeToN(w, readLen)
+		if err != nil && !errors.Is(err, io.EOF) {
+			rr.close()
+			return 0, err
+		}
+		r.offset += n
+		readLen -= n
+		read += n
 	}
 
 	// check for missing file ranges at the end
 	if readLen > 0 {
+		if rr != nil {
+			rr.close()
+		}
 		return read, UnableToServeRangeError{Start: r.offset, End: r.offset + readLen, Err: ErrNoFileRangeRecord}
 	}
+
+	if rr != nil {
+		// Some unread data left over in this range. Save it for next read.
+		if rr.remaining != 0 {
+			// Saving leftover rangeReader with rr.remaining bytes left.
+			r.rangeReader = rr
+		} else {
+			// Leftover rangeReader has 0 bytes remaining.
+			rr.close()
+		}
+	}
+
 	return read, nil
 }
 
@@ -172,6 +265,8 @@ func (r *filecoinReader) Seek(offset int64, whence int) (int64, error) {
 		newOffset = r.offset + offset
 	case io.SeekEnd:
 		newOffset = r.size + offset
+	default:
+		return 0, errors.New("unknown seek mode")
 	}
 
 	if newOffset > r.size {
@@ -184,7 +279,12 @@ func (r *filecoinReader) Seek(offset int64, whence int) (int64, error) {
 }
 
 func (r *filecoinReader) Close() error {
-	return nil
+	var err error
+	if r.rangeReader != nil {
+		err = r.rangeReader.close()
+		r.rangeReader = nil
+	}
+	return err
 }
 
 func findFileRanges(db *gorm.DB, id uint64, startRange int64, endRange int64) ([]model.FileRange, error) {

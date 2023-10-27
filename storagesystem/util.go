@@ -213,7 +213,11 @@ type rcloneSeeker struct {
 	file    io.ReadCloser
 }
 
-func (r *rcloneSeeker) Read(p []byte) (n int, err error) {
+func (r *rcloneSeeker) Read(p []byte) (int, error) {
+	if r.offset >= r.size {
+		return 0, io.EOF
+	}
+
 	if r.file == nil {
 		var err error
 		r.file, _, err = r.handler.Read(context.Background(), r.path, r.offset, r.size-r.offset)
@@ -221,32 +225,56 @@ func (r *rcloneSeeker) Read(p []byte) (n int, err error) {
 			return 0, errors.WithStack(err)
 		}
 	}
-	return r.file.Read(p)
+
+	n, err := r.file.Read(p)
+	r.offset += int64(n)
+	return n, err
+}
+
+func (r *rcloneSeeker) WriteTo(w io.Writer) (int64, error) {
+	if r.offset >= r.size {
+		return 0, io.EOF
+	}
+
+	if r.file == nil {
+		var err error
+		r.file, _, err = r.handler.Read(context.Background(), r.path, r.offset, r.size-r.offset)
+		if err != nil {
+			return 0, errors.WithStack(err)
+		}
+	}
+
+	n, err := io.Copy(w, r.file)
+	r.offset += n
+	return n, err
 }
 
 func (r *rcloneSeeker) Seek(offset int64, whence int) (int64, error) {
 	if r.file != nil {
 		err := r.file.Close()
+		// Re-open file on next read.
+		r.file = nil
 		if err != nil {
 			return 0, errors.WithStack(err)
 		}
 	}
 	switch whence {
 	case io.SeekStart:
-		r.offset = offset
 	case io.SeekCurrent:
-		r.offset += offset
+		offset += r.offset
 	case io.SeekEnd:
-		r.offset = r.size + offset
+		offset += r.size
 	default:
-		return 0, errors.New("Unknown seek mode")
+		return 0, errors.New("unknown seek mode")
 	}
-	if r.offset > r.size {
-		return 0, errors.New("Seeking past end of file")
+	if offset > r.size {
+		return 0, errors.New("seeking past end of file")
 	}
-	if r.offset < 0 {
-		return 0, errors.New("Seeking before start of file")
+	if offset < 0 {
+		return 0, errors.New("seeking before start of file")
 	}
+	r.offset = offset
+
 	return r.offset, nil
 }
 

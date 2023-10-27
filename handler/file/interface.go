@@ -14,6 +14,7 @@ import (
 
 type FilecoinRetriever interface {
 	Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string, out io.Writer) error
+	RetrieveReader(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string) (io.ReadCloser, error)
 }
 
 type Handler interface {
