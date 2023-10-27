@@ -98,8 +98,6 @@ type filecoinReader struct {
 }
 
 func (r *filecoinReader) Read(p []byte) (int, error) {
-	logger.Infof("buffer size: %v", len(p))
-
 	buf := bytes.NewBuffer(p)
 	buf.Reset()
 
