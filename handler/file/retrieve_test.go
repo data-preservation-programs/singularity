@@ -228,6 +228,7 @@ func TestRetrieveFileHandler(t *testing.T) {
 				buf := bytes.NewBuffer(nil)
 				copied, err := io.Copy(buf, seeker)
 				require.NoError(t, err)
+				require.Equal(t, seekBack, copied)
 				require.Equal(t, seekBack, buf.Len())
 
 				// Reading again should result in EOF.
