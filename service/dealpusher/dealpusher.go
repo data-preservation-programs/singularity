@@ -41,6 +41,7 @@ type DealPusher struct {
 	mutex                    sync.RWMutex                            // Mutex for providing mutual exclusion to protect shared resources.
 	sendDealAttempts         uint                                    // Number of attempts for sending a deal.
 	host                     host.Host                               // Libp2p host for making deals.
+	maxReplicas              uint                                    // Maximum number of replicas for each individual PieceCID across all clients and providers.
 }
 
 func (*DealPusher) Name() string {
@@ -227,6 +228,12 @@ func (d *DealPusher) updateScheduleUnsafe(ctx context.Context, schedule model.Sc
 //  2. An error if any step of the process encounters an issue, otherwise nil.
 func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) (model.ScheduleState, error) {
 	db := d.dbNoContext.WithContext(ctx)
+	overReplicatedCIDs := db.
+		Table("deals").
+		Select("piece_cid").
+		Where("state in ?", []model.DealState{model.DealProposed, model.DealPublished, model.DealActive}).
+		Group("piece_cid").
+		Having("count(*) >= ?", d.maxReplicas)
 	var allowedPieceCIDs []model.CID
 	for _, c := range schedule.AllowedPieceCIDs {
 		c2, err := cid.Parse(c)
@@ -304,15 +311,23 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				existingPieceCIDQuery = db.Table("deals").Select("piece_cid").Where("schedule_id = ?", schedule.ID)
 			}
 			if len(allowedPieceCIDs) == 0 {
-				err = db.Where("attachment_id IN ? AND piece_cid NOT IN (?)",
+				query := db.Where("attachment_id IN ? AND piece_cid NOT IN (?)",
 					underscore.Map(attachments, func(a model.SourceAttachment) model.SourceAttachmentID { return a.ID }),
-					existingPieceCIDQuery).First(&car).Error
+					existingPieceCIDQuery)
+				if d.maxReplicas > 0 && !schedule.Force {
+					query = query.Where("piece_cid NOT IN (?)", overReplicatedCIDs)
+				}
+				err = query.First(&car).Error
 			} else {
 				pieceCIDChunks := util.ChunkSlice(allowedPieceCIDs, util.BatchSize)
 				for _, pieceCIDChunk := range pieceCIDChunks {
-					err = db.Where("attachment_id IN ? AND piece_cid NOT IN (?) AND piece_cid IN ?",
+					query := db.Where("attachment_id IN ? AND piece_cid NOT IN (?) AND piece_cid IN ?",
 						underscore.Map(attachments, func(a model.SourceAttachment) model.SourceAttachmentID { return a.ID }),
-						existingPieceCIDQuery, pieceCIDChunk).First(&car).Error
+						existingPieceCIDQuery, pieceCIDChunk)
+					if d.maxReplicas > 0 && !schedule.Force {
+						query = query.Where("piece_cid NOT IN (?)", overReplicatedCIDs)
+					}
+					err = query.First(&car).Error
 					if err == nil {
 						break
 					}
@@ -389,7 +404,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 }
 
 func NewDealPusher(db *gorm.DB, lotusURL string,
-	lotusToken string, numAttempts uint) (*DealPusher, error) {
+	lotusToken string, numAttempts uint, maxReplicas uint) (*DealPusher, error) {
 	if numAttempts <= 1 {
 		numAttempts = 1
 	}
@@ -414,6 +429,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 			cron.WithParser(cron.NewParser(cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor))),
 		sendDealAttempts: numAttempts,
 		host:             h,
+		maxReplicas:      maxReplicas,
 	}, nil
 }
 

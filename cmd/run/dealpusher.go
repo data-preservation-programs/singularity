@@ -19,6 +19,12 @@ var DealPusherCmd = &cli.Command{
 			Aliases: []string{"d"},
 			Value:   3,
 		},
+		&cli.UintFlag{
+			Name:        "max-replication-factor",
+			Usage:       "Max number of replicas for each individual PieceCID across all clients and providers",
+			Aliases:     []string{"M"},
+			DefaultText: "Unlimited",
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -33,7 +39,7 @@ var DealPusherCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
-		dm, err := dealpusher.NewDealPusher(db, c.String("lotus-api"), c.String("lotus-token"), c.Uint("deal-attempts"))
+		dm, err := dealpusher.NewDealPusher(db, c.String("lotus-api"), c.String("lotus-token"), c.Uint("deal-attempts"), c.Uint("max-replication-factor"))
 		if err != nil {
 			return errors.WithStack(err)
 		}
