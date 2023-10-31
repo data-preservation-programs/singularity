@@ -9,7 +9,8 @@ USAGE:
    singularity run deal-pusher [command options] [arguments...]
 
 OPTIONS:
-   --deal-attempts value, -d value  Number of times to attempt a deal before giving up (default: 3)
-   --help, -h                       show help
+   --deal-attempts value, -d value           Number of times to attempt a deal before giving up (default: 3)
+   --max-replication-factor value, -M value  Max number of replicas for each individual PieceCID across all clients and providers (default: Unlimited)
+   --help, -h                                show help
 ```
 {% endcode %}

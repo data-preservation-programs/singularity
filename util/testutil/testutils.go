@@ -92,6 +92,7 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 	if errors.As(err, &opError) {
 		return
 	}
+	require.NoError(t, err)
 	err = db1.Exec("CREATE DATABASE " + dbName + "").Error
 	require.NoError(t, err)
 	connStr = strings.ReplaceAll(connStr, "singularity?", dbName+"?")
