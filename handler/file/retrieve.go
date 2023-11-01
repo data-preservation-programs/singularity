@@ -145,24 +145,16 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 			r.offset += n
 			readLen -= n
 			read += n
-			if r.rangeReader.remaining == 0 {
-				// No data left in range reader.
-				r.rangeReader.close()
-				r.rangeReader = nil
-			}
 			if readLen == 0 {
 				// Read all requested data from leftover in rangeReader.
 				return read, nil
 			}
-			// No more leftover data to read, but readLen additional bytes
+			// No more leftover data in rangeReader, but readLen additional bytes
 			// still needed. Will read more data from next range(s).
-		} else {
-			// Trying to read from outside of rangeReader's range. Must have
-			// seeked out of current range. Close rangeReader and read new
-			// range.
-			r.rangeReader.close()
-			r.rangeReader = nil
 		}
+		// No more leftover data in rangeReader, or seek since last read.
+		r.rangeReader.close()
+		r.rangeReader = nil
 	}
 
 	// Get next range(s) to read from.
