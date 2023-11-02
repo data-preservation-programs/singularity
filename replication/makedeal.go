@@ -284,6 +284,10 @@ func (d DealMakerImpl) MakeDeal120(
 		if fileSize == 0 {
 			return nil, ErrFileSizeNotSpecifiedForOnlineDeal
 		}
+		// Ensure URL includes scheme.
+		if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+			url = "http://" + url
+		}
 		transferParams := &boostly.HttpRequest{URL: url}
 		if len(dealConfig.HTTPHeaders) > 0 {
 			transferParams.Headers = dealConfig.HTTPHeaders
