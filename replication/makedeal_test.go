@@ -163,7 +163,6 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 
 	_, err = maker.MakeDeal(ctx, wallet, car, dealConfig)
 	require.NoError(t, err)
-
 }
 
 func TestDealMaker_MakeDeal111(t *testing.T) {
@@ -310,7 +309,7 @@ func TestDealMaker_GetCollateral(t *testing.T) {
 	})
 	result, err := maker.GetMinCollateral(context.Background(), 34359738368, false)
 	require.NoError(t, err)
-	require.Equal(t, "8649874114492479", result.String())
+	require.Equal(t, "10379848937390974", result.String()) // min + 20%
 }
 
 func TestDealMaker_GetProtocols(t *testing.T) {

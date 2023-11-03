@@ -96,7 +96,8 @@ func NewDealMaker(
 	lotusClient jsonrpc.RPCClient,
 	libp2p host.Host,
 	cacheTTL time.Duration,
-	requestTimeout time.Duration) DealMakerImpl {
+	requestTimeout time.Duration,
+) DealMakerImpl {
 	minerInfoCache := ttlcache.New[string, *MinerInfo](
 		ttlcache.WithTTL[string, *MinerInfo](cacheTTL),
 		ttlcache.WithDisableTouchOnHit[string, *MinerInfo]())
@@ -233,6 +234,9 @@ func (d DealMakerImpl) GetMinCollateral(ctx context.Context, pieceSize int64, ve
 	if err != nil {
 		return big.Int{}, errors.Wrapf(err, "failed to parse min collateral %s", bound.Min)
 	}
+	// add 20% to account for fluctuating network conditions,
+	// by the time the deal lands we may be below the threshold
+	value = big.Div(big.Mul(value, big.NewInt(6)), big.NewInt(5))
 	d.collateralCache.Set(fmt.Sprintf("%d-%t", pieceSize, verified), value, ttlcache.DefaultTTL)
 	return value, nil
 }
@@ -272,7 +276,8 @@ func (d DealMakerImpl) MakeDeal120(
 	dealConfig DealConfig,
 	fileSize int64,
 	rootCID cid.Cid,
-	minerInfo peer.AddrInfo) (*boostly.DealResponse, error) {
+	minerInfo peer.AddrInfo,
+) (*boostly.DealResponse, error) {
 	logger.Debugw("making deal 120", "dealID", dealID, "deal", deal,
 		"dealConfig", dealConfig, "fileSize", fileSize, "rootCID", rootCID.String(), "minerInfo", minerInfo)
 	transfer := boostly.Transfer{
@@ -369,7 +374,8 @@ func (d DealMakerImpl) MakeDeal111(
 	deal market.ClientDealProposal,
 	dealConfig DealConfig,
 	rootCID cid.Cid,
-	minerInfo peer.AddrInfo) (*network.SignedResponse, error) {
+	minerInfo peer.AddrInfo,
+) (*network.SignedResponse, error) {
 	logger.Debugw("making deal 111", "deal", deal, "dealConfig", dealConfig, "rootCID", rootCID.String(), "minerInfo", minerInfo)
 	proposal := network.Proposal{
 		FastRetrieval: dealConfig.KeepUnsealed,
@@ -505,7 +511,8 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 //
 //   - No supported protocol found between client and provider.
 func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
-	car model.Car, dealConfig DealConfig) (*model.Deal, error) {
+	car model.Car, dealConfig DealConfig,
+) (*model.Deal, error) {
 	logger.Infow("making deal", "client", walletObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
 	now := time.Now().UTC()
 	addr, err := address.NewFromString(walletObj.Address)
