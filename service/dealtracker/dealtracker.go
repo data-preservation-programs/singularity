@@ -31,6 +31,7 @@ var ErrAlreadyRunning = errors.New("another worker already running")
 
 const healthRegisterRetryInterval = time.Minute
 const cleanupTimeout = 5 * time.Second
+const logStatsInterval = 15 * time.Second
 
 type Deal struct {
 	Proposal DealProposal
@@ -604,14 +605,17 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 	countingCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go func() {
+		timer := time.NewTimer(logStatsInterval)
+		defer timer.Stop()
 		for {
 			select {
 			case <-countingCtx.Done():
 				return
-			case <-time.After(15 * time.Second):
+			case <-timer.C:
 				downloaded := humanize.Bytes(uint64(counter.N()))
 				speed := humanize.Bytes(uint64(counter.Speed()))
 				Logger.Infof("Downloaded %s with average speed %s / s", downloaded, speed)
+				timer.Reset(logStatsInterval)
 			}
 		}
 	}()

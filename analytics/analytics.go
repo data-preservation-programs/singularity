@@ -19,6 +19,8 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+const flushInterval = time.Hour
+
 var Enabled = true
 
 var logger = log.Logger("analytics")
@@ -184,11 +186,14 @@ func (c *Collector) Flush() error {
 }
 
 func (c *Collector) Start(ctx context.Context) {
+	timer := time.NewTimer(flushInterval)
+	defer timer.Stop()
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(time.Hour):
+		case <-timer.C:
+			timer.Reset(flushInterval)
 		}
 		//nolint:contextcheck
 		c.Flush()

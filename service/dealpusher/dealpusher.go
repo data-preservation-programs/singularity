@@ -253,6 +253,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 	if err != nil {
 		return model.ScheduleError, errors.Wrap(err, "failed to find attachments")
 	}
+	var timer *time.Timer
 	for {
 		var pending sumResult
 		err = db.Model(&model.Deal{}).
@@ -400,10 +401,16 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			continue
 		}
 	waitForPending:
+		if timer == nil {
+			timer = time.NewTimer(waitPendingInterval)
+			defer timer.Stop()
+		} else {
+			timer.Reset(waitPendingInterval)
+		}
 		select {
 		case <-ctx.Done():
 			return "", nil
-		case <-time.After(waitPendingInterval):
+		case <-timer.C:
 		}
 	}
 }
