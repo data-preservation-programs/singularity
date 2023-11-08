@@ -182,7 +182,7 @@ func WaitForServerReady(ctx context.Context, url string) error {
 			return nil
 		}
 		if timer == nil {
-			timer := time.NewTimer(100 * time.Millisecond)
+			timer = time.NewTimer(100 * time.Millisecond)
 			defer timer.Stop()
 		} else {
 			timer.Reset(100 * time.Millisecond)
