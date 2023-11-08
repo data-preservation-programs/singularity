@@ -21,15 +21,18 @@ func TestBitswapServer(t *testing.T) {
 			host:        h,
 		}
 		require.Equal(t, "Bitswap", s.Name())
+
+		exitErr := make(chan error, 1)
 		ctx, cancel := context.WithCancel(ctx)
-		done, _, err := s.Start(ctx)
+		err = s.Start(ctx, exitErr)
 		require.NoError(t, err)
 		time.Sleep(200 * time.Millisecond)
 		cancel()
 		select {
 		case <-time.After(1 * time.Second):
 			t.Fatal("bitswap server did not stop")
-		case <-done[0]:
+		case err = <-exitErr:
+			require.NoError(t, err)
 		}
 	})
 }

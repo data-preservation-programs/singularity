@@ -47,14 +47,13 @@ func TestDealTracker_Name(t *testing.T) {
 func TestDealTracker_Start(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		tracker := NewDealTracker(db, time.Minute, "", "", "", true)
+		exitErr := make(chan error, 1)
 		ctx, cancel := context.WithCancel(ctx)
-		dones, _, err := tracker.Start(ctx)
+		err := tracker.Start(ctx, exitErr)
 		require.NoError(t, err)
 		time.Sleep(time.Second)
 		cancel()
-		for _, done := range dones {
-			<-done
-		}
+		<-exitErr
 	})
 }
 
@@ -62,16 +61,15 @@ func TestDealTracker_MultipleRunning_Once(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		tracker1 := NewDealTracker(db, time.Minute, "", "", "", false)
 		tracker2 := NewDealTracker(db, time.Minute, "", "", "", true)
+		exitErr := make(chan error, 1)
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
-		dones, _, err := tracker1.Start(ctx)
+		err := tracker1.Start(ctx, exitErr)
 		require.NoError(t, err)
-		_, _, err2 := tracker2.Start(ctx)
+		err2 := tracker2.Start(ctx, nil)
 		require.ErrorIs(t, err2, ErrAlreadyRunning)
 		cancel()
-		for _, done := range dones {
-			<-done
-		}
+		<-exitErr
 	})
 }
 
@@ -81,16 +79,13 @@ func TestDealTracker_MultipleRunning(t *testing.T) {
 		tracker2 := NewDealTracker(db, time.Minute, "", "", "", false)
 		ctx, cancel := context.WithTimeout(ctx, time.Second)
 		defer cancel()
-		dones1, _, err := tracker1.Start(ctx)
+		exitErr1 := make(chan error, 1)
+		err := tracker1.Start(ctx, exitErr1)
 		require.NoError(t, err)
-		dones2, _, err2 := tracker2.Start(ctx)
+		exitErr2 := make(chan error, 2)
+		err2 := tracker2.Start(ctx, exitErr2)
 		require.ErrorIs(t, err2, context.DeadlineExceeded)
-		for _, done := range dones1 {
-			<-done
-		}
-		for _, done := range dones2 {
-			<-done
-		}
+		<-exitErr1
 	})
 }
 

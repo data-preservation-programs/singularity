@@ -212,7 +212,7 @@ func GetMetadata(
 	return &pieceMetadata, 0, nil
 }
 
-func (d *DownloadServer) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error {
 	e := echo.New()
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{}))
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
@@ -231,33 +231,32 @@ func (d *DownloadServer) Start(ctx context.Context) ([]service.Done, service.Fai
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")
 	})
-	done := make(chan struct{})
-	fail := make(chan error)
+
+	shutdownErr := make(chan error, 1)
+
 	go func() {
 		err := e.Start(d.bind)
 		if err != nil {
-			select {
-			case <-ctx.Done():
-			case fail <- err:
+			if exitErr != nil {
+				exitErr <- err
 			}
+			return
 		}
-	}()
-	go func() {
-		defer close(done)
-		<-ctx.Done()
-		//nolint:contextcheck
-		err := e.Shutdown(context.Background())
-		if err != nil {
-			fail <- err
-		}
-	}()
-	cacheCleanup := make(chan struct{})
-	go func() {
-		defer close(cacheCleanup)
-		<-ctx.Done()
+
+		err = <-shutdownErr
 		d.usageCache.Close()
+
+		if exitErr != nil {
+			exitErr <- err
+		}
 	}()
-	return []service.Done{done, cacheCleanup}, fail, nil
+
+	go func() {
+		<-ctx.Done()
+		shutdownErr <- e.Shutdown(context.Background())
+	}()
+
+	return nil
 }
 
 func (d *DownloadServer) Name() string {

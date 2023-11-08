@@ -67,13 +67,12 @@ func TestDealMakerService_Start(t *testing.T) {
 		service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1, 10)
 		require.NoError(t, err)
 		ctx, cancel := context.WithCancel(ctx)
-		dones, _, err := service.Start(ctx)
+		exitErr := make(chan error, 1)
+		err = service.Start(ctx, exitErr)
 		require.NoError(t, err)
 		time.Sleep(time.Second)
 		cancel()
-		for _, done := range dones {
-			<-done
-		}
+		<-exitErr
 	})
 }
 
@@ -85,16 +84,12 @@ func TestDealMakerService_MultipleInstances(t *testing.T) {
 		require.NoError(t, err)
 		ctx, cancel := context.WithTimeout(ctx, time.Second)
 		defer cancel()
-		dones1, _, err := service1.Start(ctx)
+		exitErr := make(chan error, 1)
+		err = service1.Start(ctx, exitErr)
 		require.NoError(t, err)
-		dones2, _, err2 := service2.Start(ctx)
-		require.ErrorIs(t, err2, context.DeadlineExceeded)
-		for _, done := range dones1 {
-			<-done
-		}
-		for _, done := range dones2 {
-			<-done
-		}
+		err = service2.Start(ctx, nil)
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+		<-exitErr
 	})
 }
 

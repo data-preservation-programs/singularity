@@ -8,7 +8,6 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/service"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/rjNemo/underscore"
@@ -25,6 +24,12 @@ import (
 )
 
 var Logger = log.Logger("dealpusher")
+
+const (
+	cleanupTimeout              = 5 * time.Second
+	healthRegisterRetryInterval = time.Minute
+	schedCheckPeriod            = 15 * time.Second
+)
 
 var waitPendingInterval = time.Minute
 
@@ -503,36 +508,40 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 // Parameters:
 //
 //   - ctx : The context for managing the lifecycle of the Start function. If Done, the function exits cleanly.
+//   - exitErr : A channel for an error or nil when the service exits
 //
 // Returns:
-//   - A slice of channels that the caller can select on to wait for the service to stop.
-//   - A channel for errors that may occur while the service is running.
 //   - An error if there was a problem starting the service.
 //
 // This function is intended to be called once at the start of the service lifecycle.
-func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+func (d *DealPusher) Start(ctx context.Context, exitErr chan<- error) error {
+	var regTimer *time.Timer
 	for {
 		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, model.DealPusher, false)
-		if err == nil && !alreadyRunning {
+		if err != nil {
+			return errors.Wrap(err, "failed to register worker")
+		}
+		if !alreadyRunning {
 			break
 		}
-		if err != nil {
-			return nil, nil, errors.Wrap(err, "failed to register worker")
-		}
-		if alreadyRunning {
-			Logger.Warnw("another worker already running")
-		}
+		Logger.Warnw("another worker already running")
 		Logger.Warn("retrying in 1 minute")
+		if regTimer == nil {
+			regTimer = time.NewTimer(healthRegisterRetryInterval)
+			defer regTimer.Stop()
+		} else {
+			regTimer.Reset(healthRegisterRetryInterval)
+		}
 		select {
 		case <-ctx.Done():
-			return nil, nil, ctx.Err()
-		case <-time.After(time.Minute):
+			return ctx.Err()
+		case <-regTimer.C:
 		}
 	}
 
 	err := analytics.Init(ctx, d.dbNoContext)
 	if err != nil {
-		return nil, nil, errors.WithStack(err)
+		return errors.WithStack(err)
 	}
 	eventsFlushed := make(chan struct{})
 	go func() {
@@ -549,52 +558,58 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 		Logger.Info("healthcheck stopped")
 	}()
 
-	runDone := make(chan struct{})
 	go func() {
-		defer close(runDone)
 		d.cron.Start()
+
+		var timer *time.Timer
 		for {
 			d.runOnce(ctx)
 			Logger.Debug("waiting for deal schedule check in 15 secs")
+
+			if timer == nil {
+				timer = time.NewTimer(schedCheckPeriod)
+				defer timer.Stop()
+			} else {
+				timer.Reset(schedCheckPeriod)
+			}
+
+			var stopped bool
 			select {
 			case <-ctx.Done():
 				Logger.Info("cron stopped")
-				return
-			case <-time.After(15 * time.Second):
+				stopped = true
+			case <-timer.C:
+			}
+			if stopped {
+				break
 			}
 		}
-	}()
 
-	fail := make(chan error)
-
-	cleanupDone := make(chan struct{})
-	go func() {
-		defer close(cleanupDone)
-		<-ctx.Done()
 		ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		//nolint:contextcheck
 		err := d.cleanup(ctx2)
 		if err != nil {
 			Logger.Errorw("failed to cleanup", "error", err)
 		} else {
 			Logger.Info("cleanup done")
 		}
-	}()
+		cancel()
 
-	hostClosed := make(chan struct{})
-	go func() {
-		defer close(hostClosed)
-		<-ctx.Done()
-		err := d.host.Close()
+		err = d.host.Close()
 		if err != nil {
 			Logger.Errorw("failed to close host", "error", err)
 		} else {
 			Logger.Info("host closed")
 		}
+
+		<-eventsFlushed
+		<-healthcheckDone
+
+		if exitErr != nil {
+			exitErr <- nil
+		}
 	}()
 
-	return []service.Done{runDone, cleanupDone, healthcheckDone, hostClosed, eventsFlushed}, fail, nil
+	return nil
 }
 
 func (d *DealPusher) cleanup(ctx context.Context) error {

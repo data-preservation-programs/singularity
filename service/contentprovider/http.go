@@ -11,7 +11,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/cockroachdb/errors/oserror"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/data-preservation-programs/singularity/util"
@@ -49,7 +48,7 @@ func (*HTTPServer) Name() string {
 //   - A Done channel slice that are closed when the server has stopped.
 //   - A Fail channel that receives an error if the server fails to start or stop.
 //   - An error if the server fails to start.
-func (s *HTTPServer) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+func (s *HTTPServer) Start(ctx context.Context, exitErr chan<- error) error {
 	e := echo.New()
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{}))
 	e.Use(
@@ -98,27 +97,35 @@ func (s *HTTPServer) Start(ctx context.Context) ([]service.Done, service.Fail, e
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")
 	})
-	done := make(chan struct{})
-	fail := make(chan error)
+
+	forceShutdown := make(chan struct{})
+	shutdownErr := make(chan error, 1)
+
 	go func() {
 		err := e.Start(s.bind)
-		if err != nil {
-			select {
-			case <-ctx.Done():
-			case fail <- err:
+		if errors.Is(err, http.ErrServerClosed) {
+			err = nil
+		}
+		close(forceShutdown)
+		closeErr := <-shutdownErr
+		if exitErr != nil {
+			if err == nil {
+				err = closeErr
 			}
+			exitErr <- err
 		}
 	}()
+
 	go func() {
-		defer close(done)
-		<-ctx.Done()
-		//nolint:contextcheck
-		err := e.Shutdown(context.Background())
-		if err != nil {
-			fail <- err
+		select {
+		case <-ctx.Done():
+		case <-forceShutdown:
 		}
+		//nolint:contextcheck
+		shutdownErr <- e.Shutdown(context.Background())
 	}()
-	return []service.Done{done}, fail, nil
+
+	return nil
 }
 
 func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMetadata, error) {
