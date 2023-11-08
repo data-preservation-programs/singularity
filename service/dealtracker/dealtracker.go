@@ -350,6 +350,7 @@ func (d *DealTracker) Start(ctx context.Context, exitErr chan<- error) error {
 
 		ctx2, cancel2 := context.WithTimeout(context.Background(), cleanupTimeout)
 		defer cancel2()
+		//nolint:contextcheck
 		err := d.cleanup(ctx2)
 		if err != nil {
 			Logger.Errorw("failed to cleanup", "error", err)

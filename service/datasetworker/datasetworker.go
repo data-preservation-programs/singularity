@@ -116,6 +116,7 @@ func (w *Thread) Start(ctx context.Context, exitErr chan<- error) error {
 		cancel() // Stop components.
 
 		ctxCleanup, cancelCleanup := context.WithTimeout(context.Background(), cleanupTimeout)
+		//nolint:contextcheck
 		err = w.cleanup(ctxCleanup)
 		if err != nil {
 			w.logger.Errorw("failed to cleanup", "error", err)

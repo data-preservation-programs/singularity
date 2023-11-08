@@ -593,6 +593,7 @@ func (d *DealPusher) Start(ctx context.Context, exitErr chan<- error) error {
 		}
 
 		ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		//nolint:contextcheck
 		err := d.cleanup(ctx2)
 		if err != nil {
 			Logger.Errorw("failed to cleanup", "error", err)

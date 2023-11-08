@@ -253,6 +253,7 @@ func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error 
 
 	go func() {
 		<-ctx.Done()
+		//nolint:contextcheck
 		shutdownErr <- e.Shutdown(context.Background())
 	}()
 
