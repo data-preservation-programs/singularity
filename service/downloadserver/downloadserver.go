@@ -60,9 +60,10 @@ func NewUsageCache[C any](ttl time.Duration) *UsageCache[C] {
 			if ctx.Err() != nil {
 				return
 			}
+			now := time.Now()
 			cache.mu.Lock()
 			for key, item := range cache.data {
-				if item.usageCount <= 0 && time.Since(item.lastAccessed) > cache.ttl {
+				if item.usageCount <= 0 && now.Sub(item.lastAccessed) > cache.ttl {
 					delete(cache.data, key)
 				}
 			}
@@ -233,28 +234,32 @@ func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error 
 	})
 
 	shutdownErr := make(chan error, 1)
+	forceShutdown := make(chan struct{})
 
 	go func() {
-		err := e.Start(d.bind)
-		if err != nil {
-			if exitErr != nil {
-				exitErr <- err
-			}
-			return
-		}
+		runErr := e.Start(d.bind)
+		close(forceShutdown)
 
 		err = <-shutdownErr
 		d.usageCache.Close()
 
 		if exitErr != nil {
+			if runErr != nil {
+				err = runErr
+			}
 			exitErr <- err
 		}
 	}()
 
 	go func() {
-		<-ctx.Done()
+		select {
+		case <-ctx.Done():
+		case <-forceShutdown:
+		}
+		ctx, cancel := context.WithTimeout(context.Background())
+		defer cancel()
 		//nolint:contextcheck
-		shutdownErr <- e.Shutdown(context.Background())
+		shutdownErr <- e.Shutdown(ctx)
 	}()
 
 	return nil
