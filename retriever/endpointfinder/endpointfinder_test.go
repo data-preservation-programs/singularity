@@ -23,6 +23,7 @@ import (
 func TestEndpointFetcher(t *testing.T) {
 	testCases := []struct {
 		testName                 string
+		providers                int
 		minerInfoNotFindable     bool
 		notDialable              bool
 		notListeningOnTransports bool
@@ -33,27 +34,27 @@ func TestEndpointFetcher(t *testing.T) {
 		{
 			testName:             "unable to find miner on chain",
 			minerInfoNotFindable: true,
-			expectedErrString:    fmt.Errorf("looking up provider info: %w", errMinerNotFound).Error(),
+			expectedErrString:    fmt.Errorf("no http endpoints found for providers [%%s]: looking up provider info: %w", errMinerNotFound).Error(),
 		},
 		{
 			testName:          "unable to dial provider",
 			notDialable:       true,
-			expectedErrString: "querying transports: failed to dial: %s cannot connect to %s",
+			expectedErrString: "no http endpoints found for providers [%s]: querying transports: failed to dial: %s cannot connect to %s",
 		},
 		{
 			testName:                 "provider not listening on protocol",
 			notListeningOnTransports: true,
-			expectedErrString:        "querying transports: failed to negotiate protocol: protocols not supported: [/fil/retrieval/transports/1.0.0]",
+			expectedErrString:        "no http endpoints found for providers [%s]: querying transports: failed to negotiate protocol: protocols not supported: [/fil/retrieval/transports/1.0.0]",
 		},
 		{
 			testName:          "provider not serving http",
 			noHTTP:            true,
-			expectedErrString: endpointfinder.ErrHTTPNotSupported.Error(),
+			expectedErrString: fmt.Errorf("no http endpoints found for providers [%%s]: %w", endpointfinder.ErrHTTPNotSupported).Error(),
 		},
 	}
-	for _, testCase := range testCases {
+	for i, testCase := range testCases {
 		t.Run(testCase.testName, func(t *testing.T) {
-			testProvider := "t01000"
+			testProvider := fmt.Sprintf("t01000%d", i)
 			mn := mocknet.New()
 			source, err := mn.GenPeer()
 			require.NoError(t, err)
@@ -75,7 +76,6 @@ func TestEndpointFetcher(t *testing.T) {
 			require.NoError(t, err)
 			response := boostly.TransportsQueryResponse{}
 			if !testCase.noHTTP {
-
 				response.Protocols = append(response.Protocols, struct {
 					Name      string                `json:"name,omitempty"`
 					Addresses []multiaddr.Multiaddr `json:"addresses,omitempty"`
@@ -90,7 +90,7 @@ func TestEndpointFetcher(t *testing.T) {
 				other.SetStreamHandler(boostly.FilRetrievalTransportsProtocol_1_0_0, handler)
 			}
 
-			endpointFinder, err := endpointfinder.NewEndpointFinder(minerInfoFetcher, source, 3)
+			endpointFinder, err := endpointfinder.NewEndpointFinder(endpointfinder.EndpointFinderConfig{LruSize: 3, ErrorLruSize: 3}, minerInfoFetcher, source)
 			require.NoError(t, err)
 
 			addrInfos, err := endpointFinder.FindHTTPEndpoints(context.Background(), []string{testProvider})
@@ -111,15 +111,15 @@ func TestEndpointFetcher(t *testing.T) {
 				})
 				require.Equal(t, minerInfoFetcher.callCount, 1)
 			} else {
-				errMessage := fmt.Sprintf(testCase.expectedErrString, source.ID(), other.ID())
+				errMessage := fmt.Sprintf(testCase.expectedErrString, testProvider, source.ID(), other.ID())
 				errMessage = strings.Split(errMessage, "%!(EXTRA")[0]
 				require.EqualError(t, err, errMessage)
 				require.Nil(t, addrInfos)
-				// second call should not cache
+				// second call should cache error
 				addrInfos, err := endpointFinder.FindHTTPEndpoints(context.Background(), []string{testProvider})
 				require.EqualError(t, err, errMessage)
 				require.Nil(t, addrInfos)
-				require.Equal(t, minerInfoFetcher.callCount, 2)
+				require.Equal(t, minerInfoFetcher.callCount, 1)
 			}
 		})
 	}
