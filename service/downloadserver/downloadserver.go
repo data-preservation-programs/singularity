@@ -23,6 +23,8 @@ import (
 	"github.com/rjNemo/underscore"
 )
 
+const shutdownTimeout = 5 * time.Second
+
 type DownloadServer struct {
 	bind         string
 	api          string
@@ -240,7 +242,7 @@ func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error 
 		runErr := e.Start(d.bind)
 		close(forceShutdown)
 
-		err = <-shutdownErr
+		err := <-shutdownErr
 		d.usageCache.Close()
 
 		if exitErr != nil {
@@ -256,7 +258,7 @@ func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error 
 		case <-ctx.Done():
 		case <-forceShutdown:
 		}
-		ctx, cancel := context.WithTimeout(context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
 		//nolint:contextcheck
 		shutdownErr <- e.Shutdown(ctx)
