@@ -125,10 +125,16 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 	if err != nil {
 		return Server{}, errors.Wrap(err, "failed to init lassie")
 	}
-	finderCfg := endpointfinder.EndpointFinderConfig{LruSize: 128, ErrorLruSize: 128, ErrorLruTimeout: time.Minute * 5}
-	endpointFinder, err := endpointfinder.NewEndpointFinder(finderCfg, replication.MinerInfoFetcher{
+	infoFetcher := replication.MinerInfoFetcher{
 		Client: util.NewLotusClient(params.LotusAPI, params.LotusToken),
-	}, h)
+	}
+	endpointFinder, err := endpointfinder.NewEndpointFinder(
+		infoFetcher,
+		h,
+		endpointfinder.WithLruSize(128),
+		endpointfinder.WithErrorLruSize(128),
+		endpointfinder.WithErrorLruTimeout(time.Minute*5),
+	)
 	if err != nil {
 		return Server{}, errors.Wrap(err, "failed to init endpoint finder")
 	}

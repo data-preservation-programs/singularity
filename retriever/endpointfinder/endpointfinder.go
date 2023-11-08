@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/filecoin-shipyard/boostly"
@@ -39,46 +38,15 @@ type EndpointFinder struct {
 	endpointErrors   *expirable.LRU[string, error]
 }
 
-const (
-	defaultLruSize         = 128
-	defaultErrorLruSize    = 128
-	defaultErrorLruTimeout = 5 * time.Minute
-)
-
-type EndpointFinderConfig struct {
-	LruSize         int
-	ErrorLruSize    int
-	ErrorLruTimeout time.Duration
-}
-
-func (cfg EndpointFinderConfig) lruSize() int {
-	if cfg.LruSize == 0 {
-		return defaultLruSize
-	}
-	return cfg.LruSize
-}
-
-func (cfg EndpointFinderConfig) errorLruSize() int {
-	if cfg.ErrorLruSize == 0 {
-		return defaultErrorLruSize
-	}
-	return cfg.ErrorLruSize
-}
-
-func (cfg EndpointFinderConfig) errorLruTimeout() time.Duration {
-	if cfg.ErrorLruTimeout == 0 {
-		return defaultErrorLruTimeout
-	}
-	return cfg.ErrorLruTimeout
-}
-
 // NewEndpointFinder returns a new instance of an EndpointFinder
-func NewEndpointFinder(cfg EndpointFinderConfig, minerInfoFetcher MinerInfoFetcher, h host.Host) (*EndpointFinder, error) {
-	httpEndpoints, err := lru.New[string, []peer.AddrInfo](cfg.lruSize())
+func NewEndpointFinder(minerInfoFetcher MinerInfoFetcher, h host.Host, opts ...Option) (*EndpointFinder, error) {
+	cfg := applyOptions(opts...)
+
+	httpEndpoints, err := lru.New[string, []peer.AddrInfo](cfg.LruSize)
 	if err != nil {
 		return nil, err
 	}
-	endpointErrors := expirable.NewLRU[string, error](cfg.errorLruSize(), func(key string, value error) {}, cfg.errorLruTimeout())
+	endpointErrors := expirable.NewLRU[string, error](cfg.ErrorLruSize, func(key string, value error) {}, cfg.ErrorLruTimeout)
 	return &EndpointFinder{
 		minerInfoFetcher: minerInfoFetcher,
 		h:                h,
@@ -124,42 +92,42 @@ func (ef *EndpointFinder) FindHTTPEndpoints(ctx context.Context, sps []string) (
 		err   error
 	}
 	addrChan := make(chan findResult)
+	var toLookup int
+	var errsum error
 
 	for _, provider := range sps {
-		go func(provider string) {
-			var result findResult
-			// first check our caches
-			if providerAddrs, has := ef.httpEndpoints.Get(provider); has {
-				result.addrs = providerAddrs
-			} else if err, has := ef.endpointErrors.Get(provider); has {
-				logger.Errorf("error looking up http endpoint for %s (cached): %s", provider, err)
-				result.err = err
-			} else {
-				// not in caches, perform full lookup of provider
+		// first check our caches
+		if providerAddrs, has := ef.httpEndpoints.Get(provider); has {
+			addrInfos = append(addrInfos, providerAddrs...)
+		} else if err, has := ef.endpointErrors.Get(provider); has {
+			logger.Errorf("error looking up http endpoint for %s (cached): %s", provider, err)
+			errsum = multierr.Append(errsum, err)
+		} else {
+			// not in caches, perform full lookup of provider asynchronously
+			toLookup++
+			go func(provider string) {
 				providerAddrs, err := ef.findHTTPEndpointsForProvider(ctx, provider)
-				result = findResult{addrs: providerAddrs, err: err}
 				if err != nil {
 					ef.endpointErrors.Add(provider, err)
 					logger.Errorf("error looking up http endpoint for %s: %s", provider, err)
 				} else {
 					ef.httpEndpoints.Add(provider, providerAddrs)
 				}
-			}
-			select {
-			case addrChan <- result:
-			case <-ctx.Done():
-			}
-		}(provider)
+				select {
+				case addrChan <- findResult{addrs: providerAddrs, err: err}:
+				case <-ctx.Done():
+				}
+			}(provider)
+		}
 	}
 
-	var err error
-	for range sps {
+	for i := 0; i < toLookup; i++ {
 		select {
 		case providerAddrs := <-addrChan:
 			if providerAddrs.addrs != nil {
 				addrInfos = append(addrInfos, providerAddrs.addrs...)
 			} else if providerAddrs.err != nil {
-				err = multierr.Append(err, providerAddrs.err)
+				errsum = multierr.Append(errsum, providerAddrs.err)
 			}
 		case <-ctx.Done():
 			return nil, ctx.Err()
@@ -167,7 +135,7 @@ func (ef *EndpointFinder) FindHTTPEndpoints(ctx context.Context, sps []string) (
 	}
 
 	if len(addrInfos) == 0 {
-		return nil, fmt.Errorf("no http endpoints found for providers %v: %w", sps, err)
+		return nil, fmt.Errorf("no http endpoints found for providers %v: %w", sps, errsum)
 	}
 	return addrInfos, nil
 }

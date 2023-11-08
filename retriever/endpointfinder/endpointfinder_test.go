@@ -90,7 +90,7 @@ func TestEndpointFetcher(t *testing.T) {
 				other.SetStreamHandler(boostly.FilRetrievalTransportsProtocol_1_0_0, handler)
 			}
 
-			endpointFinder, err := endpointfinder.NewEndpointFinder(endpointfinder.EndpointFinderConfig{LruSize: 3, ErrorLruSize: 3}, minerInfoFetcher, source)
+			endpointFinder, err := endpointfinder.NewEndpointFinder(minerInfoFetcher, source, endpointfinder.WithErrorLruSize(3), endpointfinder.WithErrorLruSize(3))
 			require.NoError(t, err)
 
 			addrInfos, err := endpointFinder.FindHTTPEndpoints(context.Background(), []string{testProvider})
