@@ -41,7 +41,7 @@ type cacheItem[C any] struct {
 
 type UsageCache[C any] struct {
 	data   map[string]*cacheItem[C]
-	mu     sync.RWMutex
+	mu     sync.Mutex
 	ttl    time.Duration
 	cancel context.CancelFunc
 }

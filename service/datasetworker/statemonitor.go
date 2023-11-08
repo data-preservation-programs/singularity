@@ -22,7 +22,7 @@ func NewStateMonitor(db *gorm.DB) *StateMonitor {
 type StateMonitor struct {
 	db   *gorm.DB
 	jobs map[model.JobID]context.CancelFunc
-	mu   sync.RWMutex
+	mu   sync.Mutex
 	done chan struct{}
 }
 
@@ -45,13 +45,13 @@ func (s *StateMonitor) Start(ctx context.Context) {
 		var timer *time.Timer
 		for {
 			var i int
-			s.mu.RLock()
+			s.mu.Lock()
 			jobIDs := make([]model.JobID, len(s.jobs))
 			for jobID := range s.jobs {
 				jobIDs[i] = jobID
 				i++
 			}
-			s.mu.RUnlock()
+			s.mu.Unlock()
 
 			var jobs []model.Job
 			if len(jobIDs) > 0 {
