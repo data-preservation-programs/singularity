@@ -138,7 +138,7 @@ func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 	}
 
 	var carBlocks []model.CarBlock
-	err = db.Where("car_id = ?", car.ID).Find(&carBlocks).Error
+	err = db.Where("car_id = ?", car.ID).Order("id ASC").Find(&carBlocks).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
