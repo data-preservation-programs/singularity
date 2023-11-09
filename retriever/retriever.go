@@ -8,6 +8,7 @@ import (
 	"github.com/data-preservation-programs/singularity/retriever/deserializer"
 	lassietypes "github.com/filecoin-project/lassie/pkg/types"
 	"github.com/ipfs/go-cid"
+	"github.com/ipfs/go-log/v2"
 	"github.com/ipld/go-car/v2"
 	"github.com/ipld/go-car/v2/storage"
 	trustlessutils "github.com/ipld/go-trustless-utils"
@@ -15,6 +16,8 @@ import (
 	"github.com/multiformats/go-multicodec"
 	"go.uber.org/multierr"
 )
+
+var logger = log.Logger("singularity/retriever")
 
 // EndpointFinder finds http endpoints for set of SPs
 type EndpointFinder interface {
@@ -77,6 +80,7 @@ func (r *Retriever) getContent(ctx context.Context, c cid.Cid, rangeStart int64,
 
 // Retrieve retrieves a byte range from a cid representing a unixfstree from a given list of SPs, writing the output to a car file
 func (r *Retriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string, out io.Writer) error {
+	logger.Infow("retrieving from filecoin", "cid", c, "rangeStart", rangeStart, "rangeEnd", rangeEnd, "sps", sps)
 	reader, writer := io.Pipe()
 	errChan := make(chan error, 2)
 	go func() {
