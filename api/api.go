@@ -402,10 +402,10 @@ var logger = logging.Logger("api")
 //     3. Completion of analytics event flushing.
 //   - A channel (service.Fail) that reports errors that occur while the server is running.
 //   - An error if there is an issue during the initialization phase, otherwise nil.
-func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+func (s Server) Start(ctx context.Context, exitErr chan<- error) error {
 	err := analytics.Init(ctx, s.db)
 	if err != nil {
-		return nil, nil, errors.WithStack(err)
+		return errors.WithStack(err)
 	}
 	e := echo.New()
 	e.Debug = true
@@ -453,16 +453,18 @@ func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error)
 	e.Listener = s.listener
 
 	done := make(chan struct{})
-	fail := make(chan error)
+	eventsFlushed := make(chan struct{})
+
 	go func() {
 		err := e.Start("")
-		if err != nil {
-			select {
-			case <-ctx.Done():
-			case fail <- err:
-			}
+		<-eventsFlushed
+		<-done
+
+		if exitErr != nil {
+			exitErr <- err
 		}
 	}()
+
 	go func() {
 		defer close(done)
 		<-ctx.Done()
@@ -477,21 +479,18 @@ func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error)
 		if err != nil {
 			logger.Errorw("failed to close database connection", "err", err)
 		}
-	}()
-	hostDone := make(chan struct{})
-	go func() {
-		defer close(hostDone)
-		<-ctx.Done()
+
 		s.host.Close()
 	}()
-	eventsFlushed := make(chan struct{})
+
 	go func() {
 		defer close(eventsFlushed)
 		analytics.Default.Start(ctx)
 		//nolint:contextcheck
 		analytics.Default.Flush()
 	}()
-	return []service.Done{done, hostDone, eventsFlushed}, fail, nil
+
+	return nil
 }
 
 func isIntKind(kind reflect.Kind) bool {

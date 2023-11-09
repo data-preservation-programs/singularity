@@ -41,12 +41,15 @@ var logger = log.Logger("healthcheck")
 //   - db *gorm.DB: The database connection object used by HealthCheckCleanup to interact with
 //     the database.
 func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
+	timer := time.NewTimer(cleanupInterval)
+	defer timer.Stop()
 	for {
 		HealthCheckCleanup(ctx, db)
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(cleanupInterval):
+		case <-timer.C:
+			timer.Reset(cleanupInterval)
 			continue
 		}
 	}
@@ -190,12 +193,15 @@ func ReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, workerTy
 //     the database.
 //   - workerID uuid.UUID: The unique identifier for the worker whose health is being reported.
 func StartReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, workerType model.WorkerType) {
+	timer := time.NewTimer(reportInterval)
+	defer timer.Stop()
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(reportInterval):
+		case <-timer.C:
 			ReportHealth(ctx, db, workerID, workerType)
+			timer.Reset(reportInterval)
 		}
 	}
 }

@@ -27,8 +27,9 @@ func TestHTTPServerStart(t *testing.T) {
 			bind:        "127.0.0.1:65432",
 		}
 		require.Equal(t, "HTTPServer", s.Name())
+		exitErr := make(chan error, 1)
 		ctx, cancel := context.WithCancel(ctx)
-		done, _, err := s.Start(ctx)
+		err := s.Start(ctx, exitErr)
 		require.NoError(t, err)
 		time.Sleep(200 * time.Millisecond)
 		gorequest.New().Get("http://127.0.0.1:65432/health").End()
@@ -37,7 +38,8 @@ func TestHTTPServerStart(t *testing.T) {
 		select {
 		case <-time.After(1 * time.Second):
 			t.Fatal("http server did not stop")
-		case <-done[0]:
+		case err = <-exitErr:
+			require.NoError(t, err)
 		}
 	})
 }

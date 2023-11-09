@@ -14,7 +14,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/util"
@@ -29,6 +28,10 @@ import (
 )
 
 var ErrAlreadyRunning = errors.New("another worker already running")
+
+const healthRegisterRetryInterval = time.Minute
+const cleanupTimeout = 5 * time.Second
+const logStatsInterval = 15 * time.Second
 
 type Deal struct {
 	Proposal DealProposal
@@ -266,34 +269,37 @@ func (*DealTracker) Name() string {
 //     - If an error occurs during cleanup, it logs an error message.
 //
 //  7. Returns a list of service.Done channels containing healthcheckDone, runDone, and cleanupDone, the service.Fail channel fail, and nil for the error.
-func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
-	var cancel context.CancelFunc
-	ctx, cancel = context.WithCancel(ctx)
-
+func (d *DealTracker) Start(ctx context.Context, exitErr chan<- error) error {
+	var regTimer *time.Timer
 	for {
 		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, model.DealTracker, false)
-		if err == nil && !alreadyRunning {
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		if !alreadyRunning {
 			break
 		}
-		if err != nil {
-			cancel()
-			return nil, nil, errors.WithStack(err)
-		}
-		if alreadyRunning {
-			Logger.Warnw("another worker already running")
-			if d.once {
-				cancel()
-				return nil, nil, ErrAlreadyRunning
-			}
+
+		Logger.Warnw("another worker already running")
+		if d.once {
+			return ErrAlreadyRunning
 		}
 		Logger.Warn("retrying in 1 minute")
+		if regTimer == nil {
+			regTimer = time.NewTimer(healthRegisterRetryInterval)
+			defer regTimer.Stop()
+		} else {
+			regTimer.Reset(healthRegisterRetryInterval)
+		}
 		select {
 		case <-ctx.Done():
-			cancel()
-			return nil, nil, ctx.Err()
-		case <-time.After(time.Minute):
+			return ctx.Err()
+		case <-regTimer.C:
 		}
 	}
+
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(ctx)
 
 	healthcheckDone := make(chan struct{})
 	go func() {
@@ -302,36 +308,48 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 		Logger.Info("health report stopped")
 	}()
 
-	runDone := make(chan struct{})
-	fail := make(chan error)
 	go func() {
-		defer cancel()
-		defer close(runDone)
+		var timer *time.Timer
+		var runErr error
 		for {
-			err := d.runOnce(ctx)
-			if err != nil && ctx.Err() == nil {
-				Logger.Errorw("failed to run once", "error", err)
+			runErr = d.runOnce(ctx)
+			if runErr != nil {
+				if ctx.Err() != nil {
+					if errors.Is(runErr, context.Canceled) {
+						runErr = nil
+					}
+					Logger.Info("run stopped")
+					break
+				}
+				Logger.Errorw("failed to run once", "error", runErr)
 			}
 			if d.once {
-				cancel()
 				Logger.Info("run once done")
-				return
+				break
 			}
+			if timer == nil {
+				timer = time.NewTimer(d.interval)
+				defer timer.Stop()
+			} else {
+				timer.Reset(d.interval)
+			}
+
+			var stopped bool
 			select {
 			case <-ctx.Done():
+				stopped = true
+			case <-timer.C:
+			}
+			if stopped {
 				Logger.Info("run stopped")
-				return
-			case <-time.After(d.interval):
+				break
 			}
 		}
-	}()
 
-	cleanupDone := make(chan struct{})
-	go func() {
-		defer close(cleanupDone)
-		<-ctx.Done()
-		ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
+		cancel()
+
+		ctx2, cancel2 := context.WithTimeout(context.Background(), cleanupTimeout)
+		defer cancel2()
 		//nolint:contextcheck
 		err := d.cleanup(ctx2)
 		if err != nil {
@@ -339,9 +357,15 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 		} else {
 			Logger.Info("cleanup done")
 		}
+
+		<-healthcheckDone
+
+		if exitErr != nil {
+			exitErr <- runErr
+		}
 	}()
 
-	return []service.Done{healthcheckDone, runDone, cleanupDone}, fail, nil
+	return nil
 }
 
 func (d *DealTracker) cleanup(ctx context.Context) error {
@@ -582,14 +606,17 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 	countingCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go func() {
+		timer := time.NewTimer(logStatsInterval)
+		defer timer.Stop()
 		for {
 			select {
 			case <-countingCtx.Done():
 				return
-			case <-time.After(15 * time.Second):
+			case <-timer.C:
 				downloaded := humanize.Bytes(uint64(counter.N()))
 				speed := humanize.Bytes(uint64(counter.Speed()))
 				Logger.Infof("Downloaded %s with average speed %s / s", downloaded, speed)
+				timer.Reset(logStatsInterval)
 			}
 		}
 	}()
