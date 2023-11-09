@@ -14,11 +14,17 @@ import (
 
 type MockServer struct {
 	mock.Mock
+	run func(context.Context) error
 }
 
-func (m *MockServer) Start(ctx context.Context) ([]Done, Fail, error) {
-	args := m.Called(ctx)
-	return args.Get(0).([]Done), args.Get(1).(Fail), args.Error(2)
+func (m *MockServer) Start(ctx context.Context, exitErr chan<- error) error {
+	args := m.Called(ctx, exitErr)
+	if m.run == nil {
+		exitErr <- nil
+	} else {
+		exitErr <- m.run(ctx)
+	}
+	return args.Error(0)
 }
 
 func (m *MockServer) Name() string {
@@ -31,27 +37,24 @@ func TestStartServers_NoServers(t *testing.T) {
 }
 
 func TestStartServers_Timeout(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 	logger := log.Logger("test")
 
-	// Create a mock server.
 	server := new(MockServer)
-
-	done := make(chan struct{})
-	// Set up expectations.
-	server.On("Start", mock.Anything).Return([]Done{done}, Fail(nil), nil)
-
-	go func() {
-		// Send done once context is cancelled
+	server.run = func(ctx context.Context) error {
 		<-ctx.Done()
-		time.Sleep(time.Second)
-		close(done)
-	}()
-	// Call the function with the mock server.
+		return ctx.Err()
+	}
+
+	// Set up expectations.
+	server.On("Start", mock.Anything, mock.Anything).Return(nil)
+
+	// Start server with canceled context.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
 	err := StartServers(ctx, logger, server)
 
-	// Assert that no error was returned.
+	// Assert that expected error was returned.
 	require.ErrorIs(t, err, context.DeadlineExceeded)
 
 	// Assert that the expectations were met.
@@ -59,22 +62,19 @@ func TestStartServers_Timeout(t *testing.T) {
 }
 
 func TestStartServers_FailToStart(t *testing.T) {
-	ctx := context.Background()
 	logger := log.Logger("test")
-	server := new(MockServer)
 
-	done := make(chan struct{})
-	fail := make(chan error)
+	server := new(MockServer)
 
 	serverError := errors.New("fail to start")
 
 	// Set up expectations.
-	server.On("Start", mock.Anything).Return([]Done{done}, Fail(fail), serverError)
+	server.On("Start", mock.Anything, mock.Anything).Return(serverError)
 
 	// Call the function with the mock server.
-	err := StartServers(ctx, logger, server)
+	err := StartServers(context.Background(), logger, server)
 
-	// Assert that no error was returned.
+	// Assert that expected error was returned.
 	require.ErrorIs(t, err, serverError)
 
 	// Assert that the expectations were met.
@@ -82,30 +82,20 @@ func TestStartServers_FailToStart(t *testing.T) {
 }
 
 func TestStartServers_ServerError(t *testing.T) {
-	ctx := context.Background()
 	logger := log.Logger("test")
 
-	// Create a mock server.
-	server := new(MockServer)
-
-	// Server is always done
-	done := make(chan struct{})
-	go func() {
-		time.Sleep(time.Second)
-		close(done)
-	}()
-
-	fail := make(chan error)
 	serverError := errors.New("server error")
-	go func() {
-		fail <- serverError
-	}()
+
+	server := new(MockServer)
+	server.run = func(_ context.Context) error {
+		return serverError
+	}
 
 	// Set up expectations.
-	server.On("Start", mock.Anything).Return([]Done{done}, Fail(fail), nil)
+	server.On("Start", mock.Anything, mock.Anything).Return(nil)
 
 	// Call the function with the mock server.
-	err := StartServers(ctx, logger, server)
+	err := StartServers(context.Background(), logger, server)
 
 	// Assert that no error was returned.
 	require.ErrorIs(t, err, serverError)

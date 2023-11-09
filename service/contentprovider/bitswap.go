@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/data-preservation-programs/singularity/util"
 	nilrouting "github.com/ipfs/go-ipfs-routing/none"
@@ -51,25 +50,25 @@ func (BitswapServer) Name() string {
 // It sets up the necessary routing and networking components,
 // and starts serving Bitswap requests.
 // It returns channels that signal when the service has stopped or encountered an error.
-func (s BitswapServer) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+func (s BitswapServer) Start(ctx context.Context, exitErr chan<- error) error {
 	nilRouter, err := nilrouting.ConstructNilRouting(ctx, nil, nil, nil)
 	if err != nil {
-		return nil, nil, errors.WithStack(err)
+		return errors.WithStack(err)
 	}
 
 	net := bsnetwork.NewFromIpfsHost(s.host, nilRouter)
 	bs := &store.FileReferenceBlockStore{DBNoContext: s.dbNoContext}
 	bsserver := server.New(ctx, net, bs)
 	net.Start(bsserver)
-	done := make(chan struct{})
-	fail := make(chan error)
 
 	go func() {
-		defer close(done)
 		<-ctx.Done()
 		net.Stop()
 		bsserver.Close()
 		s.host.Close()
+		if exitErr != nil {
+			exitErr <- nil
+		}
 	}()
-	return []service.Done{done}, fail, nil
+	return nil
 }

@@ -23,6 +23,8 @@ import (
 	"github.com/rjNemo/underscore"
 )
 
+const shutdownTimeout = 5 * time.Second
+
 type DownloadServer struct {
 	bind         string
 	api          string
@@ -39,7 +41,7 @@ type cacheItem[C any] struct {
 
 type UsageCache[C any] struct {
 	data   map[string]*cacheItem[C]
-	mu     sync.RWMutex
+	mu     sync.Mutex
 	ttl    time.Duration
 	cancel context.CancelFunc
 }
@@ -60,9 +62,10 @@ func NewUsageCache[C any](ttl time.Duration) *UsageCache[C] {
 			if ctx.Err() != nil {
 				return
 			}
+			now := time.Now()
 			cache.mu.Lock()
 			for key, item := range cache.data {
-				if item.usageCount <= 0 && time.Since(item.lastAccessed) > cache.ttl {
+				if item.usageCount <= 0 && now.Sub(item.lastAccessed) > cache.ttl {
 					delete(cache.data, key)
 				}
 			}
@@ -212,7 +215,7 @@ func GetMetadata(
 	return &pieceMetadata, 0, nil
 }
 
-func (d *DownloadServer) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error {
 	e := echo.New()
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{}))
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
@@ -231,33 +234,37 @@ func (d *DownloadServer) Start(ctx context.Context) ([]service.Done, service.Fai
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")
 	})
-	done := make(chan struct{})
-	fail := make(chan error)
+
+	shutdownErr := make(chan error, 1)
+	forceShutdown := make(chan struct{})
+
 	go func() {
-		err := e.Start(d.bind)
-		if err != nil {
-			select {
-			case <-ctx.Done():
-			case fail <- err:
-			}
-		}
-	}()
-	go func() {
-		defer close(done)
-		<-ctx.Done()
-		//nolint:contextcheck
-		err := e.Shutdown(context.Background())
-		if err != nil {
-			fail <- err
-		}
-	}()
-	cacheCleanup := make(chan struct{})
-	go func() {
-		defer close(cacheCleanup)
-		<-ctx.Done()
+		runErr := e.Start(d.bind)
+		close(forceShutdown)
+
+		err := <-shutdownErr
 		d.usageCache.Close()
+
+		if exitErr != nil {
+			if runErr != nil {
+				err = runErr
+			}
+			exitErr <- err
+		}
 	}()
-	return []service.Done{done, cacheCleanup}, fail, nil
+
+	go func() {
+		select {
+		case <-ctx.Done():
+		case <-forceShutdown:
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
+		//nolint:contextcheck
+		shutdownErr <- e.Shutdown(ctx)
+	}()
+
+	return nil
 }
 
 func (d *DownloadServer) Name() string {

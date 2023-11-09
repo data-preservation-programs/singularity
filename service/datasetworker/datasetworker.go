@@ -27,6 +27,7 @@ type Worker struct {
 
 const defaultMinInterval = 5 * time.Second
 const defaultMaxInterval = 160 * time.Second
+const cleanupTimeout = 5 * time.Second
 
 type Config struct {
 	Concurrency    int
@@ -80,14 +81,14 @@ type Thread struct {
 //   - []service.Done : A slice of channels that are closed when respective components of the worker complete their execution.
 //   - service.Fail   : A channel that receives an error if the worker encounters a failure during its execution.
 //   - error          : An error is returned if the worker fails to register with the health check service. Otherwise, it returns nil.
-func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+func (w *Thread) Start(ctx context.Context, exitErr chan<- error) error {
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
 
 	_, err := healthcheck.Register(ctx, w.dbNoContext, w.id, model.DatasetWorker, true)
 	if err != nil {
 		cancel()
-		return nil, nil, errors.Wrap(err, "failed to register worker")
+		return errors.Wrap(err, "failed to register worker")
 	}
 
 	healthcheckDone := make(chan struct{})
@@ -104,26 +105,34 @@ func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error
 		w.logger.Info("healthcheck cleanup stopped")
 	}()
 
-	done := make(chan struct{})
-	fail := make(chan error)
 	go func() {
-		defer close(done)
-		w.run(ctx, fail)
-		w.logger.Info("worker thread finished")
-		cancel()
+		err := w.run(ctx)
+		if exitErr != nil {
+			// exitErr should be buffered so a write from each service always succeeds.
+			defer func(err error) {
+				exitErr <- err
+			}(err)
+		}
+		cancel() // Stop components.
 
-		ctxCleanup, cancelCleanup := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancelCleanup()
+		ctxCleanup, cancelCleanup := context.WithTimeout(context.Background(), cleanupTimeout)
 		//nolint:contextcheck
-		err := w.cleanup(ctxCleanup)
+		err = w.cleanup(ctxCleanup)
 		if err != nil {
 			w.logger.Errorw("failed to cleanup", "error", err)
 		} else {
 			w.logger.Info("cleanup complete")
 		}
+		cancelCleanup()
+
+		// Wait for components to end.
+		<-healthcheckDone
+		<-healthcheckCleanupDone
+
+		w.logger.Info("worker thread finished")
 	}()
 
-	return []service.Done{done, healthcheckDone, healthcheckCleanupDone}, fail, nil
+	return nil
 }
 
 func (w *Thread) Name() string {
@@ -177,10 +186,10 @@ func (w Worker) Run(ctx context.Context) error {
 		}
 		threads[i] = thread
 	}
-	monitorDone := w.stateMonitor.Start(ctx)
+	w.stateMonitor.Start(ctx)
 	err = service.StartServers(ctx, logger, threads...)
 	cancel()
-	<-monitorDone
+	<-w.stateMonitor.Done()
 	<-eventsFlushed
 	return errors.WithStack(err)
 }
@@ -233,15 +242,16 @@ func (w *Thread) handleWorkError(ctx context.Context, jobID model.JobID, err err
 // Parameters:
 //
 //   - ctx     : The context used for managing the lifecycle of the run loop. If Done, the loop exits cleanly.
-//   - errChan : A channel for reporting errors that cause the loop to exit when ExitOnError is true.
 //
-// This function is intended to run as a goroutine.
+// Returns:
+//
+//   - error : Error if failure to run or recovered panic.
 //
 // In case of a panic, the error is recovered and sent to the errChan.
-func (w *Thread) run(ctx context.Context, errChan chan error) {
+func (w *Thread) run(ctx context.Context) (retErr error) {
 	defer func() {
 		if err := recover(); err != nil {
-			errChan <- errors.Errorf("panic: %v", err)
+			retErr = errors.Errorf("panic: %v", err)
 		}
 	}()
 
@@ -270,7 +280,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 			if w.config.ExitOnComplete {
 				w.logger.Info("no work found, exiting")
 				workCancel()
-				return
+				return nil
 			}
 			w.logger.Info("no work found")
 			workCancel()
@@ -313,15 +323,11 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 	errorLoop:
 		if ctx.Err() != nil {
 			w.logger.Info("context cancelled, exiting")
-			return
+			return nil
 		}
 		w.logger.Errorw("error encountered", "error", err)
 		if w.config.ExitOnError {
-			select {
-			case errChan <- err:
-			case <-ctx.Done():
-			}
-			return
+			return err
 		}
 	loop:
 		w.logger.Infof("sleeping for %s", interval)
@@ -333,7 +339,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 		select {
 		case <-ctx.Done():
 			timer.Stop()
-			return
+			return nil
 		case <-timer.C:
 			interval *= 2
 			if interval > w.config.MaxInterval {

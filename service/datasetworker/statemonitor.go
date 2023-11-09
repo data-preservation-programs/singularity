@@ -6,21 +6,24 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/service"
 	"gorm.io/gorm"
 )
+
+const jobCheckInterval = 5 * time.Second
 
 func NewStateMonitor(db *gorm.DB) *StateMonitor {
 	return &StateMonitor{
 		db:   db,
 		jobs: make(map[model.JobID]context.CancelFunc),
+		done: make(chan struct{}),
 	}
 }
 
 type StateMonitor struct {
 	db   *gorm.DB
 	jobs map[model.JobID]context.CancelFunc
-	mu   sync.RWMutex
+	mu   sync.Mutex
+	done chan struct{}
 }
 
 func (s *StateMonitor) AddJob(jobID model.JobID, cancel context.CancelFunc) {
@@ -35,18 +38,21 @@ func (s *StateMonitor) RemoveJob(jobID model.JobID) {
 	delete(s.jobs, jobID)
 }
 
-func (s *StateMonitor) Start(ctx context.Context) service.Done {
+func (s *StateMonitor) Start(ctx context.Context) {
 	db := s.db.WithContext(ctx)
-	monitorDone := make(chan struct{})
 	go func() {
-		defer close(monitorDone)
+		defer close(s.done)
+		var timer *time.Timer
 		for {
-			var jobIDs []model.JobID
-			s.mu.RLock()
+			var i int
+			s.mu.Lock()
+			jobIDs := make([]model.JobID, len(s.jobs))
 			for jobID := range s.jobs {
-				jobIDs = append(jobIDs, jobID)
+				jobIDs[i] = jobID
+				i++
 			}
-			s.mu.RUnlock()
+			s.mu.Unlock()
+
 			var jobs []model.Job
 			if len(jobIDs) > 0 {
 				err := db.Where("state = ?", model.Paused).Find(&jobs, jobIDs).Error
@@ -54,6 +60,7 @@ func (s *StateMonitor) Start(ctx context.Context) service.Done {
 					logger.Errorf("failed to fetch paused jobs: %v", err)
 				}
 			}
+
 			s.mu.Lock()
 			for _, job := range jobs {
 				jobID := job.ID
@@ -64,12 +71,22 @@ func (s *StateMonitor) Start(ctx context.Context) service.Done {
 				}
 			}
 			s.mu.Unlock()
+
+			if timer == nil {
+				timer = time.NewTimer(jobCheckInterval)
+				defer timer.Stop()
+			} else {
+				timer.Reset(jobCheckInterval)
+			}
 			select {
 			case <-ctx.Done():
 				return
-			case <-time.After(5 * time.Second):
+			case <-timer.C:
 			}
 		}
 	}()
-	return monitorDone
+}
+
+func (s *StateMonitor) Done() <-chan struct{} {
+	return s.done
 }

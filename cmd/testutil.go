@@ -171,6 +171,7 @@ func CalculateCommp(t *testing.T, content []byte, targetPieceSize uint64) string
 func WaitForServerReady(ctx context.Context, url string) error {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+	var timer *time.Timer
 	for {
 		if ctx.Err() != nil {
 			return ctx.Err()
@@ -180,10 +181,16 @@ func WaitForServerReady(ctx context.Context, url string) error {
 		if err == nil && resp != nil && resp.StatusCode == http.StatusOK {
 			return nil
 		}
+		if timer == nil {
+			timer = time.NewTimer(100 * time.Millisecond)
+			defer timer.Stop()
+		} else {
+			timer.Reset(100 * time.Millisecond)
+		}
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case <-time.After(100 * time.Millisecond):
+		case <-timer.C:
 		}
 	}
 }
