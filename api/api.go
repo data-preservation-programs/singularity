@@ -125,12 +125,17 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 	if err != nil {
 		return Server{}, errors.Wrap(err, "failed to init lassie")
 	}
-	endpointFinder, err := endpointfinder.NewEndpointFinder(replication.MinerInfoFetcher{
+	infoFetcher := replication.MinerInfoFetcher{
 		Client: util.NewLotusClient(params.LotusAPI, params.LotusToken),
-	}, h, 128)
-	if err != nil {
-		return Server{}, errors.Wrap(err, "failed to init endpoint finder")
 	}
+	endpointFinder := endpointfinder.NewEndpointFinder(
+		infoFetcher,
+		h,
+		endpointfinder.WithLruSize(128),
+		endpointfinder.WithLruTimeout(time.Hour*2),
+		endpointfinder.WithErrorLruSize(128),
+		endpointfinder.WithErrorLruTimeout(time.Minute*5),
+	)
 	return Server{
 		db:          db,
 		host:        h,
@@ -300,7 +305,8 @@ func (s Server) setupRoutes(e *echo.Echo) {
 		db *gorm.DB,
 		storageType string,
 		provider string,
-		request storage.CreateRequest) (*model.Storage, error) {
+		request storage.CreateRequest,
+	) (*model.Storage, error) {
 		request.Provider = provider
 		return s.storageHandler.CreateStorageHandler(ctx, db, storageType, request)
 	}))
