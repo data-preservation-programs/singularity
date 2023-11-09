@@ -128,16 +128,14 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 	infoFetcher := replication.MinerInfoFetcher{
 		Client: util.NewLotusClient(params.LotusAPI, params.LotusToken),
 	}
-	endpointFinder, err := endpointfinder.NewEndpointFinder(
+	endpointFinder := endpointfinder.NewEndpointFinder(
 		infoFetcher,
 		h,
 		endpointfinder.WithLruSize(128),
+		endpointfinder.WithLruTimeout(time.Hour*2),
 		endpointfinder.WithErrorLruSize(128),
 		endpointfinder.WithErrorLruTimeout(time.Minute*5),
 	)
-	if err != nil {
-		return Server{}, errors.Wrap(err, "failed to init endpoint finder")
-	}
 	return Server{
 		db:          db,
 		host:        h,

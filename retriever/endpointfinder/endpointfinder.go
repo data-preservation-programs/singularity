@@ -7,7 +7,6 @@ import (
 
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/filecoin-shipyard/boostly"
-	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/hashicorp/golang-lru/v2/expirable"
 	"github.com/ipfs/go-log/v2"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -34,25 +33,23 @@ type MinerInfoFetcher interface {
 type EndpointFinder struct {
 	minerInfoFetcher MinerInfoFetcher
 	h                host.Host
-	httpEndpoints    *lru.Cache[string, []peer.AddrInfo]
+	httpEndpoints    *expirable.LRU[string, []peer.AddrInfo]
 	endpointErrors   *expirable.LRU[string, error]
 }
 
 // NewEndpointFinder returns a new instance of an EndpointFinder
-func NewEndpointFinder(minerInfoFetcher MinerInfoFetcher, h host.Host, opts ...Option) (*EndpointFinder, error) {
+func NewEndpointFinder(minerInfoFetcher MinerInfoFetcher, h host.Host, opts ...Option) *EndpointFinder {
 	cfg := applyOptions(opts...)
 
-	httpEndpoints, err := lru.New[string, []peer.AddrInfo](cfg.LruSize)
-	if err != nil {
-		return nil, err
-	}
+	httpEndpoints := expirable.NewLRU[string, []peer.AddrInfo](cfg.LruSize, func(key string, value []peer.AddrInfo) {}, cfg.LruTimeout)
 	endpointErrors := expirable.NewLRU[string, error](cfg.ErrorLruSize, func(key string, value error) {}, cfg.ErrorLruTimeout)
+
 	return &EndpointFinder{
 		minerInfoFetcher: minerInfoFetcher,
 		h:                h,
 		httpEndpoints:    httpEndpoints,
 		endpointErrors:   endpointErrors,
-	}, nil
+	}
 }
 
 func (ef *EndpointFinder) findHTTPEndpointsForProvider(ctx context.Context, provider string) ([]peer.AddrInfo, error) {

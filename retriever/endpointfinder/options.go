@@ -4,12 +4,14 @@ import "time"
 
 const (
 	defaultLruSize         = 128
+	defaultLruTimeout      = 2 * time.Hour
 	defaultErrorLruSize    = 128
 	defaultErrorLruTimeout = 5 * time.Minute
 )
 
 type config struct {
 	LruSize         int
+	LruTimeout      time.Duration
 	ErrorLruSize    int
 	ErrorLruTimeout time.Duration
 }
@@ -31,6 +33,12 @@ type Option func(*config)
 func WithLruSize(size int) Option {
 	return func(cfg *config) {
 		cfg.LruSize = size
+	}
+}
+
+func WithLruTimeout(timeout time.Duration) Option {
+	return func(cfg *config) {
+		cfg.LruTimeout = timeout
 	}
 }
 
