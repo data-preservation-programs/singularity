@@ -18,10 +18,12 @@ import (
 
 var logger = log.Logger("singularity/handler/file")
 
-var ErrNoFileRangeRecord = errors.New("missing file range record")
-var ErrNoJobRecord = errors.New("missing job record")
-var ErrNoFilecoinDeals = errors.New("no filecoin deals available")
-var ErrByteOffsetBeyondFile = errors.New("byte offset would exceed file size")
+var (
+	ErrNoFileRangeRecord    = errors.New("missing file range record")
+	ErrNoJobRecord          = errors.New("missing job record")
+	ErrNoFilecoinDeals      = errors.New("no filecoin deals available")
+	ErrByteOffsetBeyondFile = errors.New("byte offset would exceed file size")
+)
 
 type UnableToServeRangeError struct {
 	Start int64
@@ -73,6 +75,7 @@ func (DefaultHandler) RetrieveFileHandler(
 
 	seeker, obj, err := storagesystem.Open(rclone, ctx, file.Path)
 	if err != nil {
+		logger.Infow("no local copy of file, returning filecoin reader", "id", id, "file", file.Path, "fileSize", file.Size, "cid", file.CID)
 		// we have no local copy, so we have to return a filecoin based reader
 		//nolint:nilerr
 		return &filecoinReader{
@@ -84,6 +87,7 @@ func (DefaultHandler) RetrieveFileHandler(
 		}, file.FileName(), time.Unix(0, file.LastModifiedNano), nil
 	}
 
+	logger.Infow("returning reader for local copy of file", "id", id, "file", file.Path, "fileSize", file.Size, "cid", file.CID)
 	return seeker, file.FileName(), obj.ModTime(ctx), nil
 }
 
