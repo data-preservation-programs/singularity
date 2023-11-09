@@ -108,7 +108,7 @@ func (w *Thread) Start(ctx context.Context, exitErr chan<- error) error {
 	go func() {
 		err := w.run(ctx)
 		if exitErr != nil {
-			// exitErrs should be buffered so a write from each service always succeeds.
+			// exitErr should be buffered so a write from each service always succeeds.
 			defer func(err error) {
 				exitErr <- err
 			}(err)
