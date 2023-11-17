@@ -163,7 +163,10 @@ type readerWithRetry struct {
 }
 
 func (r *readerWithRetry) Close() error {
-	return r.reader.Close()
+	if r.reader != nil {
+		return r.reader.Close()
+	}
+	return nil
 }
 
 func (r *readerWithRetry) Read(p []byte) (int, error) {
