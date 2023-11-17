@@ -145,7 +145,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Deal"
+                                "$ref": "#/definitions/file.DealsForFileRange"
                             }
                         }
                     },
@@ -5829,6 +5829,20 @@ const docTemplate = `{
                     "description": "Whether the deal should be verified",
                     "type": "boolean",
                     "default": true
+                }
+            }
+        },
+        "file.DealsForFileRange": {
+            "type": "object",
+            "properties": {
+                "deals": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Deal"
+                    }
+                },
+                "fileRange": {
+                    "$ref": "#/definitions/model.FileRange"
                 }
             }
         },

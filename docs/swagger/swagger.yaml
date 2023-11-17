@@ -227,6 +227,15 @@ definitions:
         description: Whether the deal should be verified
         type: boolean
     type: object
+  file.DealsForFileRange:
+    properties:
+      deals:
+        items:
+          $ref: '#/definitions/model.Deal'
+        type: array
+      fileRange:
+        $ref: '#/definitions/model.FileRange'
+    type: object
   file.Info:
     properties:
       path:
@@ -8210,7 +8219,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Deal'
+              $ref: '#/definitions/file.DealsForFileRange'
             type: array
         "500":
           description: Internal Server Error
