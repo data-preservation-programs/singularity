@@ -128,7 +128,7 @@ func (nopCloser) Close() error { return nil }
 func setupMockFile() file.Handler {
 	m := new(file.MockFile)
 	m.On("GetFileDealsHandler", mock.Anything, mock.Anything, uint64(1)).
-		Return([]model.Deal{{}}, nil)
+		Return([]file.DealsForFileRange{{}}, nil)
 	m.On("GetFileHandler", mock.Anything, mock.Anything, uint64(1)).
 		Return(&model.File{}, nil)
 	m.On("PrepareToPackFileHandler", mock.Anything, mock.Anything, uint64(1)).

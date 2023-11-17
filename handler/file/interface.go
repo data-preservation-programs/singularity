@@ -27,7 +27,7 @@ type Handler interface {
 		ctx context.Context,
 		db *gorm.DB,
 		id uint64,
-	) ([]model.Deal, error)
+	) ([]DealsForFileRange, error)
 
 	GetFileHandler(
 		ctx context.Context,
@@ -80,9 +80,9 @@ func (m *MockFile) GetFileDealsHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id uint64,
-) ([]model.Deal, error) {
+) ([]DealsForFileRange, error) {
 	args := m.Called(ctx, db, id)
-	return args.Get(0).([]model.Deal), args.Error(1)
+	return args.Get(0).([]DealsForFileRange), args.Error(1)
 }
 
 func (m *MockFile) RetrieveFileHandler(

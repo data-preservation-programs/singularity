@@ -51,7 +51,7 @@ GetFileDealsOK describes a response with status code 200, with default header va
 OK
 */
 type GetFileDealsOK struct {
-	Payload []*models.ModelDeal
+	Payload []*models.FileDealsForFileRange
 }
 
 // IsSuccess returns true when this get file deals o k response has a 2xx status code
@@ -92,7 +92,7 @@ func (o *GetFileDealsOK) String() string {
 	return fmt.Sprintf("[GET /file/{id}/deals][%d] getFileDealsOK  %+v", 200, o.Payload)
 }
 
-func (o *GetFileDealsOK) GetPayload() []*models.ModelDeal {
+func (o *GetFileDealsOK) GetPayload() []*models.FileDealsForFileRange {
 	return o.Payload
 }
 
