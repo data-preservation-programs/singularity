@@ -59,8 +59,10 @@ func NewUsageCache[C any](ttl time.Duration) *UsageCache[C] {
 	}
 	go func() {
 		for {
-			if ctx.Err() != nil {
+			select {
+			case <-ctx.Done():
 				return
+			case <-time.After(ttl):
 			}
 			now := time.Now()
 			cache.mu.Lock()
