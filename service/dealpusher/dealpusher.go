@@ -2,6 +2,7 @@ package dealpusher
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
@@ -374,7 +375,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 						PricePerGB:      schedule.PricePerGB,
 						PricePerGBEpoch: schedule.PricePerGBEpoch,
 					})
-				if err != nil {
+				if err != nil && !strings.Contains(err.Error(), "deal proposal is identical") {
 					Logger.Errorw("failed to send deal", "error", err, "provider", schedule.Provider)
 				}
 				return errors.WithStack(err)
