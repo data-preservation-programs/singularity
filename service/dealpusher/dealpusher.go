@@ -377,9 +377,9 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 					})
 				if err != nil {
 					Logger.Errorw("failed to send deal", "error", err, "provider", schedule.Provider)
-                                        if strings.Contains(err.Error(), "deal proposal is identical") {
-                                                return nil
-                                        }
+					if strings.Contains(err.Error(), "deal proposal is identical") {
+						return nil
+					}
 				}
 
 				return errors.WithStack(err)
@@ -389,9 +389,9 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return "", errors.Wrap(err, "failed to send deal")
 			}
 
-                        if dealModel == nil {
-                                continue
-                        }
+			if dealModel == nil {
+				continue
+			}
 			dealModel.ScheduleID = &schedule.ID
 
 			Logger.Debugw("save accepted deal", "deal", dealModel)
