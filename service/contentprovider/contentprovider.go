@@ -26,8 +26,9 @@ type Config struct {
 }
 
 type HTTPConfig struct {
-	Enable bool
-	Bind   string
+	EnablePiece         bool
+	EnablePieceMetadata bool
+	Bind                string
 }
 
 type BitswapConfig struct {
@@ -63,10 +64,12 @@ type BitswapConfig struct {
 func NewService(db *gorm.DB, config Config) (*Service, error) {
 	s := &Service{}
 
-	if config.HTTP.Enable {
+	if config.HTTP.EnablePiece || config.HTTP.EnablePieceMetadata {
 		s.servers = append(s.servers, &HTTPServer{
-			bind:        config.HTTP.Bind,
-			dbNoContext: db,
+			dbNoContext:         db,
+			bind:                config.HTTP.Bind,
+			enablePiece:         config.HTTP.EnablePiece,
+			enablePieceMetadata: config.HTTP.EnablePieceMetadata,
 		})
 	}
 

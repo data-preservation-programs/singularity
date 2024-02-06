@@ -22,8 +22,10 @@ import (
 )
 
 type HTTPServer struct {
-	dbNoContext *gorm.DB
-	bind        string
+	dbNoContext         *gorm.DB
+	bind                string
+	enablePiece         bool
+	enablePieceMetadata bool
 }
 
 func (*HTTPServer) Name() string {
@@ -90,10 +92,14 @@ func (s *HTTPServer) Start(ctx context.Context, exitErr chan<- error) error {
 			return nil
 		},
 	}))
-	e.GET("/piece/metadata/:id", s.getMetadataHandler)
-	e.HEAD("/piece/metadata/:id", s.getMetadataHandler)
-	e.GET("/piece/:id", s.handleGetPiece)
-	e.HEAD("/piece/:id", s.handleGetPiece)
+	if s.enablePieceMetadata {
+		e.GET("/piece/metadata/:id", s.getMetadataHandler)
+		e.HEAD("/piece/metadata/:id", s.getMetadataHandler)
+	}
+	if s.enablePiece {
+		e.GET("/piece/:id", s.handleGetPiece)
+		e.HEAD("/piece/:id", s.handleGetPiece)
+	}
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")
 	})
