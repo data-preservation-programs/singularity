@@ -18,9 +18,16 @@ var ContentProviderCmd = &cli.Command{
 			Value:    "127.0.0.1:7777",
 		},
 		&cli.BoolFlag{
-			Category: "HTTP Retrieval",
-			Name:     "enable-http",
-			Usage:    "Enable HTTP retrieval",
+			Category: "HTTP Piece Retrieval",
+			Name:     "enable-http-piece",
+			Usage:    "Enable HTTP Piece retrieval",
+			Aliases:  []string{"enable-http"},
+			Value:    true,
+		},
+		&cli.BoolFlag{
+			Category: "HTTP Piece Metadata Retrieval",
+			Name:     "enable-http-piece-metadata",
+			Usage:    "Enable HTTP Piece Metadata, this is to be used with the download server",
 			Value:    true,
 		},
 		&cli.BoolFlag{
@@ -51,8 +58,9 @@ var ContentProviderCmd = &cli.Command{
 
 		config := contentprovider.Config{
 			HTTP: contentprovider.HTTPConfig{
-				Enable: c.Bool("enable-http"),
-				Bind:   c.String("http-bind"),
+				EnablePiece:         c.Bool("enable-http-piece"),
+				EnablePieceMetadata: c.Bool("enable-http-piece-metadata"),
+				Bind:                c.String("http-bind"),
 			},
 			Bitswap: contentprovider.BitswapConfig{
 				Enable:           c.Bool("enable-bitswap"),

@@ -17,8 +17,9 @@ func TestContentProviderStart(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service, err := NewService(db, Config{
 			HTTP: HTTPConfig{
-				Enable: true,
-				Bind:   ":0",
+				EnablePiece:         true,
+				EnablePieceMetadata: true,
+				Bind:                ":0",
 			},
 			Bitswap: BitswapConfig{
 				Enable:           true,
@@ -41,8 +42,9 @@ func TestContentProviderStart_WithIdentityKey(t *testing.T) {
 		encoded := base64.StdEncoding.EncodeToString(private)
 		service, err := NewService(db, Config{
 			HTTP: HTTPConfig{
-				Enable: true,
-				Bind:   ":0",
+				EnablePiece:         true,
+				EnablePieceMetadata: true,
+				Bind:                ":0",
 			},
 			Bitswap: BitswapConfig{
 				Enable:           true,
@@ -62,7 +64,8 @@ func TestContentProviderStart_NoneEnabled(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		s, err := NewService(db, Config{
 			HTTP: HTTPConfig{
-				Enable: false,
+				EnablePiece:         false,
+				EnablePieceMetadata: false,
 			},
 			Bitswap: BitswapConfig{
 				Enable: false,
