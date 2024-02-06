@@ -64,8 +64,8 @@ func TestContentProviderStart_NoneEnabled(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		s, err := NewService(db, Config{
 			HTTP: HTTPConfig{
-				EnablePiece:         true,
-				EnablePieceMetadata: true,
+				EnablePiece:         false,
+				EnablePieceMetadata: false,
 			},
 			Bitswap: BitswapConfig{
 				Enable: false,
