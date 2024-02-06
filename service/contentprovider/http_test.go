@@ -23,8 +23,10 @@ import (
 func TestHTTPServerStart(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		s := HTTPServer{
-			dbNoContext: db,
-			bind:        "127.0.0.1:65432",
+			dbNoContext:         db,
+			bind:                "127.0.0.1:65432",
+			enablePiece:         true,
+			enablePieceMetadata: true,
 		}
 		require.Equal(t, "HTTPServer", s.Name())
 		exitErr := make(chan error, 1)
@@ -48,8 +50,10 @@ func TestHTTPServerHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		e := echo.New()
 		s := HTTPServer{
-			dbNoContext: db,
-			bind:        ":0",
+			dbNoContext:         db,
+			bind:                ":0",
+			enablePiece:         true,
+			enablePieceMetadata: true,
 		}
 
 		pieceCID := cid.NewCidV1(cid.FilCommitmentUnsealed, util.Hash([]byte("test")))
