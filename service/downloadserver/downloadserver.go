@@ -158,6 +158,9 @@ func GetMetadata(
 	config map[string]string,
 	clientConfig model.ClientConfig,
 	pieceCid string) (*contentprovider.PieceMetadata, int, error) {
+	if strings.HasSuffix(api, "/") {
+		api = api[:len(api)-1]
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, api+"/piece/metadata/"+pieceCid, nil)
 	if err != nil {
 		return nil, 0, errors.WithStack(err)
