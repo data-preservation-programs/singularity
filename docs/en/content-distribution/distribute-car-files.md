@@ -43,6 +43,6 @@ deal schedule create --url-template "http://127.0.0.1:8888/piece/{PIECE_CID}"
 ### Singularity Download Utility
 Similar to the download server, the download utility serves the same purpose without standing up a local HTTP server.  
 ```shell
-singularity download bagaxxxxxxxxxxx
+singularity download --api "http://content-provider:7777" bagaxxxxxxxxxxx
 ```
 This utility communicates with the content provider service to fetch metadata about the piece. Once obtained, it uses this metadata to reconstruct the piece directly from the original data source.
