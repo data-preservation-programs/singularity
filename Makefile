@@ -30,8 +30,8 @@ generate: check-go
 
 lint: check-go install-lint-deps
 	gofmt -s -w .
-	golangci-lint run --no-config --fix --disable-all -E tagalign
-	golangci-lint run --fix
+	golangci-lint run --no-config --fix --disable-all -E tagalign --timeout 10m
+	golangci-lint run --fix --timeout 10m
 	staticcheck ./...
 
 test: check-go install-test-deps
