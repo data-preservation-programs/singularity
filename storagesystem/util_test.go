@@ -32,6 +32,14 @@ func TestIsSameEntry(t *testing.T) {
 		require.False(t, same)
 		require.Contains(t, detail, "size mismatch")
 	})
+	t.Run("size unknown", func(t *testing.T) {
+		same, _ := IsSameEntry(ctx, model.File{
+			Size:             -1,
+			Hash:             "hash",
+			LastModifiedNano: tm.UnixNano(),
+		}, mockObject)
+		require.True(t, same)
+	})
 	t.Run("hash mismatch", func(t *testing.T) {
 		same, detail := IsSameEntry(ctx, model.File{
 			Size: 5,

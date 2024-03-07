@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -205,10 +206,10 @@ func (c ClientConfig) String() string {
 		values = append(values, "expectContinueTimeout:"+c.ExpectContinueTimeout.String())
 	}
 	if c.InsecureSkipVerify != nil {
-		values = append(values, "insecureSkipVerify:"+fmt.Sprint(*c.InsecureSkipVerify))
+		values = append(values, "insecureSkipVerify:"+strconv.FormatBool(*c.InsecureSkipVerify))
 	}
 	if c.NoGzip != nil {
-		values = append(values, "noGzip:"+fmt.Sprint(*c.NoGzip))
+		values = append(values, "noGzip:"+strconv.FormatBool(*c.NoGzip))
 	}
 	if c.UserAgent != nil {
 		values = append(values, "userAgent:"+*c.UserAgent)
@@ -226,13 +227,13 @@ func (c ClientConfig) String() string {
 		values = append(values, "headers:<hidden>")
 	}
 	if c.DisableHTTP2 != nil {
-		values = append(values, "disableHTTP2"+fmt.Sprint(*c.DisableHTTP2))
+		values = append(values, "disableHTTP2"+strconv.FormatBool(*c.DisableHTTP2))
 	}
 	if c.DisableHTTPKeepAlives != nil {
-		values = append(values, "disableHTTPKeepAlives:"+fmt.Sprint(*c.DisableHTTPKeepAlives))
+		values = append(values, "disableHTTPKeepAlives:"+strconv.FormatBool(*c.DisableHTTPKeepAlives))
 	}
 	if c.RetryMaxCount != nil {
-		values = append(values, "retryMaxCount:"+fmt.Sprint(*c.RetryMaxCount))
+		values = append(values, "retryMaxCount:"+strconv.Itoa(*c.RetryMaxCount))
 	}
 	if c.RetryDelay != nil {
 		values = append(values, "retryDelay:"+c.RetryDelay.String())
@@ -244,16 +245,16 @@ func (c ClientConfig) String() string {
 		values = append(values, "retryBackoffExponential:"+fmt.Sprint(*c.RetryBackoffExponential))
 	}
 	if c.SkipInaccessibleFile != nil {
-		values = append(values, "skipInaccessibleFile:"+fmt.Sprint(*c.SkipInaccessibleFile))
+		values = append(values, "skipInaccessibleFile:"+strconv.FormatBool(*c.SkipInaccessibleFile))
 	}
 	if c.UseServerModTime != nil {
-		values = append(values, "useServerModTime:"+fmt.Sprint(*c.UseServerModTime))
+		values = append(values, "useServerModTime:"+strconv.FormatBool(*c.UseServerModTime))
 	}
 	if c.LowLevelRetries != nil {
-		values = append(values, "lowLevelRetries:"+fmt.Sprint(*c.LowLevelRetries))
+		values = append(values, "lowLevelRetries:"+strconv.Itoa(*c.LowLevelRetries))
 	}
 	if c.ScanConcurrency != nil {
-		values = append(values, "scanConcurrency:"+fmt.Sprint(*c.ScanConcurrency))
+		values = append(values, "scanConcurrency:"+strconv.Itoa(*c.ScanConcurrency))
 	}
 	return strings.Join(values, " ")
 }

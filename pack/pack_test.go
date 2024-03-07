@@ -31,6 +31,38 @@ func TestAssembleCar(t *testing.T) {
 		one      bool
 	}{
 		{
+			name:     "unknown file size",
+			fileSize: 101,
+			job: model.Job{
+				Type:  model.Pack,
+				State: model.Processing,
+				Attachment: &model.SourceAttachment{
+					Preparation: &model.Preparation{
+						MaxSize:   2000000,
+						PieceSize: 1 << 21,
+					},
+					Storage: &model.Storage{
+						Type: "local",
+						Path: tmp,
+					},
+				},
+				FileRanges: []model.FileRange{
+					{
+						Offset: 0,
+						Length: -1,
+						File: &model.File{
+							Path:             "test.txt",
+							Size:             -1,
+							LastModifiedNano: stat.ModTime().UnixNano(),
+							AttachmentID:     1,
+							Directory: &model.Directory{
+								AttachmentID: 1,
+							},
+						},
+					},
+				},
+			}},
+		{
 			name:     "single file",
 			fileSize: 101,
 			job: model.Job{
@@ -170,6 +202,18 @@ func TestAssembleCar(t *testing.T) {
 					require.Equal(t, "", root.CID.String())
 				} else {
 					require.NotEqual(t, "", root.CID.String())
+				}
+				var files []model.File
+				err = db.Find(&files).Error
+				require.NoError(t, err)
+				for _, file := range files {
+					require.GreaterOrEqual(t, file.Size, int64(0))
+				}
+				var fileRanges []model.FileRange
+				err = db.Find(&fileRanges).Error
+				require.NoError(t, err)
+				for _, fileRange := range fileRanges {
+					require.GreaterOrEqual(t, fileRange.Length, int64(0))
 				}
 			}
 			if job.one {
