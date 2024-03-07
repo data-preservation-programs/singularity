@@ -228,6 +228,9 @@ func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, leng
 		retryCountMax:           h.retryMaxCount,
 		retryBackoffExponential: h.retryBackoffExponential,
 	}
+	if length < 0 {
+		return readerWithRetry, object, errors.WithStack(err)
+	}
 	return readCloser{
 		Reader: io.LimitReader(readerWithRetry, length),
 		Closer: readerWithRetry,

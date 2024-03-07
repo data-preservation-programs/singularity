@@ -172,6 +172,29 @@ func Pack(
 		JobID:         &job.ID,
 	}
 
+	// Update all Files and FileRanges that have size == -1
+	for fileID, length := range assembler.fileLengthCorrection {
+		err := database.DoRetry(ctx, func() error {
+			return db.Model(&model.File{}).Where("id = ?", fileID).Update("size", length).Error
+		})
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		err = database.DoRetry(ctx, func() error {
+			return db.Model(&model.FileRange{}).Where("file_id = ?", fileID).Update("length", length).Error
+		})
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+	}
+	for i := range job.FileRanges {
+		if job.FileRanges[i].Length == -1 {
+			job.FileRanges[i].Length = assembler.fileLengthCorrection[job.FileRanges[i].FileID]
+			job.FileRanges[i].File.Size = assembler.fileLengthCorrection[job.FileRanges[i].FileID]
+			logger.Warnw("correcting unknown file size", "path", job.FileRanges[i].File.Path, "length", job.FileRanges[i].Length)
+		}
+	}
+
 	// Update all FileRange and file CID that are not split
 	splitFileIDs := make(map[model.FileID]model.File)
 	var updatedFiles []model.File

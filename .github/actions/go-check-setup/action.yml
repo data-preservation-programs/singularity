@@ -4,7 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup Golang caches
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cache/go-build
@@ -12,3 +12,9 @@ runs:
         key: ${{ matrix.os }}-golang-${{ matrix.go }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ matrix.os }}-golang-${{ matrix.go }}-
+
+    - name: Lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: v1.55.2
+        args: --timeout=10m

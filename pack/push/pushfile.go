@@ -65,19 +65,20 @@ func PushFile(
 
 	logger.Debugw("finding if the file already exists", "path", obj.Remote(),
 		"hash", hashValue, "size", size, "last_modified", lastModified.UnixNano())
-	if hashValue == "" {
-		err = db.Model(&model.File{}).Where(
-			"attachment_id = ? AND path = ? AND hash = ? AND size = ? AND last_modified_nano = ?",
-			attachment.ID, obj.Remote(),
-			hashValue, size, lastModified.UnixNano(),
-		).Count(&existing).Error
-	} else {
-		err = db.Model(&model.File{}).Where(
-			"attachment_id = ? AND path = ? AND size = ? AND last_modified_nano = ?",
-			attachment.ID, obj.Remote(),
-			size, lastModified.UnixNano(),
-		).Count(&existing).Error
+	query := "attachment_id = ? AND path = ? AND last_modified_nano = ?"
+	args := []interface{}{attachment.ID, obj.Remote(), lastModified.UnixNano()}
+	if hashValue != "" {
+		query += " AND hash = ?"
+		args = append(args, hashValue)
 	}
+	// An edge case is the size is not available from the data source, which results in size = -1.
+	if size >= 0 {
+		query += " AND size = ?"
+		args = append(args, size)
+	} else {
+		logger.Warnw("size is not available, this may overflow a sector if the actual size of the file is too large", "path", obj.Remote())
+	}
+	err = db.Model(&model.File{}).Where(query, args...).Count(&existing).Error
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "failed to find existing file %s", obj.Remote())
 	}

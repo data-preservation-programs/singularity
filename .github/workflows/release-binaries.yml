@@ -6,8 +6,6 @@ on:
   workflow_run:
     workflows: [Releaser]
     types: [completed]
-  pull_request:
-    branches: [ "main" ]
 jobs:
   bin-releaser:
     name: Release Binaries

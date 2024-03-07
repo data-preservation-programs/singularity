@@ -53,6 +53,7 @@ type Assembler struct {
 	assembleLinkFor       *int
 	noInline              bool
 	skipInaccessibleFiles bool
+	fileLengthCorrection  map[model.FileID]int64
 }
 
 // Close closes the assembler and all of its underlying readers
@@ -78,6 +79,7 @@ func NewAssembler(ctx context.Context, reader storagesystem.Reader,
 		objects:               make(map[model.FileID]fs.Object),
 		noInline:              noInline,
 		skipInaccessibleFiles: skipInaccessibleFiles,
+		fileLengthCorrection:  make(map[model.FileID]int64),
 	}
 }
 
@@ -204,6 +206,9 @@ func (a *Assembler) prefetch() error {
 		a.assembleLinkFor = ptr.Of(a.index)
 		a.fileReadCloser = nil
 		a.Close()
+		if a.fileRanges[a.index].Length < 0 {
+			a.fileLengthCorrection[a.fileRanges[a.index].FileID] = a.fileOffset
+		}
 		a.index++
 		return nil
 	}
@@ -252,6 +257,9 @@ func (a *Assembler) prefetch() error {
 
 		a.assembleLinkFor = ptr.Of(a.index)
 		a.Close()
+		if a.fileRanges[a.index].Length < 0 {
+			a.fileLengthCorrection[a.fileRanges[a.index].FileID] = a.fileOffset + int64(n)
+		}
 		a.fileReadCloser = nil
 		a.index++
 
