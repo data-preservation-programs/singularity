@@ -42,7 +42,7 @@ import (
 //   - In certain cases (e.g., failures during fetch), the last modified time might not be reliable.
 //   - For local file systems, hash computation is skipped to avoid inefficient operations.
 func IsSameEntry(ctx context.Context, file model.File, object fs.ObjectInfo) (bool, string) {
-	if file.Size != object.Size() {
+	if file.Size >= 0 && object.Size() >= 0 && file.Size != object.Size() {
 		return false, fmt.Sprintf("size mismatch: %d != %d", file.Size, object.Size())
 	}
 	// last modified can be time.Now() if fetch failed so it may not be reliable.
