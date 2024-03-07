@@ -187,7 +187,7 @@ func Pack(
 			return nil, errors.WithStack(err)
 		}
 	}
-	for i, _ := range job.FileRanges {
+	for i := range job.FileRanges {
 		if job.FileRanges[i].Length == -1 {
 			job.FileRanges[i].Length = assembler.fileLengthCorrection[job.FileRanges[i].FileID]
 			job.FileRanges[i].File.Size = assembler.fileLengthCorrection[job.FileRanges[i].FileID]

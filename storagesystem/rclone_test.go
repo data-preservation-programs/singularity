@@ -166,8 +166,7 @@ func TestRCloneHandler(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, "", read)
 
-	readCloser3, _, err := handler.Read(ctx, "test.txt", 0, -1tus
-	)
+	readCloser3, _, err := handler.Read(ctx, "test.txt", 0, -1)
 	require.NoError(t, err)
 	defer readCloser3.Close()
 	read, err = io.ReadAll(readCloser3)
