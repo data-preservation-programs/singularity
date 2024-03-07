@@ -22,19 +22,21 @@ import (
 func TestAssembler(t *testing.T) {
 	tmp := t.TempDir()
 	sizes := map[int]struct {
-		size    int
-		encSize int
+		size        int
+		encSize     int
+		sizeUnknown bool
 	}{
-		0:                {96, 297},
-		1:                {97, 298},
-		1024:             {1121, 1321},
-		1024 * 1024:      {1048674, 1049296},
-		1024 * 1024 * 2:  {2097436, 2098218},
-		1024*1024*2 + 1:  {2097520, 2098235},
-		1024*1024*2 - 1:  {2097434, 2098217},
-		1024 * 1024 * 10: {10486756, 10489586},
-		1024*1024*10 - 1: {10486755, 10489585},
-		1024*1024*10 + 1: {10486840, 10489603},
+		0:                {96, 297, false},
+		1:                {97, 298, false},
+		1024:             {1121, 1321, false},
+		1024 * 1024:      {1048674, 1049296, false},
+		1024 * 1024 * 2:  {2097436, 2098218, false},
+		1024*1024*2 + 1:  {2097520, 2098235, false},
+		1024*1024*2 - 1:  {2097434, 2098217, false},
+		1024 * 1024 * 10: {10486756, 10489586, false},
+		1024*1024*10 - 1: {10486755, 10489585, false},
+		1024*1024*10 + 1: {10486840, 10489603, false},
+		2048:             {2145, 2345, true},
 	}
 
 	ctx := context.Background()
@@ -45,21 +47,25 @@ func TestAssembler(t *testing.T) {
 	require.NoError(t, err)
 
 	var allFileRanges []model.FileRange
-	for size := range sizes {
+	for size, val := range sizes {
 		filename := fmt.Sprintf("%d.bin", size)
 		err := os.WriteFile(filepath.Join(tmp, filename), testutil.GenerateRandomBytes(size), 0644)
 		require.NoError(t, err)
 		stat, err := os.Stat(filepath.Join(tmp, filename))
 		require.NoError(t, err)
+		length := int64(size)
+		if val.sizeUnknown {
+			length = -1
+		}
 		allFileRanges = append(allFileRanges, model.FileRange{
 			ID:     model.FileRangeID(size),
 			Offset: 0,
-			Length: int64(size),
+			Length: length,
 			FileID: model.FileID(size),
 			File: &model.File{
 				ID:               model.FileID(size),
 				Path:             filename,
-				Size:             int64(size),
+				Size:             length,
 				LastModifiedNano: stat.ModTime().UnixNano(),
 			}})
 	}
@@ -77,6 +83,12 @@ func TestAssembler(t *testing.T) {
 			require.Equal(t, expected.size, len(content))
 			validateCarContent(t, content)
 			validateAssembler(t, assembler)
+			if expected.sizeUnknown {
+				require.Greater(t, len(assembler.carBlocks), 0)
+				for _, corrected := range assembler.fileLengthCorrection {
+					require.Equal(t, corrected, int64(size))
+				}
+			}
 		})
 	}
 
@@ -88,7 +100,7 @@ func TestAssembler(t *testing.T) {
 		defer assembler.Close()
 		content, err := io.ReadAll(assembler)
 		require.NoError(t, err)
-		require.Equal(t, 38802198, len(content))
+		require.Equal(t, 38804284, len(content))
 		validateCarContent(t, content)
 		validateAssembler(t, assembler)
 		require.Greater(t, len(assembler.carBlocks), 0)
@@ -98,7 +110,7 @@ func TestAssembler(t *testing.T) {
 		defer assembler.Close()
 		content, err := io.ReadAll(assembler)
 		require.NoError(t, err)
-		require.Equal(t, 38802198, len(content))
+		require.Equal(t, 38804284, len(content))
 		validateCarContent(t, content)
 		validateAssembler(t, assembler)
 		require.Len(t, assembler.carBlocks, 0)
