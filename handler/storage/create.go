@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -69,7 +70,7 @@ func (DefaultHandler) CreateStorageHandler(
 
 	rcloneConfig := make(map[string]string)
 	providerOptions, err := underscore.Find(backend.ProviderOptions, func(providerOption storagesystem.ProviderOptions) bool {
-		return providerOption.Provider == provider
+		return strings.EqualFold(providerOption.Provider, provider)
 	})
 	if err != nil {
 		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "provider '%s' is not supported", provider)
