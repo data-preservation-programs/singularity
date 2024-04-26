@@ -57,7 +57,7 @@ func Init(ctx context.Context, db *gorm.DB) error {
 	db.WithContext(ctx).Clauses(where).First(&identity)
 	Identity = identity.Value
 
-	if os.Getenv("SINGULARITY_ANALYTICS") == "0" {
+	if os.Getenv("SINGULARITY_ANALYTICS") != "1" {
 		Enabled = false
 	}
 	return nil
