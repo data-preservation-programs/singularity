@@ -57,13 +57,12 @@ func NextPowerOfTwo(x uint64) uint64 {
 func NewLotusClient(lotusAPI string, lotusToken string) jsonrpc.RPCClient {
 	if lotusToken == "" {
 		return jsonrpc.NewClient(lotusAPI)
-	} else {
-		return jsonrpc.NewClientWithOpts(lotusAPI, &jsonrpc.RPCClientOpts{
-			CustomHeaders: map[string]string{
-				"Authorization": "Bearer " + lotusToken,
-			},
-		})
 	}
+	return jsonrpc.NewClientWithOpts(lotusAPI, &jsonrpc.RPCClientOpts{
+		CustomHeaders: map[string]string{
+			"Authorization": "Bearer " + lotusToken,
+		},
+	})
 }
 
 // IsAllDigits is a function that checks if a string contains only digits.

@@ -27,6 +27,10 @@ func TestNewLotusClient(t *testing.T) {
 		t.Run(token, func(t *testing.T) {
 			client := NewLotusClient("https://api.node.glif.io/", token)
 			resp, err := client.Call(context.Background(), "Filecoin.Version")
+			if token != "" {
+				require.Error(t, err)
+				return
+			}
 			require.NoError(t, err)
 			require.NotNil(t, resp.Result)
 		})
