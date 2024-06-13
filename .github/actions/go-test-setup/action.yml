@@ -13,7 +13,7 @@ runs:
         restore-keys: |
           ${{ matrix.os }}-golang-${{ matrix.go }}-
     - name: Setup PostgreSQL database
-      uses: ikalnytskyi/action-setup-postgres@v4
+      uses: ikalnytskyi/action-setup-postgres@v6
       with:
         username: 'singularity'
         password: 'singularity'

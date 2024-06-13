@@ -3,16 +3,21 @@ package storagesystem
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/gotidy/ptr"
+	"github.com/orlangure/gnomock"
+	"github.com/orlangure/gnomock/preset/localstack"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -115,15 +120,66 @@ func TestRCloneHandler_OverrideConfig(t *testing.T) {
 	require.Len(t, entries, 0)
 }
 
-func TestRCloneHandler_EmptyS3File(t *testing.T) {
+// Test reading an empty and non-empty file from S3.
+func TestRCloneHandler_ReadS3Files(t *testing.T) {
+	const (
+		bucketName = "testbucket"
+		subDir     = "subfolder"
+		emptyFile  = "empty.bin"
+		helloFile  = "hello.txt"
+		helloTxt   = "hello world"
+		helloSize  = 11
+	)
+
+	tempDir := t.TempDir()
+	dir := filepath.Join(tempDir, bucketName, subDir)
+	err := os.MkdirAll(dir, 0755)
+	require.NoError(t, err)
+
+	f, err := os.Create(filepath.Join(dir, emptyFile))
+	require.NoError(t, err)
+	f.Close()
+
+	f, err = os.Create(filepath.Join(dir, helloFile))
+	require.NoError(t, err)
+	f.Write([]byte(helloTxt))
+	f.Close()
+
+	p := localstack.Preset(
+		localstack.WithServices(localstack.S3),
+		localstack.WithS3Files(tempDir),
+	)
+	localS3, err := gnomock.Start(p)
+	if err != nil && strings.HasPrefix(err.Error(), "can't start container") {
+		t.Skip("Docker required for s3 tests")
+	}
+	require.NoError(t, err)
+	defer func() { _ = gnomock.Stop(localS3) }()
+
 	ctx := context.Background()
 	handler, err := NewRCloneHandler(ctx, model.Storage{
-		Type:   "s3",
-		Path:   "public-dataset-test",
-		Config: map[string]string{"provider": "AWS", "region": "us-west-2", "chunk_size": "5Mi"},
+		Type: "s3",
+		Path: bucketName,
+		Config: map[string]string{
+			"provider":         "Other",
+			"force_path_style": "true",
+			"region":           "us-east-1",
+			"chunk_size":       "5Mi",
+			"endpoint":         fmt.Sprint("http://", localS3.Address(localstack.APIPort)),
+			"env_auth":         "false",
+		},
 	})
 	require.NoError(t, err)
-	stream, obj, err := handler.Read(ctx, "subfolder/empty.bin", 0, 0)
+	ents, err := handler.List(ctx, "")
+	require.NoError(t, err)
+	t.Log("Root contains:", ents)
+	ents, err = handler.List(ctx, subDir)
+	require.NoError(t, err)
+	t.Log(bucketName, "contains:", ents)
+	require.Len(t, ents, 2)
+
+	// Verify empty file.
+	stream, obj, err := handler.Read(ctx, path.Join(subDir, emptyFile), 0, 0)
 	require.NoError(t, err)
 	defer stream.Close()
 	require.NotNil(t, stream)
@@ -132,6 +188,17 @@ func TestRCloneHandler_EmptyS3File(t *testing.T) {
 	content, err := io.ReadAll(stream)
 	require.NoError(t, err)
 	require.Len(t, content, 0)
+
+	// Verify non-empty file.
+	stream, obj, err = handler.Read(ctx, path.Join(subDir, helloFile), 0, helloSize)
+	require.NoError(t, err)
+	defer stream.Close()
+	require.NotNil(t, stream)
+	require.NotNil(t, obj)
+	require.EqualValues(t, helloSize, obj.Size())
+	content, err = io.ReadAll(stream)
+	require.NoError(t, err)
+	require.Len(t, content, helloSize)
 }
 
 func TestRCloneHandler(t *testing.T) {
