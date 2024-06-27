@@ -13,7 +13,7 @@ import (
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/testutil"
-	uio "github.com/ipfs/go-unixfs/io"
+	uio "github.com/ipfs/boxo/ipld/unixfs/io"
 	"github.com/orlangure/gnomock"
 	"github.com/orlangure/gnomock/preset/localstack"
 	"github.com/stretchr/testify/require"

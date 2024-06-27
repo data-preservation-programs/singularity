@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/ipfs/boxo/ipld/merkledag"
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
-	"github.com/ipfs/go-merkledag"
 	"github.com/stretchr/testify/require"
 )
 
