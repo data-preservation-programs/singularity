@@ -29,6 +29,7 @@ func TestNewLotusClient(t *testing.T) {
 			resp, err := client.Call(context.Background(), "Filecoin.Version")
 			if token != "" {
 				require.Error(t, err)
+				require.ErrorContains(t, err, "401")
 				return
 			}
 			require.NoError(t, err)
