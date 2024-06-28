@@ -6,7 +6,7 @@ NAME:
    singularity extract-car - Extract folders or files from a folder of CAR files to a local directory
 
 USAGE:
-   singularity extract-car [command options] [arguments...]
+   singularity extract-car [command options]
 
 CATEGORY:
    Utility

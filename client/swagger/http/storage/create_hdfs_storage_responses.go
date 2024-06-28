@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateHdfsStorageOK) Code() int {
 }
 
 func (o *CreateHdfsStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageOK %s", 200, payload)
 }
 
 func (o *CreateHdfsStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageOK %s", 200, payload)
 }
 
 func (o *CreateHdfsStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateHdfsStorageBadRequest) Code() int {
 }
 
 func (o *CreateHdfsStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateHdfsStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateHdfsStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateHdfsStorageInternalServerError) Code() int {
 }
 
 func (o *CreateHdfsStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateHdfsStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hdfs][%d] createHdfsStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateHdfsStorageInternalServerError) GetPayload() *models.APIHTTPError {

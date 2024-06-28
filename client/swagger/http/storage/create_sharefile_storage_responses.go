@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateSharefileStorageOK) Code() int {
 }
 
 func (o *CreateSharefileStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageOK %s", 200, payload)
 }
 
 func (o *CreateSharefileStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageOK %s", 200, payload)
 }
 
 func (o *CreateSharefileStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateSharefileStorageBadRequest) Code() int {
 }
 
 func (o *CreateSharefileStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSharefileStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSharefileStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateSharefileStorageInternalServerError) Code() int {
 }
 
 func (o *CreateSharefileStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSharefileStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sharefile][%d] createSharefileStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSharefileStorageInternalServerError) GetPayload() *models.APIHTTPError {

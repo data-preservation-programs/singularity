@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreatePutioStorageOK) Code() int {
 }
 
 func (o *CreatePutioStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageOK %s", 200, payload)
 }
 
 func (o *CreatePutioStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageOK %s", 200, payload)
 }
 
 func (o *CreatePutioStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreatePutioStorageBadRequest) Code() int {
 }
 
 func (o *CreatePutioStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreatePutioStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreatePutioStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreatePutioStorageInternalServerError) Code() int {
 }
 
 func (o *CreatePutioStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreatePutioStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/putio][%d] createPutioStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreatePutioStorageInternalServerError) GetPayload() *models.APIHTTPError {

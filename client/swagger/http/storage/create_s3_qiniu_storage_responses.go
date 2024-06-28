@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3QiniuStorageOK) Code() int {
 }
 
 func (o *CreateS3QiniuStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3QiniuStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3QiniuStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3QiniuStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3QiniuStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3QiniuStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3QiniuStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3QiniuStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3QiniuStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3QiniuStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/qiniu][%d] createS3QiniuStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3QiniuStorageInternalServerError) GetPayload() *models.APIHTTPError {

@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 stackpath - StackPath Object Storage
 
 USAGE:
-   singularity storage create s3 stackpath [command options] [arguments...]
+   singularity storage create s3 stackpath [command options]
 
 DESCRIPTION:
    --env-auth

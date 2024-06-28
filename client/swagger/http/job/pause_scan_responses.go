@@ -6,6 +6,7 @@ package job
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *PauseScanOK) Code() int {
 }
 
 func (o *PauseScanOK) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanOK %s", 200, payload)
 }
 
 func (o *PauseScanOK) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanOK %s", 200, payload)
 }
 
 func (o *PauseScanOK) GetPayload() *models.ModelJob {
@@ -159,11 +162,13 @@ func (o *PauseScanBadRequest) Code() int {
 }
 
 func (o *PauseScanBadRequest) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanBadRequest %s", 400, payload)
 }
 
 func (o *PauseScanBadRequest) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanBadRequest %s", 400, payload)
 }
 
 func (o *PauseScanBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *PauseScanInternalServerError) Code() int {
 }
 
 func (o *PauseScanInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanInternalServerError %s", 500, payload)
 }
 
 func (o *PauseScanInternalServerError) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-scan][%d] pauseScanInternalServerError %s", 500, payload)
 }
 
 func (o *PauseScanInternalServerError) GetPayload() *models.APIHTTPError {

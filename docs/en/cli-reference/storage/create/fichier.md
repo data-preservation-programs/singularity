@@ -6,7 +6,7 @@ NAME:
    singularity storage create fichier - 1Fichier
 
 USAGE:
-   singularity storage create fichier [command options] [arguments...]
+   singularity storage create fichier [command options]
 
 DESCRIPTION:
    --api-key

@@ -8,11 +8,11 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/fxamacker/cbor/v2"
+	"github.com/ipfs/boxo/ipld/merkledag"
+	uio "github.com/ipfs/boxo/ipld/unixfs/io"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
-	"github.com/ipfs/go-merkledag"
-	uio "github.com/ipfs/go-unixfs/io"
 	"github.com/klauspost/compress/zstd"
 )
 

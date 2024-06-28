@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 chinamobile - China Mobile Ecloud Elastic Object Storage (EOS)
 
 USAGE:
-   singularity storage create s3 chinamobile [command options] [arguments...]
+   singularity storage create s3 chinamobile [command options]
 
 DESCRIPTION:
    --env-auth

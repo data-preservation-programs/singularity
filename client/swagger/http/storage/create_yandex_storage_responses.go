@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateYandexStorageOK) Code() int {
 }
 
 func (o *CreateYandexStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageOK %s", 200, payload)
 }
 
 func (o *CreateYandexStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageOK %s", 200, payload)
 }
 
 func (o *CreateYandexStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateYandexStorageBadRequest) Code() int {
 }
 
 func (o *CreateYandexStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateYandexStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateYandexStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateYandexStorageInternalServerError) Code() int {
 }
 
 func (o *CreateYandexStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateYandexStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/yandex][%d] createYandexStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateYandexStorageInternalServerError) GetPayload() *models.APIHTTPError {

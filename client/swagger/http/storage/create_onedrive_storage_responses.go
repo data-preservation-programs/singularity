@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateOnedriveStorageOK) Code() int {
 }
 
 func (o *CreateOnedriveStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageOK %s", 200, payload)
 }
 
 func (o *CreateOnedriveStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageOK %s", 200, payload)
 }
 
 func (o *CreateOnedriveStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateOnedriveStorageBadRequest) Code() int {
 }
 
 func (o *CreateOnedriveStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateOnedriveStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateOnedriveStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateOnedriveStorageInternalServerError) Code() int {
 }
 
 func (o *CreateOnedriveStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateOnedriveStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/onedrive][%d] createOnedriveStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateOnedriveStorageInternalServerError) GetPayload() *models.APIHTTPError {

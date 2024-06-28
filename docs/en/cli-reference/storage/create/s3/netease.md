@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 netease - Netease Object Storage (NOS)
 
 USAGE:
-   singularity storage create s3 netease [command options] [arguments...]
+   singularity storage create s3 netease [command options]
 
 DESCRIPTION:
    --env-auth

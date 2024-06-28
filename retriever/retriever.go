@@ -12,6 +12,7 @@ import (
 	"github.com/ipld/go-car/v2"
 	"github.com/ipld/go-car/v2/storage"
 	trustlessutils "github.com/ipld/go-trustless-utils"
+	"github.com/ipni/go-libipni/metadata"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multicodec"
 	"go.uber.org/multierr"
@@ -70,8 +71,14 @@ func (r *Retriever) getContent(ctx context.Context, c cid.Cid, rangeStart int64,
 	}
 	request.Duplicates = true
 	request.Protocols = []multicodec.Code{multicodec.TransportIpfsGatewayHttp}
-	request.FixedPeers = providerAddrs
-	_, err = r.lassie.Fetch(ctx, request, func(lassietypes.RetrievalEvent) {})
+
+	providers := make([]lassietypes.Provider, len(providerAddrs))
+	for i := range providerAddrs {
+		providers[i].Peer = providerAddrs[i]
+		providers[i].Protocols = []metadata.Protocol{&metadata.GraphsyncFilecoinV1{}, &metadata.Bitswap{}, &metadata.IpfsGatewayHttp{}}
+	}
+	request.Providers = providers
+	_, err = r.lassie.Fetch(ctx, request)
 	if err != nil {
 		return err
 	}

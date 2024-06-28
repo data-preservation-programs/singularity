@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3LyveCloudStorageOK) Code() int {
 }
 
 func (o *CreateS3LyveCloudStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3LyveCloudStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3LyveCloudStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3LyveCloudStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3LyveCloudStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3LyveCloudStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3LyveCloudStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3LyveCloudStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3LyveCloudStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3LyveCloudStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/lyvecloud][%d] createS3LyveCloudStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3LyveCloudStorageInternalServerError) GetPayload() *models.APIHTTPError {

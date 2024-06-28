@@ -6,7 +6,7 @@ NAME:
    singularity storage create pcloud - Pcloud
 
 USAGE:
-   singularity storage create pcloud [command options] [arguments...]
+   singularity storage create pcloud [command options]
 
 DESCRIPTION:
    --client-id

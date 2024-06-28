@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreatePremiumizemeStorageOK) Code() int {
 }
 
 func (o *CreatePremiumizemeStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageOK %s", 200, payload)
 }
 
 func (o *CreatePremiumizemeStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageOK %s", 200, payload)
 }
 
 func (o *CreatePremiumizemeStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreatePremiumizemeStorageBadRequest) Code() int {
 }
 
 func (o *CreatePremiumizemeStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreatePremiumizemeStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreatePremiumizemeStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreatePremiumizemeStorageInternalServerError) Code() int {
 }
 
 func (o *CreatePremiumizemeStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreatePremiumizemeStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/premiumizeme][%d] createPremiumizemeStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreatePremiumizemeStorageInternalServerError) GetPayload() *models.APIHTTPError {

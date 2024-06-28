@@ -6,7 +6,7 @@ NAME:
    singularity prep add-piece - Manually add piece info to a preparation. This is useful for pieces prepared by external tools.
 
 USAGE:
-   singularity prep add-piece [command options] <preparation id|name>
+   singularity prep add-piece [command options]<preparation id|name>
 
 CATEGORY:
    Piece Management

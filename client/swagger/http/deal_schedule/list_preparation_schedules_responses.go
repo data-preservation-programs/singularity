@@ -6,6 +6,7 @@ package deal_schedule
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *ListPreparationSchedulesOK) Code() int {
 }
 
 func (o *ListPreparationSchedulesOK) Error() string {
-	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesOK %s", 200, payload)
 }
 
 func (o *ListPreparationSchedulesOK) String() string {
-	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesOK %s", 200, payload)
 }
 
 func (o *ListPreparationSchedulesOK) GetPayload() []*models.ModelSchedule {
@@ -157,11 +160,13 @@ func (o *ListPreparationSchedulesBadRequest) Code() int {
 }
 
 func (o *ListPreparationSchedulesBadRequest) Error() string {
-	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesBadRequest %s", 400, payload)
 }
 
 func (o *ListPreparationSchedulesBadRequest) String() string {
-	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesBadRequest %s", 400, payload)
 }
 
 func (o *ListPreparationSchedulesBadRequest) GetPayload() *models.APIHTTPError {
@@ -225,11 +230,13 @@ func (o *ListPreparationSchedulesInternalServerError) Code() int {
 }
 
 func (o *ListPreparationSchedulesInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesInternalServerError %s", 500, payload)
 }
 
 func (o *ListPreparationSchedulesInternalServerError) String() string {
-	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/schedules][%d] listPreparationSchedulesInternalServerError %s", 500, payload)
 }
 
 func (o *ListPreparationSchedulesInternalServerError) GetPayload() *models.APIHTTPError {

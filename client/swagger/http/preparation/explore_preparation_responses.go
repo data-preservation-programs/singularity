@@ -6,6 +6,7 @@ package preparation
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *ExplorePreparationOK) Code() int {
 }
 
 func (o *ExplorePreparationOK) Error() string {
-	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationOK %s", 200, payload)
 }
 
 func (o *ExplorePreparationOK) String() string {
-	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationOK %s", 200, payload)
 }
 
 func (o *ExplorePreparationOK) GetPayload() *models.DataprepExploreResult {
@@ -159,11 +162,13 @@ func (o *ExplorePreparationBadRequest) Code() int {
 }
 
 func (o *ExplorePreparationBadRequest) Error() string {
-	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationBadRequest %s", 400, payload)
 }
 
 func (o *ExplorePreparationBadRequest) String() string {
-	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationBadRequest %s", 400, payload)
 }
 
 func (o *ExplorePreparationBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *ExplorePreparationInternalServerError) Code() int {
 }
 
 func (o *ExplorePreparationInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationInternalServerError %s", 500, payload)
 }
 
 func (o *ExplorePreparationInternalServerError) String() string {
-	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/source/{name}/explore/{path}][%d] explorePreparationInternalServerError %s", 500, payload)
 }
 
 func (o *ExplorePreparationInternalServerError) GetPayload() *models.APIHTTPError {

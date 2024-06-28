@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateDropboxStorageOK) Code() int {
 }
 
 func (o *CreateDropboxStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageOK %s", 200, payload)
 }
 
 func (o *CreateDropboxStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageOK %s", 200, payload)
 }
 
 func (o *CreateDropboxStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateDropboxStorageBadRequest) Code() int {
 }
 
 func (o *CreateDropboxStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateDropboxStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateDropboxStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateDropboxStorageInternalServerError) Code() int {
 }
 
 func (o *CreateDropboxStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateDropboxStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/dropbox][%d] createDropboxStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateDropboxStorageInternalServerError) GetPayload() *models.APIHTTPError {

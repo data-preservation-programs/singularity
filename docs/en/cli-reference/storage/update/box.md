@@ -6,7 +6,7 @@ NAME:
    singularity storage update box - Box
 
 USAGE:
-   singularity storage update box [command options] <name|id>
+   singularity storage update box [command options]<name|id>
 
 DESCRIPTION:
    --client-id

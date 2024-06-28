@@ -6,7 +6,7 @@ NAME:
    singularity storage create onedrive - Microsoft OneDrive
 
 USAGE:
-   singularity storage create onedrive [command options] [arguments...]
+   singularity storage create onedrive [command options]
 
 DESCRIPTION:
    --client-id

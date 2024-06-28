@@ -6,7 +6,7 @@ NAME:
    singularity storage update koofr - Koofr, Digi Storage and other Koofr-compatible storage providers
 
 USAGE:
-   singularity storage update koofr command [command options] [arguments...]
+   singularity storage update koofr command [command options] 
 
 COMMANDS:
    digistorage  Digi Storage, https://storage.rcs-rds.ro/

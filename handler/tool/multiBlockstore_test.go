@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/ipfs/boxo/blockstore"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	ipld "github.com/ipfs/go-ipld-format"
 	"github.com/stretchr/testify/require"
 )

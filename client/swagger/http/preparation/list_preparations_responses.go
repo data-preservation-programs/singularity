@@ -6,6 +6,7 @@ package preparation
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *ListPreparationsOK) Code() int {
 }
 
 func (o *ListPreparationsOK) Error() string {
-	return fmt.Sprintf("[GET /preparation][%d] listPreparationsOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation][%d] listPreparationsOK %s", 200, payload)
 }
 
 func (o *ListPreparationsOK) String() string {
-	return fmt.Sprintf("[GET /preparation][%d] listPreparationsOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation][%d] listPreparationsOK %s", 200, payload)
 }
 
 func (o *ListPreparationsOK) GetPayload() []*models.ModelPreparation {
@@ -157,11 +160,13 @@ func (o *ListPreparationsBadRequest) Code() int {
 }
 
 func (o *ListPreparationsBadRequest) Error() string {
-	return fmt.Sprintf("[GET /preparation][%d] listPreparationsBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation][%d] listPreparationsBadRequest %s", 400, payload)
 }
 
 func (o *ListPreparationsBadRequest) String() string {
-	return fmt.Sprintf("[GET /preparation][%d] listPreparationsBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation][%d] listPreparationsBadRequest %s", 400, payload)
 }
 
 func (o *ListPreparationsBadRequest) GetPayload() *models.APIHTTPError {
@@ -225,11 +230,13 @@ func (o *ListPreparationsInternalServerError) Code() int {
 }
 
 func (o *ListPreparationsInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /preparation][%d] listPreparationsInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation][%d] listPreparationsInternalServerError %s", 500, payload)
 }
 
 func (o *ListPreparationsInternalServerError) String() string {
-	return fmt.Sprintf("[GET /preparation][%d] listPreparationsInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /preparation][%d] listPreparationsInternalServerError %s", 500, payload)
 }
 
 func (o *ListPreparationsInternalServerError) GetPayload() *models.APIHTTPError {

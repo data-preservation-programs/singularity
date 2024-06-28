@@ -6,6 +6,7 @@ package file
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,11 +86,13 @@ func (o *GetFileDealsOK) Code() int {
 }
 
 func (o *GetFileDealsOK) Error() string {
-	return fmt.Sprintf("[GET /file/{id}/deals][%d] getFileDealsOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/deals][%d] getFileDealsOK %s", 200, payload)
 }
 
 func (o *GetFileDealsOK) String() string {
-	return fmt.Sprintf("[GET /file/{id}/deals][%d] getFileDealsOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/deals][%d] getFileDealsOK %s", 200, payload)
 }
 
 func (o *GetFileDealsOK) GetPayload() []*models.FileDealsForFileRange {
@@ -151,11 +154,13 @@ func (o *GetFileDealsInternalServerError) Code() int {
 }
 
 func (o *GetFileDealsInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /file/{id}/deals][%d] getFileDealsInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/deals][%d] getFileDealsInternalServerError %s", 500, payload)
 }
 
 func (o *GetFileDealsInternalServerError) String() string {
-	return fmt.Sprintf("[GET /file/{id}/deals][%d] getFileDealsInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/deals][%d] getFileDealsInternalServerError %s", 500, payload)
 }
 
 func (o *GetFileDealsInternalServerError) GetPayload() *models.APIHTTPError {

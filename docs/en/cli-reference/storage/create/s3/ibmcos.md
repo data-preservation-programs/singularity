@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 ibmcos - IBM COS S3
 
 USAGE:
-   singularity storage create s3 ibmcos [command options] [arguments...]
+   singularity storage create s3 ibmcos [command options]
 
 DESCRIPTION:
    --env-auth

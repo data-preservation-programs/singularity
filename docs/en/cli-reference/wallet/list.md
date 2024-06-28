@@ -6,7 +6,7 @@ NAME:
    singularity wallet list - List all imported wallets
 
 USAGE:
-   singularity wallet list [command options] [arguments...]
+   singularity wallet list [command options]
 
 OPTIONS:
    --help, -h  show help

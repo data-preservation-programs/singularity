@@ -52,11 +52,19 @@ func TestRetrieve(t *testing.T) {
 	}
 	retriever := retriever.NewRetriever(fl, ef)
 	verifyRetrieval(t, expectedBytes, retriever, file.Root, 0, 4<<20, []string{"apples", "oranges"})
-	require.Equal(t, []peer.AddrInfo{{ID: peer.ID("apple tree")}, {ID: peer.ID("orange tree")}}, fl.lastRequest.FixedPeers)
+	var providerAddrs []peer.AddrInfo
+	for _, provider := range fl.lastRequest.Providers {
+		providerAddrs = append(providerAddrs, provider.Peer)
+	}
+	require.Equal(t, []peer.AddrInfo{{ID: peer.ID("apple tree")}, {ID: peer.ID("orange tree")}}, providerAddrs)
 	require.Equal(t, int64(0), fl.lastRequest.Bytes.From)
 	require.Equal(t, int64(4<<20)-1, *fl.lastRequest.Bytes.To)
 	verifyRetrieval(t, expectedBytes, retriever, file.Root, 1, (1<<18)+1, []string{"apples", "cheese"})
-	require.Equal(t, []peer.AddrInfo{{ID: peer.ID("apple tree")}, {ID: peer.ID("cheese cave")}}, fl.lastRequest.FixedPeers)
+	providerAddrs = providerAddrs[:0]
+	for _, provider := range fl.lastRequest.Providers {
+		providerAddrs = append(providerAddrs, provider.Peer)
+	}
+	require.Equal(t, []peer.AddrInfo{{ID: peer.ID("apple tree")}, {ID: peer.ID("cheese cave")}}, providerAddrs)
 	require.Equal(t, int64(1), fl.lastRequest.Bytes.From)
 	require.Equal(t, int64(1<<18), *fl.lastRequest.Bytes.To)
 }
@@ -89,7 +97,7 @@ type fakeLassie struct {
 	lsys        *linking.LinkSystem
 }
 
-func (fl *fakeLassie) Fetch(ctx context.Context, request lassietypes.RetrievalRequest, eventsCb func(lassietypes.RetrievalEvent)) (*lassietypes.RetrievalStats, error) {
+func (fl *fakeLassie) Fetch(ctx context.Context, request lassietypes.RetrievalRequest, opts ...lassietypes.FetchOption) (*lassietypes.RetrievalStats, error) {
 	fl.lastRequest = request
 	if request.Path != "" {
 		return nil, errors.New("Path must be empty")

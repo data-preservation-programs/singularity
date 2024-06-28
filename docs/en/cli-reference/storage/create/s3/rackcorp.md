@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 rackcorp - RackCorp Object Storage
 
 USAGE:
-   singularity storage create s3 rackcorp [command options] [arguments...]
+   singularity storage create s3 rackcorp [command options]
 
 DESCRIPTION:
    --env-auth

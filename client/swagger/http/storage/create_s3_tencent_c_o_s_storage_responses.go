@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3TencentCOSStorageOK) Code() int {
 }
 
 func (o *CreateS3TencentCOSStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3TencentCOSStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3TencentCOSStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3TencentCOSStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3TencentCOSStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3TencentCOSStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3TencentCOSStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3TencentCOSStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3TencentCOSStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3TencentCOSStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/tencentcos][%d] createS3TencentCOSStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3TencentCOSStorageInternalServerError) GetPayload() *models.APIHTTPError {

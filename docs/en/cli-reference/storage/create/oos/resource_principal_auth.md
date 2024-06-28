@@ -6,7 +6,7 @@ NAME:
    singularity storage create oos resource_principal_auth - use resource principals to make API calls
 
 USAGE:
-   singularity storage create oos resource_principal_auth [command options] [arguments...]
+   singularity storage create oos resource_principal_auth [command options]
 
 DESCRIPTION:
    --namespace

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *ExploreStorageOK) Code() int {
 }
 
 func (o *ExploreStorageOK) Error() string {
-	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageOK %s", 200, payload)
 }
 
 func (o *ExploreStorageOK) String() string {
-	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageOK %s", 200, payload)
 }
 
 func (o *ExploreStorageOK) GetPayload() []*models.StorageDirEntry {
@@ -157,11 +160,13 @@ func (o *ExploreStorageBadRequest) Code() int {
 }
 
 func (o *ExploreStorageBadRequest) Error() string {
-	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageBadRequest %s", 400, payload)
 }
 
 func (o *ExploreStorageBadRequest) String() string {
-	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageBadRequest %s", 400, payload)
 }
 
 func (o *ExploreStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -225,11 +230,13 @@ func (o *ExploreStorageInternalServerError) Code() int {
 }
 
 func (o *ExploreStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageInternalServerError %s", 500, payload)
 }
 
 func (o *ExploreStorageInternalServerError) String() string {
-	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage/{name}/explore/{path}][%d] exploreStorageInternalServerError %s", 500, payload)
 }
 
 func (o *ExploreStorageInternalServerError) GetPayload() *models.APIHTTPError {

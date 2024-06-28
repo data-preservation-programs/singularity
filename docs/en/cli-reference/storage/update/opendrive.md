@@ -6,7 +6,7 @@ NAME:
    singularity storage update opendrive - OpenDrive
 
 USAGE:
-   singularity storage update opendrive [command options] <name|id>
+   singularity storage update opendrive [command options]<name|id>
 
 DESCRIPTION:
    --username

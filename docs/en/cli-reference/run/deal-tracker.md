@@ -6,7 +6,7 @@ NAME:
    singularity run deal-tracker - Start a deal tracker that tracks the deal for all relevant wallets
 
 USAGE:
-   singularity run deal-tracker [command options] [arguments...]
+   singularity run deal-tracker [command options]
 
 OPTIONS:
    --market-deal-url value, -m value  The URL for ZST compressed state market deals json. Set to empty to use Lotus API. (default: "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst") [$MARKET_DEAL_URL]

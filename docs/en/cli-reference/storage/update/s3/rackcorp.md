@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 rackcorp - RackCorp Object Storage
 
 USAGE:
-   singularity storage update s3 rackcorp [command options] <name|id>
+   singularity storage update s3 rackcorp [command options]<name|id>
 
 DESCRIPTION:
    --env-auth

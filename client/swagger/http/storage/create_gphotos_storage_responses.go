@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateGphotosStorageOK) Code() int {
 }
 
 func (o *CreateGphotosStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageOK %s", 200, payload)
 }
 
 func (o *CreateGphotosStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageOK %s", 200, payload)
 }
 
 func (o *CreateGphotosStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateGphotosStorageBadRequest) Code() int {
 }
 
 func (o *CreateGphotosStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateGphotosStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateGphotosStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateGphotosStorageInternalServerError) Code() int {
 }
 
 func (o *CreateGphotosStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateGphotosStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gphotos][%d] createGphotosStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateGphotosStorageInternalServerError) GetPayload() *models.APIHTTPError {

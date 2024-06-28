@@ -6,7 +6,7 @@ NAME:
    singularity storage create zoho - Zoho
 
 USAGE:
-   singularity storage create zoho [command options] [arguments...]
+   singularity storage create zoho [command options]
 
 DESCRIPTION:
    --client-id

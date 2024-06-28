@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateJottacloudStorageOK) Code() int {
 }
 
 func (o *CreateJottacloudStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageOK %s", 200, payload)
 }
 
 func (o *CreateJottacloudStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageOK %s", 200, payload)
 }
 
 func (o *CreateJottacloudStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateJottacloudStorageBadRequest) Code() int {
 }
 
 func (o *CreateJottacloudStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateJottacloudStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateJottacloudStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateJottacloudStorageInternalServerError) Code() int {
 }
 
 func (o *CreateJottacloudStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateJottacloudStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/jottacloud][%d] createJottacloudStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateJottacloudStorageInternalServerError) GetPayload() *models.APIHTTPError {

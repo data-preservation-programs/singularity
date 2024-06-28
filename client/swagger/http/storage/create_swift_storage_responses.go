@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateSwiftStorageOK) Code() int {
 }
 
 func (o *CreateSwiftStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageOK %s", 200, payload)
 }
 
 func (o *CreateSwiftStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageOK %s", 200, payload)
 }
 
 func (o *CreateSwiftStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateSwiftStorageBadRequest) Code() int {
 }
 
 func (o *CreateSwiftStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSwiftStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSwiftStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateSwiftStorageInternalServerError) Code() int {
 }
 
 func (o *CreateSwiftStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSwiftStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/swift][%d] createSwiftStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSwiftStorageInternalServerError) GetPayload() *models.APIHTTPError {

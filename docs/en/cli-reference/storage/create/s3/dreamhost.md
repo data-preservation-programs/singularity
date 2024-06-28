@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 dreamhost - Dreamhost DreamObjects
 
 USAGE:
-   singularity storage create s3 dreamhost [command options] [arguments...]
+   singularity storage create s3 dreamhost [command options]
 
 DESCRIPTION:
    --env-auth

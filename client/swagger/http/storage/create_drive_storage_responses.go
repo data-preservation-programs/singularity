@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateDriveStorageOK) Code() int {
 }
 
 func (o *CreateDriveStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageOK %s", 200, payload)
 }
 
 func (o *CreateDriveStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageOK %s", 200, payload)
 }
 
 func (o *CreateDriveStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateDriveStorageBadRequest) Code() int {
 }
 
 func (o *CreateDriveStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateDriveStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateDriveStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateDriveStorageInternalServerError) Code() int {
 }
 
 func (o *CreateDriveStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateDriveStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/drive][%d] createDriveStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateDriveStorageInternalServerError) GetPayload() *models.APIHTTPError {

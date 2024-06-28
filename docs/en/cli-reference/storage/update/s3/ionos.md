@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 ionos - IONOS Cloud
 
 USAGE:
-   singularity storage update s3 ionos [command options] <name|id>
+   singularity storage update s3 ionos [command options]<name|id>
 
 DESCRIPTION:
    --env-auth

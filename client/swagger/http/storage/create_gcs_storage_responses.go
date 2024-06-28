@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateGcsStorageOK) Code() int {
 }
 
 func (o *CreateGcsStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageOK %s", 200, payload)
 }
 
 func (o *CreateGcsStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageOK %s", 200, payload)
 }
 
 func (o *CreateGcsStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateGcsStorageBadRequest) Code() int {
 }
 
 func (o *CreateGcsStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateGcsStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateGcsStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateGcsStorageInternalServerError) Code() int {
 }
 
 func (o *CreateGcsStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateGcsStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/gcs][%d] createGcsStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateGcsStorageInternalServerError) GetPayload() *models.APIHTTPError {

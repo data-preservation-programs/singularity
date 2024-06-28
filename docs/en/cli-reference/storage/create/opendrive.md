@@ -6,7 +6,7 @@ NAME:
    singularity storage create opendrive - OpenDrive
 
 USAGE:
-   singularity storage create opendrive [command options] [arguments...]
+   singularity storage create opendrive [command options]
 
 DESCRIPTION:
    --username

@@ -6,7 +6,7 @@ NAME:
    singularity storage create box - Box
 
 USAGE:
-   singularity storage create box [command options] [arguments...]
+   singularity storage create box [command options]
 
 DESCRIPTION:
    --client-id

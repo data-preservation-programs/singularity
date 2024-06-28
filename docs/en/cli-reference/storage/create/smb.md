@@ -6,7 +6,7 @@ NAME:
    singularity storage create smb - SMB / CIFS
 
 USAGE:
-   singularity storage create smb [command options] [arguments...]
+   singularity storage create smb [command options]
 
 DESCRIPTION:
    --host

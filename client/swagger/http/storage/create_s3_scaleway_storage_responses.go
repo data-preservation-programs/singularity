@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3ScalewayStorageOK) Code() int {
 }
 
 func (o *CreateS3ScalewayStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3ScalewayStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3ScalewayStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3ScalewayStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3ScalewayStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3ScalewayStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3ScalewayStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3ScalewayStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3ScalewayStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3ScalewayStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/scaleway][%d] createS3ScalewayStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3ScalewayStorageInternalServerError) GetPayload() *models.APIHTTPError {

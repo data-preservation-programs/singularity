@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 idrive - IDrive e2
 
 USAGE:
-   singularity storage create s3 idrive [command options] [arguments...]
+   singularity storage create s3 idrive [command options]
 
 DESCRIPTION:
    --env-auth

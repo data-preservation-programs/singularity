@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 aws - Amazon Web Services (AWS) S3
 
 USAGE:
-   singularity storage update s3 aws [command options] <name|id>
+   singularity storage update s3 aws [command options]<name|id>
 
 DESCRIPTION:
    --env-auth

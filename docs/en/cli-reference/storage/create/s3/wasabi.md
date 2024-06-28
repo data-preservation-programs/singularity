@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 wasabi - Wasabi Object Storage
 
 USAGE:
-   singularity storage create s3 wasabi [command options] [arguments...]
+   singularity storage create s3 wasabi [command options]
 
 DESCRIPTION:
    --env-auth

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *UpdateStorageOK) Code() int {
 }
 
 func (o *UpdateStorageOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageOK %s", 200, payload)
 }
 
 func (o *UpdateStorageOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageOK %s", 200, payload)
 }
 
 func (o *UpdateStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *UpdateStorageBadRequest) Code() int {
 }
 
 func (o *UpdateStorageBadRequest) Error() string {
-	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageBadRequest %s", 400, payload)
 }
 
 func (o *UpdateStorageBadRequest) String() string {
-	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageBadRequest %s", 400, payload)
 }
 
 func (o *UpdateStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *UpdateStorageInternalServerError) Code() int {
 }
 
 func (o *UpdateStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageInternalServerError %s", 500, payload)
 }
 
 func (o *UpdateStorageInternalServerError) String() string {
-	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}][%d] updateStorageInternalServerError %s", 500, payload)
 }
 
 func (o *UpdateStorageInternalServerError) GetPayload() *models.APIHTTPError {

@@ -6,7 +6,7 @@ NAME:
    singularity admin - Admin commands
 
 USAGE:
-   singularity admin command [command options] [arguments...]
+   singularity admin command [command options] 
 
 COMMANDS:
    init              Initialize or upgrade the database

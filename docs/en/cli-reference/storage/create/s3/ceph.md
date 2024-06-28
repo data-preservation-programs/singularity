@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 ceph - Ceph Object Storage
 
 USAGE:
-   singularity storage create s3 ceph [command options] [arguments...]
+   singularity storage create s3 ceph [command options]
 
 DESCRIPTION:
    --env-auth

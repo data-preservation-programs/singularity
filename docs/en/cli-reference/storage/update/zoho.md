@@ -6,7 +6,7 @@ NAME:
    singularity storage update zoho - Zoho
 
 USAGE:
-   singularity storage update zoho [command options] <name|id>
+   singularity storage update zoho [command options]<name|id>
 
 DESCRIPTION:
    --client-id

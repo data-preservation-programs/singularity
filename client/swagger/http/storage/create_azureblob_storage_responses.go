@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateAzureblobStorageOK) Code() int {
 }
 
 func (o *CreateAzureblobStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageOK %s", 200, payload)
 }
 
 func (o *CreateAzureblobStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageOK %s", 200, payload)
 }
 
 func (o *CreateAzureblobStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateAzureblobStorageBadRequest) Code() int {
 }
 
 func (o *CreateAzureblobStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateAzureblobStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateAzureblobStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateAzureblobStorageInternalServerError) Code() int {
 }
 
 func (o *CreateAzureblobStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateAzureblobStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/azureblob][%d] createAzureblobStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateAzureblobStorageInternalServerError) GetPayload() *models.APIHTTPError {

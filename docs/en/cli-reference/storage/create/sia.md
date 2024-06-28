@@ -6,7 +6,7 @@ NAME:
    singularity storage create sia - Sia Decentralized Cloud
 
 USAGE:
-   singularity storage create sia [command options] [arguments...]
+   singularity storage create sia [command options]
 
 DESCRIPTION:
    --api-url

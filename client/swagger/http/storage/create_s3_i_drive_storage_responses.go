@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3IDriveStorageOK) Code() int {
 }
 
 func (o *CreateS3IDriveStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3IDriveStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3IDriveStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3IDriveStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3IDriveStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3IDriveStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3IDriveStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3IDriveStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3IDriveStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3IDriveStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/idrive][%d] createS3IDriveStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3IDriveStorageInternalServerError) GetPayload() *models.APIHTTPError {

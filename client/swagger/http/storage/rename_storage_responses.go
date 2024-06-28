@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *RenameStorageOK) Code() int {
 }
 
 func (o *RenameStorageOK) Error() string {
-	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageOK %s", 200, payload)
 }
 
 func (o *RenameStorageOK) String() string {
-	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageOK %s", 200, payload)
 }
 
 func (o *RenameStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *RenameStorageBadRequest) Code() int {
 }
 
 func (o *RenameStorageBadRequest) Error() string {
-	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageBadRequest %s", 400, payload)
 }
 
 func (o *RenameStorageBadRequest) String() string {
-	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageBadRequest %s", 400, payload)
 }
 
 func (o *RenameStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *RenameStorageInternalServerError) Code() int {
 }
 
 func (o *RenameStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageInternalServerError %s", 500, payload)
 }
 
 func (o *RenameStorageInternalServerError) String() string {
-	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /storage/{name}/rename][%d] renameStorageInternalServerError %s", 500, payload)
 }
 
 func (o *RenameStorageInternalServerError) GetPayload() *models.APIHTTPError {

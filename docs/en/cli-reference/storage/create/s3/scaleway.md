@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 scaleway - Scaleway Object Storage
 
 USAGE:
-   singularity storage create s3 scaleway [command options] [arguments...]
+   singularity storage create s3 scaleway [command options]
 
 DESCRIPTION:
    --env-auth

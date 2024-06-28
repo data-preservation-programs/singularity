@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3WasabiStorageOK) Code() int {
 }
 
 func (o *CreateS3WasabiStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3WasabiStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3WasabiStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3WasabiStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3WasabiStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3WasabiStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3WasabiStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3WasabiStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3WasabiStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3WasabiStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/wasabi][%d] createS3WasabiStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3WasabiStorageInternalServerError) GetPayload() *models.APIHTTPError {

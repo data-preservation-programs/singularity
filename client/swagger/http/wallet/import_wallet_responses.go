@@ -6,6 +6,7 @@ package wallet
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *ImportWalletOK) Code() int {
 }
 
 func (o *ImportWalletOK) Error() string {
-	return fmt.Sprintf("[POST /wallet][%d] importWalletOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /wallet][%d] importWalletOK %s", 200, payload)
 }
 
 func (o *ImportWalletOK) String() string {
-	return fmt.Sprintf("[POST /wallet][%d] importWalletOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /wallet][%d] importWalletOK %s", 200, payload)
 }
 
 func (o *ImportWalletOK) GetPayload() *models.ModelWallet {
@@ -159,11 +162,13 @@ func (o *ImportWalletBadRequest) Code() int {
 }
 
 func (o *ImportWalletBadRequest) Error() string {
-	return fmt.Sprintf("[POST /wallet][%d] importWalletBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /wallet][%d] importWalletBadRequest %s", 400, payload)
 }
 
 func (o *ImportWalletBadRequest) String() string {
-	return fmt.Sprintf("[POST /wallet][%d] importWalletBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /wallet][%d] importWalletBadRequest %s", 400, payload)
 }
 
 func (o *ImportWalletBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *ImportWalletInternalServerError) Code() int {
 }
 
 func (o *ImportWalletInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /wallet][%d] importWalletInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /wallet][%d] importWalletInternalServerError %s", 500, payload)
 }
 
 func (o *ImportWalletInternalServerError) String() string {
-	return fmt.Sprintf("[POST /wallet][%d] importWalletInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /wallet][%d] importWalletInternalServerError %s", 500, payload)
 }
 
 func (o *ImportWalletInternalServerError) GetPayload() *models.APIHTTPError {

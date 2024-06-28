@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 storj - Storj (S3 Compatible Gateway)
 
 USAGE:
-   singularity storage create s3 storj [command options] [arguments...]
+   singularity storage create s3 storj [command options]
 
 DESCRIPTION:
    --env-auth

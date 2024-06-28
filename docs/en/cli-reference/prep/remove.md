@@ -6,7 +6,7 @@ NAME:
    singularity prep remove - Remove a preparation
 
 USAGE:
-   singularity prep remove [command options] <name|id>
+   singularity prep remove [command options]<name|id>
 
 DESCRIPTION:
    This will remove all relevant information, including:

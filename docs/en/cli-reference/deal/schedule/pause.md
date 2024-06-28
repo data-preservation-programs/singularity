@@ -6,7 +6,7 @@ NAME:
    singularity deal schedule pause - Pause a specific schedule
 
 USAGE:
-   singularity deal schedule pause [command options] <schedule_id>
+   singularity deal schedule pause [command options]<schedule_id>
 
 OPTIONS:
    --help, -h  show help

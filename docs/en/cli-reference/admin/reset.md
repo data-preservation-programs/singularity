@@ -6,7 +6,7 @@ NAME:
    singularity admin reset - Reset the database
 
 USAGE:
-   singularity admin reset [command options] [arguments...]
+   singularity admin reset [command options]
 
 OPTIONS:
    --really-do-it  Really do it (default: false)

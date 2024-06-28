@@ -6,6 +6,7 @@ package deal
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *SendManualOK) Code() int {
 }
 
 func (o *SendManualOK) Error() string {
-	return fmt.Sprintf("[POST /send_deal][%d] sendManualOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /send_deal][%d] sendManualOK %s", 200, payload)
 }
 
 func (o *SendManualOK) String() string {
-	return fmt.Sprintf("[POST /send_deal][%d] sendManualOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /send_deal][%d] sendManualOK %s", 200, payload)
 }
 
 func (o *SendManualOK) GetPayload() *models.ModelDeal {
@@ -159,11 +162,13 @@ func (o *SendManualBadRequest) Code() int {
 }
 
 func (o *SendManualBadRequest) Error() string {
-	return fmt.Sprintf("[POST /send_deal][%d] sendManualBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /send_deal][%d] sendManualBadRequest %s", 400, payload)
 }
 
 func (o *SendManualBadRequest) String() string {
-	return fmt.Sprintf("[POST /send_deal][%d] sendManualBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /send_deal][%d] sendManualBadRequest %s", 400, payload)
 }
 
 func (o *SendManualBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *SendManualInternalServerError) Code() int {
 }
 
 func (o *SendManualInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /send_deal][%d] sendManualInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /send_deal][%d] sendManualInternalServerError %s", 500, payload)
 }
 
 func (o *SendManualInternalServerError) String() string {
-	return fmt.Sprintf("[POST /send_deal][%d] sendManualInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /send_deal][%d] sendManualInternalServerError %s", 500, payload)
 }
 
 func (o *SendManualInternalServerError) GetPayload() *models.APIHTTPError {

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateWebdavStorageOK) Code() int {
 }
 
 func (o *CreateWebdavStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageOK %s", 200, payload)
 }
 
 func (o *CreateWebdavStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageOK %s", 200, payload)
 }
 
 func (o *CreateWebdavStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateWebdavStorageBadRequest) Code() int {
 }
 
 func (o *CreateWebdavStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateWebdavStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateWebdavStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateWebdavStorageInternalServerError) Code() int {
 }
 
 func (o *CreateWebdavStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateWebdavStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/webdav][%d] createWebdavStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateWebdavStorageInternalServerError) GetPayload() *models.APIHTTPError {

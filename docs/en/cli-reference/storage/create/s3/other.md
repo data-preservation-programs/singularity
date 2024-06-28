@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 other - Any other S3 compatible provider
 
 USAGE:
-   singularity storage create s3 other [command options] [arguments...]
+   singularity storage create s3 other [command options]
 
 DESCRIPTION:
    --env-auth

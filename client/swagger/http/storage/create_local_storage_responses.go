@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateLocalStorageOK) Code() int {
 }
 
 func (o *CreateLocalStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageOK %s", 200, payload)
 }
 
 func (o *CreateLocalStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageOK %s", 200, payload)
 }
 
 func (o *CreateLocalStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateLocalStorageBadRequest) Code() int {
 }
 
 func (o *CreateLocalStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateLocalStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateLocalStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateLocalStorageInternalServerError) Code() int {
 }
 
 func (o *CreateLocalStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateLocalStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/local][%d] createLocalStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateLocalStorageInternalServerError) GetPayload() *models.APIHTTPError {

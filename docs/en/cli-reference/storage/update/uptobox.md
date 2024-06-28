@@ -6,7 +6,7 @@ NAME:
    singularity storage update uptobox - Uptobox
 
 USAGE:
-   singularity storage update uptobox [command options] <name|id>
+   singularity storage update uptobox [command options]<name|id>
 
 DESCRIPTION:
    --access-token

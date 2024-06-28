@@ -6,7 +6,7 @@ NAME:
    singularity storage update pcloud - Pcloud
 
 USAGE:
-   singularity storage update pcloud [command options] <name|id>
+   singularity storage update pcloud [command options]<name|id>
 
 DESCRIPTION:
    --client-id

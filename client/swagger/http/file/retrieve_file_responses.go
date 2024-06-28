@@ -6,6 +6,7 @@ package file
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -107,11 +108,11 @@ func (o *RetrieveFileOK) Code() int {
 }
 
 func (o *RetrieveFileOK) Error() string {
-	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileOK", 200)
 }
 
 func (o *RetrieveFileOK) String() string {
-	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileOK", 200)
 }
 
 func (o *RetrieveFileOK) GetPayload() io.Writer {
@@ -176,11 +177,11 @@ func (o *RetrieveFilePartialContent) Code() int {
 }
 
 func (o *RetrieveFilePartialContent) Error() string {
-	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFilePartialContent  %+v", 206, o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFilePartialContent", 206)
 }
 
 func (o *RetrieveFilePartialContent) String() string {
-	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFilePartialContent  %+v", 206, o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFilePartialContent", 206)
 }
 
 func (o *RetrieveFilePartialContent) GetPayload() io.Writer {
@@ -242,11 +243,13 @@ func (o *RetrieveFileBadRequest) Code() int {
 }
 
 func (o *RetrieveFileBadRequest) Error() string {
-	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileBadRequest %s", 400, payload)
 }
 
 func (o *RetrieveFileBadRequest) String() string {
-	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileBadRequest %s", 400, payload)
 }
 
 func (o *RetrieveFileBadRequest) GetPayload() *models.APIHTTPError {
@@ -310,11 +313,13 @@ func (o *RetrieveFileNotFound) Code() int {
 }
 
 func (o *RetrieveFileNotFound) Error() string {
-	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileNotFound  %+v", 404, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileNotFound %s", 404, payload)
 }
 
 func (o *RetrieveFileNotFound) String() string {
-	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileNotFound  %+v", 404, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileNotFound %s", 404, payload)
 }
 
 func (o *RetrieveFileNotFound) GetPayload() *models.APIHTTPError {
@@ -378,11 +383,13 @@ func (o *RetrieveFileInternalServerError) Code() int {
 }
 
 func (o *RetrieveFileInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileInternalServerError %s", 500, payload)
 }
 
 func (o *RetrieveFileInternalServerError) String() string {
-	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}/retrieve][%d] retrieveFileInternalServerError %s", 500, payload)
 }
 
 func (o *RetrieveFileInternalServerError) GetPayload() *models.APIHTTPError {

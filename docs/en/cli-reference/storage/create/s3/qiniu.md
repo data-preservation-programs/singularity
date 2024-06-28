@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 qiniu - Qiniu Object Storage (Kodo)
 
 USAGE:
-   singularity storage create s3 qiniu [command options] [arguments...]
+   singularity storage create s3 qiniu [command options]
 
 DESCRIPTION:
    --env-auth

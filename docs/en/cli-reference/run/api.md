@@ -6,7 +6,7 @@ NAME:
    singularity run api - Run the singularity API
 
 USAGE:
-   singularity run api [command options] [arguments...]
+   singularity run api [command options]
 
 OPTIONS:
    --bind value  Bind address for the API server (default: ":9090")

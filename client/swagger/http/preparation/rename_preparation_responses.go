@@ -6,6 +6,7 @@ package preparation
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *RenamePreparationOK) Code() int {
 }
 
 func (o *RenamePreparationOK) Error() string {
-	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationOK %s", 200, payload)
 }
 
 func (o *RenamePreparationOK) String() string {
-	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationOK %s", 200, payload)
 }
 
 func (o *RenamePreparationOK) GetPayload() *models.ModelPreparation {
@@ -159,11 +162,13 @@ func (o *RenamePreparationBadRequest) Code() int {
 }
 
 func (o *RenamePreparationBadRequest) Error() string {
-	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationBadRequest %s", 400, payload)
 }
 
 func (o *RenamePreparationBadRequest) String() string {
-	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationBadRequest %s", 400, payload)
 }
 
 func (o *RenamePreparationBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *RenamePreparationInternalServerError) Code() int {
 }
 
 func (o *RenamePreparationInternalServerError) Error() string {
-	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationInternalServerError %s", 500, payload)
 }
 
 func (o *RenamePreparationInternalServerError) String() string {
-	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /preparation/{name}/rename][%d] renamePreparationInternalServerError %s", 500, payload)
 }
 
 func (o *RenamePreparationInternalServerError) GetPayload() *models.APIHTTPError {

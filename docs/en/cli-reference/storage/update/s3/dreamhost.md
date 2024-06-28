@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 dreamhost - Dreamhost DreamObjects
 
 USAGE:
-   singularity storage update s3 dreamhost [command options] <name|id>
+   singularity storage update s3 dreamhost [command options]<name|id>
 
 DESCRIPTION:
    --env-auth

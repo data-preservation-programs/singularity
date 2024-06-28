@@ -6,7 +6,7 @@ NAME:
    singularity storage update http - HTTP
 
 USAGE:
-   singularity storage update http [command options] <name|id>
+   singularity storage update http [command options]<name|id>
 
 DESCRIPTION:
    --url

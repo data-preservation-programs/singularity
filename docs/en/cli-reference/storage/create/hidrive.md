@@ -6,7 +6,7 @@ NAME:
    singularity storage create hidrive - HiDrive
 
 USAGE:
-   singularity storage create hidrive [command options] [arguments...]
+   singularity storage create hidrive [command options]
 
 DESCRIPTION:
    --client-id

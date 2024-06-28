@@ -6,6 +6,7 @@ package deal_schedule
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -90,11 +91,11 @@ func (o *RemoveScheduleNoContent) Code() int {
 }
 
 func (o *RemoveScheduleNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleNoContent ", 204)
+	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleNoContent", 204)
 }
 
 func (o *RemoveScheduleNoContent) String() string {
-	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleNoContent ", 204)
+	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleNoContent", 204)
 }
 
 func (o *RemoveScheduleNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -147,11 +148,13 @@ func (o *RemoveScheduleBadRequest) Code() int {
 }
 
 func (o *RemoveScheduleBadRequest) Error() string {
-	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleBadRequest %s", 400, payload)
 }
 
 func (o *RemoveScheduleBadRequest) String() string {
-	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleBadRequest %s", 400, payload)
 }
 
 func (o *RemoveScheduleBadRequest) GetPayload() *models.APIHTTPError {
@@ -215,11 +218,13 @@ func (o *RemoveScheduleInternalServerError) Code() int {
 }
 
 func (o *RemoveScheduleInternalServerError) Error() string {
-	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleInternalServerError %s", 500, payload)
 }
 
 func (o *RemoveScheduleInternalServerError) String() string {
-	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /schedule/{id}][%d] removeScheduleInternalServerError %s", 500, payload)
 }
 
 func (o *RemoveScheduleInternalServerError) GetPayload() *models.APIHTTPError {

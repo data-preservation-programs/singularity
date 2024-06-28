@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 tencentcos - Tencent Cloud Object Storage (COS)
 
 USAGE:
-   singularity storage create s3 tencentcos [command options] [arguments...]
+   singularity storage create s3 tencentcos [command options]
 
 DESCRIPTION:
    --env-auth

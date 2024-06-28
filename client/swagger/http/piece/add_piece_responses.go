@@ -6,6 +6,7 @@ package piece
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *AddPieceOK) Code() int {
 }
 
 func (o *AddPieceOK) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceOK %s", 200, payload)
 }
 
 func (o *AddPieceOK) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceOK %s", 200, payload)
 }
 
 func (o *AddPieceOK) GetPayload() *models.ModelCar {
@@ -159,11 +162,13 @@ func (o *AddPieceBadRequest) Code() int {
 }
 
 func (o *AddPieceBadRequest) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceBadRequest %s", 400, payload)
 }
 
 func (o *AddPieceBadRequest) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceBadRequest %s", 400, payload)
 }
 
 func (o *AddPieceBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *AddPieceInternalServerError) Code() int {
 }
 
 func (o *AddPieceInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceInternalServerError %s", 500, payload)
 }
 
 func (o *AddPieceInternalServerError) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/piece][%d] addPieceInternalServerError %s", 500, payload)
 }
 
 func (o *AddPieceInternalServerError) GetPayload() *models.APIHTTPError {

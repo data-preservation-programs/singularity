@@ -6,7 +6,7 @@ NAME:
    singularity storage update - Update the configuration of an existing storage connection
 
 USAGE:
-   singularity storage update command [command options] [arguments...]
+   singularity storage update command [command options] 
 
 COMMANDS:
    acd              Amazon Drive

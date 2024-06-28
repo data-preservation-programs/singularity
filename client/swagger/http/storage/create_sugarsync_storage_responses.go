@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateSugarsyncStorageOK) Code() int {
 }
 
 func (o *CreateSugarsyncStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageOK %s", 200, payload)
 }
 
 func (o *CreateSugarsyncStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageOK %s", 200, payload)
 }
 
 func (o *CreateSugarsyncStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateSugarsyncStorageBadRequest) Code() int {
 }
 
 func (o *CreateSugarsyncStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSugarsyncStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSugarsyncStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateSugarsyncStorageInternalServerError) Code() int {
 }
 
 func (o *CreateSugarsyncStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSugarsyncStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sugarsync][%d] createSugarsyncStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSugarsyncStorageInternalServerError) GetPayload() *models.APIHTTPError {

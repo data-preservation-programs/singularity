@@ -6,6 +6,7 @@ package preparation
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *AddOutputStorageOK) Code() int {
 }
 
 func (o *AddOutputStorageOK) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageOK %s", 200, payload)
 }
 
 func (o *AddOutputStorageOK) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageOK %s", 200, payload)
 }
 
 func (o *AddOutputStorageOK) GetPayload() *models.ModelPreparation {
@@ -159,11 +162,13 @@ func (o *AddOutputStorageBadRequest) Code() int {
 }
 
 func (o *AddOutputStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageBadRequest %s", 400, payload)
 }
 
 func (o *AddOutputStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageBadRequest %s", 400, payload)
 }
 
 func (o *AddOutputStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *AddOutputStorageInternalServerError) Code() int {
 }
 
 func (o *AddOutputStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageInternalServerError %s", 500, payload)
 }
 
 func (o *AddOutputStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/output/{name}][%d] addOutputStorageInternalServerError %s", 500, payload)
 }
 
 func (o *AddOutputStorageInternalServerError) GetPayload() *models.APIHTTPError {

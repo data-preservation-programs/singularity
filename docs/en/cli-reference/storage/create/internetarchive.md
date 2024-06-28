@@ -6,7 +6,7 @@ NAME:
    singularity storage create internetarchive - Internet Archive
 
 USAGE:
-   singularity storage create internetarchive [command options] [arguments...]
+   singularity storage create internetarchive [command options]
 
 DESCRIPTION:
    --access-key-id

@@ -6,7 +6,7 @@ NAME:
    singularity storage create mega - Mega
 
 USAGE:
-   singularity storage create mega [command options] [arguments...]
+   singularity storage create mega [command options]
 
 DESCRIPTION:
    --user

@@ -10,7 +10,7 @@ NAME:
                                                         https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm
 
 USAGE:
-   singularity storage update oos user_principal_auth [command options] <name|id>
+   singularity storage update oos user_principal_auth [command options]<name|id>
 
 DESCRIPTION:
    --namespace

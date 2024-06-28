@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3HuaweiOBSStorageOK) Code() int {
 }
 
 func (o *CreateS3HuaweiOBSStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3HuaweiOBSStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3HuaweiOBSStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3HuaweiOBSStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3HuaweiOBSStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3HuaweiOBSStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3HuaweiOBSStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3HuaweiOBSStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3HuaweiOBSStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3HuaweiOBSStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/huaweiobs][%d] createS3HuaweiOBSStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3HuaweiOBSStorageInternalServerError) GetPayload() *models.APIHTTPError {

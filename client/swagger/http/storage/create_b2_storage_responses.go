@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateB2StorageOK) Code() int {
 }
 
 func (o *CreateB2StorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageOK %s", 200, payload)
 }
 
 func (o *CreateB2StorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageOK %s", 200, payload)
 }
 
 func (o *CreateB2StorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateB2StorageBadRequest) Code() int {
 }
 
 func (o *CreateB2StorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateB2StorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateB2StorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateB2StorageInternalServerError) Code() int {
 }
 
 func (o *CreateB2StorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateB2StorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/b2][%d] createB2StorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateB2StorageInternalServerError) GetPayload() *models.APIHTTPError {

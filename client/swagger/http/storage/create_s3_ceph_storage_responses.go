@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3CephStorageOK) Code() int {
 }
 
 func (o *CreateS3CephStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3CephStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3CephStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3CephStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3CephStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3CephStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3CephStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3CephStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3CephStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3CephStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ceph][%d] createS3CephStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3CephStorageInternalServerError) GetPayload() *models.APIHTTPError {

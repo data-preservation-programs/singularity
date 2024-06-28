@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3ArvanCloudStorageOK) Code() int {
 }
 
 func (o *CreateS3ArvanCloudStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3ArvanCloudStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3ArvanCloudStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3ArvanCloudStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3ArvanCloudStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3ArvanCloudStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3ArvanCloudStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3ArvanCloudStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3ArvanCloudStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3ArvanCloudStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/arvancloud][%d] createS3ArvanCloudStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3ArvanCloudStorageInternalServerError) GetPayload() *models.APIHTTPError {

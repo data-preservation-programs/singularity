@@ -6,7 +6,7 @@ NAME:
    singularity prep create - Create a new preparation
 
 USAGE:
-   singularity prep create [command options] [arguments...]
+   singularity prep create [command options]
 
 CATEGORY:
    Preparation Management

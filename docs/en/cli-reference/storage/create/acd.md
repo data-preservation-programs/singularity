@@ -6,7 +6,7 @@ NAME:
    singularity storage create acd - Amazon Drive
 
 USAGE:
-   singularity storage create acd [command options] [arguments...]
+   singularity storage create acd [command options]
 
 DESCRIPTION:
    --client-id

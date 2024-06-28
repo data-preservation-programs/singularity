@@ -6,7 +6,7 @@ NAME:
    singularity admin migrate-dataset - Migrate dataset from old singularity mongodb
 
 USAGE:
-   singularity admin migrate-dataset [command options] [arguments...]
+   singularity admin migrate-dataset [command options]
 
 DESCRIPTION:
    Migrate datasets from singularity V1 to V2. Those steps include

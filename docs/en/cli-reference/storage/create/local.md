@@ -6,7 +6,7 @@ NAME:
    singularity storage create local - Local Disk
 
 USAGE:
-   singularity storage create local [command options] [arguments...]
+   singularity storage create local [command options]
 
 DESCRIPTION:
    --nounc

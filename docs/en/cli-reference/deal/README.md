@@ -6,7 +6,7 @@ NAME:
    singularity deal - Replication / Deal making management
 
 USAGE:
-   singularity deal command [command options] [arguments...]
+   singularity deal command [command options] 
 
 COMMANDS:
    schedule     Schedule deals

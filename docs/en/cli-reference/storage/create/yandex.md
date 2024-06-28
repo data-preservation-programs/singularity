@@ -6,7 +6,7 @@ NAME:
    singularity storage create yandex - Yandex Disk
 
 USAGE:
-   singularity storage create yandex [command options] [arguments...]
+   singularity storage create yandex [command options]
 
 DESCRIPTION:
    --client-id

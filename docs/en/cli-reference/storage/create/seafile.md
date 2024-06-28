@@ -6,7 +6,7 @@ NAME:
    singularity storage create seafile - seafile
 
 USAGE:
-   singularity storage create seafile [command options] [arguments...]
+   singularity storage create seafile [command options]
 
 DESCRIPTION:
    --url

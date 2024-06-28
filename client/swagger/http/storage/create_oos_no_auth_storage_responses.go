@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateOosNoAuthStorageOK) Code() int {
 }
 
 func (o *CreateOosNoAuthStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageOK %s", 200, payload)
 }
 
 func (o *CreateOosNoAuthStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageOK %s", 200, payload)
 }
 
 func (o *CreateOosNoAuthStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateOosNoAuthStorageBadRequest) Code() int {
 }
 
 func (o *CreateOosNoAuthStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateOosNoAuthStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateOosNoAuthStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateOosNoAuthStorageInternalServerError) Code() int {
 }
 
 func (o *CreateOosNoAuthStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateOosNoAuthStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/no_auth][%d] createOosNoAuthStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateOosNoAuthStorageInternalServerError) GetPayload() *models.APIHTTPError {

@@ -6,7 +6,7 @@ NAME:
    singularity storage create koofr other - Any other Koofr API compatible storage service
 
 USAGE:
-   singularity storage create koofr other [command options] [arguments...]
+   singularity storage create koofr other [command options]
 
 DESCRIPTION:
    --endpoint

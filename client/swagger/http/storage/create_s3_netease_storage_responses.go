@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3NeteaseStorageOK) Code() int {
 }
 
 func (o *CreateS3NeteaseStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3NeteaseStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3NeteaseStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3NeteaseStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3NeteaseStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3NeteaseStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3NeteaseStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3NeteaseStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3NeteaseStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3NeteaseStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/netease][%d] createS3NeteaseStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3NeteaseStorageInternalServerError) GetPayload() *models.APIHTTPError {

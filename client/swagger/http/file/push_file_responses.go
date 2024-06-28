@@ -6,6 +6,7 @@ package file
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *PushFileOK) Code() int {
 }
 
 func (o *PushFileOK) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileOK %s", 200, payload)
 }
 
 func (o *PushFileOK) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileOK %s", 200, payload)
 }
 
 func (o *PushFileOK) GetPayload() *models.ModelFile {
@@ -159,11 +162,13 @@ func (o *PushFileBadRequest) Code() int {
 }
 
 func (o *PushFileBadRequest) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileBadRequest %s", 400, payload)
 }
 
 func (o *PushFileBadRequest) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileBadRequest %s", 400, payload)
 }
 
 func (o *PushFileBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *PushFileInternalServerError) Code() int {
 }
 
 func (o *PushFileInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileInternalServerError %s", 500, payload)
 }
 
 func (o *PushFileInternalServerError) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/file][%d] pushFileInternalServerError %s", 500, payload)
 }
 
 func (o *PushFileInternalServerError) GetPayload() *models.APIHTTPError {

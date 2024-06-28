@@ -6,6 +6,7 @@ package preparation
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -90,11 +91,11 @@ func (o *RemovePreparationNoContent) Code() int {
 }
 
 func (o *RemovePreparationNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationNoContent ", 204)
+	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationNoContent", 204)
 }
 
 func (o *RemovePreparationNoContent) String() string {
-	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationNoContent ", 204)
+	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationNoContent", 204)
 }
 
 func (o *RemovePreparationNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -147,11 +148,13 @@ func (o *RemovePreparationBadRequest) Code() int {
 }
 
 func (o *RemovePreparationBadRequest) Error() string {
-	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationBadRequest %s", 400, payload)
 }
 
 func (o *RemovePreparationBadRequest) String() string {
-	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationBadRequest %s", 400, payload)
 }
 
 func (o *RemovePreparationBadRequest) GetPayload() *models.APIHTTPError {
@@ -215,11 +218,13 @@ func (o *RemovePreparationInternalServerError) Code() int {
 }
 
 func (o *RemovePreparationInternalServerError) Error() string {
-	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationInternalServerError %s", 500, payload)
 }
 
 func (o *RemovePreparationInternalServerError) String() string {
-	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /preparation/{name}][%d] removePreparationInternalServerError %s", 500, payload)
 }
 
 func (o *RemovePreparationInternalServerError) GetPayload() *models.APIHTTPError {

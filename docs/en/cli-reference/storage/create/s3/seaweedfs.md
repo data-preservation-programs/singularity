@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 seaweedfs - SeaweedFS S3
 
 USAGE:
-   singularity storage create s3 seaweedfs [command options] [arguments...]
+   singularity storage create s3 seaweedfs [command options]
 
 DESCRIPTION:
    --env-auth

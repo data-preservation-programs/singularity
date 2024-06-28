@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateInternetarchiveStorageOK) Code() int {
 }
 
 func (o *CreateInternetarchiveStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageOK %s", 200, payload)
 }
 
 func (o *CreateInternetarchiveStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageOK %s", 200, payload)
 }
 
 func (o *CreateInternetarchiveStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateInternetarchiveStorageBadRequest) Code() int {
 }
 
 func (o *CreateInternetarchiveStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateInternetarchiveStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateInternetarchiveStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateInternetarchiveStorageInternalServerError) Code() int {
 }
 
 func (o *CreateInternetarchiveStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateInternetarchiveStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/internetarchive][%d] createInternetarchiveStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateInternetarchiveStorageInternalServerError) GetPayload() *models.APIHTTPError {

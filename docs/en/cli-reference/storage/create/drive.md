@@ -6,7 +6,7 @@ NAME:
    singularity storage create drive - Google Drive
 
 USAGE:
-   singularity storage create drive [command options] [arguments...]
+   singularity storage create drive [command options]
 
 DESCRIPTION:
    --client-id

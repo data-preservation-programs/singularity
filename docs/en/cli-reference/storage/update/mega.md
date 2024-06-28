@@ -6,7 +6,7 @@ NAME:
    singularity storage update mega - Mega
 
 USAGE:
-   singularity storage update mega [command options] <name|id>
+   singularity storage update mega [command options]<name|id>
 
 DESCRIPTION:
    --user
