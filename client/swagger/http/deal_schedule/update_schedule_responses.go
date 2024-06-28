@@ -6,6 +6,7 @@ package deal_schedule
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *UpdateScheduleOK) Code() int {
 }
 
 func (o *UpdateScheduleOK) Error() string {
-	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleOK %s", 200, payload)
 }
 
 func (o *UpdateScheduleOK) String() string {
-	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleOK %s", 200, payload)
 }
 
 func (o *UpdateScheduleOK) GetPayload() *models.ModelSchedule {
@@ -159,11 +162,13 @@ func (o *UpdateScheduleBadRequest) Code() int {
 }
 
 func (o *UpdateScheduleBadRequest) Error() string {
-	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleBadRequest %s", 400, payload)
 }
 
 func (o *UpdateScheduleBadRequest) String() string {
-	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleBadRequest %s", 400, payload)
 }
 
 func (o *UpdateScheduleBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *UpdateScheduleInternalServerError) Code() int {
 }
 
 func (o *UpdateScheduleInternalServerError) Error() string {
-	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleInternalServerError %s", 500, payload)
 }
 
 func (o *UpdateScheduleInternalServerError) String() string {
-	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /schedule/{id}][%d] updateScheduleInternalServerError %s", 500, payload)
 }
 
 func (o *UpdateScheduleInternalServerError) GetPayload() *models.APIHTTPError {

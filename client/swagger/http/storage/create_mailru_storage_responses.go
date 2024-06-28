@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateMailruStorageOK) Code() int {
 }
 
 func (o *CreateMailruStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageOK %s", 200, payload)
 }
 
 func (o *CreateMailruStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageOK %s", 200, payload)
 }
 
 func (o *CreateMailruStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateMailruStorageBadRequest) Code() int {
 }
 
 func (o *CreateMailruStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateMailruStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateMailruStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateMailruStorageInternalServerError) Code() int {
 }
 
 func (o *CreateMailruStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateMailruStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/mailru][%d] createMailruStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateMailruStorageInternalServerError) GetPayload() *models.APIHTTPError {

@@ -6,7 +6,7 @@ NAME:
    singularity storage create filefabric - Enterprise File Fabric
 
 USAGE:
-   singularity storage create filefabric [command options] [arguments...]
+   singularity storage create filefabric [command options]
 
 DESCRIPTION:
    --url

@@ -6,7 +6,7 @@ NAME:
    singularity storage create sugarsync - Sugarsync
 
 USAGE:
-   singularity storage create sugarsync [command options] [arguments...]
+   singularity storage create sugarsync [command options]
 
 DESCRIPTION:
    --app-id

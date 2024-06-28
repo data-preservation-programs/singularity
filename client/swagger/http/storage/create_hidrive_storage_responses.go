@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateHidriveStorageOK) Code() int {
 }
 
 func (o *CreateHidriveStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageOK %s", 200, payload)
 }
 
 func (o *CreateHidriveStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageOK %s", 200, payload)
 }
 
 func (o *CreateHidriveStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateHidriveStorageBadRequest) Code() int {
 }
 
 func (o *CreateHidriveStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateHidriveStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateHidriveStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateHidriveStorageInternalServerError) Code() int {
 }
 
 func (o *CreateHidriveStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateHidriveStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/hidrive][%d] createHidriveStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateHidriveStorageInternalServerError) GetPayload() *models.APIHTTPError {

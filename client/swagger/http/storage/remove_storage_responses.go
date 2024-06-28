@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -90,11 +91,11 @@ func (o *RemoveStorageNoContent) Code() int {
 }
 
 func (o *RemoveStorageNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageNoContent ", 204)
+	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageNoContent", 204)
 }
 
 func (o *RemoveStorageNoContent) String() string {
-	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageNoContent ", 204)
+	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageNoContent", 204)
 }
 
 func (o *RemoveStorageNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -147,11 +148,13 @@ func (o *RemoveStorageBadRequest) Code() int {
 }
 
 func (o *RemoveStorageBadRequest) Error() string {
-	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageBadRequest %s", 400, payload)
 }
 
 func (o *RemoveStorageBadRequest) String() string {
-	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageBadRequest %s", 400, payload)
 }
 
 func (o *RemoveStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -215,11 +218,13 @@ func (o *RemoveStorageInternalServerError) Code() int {
 }
 
 func (o *RemoveStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageInternalServerError %s", 500, payload)
 }
 
 func (o *RemoveStorageInternalServerError) String() string {
-	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /storage/{name}][%d] removeStorageInternalServerError %s", 500, payload)
 }
 
 func (o *RemoveStorageInternalServerError) GetPayload() *models.APIHTTPError {

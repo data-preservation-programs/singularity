@@ -6,7 +6,7 @@ NAME:
    singularity run content-provider - Start a content provider that serves retrieval requests
 
 USAGE:
-   singularity run content-provider [command options] [arguments...]
+   singularity run content-provider [command options]
 
 OPTIONS:
    --help, -h  show help

@@ -6,7 +6,7 @@ NAME:
    singularity prep list-pieces - List all generated pieces for a preparation
 
 USAGE:
-   singularity prep list-pieces [command options] <preparation id|name>
+   singularity prep list-pieces [command options]<preparation id|name>
 
 CATEGORY:
    Piece Management

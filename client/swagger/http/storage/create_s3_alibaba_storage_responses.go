@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3AlibabaStorageOK) Code() int {
 }
 
 func (o *CreateS3AlibabaStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3AlibabaStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3AlibabaStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3AlibabaStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3AlibabaStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3AlibabaStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3AlibabaStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3AlibabaStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3AlibabaStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3AlibabaStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/alibaba][%d] createS3AlibabaStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3AlibabaStorageInternalServerError) GetPayload() *models.APIHTTPError {

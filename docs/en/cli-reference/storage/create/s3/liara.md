@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 liara - Liara Object Storage
 
 USAGE:
-   singularity storage create s3 liara [command options] [arguments...]
+   singularity storage create s3 liara [command options]
 
 DESCRIPTION:
    --env-auth

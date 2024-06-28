@@ -6,7 +6,7 @@ NAME:
    singularity storage list - List all storage system connections
 
 USAGE:
-   singularity storage list [command options] [arguments...]
+   singularity storage list [command options]
 
 OPTIONS:
    --help, -h  show help

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3DigitalOceanStorageOK) Code() int {
 }
 
 func (o *CreateS3DigitalOceanStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3DigitalOceanStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3DigitalOceanStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3DigitalOceanStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3DigitalOceanStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3DigitalOceanStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3DigitalOceanStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3DigitalOceanStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3DigitalOceanStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3DigitalOceanStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/digitalocean][%d] createS3DigitalOceanStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3DigitalOceanStorageInternalServerError) GetPayload() *models.APIHTTPError {

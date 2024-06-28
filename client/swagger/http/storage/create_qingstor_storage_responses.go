@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateQingstorStorageOK) Code() int {
 }
 
 func (o *CreateQingstorStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageOK %s", 200, payload)
 }
 
 func (o *CreateQingstorStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageOK %s", 200, payload)
 }
 
 func (o *CreateQingstorStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateQingstorStorageBadRequest) Code() int {
 }
 
 func (o *CreateQingstorStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateQingstorStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateQingstorStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateQingstorStorageInternalServerError) Code() int {
 }
 
 func (o *CreateQingstorStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateQingstorStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/qingstor][%d] createQingstorStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateQingstorStorageInternalServerError) GetPayload() *models.APIHTTPError {

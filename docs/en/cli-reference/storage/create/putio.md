@@ -6,7 +6,7 @@ NAME:
    singularity storage create putio - Put.io
 
 USAGE:
-   singularity storage create putio [command options] [arguments...]
+   singularity storage create putio [command options]
 
 DESCRIPTION:
    --encoding

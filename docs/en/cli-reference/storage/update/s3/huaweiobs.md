@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 huaweiobs - Huawei Object Storage Service
 
 USAGE:
-   singularity storage update s3 huaweiobs [command options] <name|id>
+   singularity storage update s3 huaweiobs [command options]<name|id>
 
 DESCRIPTION:
    --env-auth

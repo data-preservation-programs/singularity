@@ -6,7 +6,7 @@ NAME:
    singularity storage create uptobox - Uptobox
 
 USAGE:
-   singularity storage create uptobox [command options] [arguments...]
+   singularity storage create uptobox [command options]
 
 DESCRIPTION:
    --access-token

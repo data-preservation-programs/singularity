@@ -6,7 +6,7 @@ NAME:
    singularity prep rename - Rename a preparation
 
 USAGE:
-   singularity prep rename [command options] <name|id> <new_name>
+   singularity prep rename [command options]<name|id> <new_name>
 
 OPTIONS:
    --help, -h  show help

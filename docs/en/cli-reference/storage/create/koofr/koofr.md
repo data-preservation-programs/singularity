@@ -6,7 +6,7 @@ NAME:
    singularity storage create koofr koofr - Koofr, https://app.koofr.net/
 
 USAGE:
-   singularity storage create koofr koofr [command options] [arguments...]
+   singularity storage create koofr koofr [command options]
 
 DESCRIPTION:
    --mountid

@@ -6,7 +6,7 @@ NAME:
    singularity storage create oos env_auth - automatically pickup the credentials from runtime(env), first one to provide auth wins
 
 USAGE:
-   singularity storage create oos env_auth [command options] [arguments...]
+   singularity storage create oos env_auth [command options]
 
 DESCRIPTION:
    --namespace

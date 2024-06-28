@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateZohoStorageOK) Code() int {
 }
 
 func (o *CreateZohoStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageOK %s", 200, payload)
 }
 
 func (o *CreateZohoStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageOK %s", 200, payload)
 }
 
 func (o *CreateZohoStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateZohoStorageBadRequest) Code() int {
 }
 
 func (o *CreateZohoStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateZohoStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateZohoStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateZohoStorageInternalServerError) Code() int {
 }
 
 func (o *CreateZohoStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateZohoStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/zoho][%d] createZohoStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateZohoStorageInternalServerError) GetPayload() *models.APIHTTPError {

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateOosUserPrincipalAuthStorageOK) Code() int {
 }
 
 func (o *CreateOosUserPrincipalAuthStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageOK %s", 200, payload)
 }
 
 func (o *CreateOosUserPrincipalAuthStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageOK %s", 200, payload)
 }
 
 func (o *CreateOosUserPrincipalAuthStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateOosUserPrincipalAuthStorageBadRequest) Code() int {
 }
 
 func (o *CreateOosUserPrincipalAuthStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateOosUserPrincipalAuthStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateOosUserPrincipalAuthStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateOosUserPrincipalAuthStorageInternalServerError) Code() int {
 }
 
 func (o *CreateOosUserPrincipalAuthStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateOosUserPrincipalAuthStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/oos/user_principal_auth][%d] createOosUserPrincipalAuthStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateOosUserPrincipalAuthStorageInternalServerError) GetPayload() *models.APIHTTPError {

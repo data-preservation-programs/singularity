@@ -6,7 +6,7 @@ NAME:
    singularity storage create http - HTTP
 
 USAGE:
-   singularity storage create http [command options] [arguments...]
+   singularity storage create http [command options]
 
 DESCRIPTION:
    --url

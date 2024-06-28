@@ -6,7 +6,7 @@ NAME:
    singularity storage create dropbox - Dropbox
 
 USAGE:
-   singularity storage create dropbox [command options] [arguments...]
+   singularity storage create dropbox [command options]
 
 DESCRIPTION:
    --client-id

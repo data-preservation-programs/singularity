@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateNetstorageStorageOK) Code() int {
 }
 
 func (o *CreateNetstorageStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageOK %s", 200, payload)
 }
 
 func (o *CreateNetstorageStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageOK %s", 200, payload)
 }
 
 func (o *CreateNetstorageStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateNetstorageStorageBadRequest) Code() int {
 }
 
 func (o *CreateNetstorageStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateNetstorageStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateNetstorageStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateNetstorageStorageInternalServerError) Code() int {
 }
 
 func (o *CreateNetstorageStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateNetstorageStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/netstorage][%d] createNetstorageStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateNetstorageStorageInternalServerError) GetPayload() *models.APIHTTPError {

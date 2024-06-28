@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3IBMCOSStorageOK) Code() int {
 }
 
 func (o *CreateS3IBMCOSStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3IBMCOSStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3IBMCOSStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3IBMCOSStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3IBMCOSStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3IBMCOSStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3IBMCOSStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3IBMCOSStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3IBMCOSStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3IBMCOSStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ibmcos][%d] createS3IBMCOSStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3IBMCOSStorageInternalServerError) GetPayload() *models.APIHTTPError {

@@ -6,7 +6,7 @@ NAME:
    singularity deal schedule create - Create a schedule to send out deals to a storage provider
 
 USAGE:
-   singularity deal schedule create [command options] [arguments...]
+   singularity deal schedule create [command options]
 
 DESCRIPTION:
    CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field

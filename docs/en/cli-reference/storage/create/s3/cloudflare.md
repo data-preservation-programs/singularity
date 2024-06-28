@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 cloudflare - Cloudflare R2 Storage
 
 USAGE:
-   singularity storage create s3 cloudflare [command options] [arguments...]
+   singularity storage create s3 cloudflare [command options]
 
 DESCRIPTION:
    --env-auth

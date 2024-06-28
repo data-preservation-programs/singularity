@@ -6,7 +6,7 @@ NAME:
    singularity storage update seafile - seafile
 
 USAGE:
-   singularity storage update seafile [command options] <name|id>
+   singularity storage update seafile [command options]<name|id>
 
 DESCRIPTION:
    --url

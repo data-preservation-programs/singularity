@@ -6,6 +6,7 @@ package deal
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *ListDealsOK) Code() int {
 }
 
 func (o *ListDealsOK) Error() string {
-	return fmt.Sprintf("[POST /deal][%d] listDealsOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /deal][%d] listDealsOK %s", 200, payload)
 }
 
 func (o *ListDealsOK) String() string {
-	return fmt.Sprintf("[POST /deal][%d] listDealsOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /deal][%d] listDealsOK %s", 200, payload)
 }
 
 func (o *ListDealsOK) GetPayload() []*models.ModelDeal {
@@ -157,11 +160,13 @@ func (o *ListDealsBadRequest) Code() int {
 }
 
 func (o *ListDealsBadRequest) Error() string {
-	return fmt.Sprintf("[POST /deal][%d] listDealsBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /deal][%d] listDealsBadRequest %s", 400, payload)
 }
 
 func (o *ListDealsBadRequest) String() string {
-	return fmt.Sprintf("[POST /deal][%d] listDealsBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /deal][%d] listDealsBadRequest %s", 400, payload)
 }
 
 func (o *ListDealsBadRequest) GetPayload() *models.APIHTTPError {
@@ -225,11 +230,13 @@ func (o *ListDealsInternalServerError) Code() int {
 }
 
 func (o *ListDealsInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /deal][%d] listDealsInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /deal][%d] listDealsInternalServerError %s", 500, payload)
 }
 
 func (o *ListDealsInternalServerError) String() string {
-	return fmt.Sprintf("[POST /deal][%d] listDealsInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /deal][%d] listDealsInternalServerError %s", 500, payload)
 }
 
 func (o *ListDealsInternalServerError) GetPayload() *models.APIHTTPError {

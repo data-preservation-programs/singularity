@@ -6,6 +6,7 @@ package job
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *StartPackOK) Code() int {
 }
 
 func (o *StartPackOK) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackOK %s", 200, payload)
 }
 
 func (o *StartPackOK) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackOK %s", 200, payload)
 }
 
 func (o *StartPackOK) GetPayload() []*models.ModelJob {
@@ -157,11 +160,13 @@ func (o *StartPackBadRequest) Code() int {
 }
 
 func (o *StartPackBadRequest) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackBadRequest %s", 400, payload)
 }
 
 func (o *StartPackBadRequest) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackBadRequest %s", 400, payload)
 }
 
 func (o *StartPackBadRequest) GetPayload() *models.APIHTTPError {
@@ -225,11 +230,13 @@ func (o *StartPackInternalServerError) Code() int {
 }
 
 func (o *StartPackInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackInternalServerError %s", 500, payload)
 }
 
 func (o *StartPackInternalServerError) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackInternalServerError %s", 500, payload)
 }
 
 func (o *StartPackInternalServerError) GetPayload() *models.APIHTTPError {

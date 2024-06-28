@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 stackpath - StackPath Object Storage
 
 USAGE:
-   singularity storage update s3 stackpath [command options] <name|id>
+   singularity storage update s3 stackpath [command options]<name|id>
 
 DESCRIPTION:
    --env-auth

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateSeafileStorageOK) Code() int {
 }
 
 func (o *CreateSeafileStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageOK %s", 200, payload)
 }
 
 func (o *CreateSeafileStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageOK %s", 200, payload)
 }
 
 func (o *CreateSeafileStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateSeafileStorageBadRequest) Code() int {
 }
 
 func (o *CreateSeafileStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSeafileStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSeafileStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateSeafileStorageInternalServerError) Code() int {
 }
 
 func (o *CreateSeafileStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSeafileStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/seafile][%d] createSeafileStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSeafileStorageInternalServerError) GetPayload() *models.APIHTTPError {
