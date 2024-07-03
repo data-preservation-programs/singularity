@@ -6,7 +6,7 @@ NAME:
    singularity storage update oos env_auth - automatically pickup the credentials from runtime(env), first one to provide auth wins
 
 USAGE:
-   singularity storage update oos env_auth [command options] <name|id>
+   singularity storage update oos env_auth [command options]<name|id>
 
 DESCRIPTION:
    --namespace

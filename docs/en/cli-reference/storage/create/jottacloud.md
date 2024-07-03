@@ -6,7 +6,7 @@ NAME:
    singularity storage create jottacloud - Jottacloud
 
 USAGE:
-   singularity storage create jottacloud [command options] [arguments...]
+   singularity storage create jottacloud [command options]
 
 DESCRIPTION:
    --md5-memory-limit

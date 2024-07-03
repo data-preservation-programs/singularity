@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3LiaraStorageOK) Code() int {
 }
 
 func (o *CreateS3LiaraStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3LiaraStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3LiaraStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3LiaraStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3LiaraStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3LiaraStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3LiaraStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3LiaraStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3LiaraStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3LiaraStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/liara][%d] createS3LiaraStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3LiaraStorageInternalServerError) GetPayload() *models.APIHTTPError {

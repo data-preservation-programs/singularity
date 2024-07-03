@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 lyvecloud - Seagate Lyve Cloud
 
 USAGE:
-   singularity storage update s3 lyvecloud [command options] <name|id>
+   singularity storage update s3 lyvecloud [command options]<name|id>
 
 DESCRIPTION:
    --env-auth

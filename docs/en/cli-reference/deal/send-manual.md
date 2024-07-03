@@ -6,7 +6,7 @@ NAME:
    singularity deal send-manual - Send a manual deal proposal to boost or legacy market
 
 USAGE:
-   singularity deal send-manual [command options] [arguments...]
+   singularity deal send-manual [command options]
 
 DESCRIPTION:
    Send a manual deal proposal to boost or legacy market

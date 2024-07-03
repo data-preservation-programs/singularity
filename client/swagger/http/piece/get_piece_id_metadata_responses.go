@@ -6,6 +6,7 @@ package piece
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -97,11 +98,13 @@ func (o *GetPieceIDMetadataOK) Code() int {
 }
 
 func (o *GetPieceIDMetadataOK) Error() string {
-	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataOK %s", 200, payload)
 }
 
 func (o *GetPieceIDMetadataOK) String() string {
-	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataOK %s", 200, payload)
 }
 
 func (o *GetPieceIDMetadataOK) GetPayload() models.StorePieceReader {
@@ -163,11 +166,13 @@ func (o *GetPieceIDMetadataBadRequest) Code() int {
 }
 
 func (o *GetPieceIDMetadataBadRequest) Error() string {
-	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataBadRequest %s", 400, payload)
 }
 
 func (o *GetPieceIDMetadataBadRequest) String() string {
-	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataBadRequest %s", 400, payload)
 }
 
 func (o *GetPieceIDMetadataBadRequest) GetPayload() string {
@@ -229,11 +234,13 @@ func (o *GetPieceIDMetadataNotFound) Code() int {
 }
 
 func (o *GetPieceIDMetadataNotFound) Error() string {
-	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataNotFound  %+v", 404, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataNotFound %s", 404, payload)
 }
 
 func (o *GetPieceIDMetadataNotFound) String() string {
-	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataNotFound  %+v", 404, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataNotFound %s", 404, payload)
 }
 
 func (o *GetPieceIDMetadataNotFound) GetPayload() string {
@@ -295,11 +302,13 @@ func (o *GetPieceIDMetadataInternalServerError) Code() int {
 }
 
 func (o *GetPieceIDMetadataInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataInternalServerError %s", 500, payload)
 }
 
 func (o *GetPieceIDMetadataInternalServerError) String() string {
-	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /piece/{id}/metadata][%d] getPieceIdMetadataInternalServerError %s", 500, payload)
 }
 
 func (o *GetPieceIDMetadataInternalServerError) GetPayload() string {

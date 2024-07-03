@@ -6,7 +6,7 @@ NAME:
    singularity storage create gcs - Google Cloud Storage (this is not Google Drive)
 
 USAGE:
-   singularity storage create gcs [command options] [arguments...]
+   singularity storage create gcs [command options]
 
 DESCRIPTION:
    --client-id

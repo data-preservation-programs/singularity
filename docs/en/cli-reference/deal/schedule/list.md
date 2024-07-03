@@ -6,7 +6,7 @@ NAME:
    singularity deal schedule list - List all deal making schedules
 
 USAGE:
-   singularity deal schedule list [command options] [arguments...]
+   singularity deal schedule list [command options]
 
 OPTIONS:
    --help, -h  show help

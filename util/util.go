@@ -88,9 +88,11 @@ func IsAllDigits(s string) bool {
 //
 //   - A 2D slice where each inner slice is of length 'chunkSize'. The last inner slice may be shorter if the number of keys in 'm' is not a multiple of 'chunkSize'.
 func ChunkMapKeys[T1 comparable, T2 any](m map[T1]T2, chunkSize int) [][]T1 {
-	keys := make([]T1, 0, len(m))
+	keys := make([]T1, len(m))
+	var i int
 	for key := range m {
-		keys = append(keys, key)
+		keys[i] = key
+		i++
 	}
 	return ChunkSlice(keys, chunkSize)
 }

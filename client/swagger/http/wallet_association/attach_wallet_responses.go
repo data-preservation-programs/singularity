@@ -6,6 +6,7 @@ package wallet_association
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *AttachWalletOK) Code() int {
 }
 
 func (o *AttachWalletOK) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletOK %s", 200, payload)
 }
 
 func (o *AttachWalletOK) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletOK %s", 200, payload)
 }
 
 func (o *AttachWalletOK) GetPayload() *models.ModelPreparation {
@@ -159,11 +162,13 @@ func (o *AttachWalletBadRequest) Code() int {
 }
 
 func (o *AttachWalletBadRequest) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletBadRequest %s", 400, payload)
 }
 
 func (o *AttachWalletBadRequest) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletBadRequest %s", 400, payload)
 }
 
 func (o *AttachWalletBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *AttachWalletInternalServerError) Code() int {
 }
 
 func (o *AttachWalletInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletInternalServerError %s", 500, payload)
 }
 
 func (o *AttachWalletInternalServerError) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/wallet/{wallet}][%d] attachWalletInternalServerError %s", 500, payload)
 }
 
 func (o *AttachWalletInternalServerError) GetPayload() *models.APIHTTPError {

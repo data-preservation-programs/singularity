@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 huaweiobs - Huawei Object Storage Service
 
 USAGE:
-   singularity storage create s3 huaweiobs [command options] [arguments...]
+   singularity storage create s3 huaweiobs [command options]
 
 DESCRIPTION:
    --env-auth

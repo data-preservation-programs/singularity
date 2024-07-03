@@ -6,7 +6,7 @@ NAME:
    singularity storage update sia - Sia Decentralized Cloud
 
 USAGE:
-   singularity storage update sia [command options] <name|id>
+   singularity storage update sia [command options]<name|id>
 
 DESCRIPTION:
    --api-url

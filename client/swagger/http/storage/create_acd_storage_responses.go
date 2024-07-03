@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateAcdStorageOK) Code() int {
 }
 
 func (o *CreateAcdStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageOK %s", 200, payload)
 }
 
 func (o *CreateAcdStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageOK %s", 200, payload)
 }
 
 func (o *CreateAcdStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateAcdStorageBadRequest) Code() int {
 }
 
 func (o *CreateAcdStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateAcdStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateAcdStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateAcdStorageInternalServerError) Code() int {
 }
 
 func (o *CreateAcdStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateAcdStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/acd][%d] createAcdStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateAcdStorageInternalServerError) GetPayload() *models.APIHTTPError {

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateStorjNewStorageOK) Code() int {
 }
 
 func (o *CreateStorjNewStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageOK %s", 200, payload)
 }
 
 func (o *CreateStorjNewStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageOK %s", 200, payload)
 }
 
 func (o *CreateStorjNewStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateStorjNewStorageBadRequest) Code() int {
 }
 
 func (o *CreateStorjNewStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateStorjNewStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateStorjNewStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateStorjNewStorageInternalServerError) Code() int {
 }
 
 func (o *CreateStorjNewStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateStorjNewStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/storj/new][%d] createStorjNewStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateStorjNewStorageInternalServerError) GetPayload() *models.APIHTTPError {

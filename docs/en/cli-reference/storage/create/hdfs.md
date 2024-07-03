@@ -6,7 +6,7 @@ NAME:
    singularity storage create hdfs - Hadoop distributed file system
 
 USAGE:
-   singularity storage create hdfs [command options] [arguments...]
+   singularity storage create hdfs [command options]
 
 DESCRIPTION:
    --namenode

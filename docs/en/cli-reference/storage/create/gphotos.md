@@ -6,7 +6,7 @@ NAME:
    singularity storage create gphotos - Google Photos
 
 USAGE:
-   singularity storage create gphotos [command options] [arguments...]
+   singularity storage create gphotos [command options]
 
 DESCRIPTION:
    --client-id

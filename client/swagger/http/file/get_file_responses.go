@@ -6,6 +6,7 @@ package file
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,11 +86,13 @@ func (o *GetFileOK) Code() int {
 }
 
 func (o *GetFileOK) Error() string {
-	return fmt.Sprintf("[GET /file/{id}][%d] getFileOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}][%d] getFileOK %s", 200, payload)
 }
 
 func (o *GetFileOK) String() string {
-	return fmt.Sprintf("[GET /file/{id}][%d] getFileOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}][%d] getFileOK %s", 200, payload)
 }
 
 func (o *GetFileOK) GetPayload() *models.ModelFile {
@@ -153,11 +156,13 @@ func (o *GetFileInternalServerError) Code() int {
 }
 
 func (o *GetFileInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /file/{id}][%d] getFileInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}][%d] getFileInternalServerError %s", 500, payload)
 }
 
 func (o *GetFileInternalServerError) String() string {
-	return fmt.Sprintf("[GET /file/{id}][%d] getFileInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /file/{id}][%d] getFileInternalServerError %s", 500, payload)
 }
 
 func (o *GetFileInternalServerError) GetPayload() *models.APIHTTPError {

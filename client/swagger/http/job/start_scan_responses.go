@@ -6,6 +6,7 @@ package job
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *StartScanOK) Code() int {
 }
 
 func (o *StartScanOK) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanOK %s", 200, payload)
 }
 
 func (o *StartScanOK) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanOK %s", 200, payload)
 }
 
 func (o *StartScanOK) GetPayload() *models.ModelJob {
@@ -159,11 +162,13 @@ func (o *StartScanBadRequest) Code() int {
 }
 
 func (o *StartScanBadRequest) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanBadRequest %s", 400, payload)
 }
 
 func (o *StartScanBadRequest) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanBadRequest %s", 400, payload)
 }
 
 func (o *StartScanBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *StartScanInternalServerError) Code() int {
 }
 
 func (o *StartScanInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanInternalServerError %s", 500, payload)
 }
 
 func (o *StartScanInternalServerError) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-scan][%d] startScanInternalServerError %s", 500, payload)
 }
 
 func (o *StartScanInternalServerError) GetPayload() *models.APIHTTPError {

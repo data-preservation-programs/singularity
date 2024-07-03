@@ -6,6 +6,7 @@ package deal_schedule
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *PauseScheduleOK) Code() int {
 }
 
 func (o *PauseScheduleOK) Error() string {
-	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleOK %s", 200, payload)
 }
 
 func (o *PauseScheduleOK) String() string {
-	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleOK %s", 200, payload)
 }
 
 func (o *PauseScheduleOK) GetPayload() *models.ModelSchedule {
@@ -159,11 +162,13 @@ func (o *PauseScheduleBadRequest) Code() int {
 }
 
 func (o *PauseScheduleBadRequest) Error() string {
-	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleBadRequest %s", 400, payload)
 }
 
 func (o *PauseScheduleBadRequest) String() string {
-	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleBadRequest %s", 400, payload)
 }
 
 func (o *PauseScheduleBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *PauseScheduleInternalServerError) Code() int {
 }
 
 func (o *PauseScheduleInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleInternalServerError %s", 500, payload)
 }
 
 func (o *PauseScheduleInternalServerError) String() string {
-	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /schedule/{id}/pause][%d] pauseScheduleInternalServerError %s", 500, payload)
 }
 
 func (o *PauseScheduleInternalServerError) GetPayload() *models.APIHTTPError {

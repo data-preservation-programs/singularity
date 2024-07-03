@@ -6,7 +6,7 @@ NAME:
    singularity storage create azureblob - Microsoft Azure Blob Storage
 
 USAGE:
-   singularity storage create azureblob [command options] [arguments...]
+   singularity storage create azureblob [command options]
 
 DESCRIPTION:
    --account

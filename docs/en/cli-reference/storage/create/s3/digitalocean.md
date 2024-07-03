@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 digitalocean - DigitalOcean Spaces
 
 USAGE:
-   singularity storage create s3 digitalocean [command options] [arguments...]
+   singularity storage create s3 digitalocean [command options]
 
 DESCRIPTION:
    --env-auth

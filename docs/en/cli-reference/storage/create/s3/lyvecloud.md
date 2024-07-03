@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 lyvecloud - Seagate Lyve Cloud
 
 USAGE:
-   singularity storage create s3 lyvecloud [command options] [arguments...]
+   singularity storage create s3 lyvecloud [command options]
 
 DESCRIPTION:
    --env-auth

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateSiaStorageOK) Code() int {
 }
 
 func (o *CreateSiaStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageOK %s", 200, payload)
 }
 
 func (o *CreateSiaStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageOK %s", 200, payload)
 }
 
 func (o *CreateSiaStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateSiaStorageBadRequest) Code() int {
 }
 
 func (o *CreateSiaStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSiaStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSiaStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateSiaStorageInternalServerError) Code() int {
 }
 
 func (o *CreateSiaStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSiaStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/sia][%d] createSiaStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSiaStorageInternalServerError) GetPayload() *models.APIHTTPError {

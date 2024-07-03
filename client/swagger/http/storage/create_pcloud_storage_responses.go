@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreatePcloudStorageOK) Code() int {
 }
 
 func (o *CreatePcloudStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageOK %s", 200, payload)
 }
 
 func (o *CreatePcloudStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageOK %s", 200, payload)
 }
 
 func (o *CreatePcloudStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreatePcloudStorageBadRequest) Code() int {
 }
 
 func (o *CreatePcloudStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreatePcloudStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreatePcloudStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreatePcloudStorageInternalServerError) Code() int {
 }
 
 func (o *CreatePcloudStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreatePcloudStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/pcloud][%d] createPcloudStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreatePcloudStorageInternalServerError) GetPayload() *models.APIHTTPError {

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3RackCorpStorageOK) Code() int {
 }
 
 func (o *CreateS3RackCorpStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3RackCorpStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3RackCorpStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3RackCorpStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3RackCorpStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3RackCorpStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3RackCorpStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3RackCorpStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3RackCorpStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3RackCorpStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/rackcorp][%d] createS3RackCorpStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3RackCorpStorageInternalServerError) GetPayload() *models.APIHTTPError {

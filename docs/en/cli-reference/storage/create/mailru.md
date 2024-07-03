@@ -6,7 +6,7 @@ NAME:
    singularity storage create mailru - Mail.ru Cloud
 
 USAGE:
-   singularity storage create mailru [command options] [arguments...]
+   singularity storage create mailru [command options]
 
 DESCRIPTION:
    --user

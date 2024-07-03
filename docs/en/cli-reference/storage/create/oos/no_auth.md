@@ -6,7 +6,7 @@ NAME:
    singularity storage create oos no_auth - no credentials needed, this is typically for reading public buckets
 
 USAGE:
-   singularity storage create oos no_auth [command options] [arguments...]
+   singularity storage create oos no_auth [command options]
 
 DESCRIPTION:
    --namespace

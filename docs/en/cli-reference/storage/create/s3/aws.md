@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 aws - Amazon Web Services (AWS) S3
 
 USAGE:
-   singularity storage create s3 aws [command options] [arguments...]
+   singularity storage create s3 aws [command options]
 
 DESCRIPTION:
    --env-auth

@@ -6,7 +6,7 @@ NAME:
    singularity storage create sftp - SSH/SFTP
 
 USAGE:
-   singularity storage create sftp [command options] [arguments...]
+   singularity storage create sftp [command options]
 
 DESCRIPTION:
    --host

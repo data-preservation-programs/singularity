@@ -6,6 +6,7 @@ package wallet_association
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *DetachWalletOK) Code() int {
 }
 
 func (o *DetachWalletOK) Error() string {
-	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletOK %s", 200, payload)
 }
 
 func (o *DetachWalletOK) String() string {
-	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletOK %s", 200, payload)
 }
 
 func (o *DetachWalletOK) GetPayload() *models.ModelPreparation {
@@ -159,11 +162,13 @@ func (o *DetachWalletBadRequest) Code() int {
 }
 
 func (o *DetachWalletBadRequest) Error() string {
-	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletBadRequest %s", 400, payload)
 }
 
 func (o *DetachWalletBadRequest) String() string {
-	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletBadRequest %s", 400, payload)
 }
 
 func (o *DetachWalletBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *DetachWalletInternalServerError) Code() int {
 }
 
 func (o *DetachWalletInternalServerError) Error() string {
-	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletInternalServerError %s", 500, payload)
 }
 
 func (o *DetachWalletInternalServerError) String() string {
-	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /preparation/{id}/wallet/{wallet}][%d] detachWalletInternalServerError %s", 500, payload)
 }
 
 func (o *DetachWalletInternalServerError) GetPayload() *models.APIHTTPError {

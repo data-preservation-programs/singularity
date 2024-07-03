@@ -6,6 +6,7 @@ package preparation
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *AddSourceStorageOK) Code() int {
 }
 
 func (o *AddSourceStorageOK) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageOK %s", 200, payload)
 }
 
 func (o *AddSourceStorageOK) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageOK %s", 200, payload)
 }
 
 func (o *AddSourceStorageOK) GetPayload() *models.ModelPreparation {
@@ -159,11 +162,13 @@ func (o *AddSourceStorageBadRequest) Code() int {
 }
 
 func (o *AddSourceStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageBadRequest %s", 400, payload)
 }
 
 func (o *AddSourceStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageBadRequest %s", 400, payload)
 }
 
 func (o *AddSourceStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *AddSourceStorageInternalServerError) Code() int {
 }
 
 func (o *AddSourceStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageInternalServerError %s", 500, payload)
 }
 
 func (o *AddSourceStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}][%d] addSourceStorageInternalServerError %s", 500, payload)
 }
 
 func (o *AddSourceStorageInternalServerError) GetPayload() *models.APIHTTPError {

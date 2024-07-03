@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *ListStoragesOK) Code() int {
 }
 
 func (o *ListStoragesOK) Error() string {
-	return fmt.Sprintf("[GET /storage][%d] listStoragesOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage][%d] listStoragesOK %s", 200, payload)
 }
 
 func (o *ListStoragesOK) String() string {
-	return fmt.Sprintf("[GET /storage][%d] listStoragesOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage][%d] listStoragesOK %s", 200, payload)
 }
 
 func (o *ListStoragesOK) GetPayload() []*models.ModelStorage {
@@ -157,11 +160,13 @@ func (o *ListStoragesBadRequest) Code() int {
 }
 
 func (o *ListStoragesBadRequest) Error() string {
-	return fmt.Sprintf("[GET /storage][%d] listStoragesBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage][%d] listStoragesBadRequest %s", 400, payload)
 }
 
 func (o *ListStoragesBadRequest) String() string {
-	return fmt.Sprintf("[GET /storage][%d] listStoragesBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage][%d] listStoragesBadRequest %s", 400, payload)
 }
 
 func (o *ListStoragesBadRequest) GetPayload() *models.APIHTTPError {
@@ -225,11 +230,13 @@ func (o *ListStoragesInternalServerError) Code() int {
 }
 
 func (o *ListStoragesInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /storage][%d] listStoragesInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage][%d] listStoragesInternalServerError %s", 500, payload)
 }
 
 func (o *ListStoragesInternalServerError) String() string {
-	return fmt.Sprintf("[GET /storage][%d] listStoragesInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /storage][%d] listStoragesInternalServerError %s", 500, payload)
 }
 
 func (o *ListStoragesInternalServerError) GetPayload() *models.APIHTTPError {

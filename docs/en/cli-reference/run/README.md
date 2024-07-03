@@ -6,7 +6,7 @@ NAME:
    singularity run - run different singularity components
 
 USAGE:
-   singularity run command [command options] [arguments...]
+   singularity run command [command options] 
 
 COMMANDS:
    api               Run the singularity API

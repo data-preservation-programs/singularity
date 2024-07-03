@@ -6,7 +6,7 @@ NAME:
    singularity storage create webdav - WebDAV
 
 USAGE:
-   singularity storage create webdav [command options] [arguments...]
+   singularity storage create webdav [command options]
 
 DESCRIPTION:
    --url

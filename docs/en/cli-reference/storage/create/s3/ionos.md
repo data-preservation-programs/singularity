@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 ionos - IONOS Cloud
 
 USAGE:
-   singularity storage create s3 ionos [command options] [arguments...]
+   singularity storage create s3 ionos [command options]
 
 DESCRIPTION:
    --env-auth

@@ -6,7 +6,7 @@ NAME:
    singularity storage create qingstor - QingCloud Object Storage
 
 USAGE:
-   singularity storage create qingstor [command options] [arguments...]
+   singularity storage create qingstor [command options]
 
 DESCRIPTION:
    --env-auth

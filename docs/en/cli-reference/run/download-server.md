@@ -6,7 +6,7 @@ NAME:
    singularity run download-server - An HTTP server connecting to remote metadata API to offer CAR file downloads
 
 USAGE:
-   singularity run download-server [command options] [arguments...]
+   singularity run download-server [command options]
 
 DESCRIPTION:
    Example Usage:

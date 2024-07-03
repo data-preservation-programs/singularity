@@ -6,6 +6,7 @@ package job
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -88,11 +89,11 @@ func (o *PrepareToPackSourceNoContent) Code() int {
 }
 
 func (o *PrepareToPackSourceNoContent) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceNoContent ", 204)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceNoContent", 204)
 }
 
 func (o *PrepareToPackSourceNoContent) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceNoContent ", 204)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceNoContent", 204)
 }
 
 func (o *PrepareToPackSourceNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -145,11 +146,13 @@ func (o *PrepareToPackSourceBadRequest) Code() int {
 }
 
 func (o *PrepareToPackSourceBadRequest) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceBadRequest %s", 400, payload)
 }
 
 func (o *PrepareToPackSourceBadRequest) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceBadRequest %s", 400, payload)
 }
 
 func (o *PrepareToPackSourceBadRequest) GetPayload() string {
@@ -211,11 +214,13 @@ func (o *PrepareToPackSourceInternalServerError) Code() int {
 }
 
 func (o *PrepareToPackSourceInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceInternalServerError %s", 500, payload)
 }
 
 func (o *PrepareToPackSourceInternalServerError) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceInternalServerError %s", 500, payload)
 }
 
 func (o *PrepareToPackSourceInternalServerError) GetPayload() string {

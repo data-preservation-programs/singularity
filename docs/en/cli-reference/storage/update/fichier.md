@@ -6,7 +6,7 @@ NAME:
    singularity storage update fichier - 1Fichier
 
 USAGE:
-   singularity storage update fichier [command options] <name|id>
+   singularity storage update fichier [command options]<name|id>
 
 DESCRIPTION:
    --api-key

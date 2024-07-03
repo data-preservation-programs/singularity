@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateUptoboxStorageOK) Code() int {
 }
 
 func (o *CreateUptoboxStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageOK %s", 200, payload)
 }
 
 func (o *CreateUptoboxStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageOK %s", 200, payload)
 }
 
 func (o *CreateUptoboxStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateUptoboxStorageBadRequest) Code() int {
 }
 
 func (o *CreateUptoboxStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateUptoboxStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateUptoboxStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateUptoboxStorageInternalServerError) Code() int {
 }
 
 func (o *CreateUptoboxStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateUptoboxStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/uptobox][%d] createUptoboxStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateUptoboxStorageInternalServerError) GetPayload() *models.APIHTTPError {

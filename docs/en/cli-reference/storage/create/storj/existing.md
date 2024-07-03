@@ -6,7 +6,7 @@ NAME:
    singularity storage create storj existing - Use an existing access grant.
 
 USAGE:
-   singularity storage create storj existing [command options] [arguments...]
+   singularity storage create storj existing [command options]
 
 DESCRIPTION:
    --access-grant

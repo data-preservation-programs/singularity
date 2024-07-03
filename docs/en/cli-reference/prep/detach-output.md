@@ -6,7 +6,7 @@ NAME:
    singularity prep detach-output - Detach a output storage to a preparation
 
 USAGE:
-   singularity prep detach-output [command options] <preparation id|name> <storage id|name>
+   singularity prep detach-output [command options]<preparation id|name> <storage id|name>
 
 CATEGORY:
    Preparation Management

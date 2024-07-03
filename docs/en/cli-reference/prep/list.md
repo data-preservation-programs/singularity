@@ -6,7 +6,7 @@ NAME:
    singularity prep list - List all preparations
 
 USAGE:
-   singularity prep list [command options] [arguments...]
+   singularity prep list [command options]
 
 CATEGORY:
    Preparation Management
