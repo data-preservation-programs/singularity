@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 minio - Minio Object Storage
 
 USAGE:
-   singularity storage create s3 minio [command options] [arguments...]
+   singularity storage create s3 minio [command options]
 
 DESCRIPTION:
    --env-auth

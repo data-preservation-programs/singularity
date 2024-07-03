@@ -6,7 +6,7 @@ NAME:
    singularity download - Download a CAR file from the metadata API
 
 USAGE:
-   singularity download [command options] <piece_cid>
+   singularity download [command options]<piece_cid>
 
 CATEGORY:
    Utility

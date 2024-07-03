@@ -6,7 +6,7 @@ NAME:
    singularity storage update gphotos - Google Photos
 
 USAGE:
-   singularity storage update gphotos [command options] <name|id>
+   singularity storage update gphotos [command options]<name|id>
 
 DESCRIPTION:
    --client-id

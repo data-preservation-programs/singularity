@@ -6,7 +6,7 @@ NAME:
    singularity storage create swift - OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
 
 USAGE:
-   singularity storage create swift [command options] [arguments...]
+   singularity storage create swift [command options]
 
 DESCRIPTION:
    --env-auth

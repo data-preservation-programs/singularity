@@ -6,6 +6,7 @@ package wallet
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -90,11 +91,11 @@ func (o *RemoveWalletNoContent) Code() int {
 }
 
 func (o *RemoveWalletNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletNoContent ", 204)
+	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletNoContent", 204)
 }
 
 func (o *RemoveWalletNoContent) String() string {
-	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletNoContent ", 204)
+	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletNoContent", 204)
 }
 
 func (o *RemoveWalletNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -147,11 +148,13 @@ func (o *RemoveWalletBadRequest) Code() int {
 }
 
 func (o *RemoveWalletBadRequest) Error() string {
-	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletBadRequest %s", 400, payload)
 }
 
 func (o *RemoveWalletBadRequest) String() string {
-	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletBadRequest %s", 400, payload)
 }
 
 func (o *RemoveWalletBadRequest) GetPayload() *models.APIHTTPError {
@@ -215,11 +218,13 @@ func (o *RemoveWalletInternalServerError) Code() int {
 }
 
 func (o *RemoveWalletInternalServerError) Error() string {
-	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletInternalServerError %s", 500, payload)
 }
 
 func (o *RemoveWalletInternalServerError) String() string {
-	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /wallet/{address}][%d] removeWalletInternalServerError %s", 500, payload)
 }
 
 func (o *RemoveWalletInternalServerError) GetPayload() *models.APIHTTPError {

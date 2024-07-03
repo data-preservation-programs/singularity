@@ -6,7 +6,7 @@ NAME:
    singularity storage create koofr digistorage - Digi Storage, https://storage.rcs-rds.ro/
 
 USAGE:
-   singularity storage create koofr digistorage [command options] [arguments...]
+   singularity storage create koofr digistorage [command options]
 
 DESCRIPTION:
    --mountid

@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3DreamhostStorageOK) Code() int {
 }
 
 func (o *CreateS3DreamhostStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3DreamhostStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3DreamhostStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3DreamhostStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3DreamhostStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3DreamhostStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3DreamhostStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3DreamhostStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3DreamhostStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3DreamhostStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/dreamhost][%d] createS3DreamhostStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3DreamhostStorageInternalServerError) GetPayload() *models.APIHTTPError {

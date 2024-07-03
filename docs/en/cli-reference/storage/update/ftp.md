@@ -6,7 +6,7 @@ NAME:
    singularity storage update ftp - FTP
 
 USAGE:
-   singularity storage update ftp [command options] <name|id>
+   singularity storage update ftp [command options]<name|id>
 
 DESCRIPTION:
    --host

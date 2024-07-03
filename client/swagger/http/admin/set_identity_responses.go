@@ -6,6 +6,7 @@ package admin
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -90,11 +91,11 @@ func (o *SetIdentityNoContent) Code() int {
 }
 
 func (o *SetIdentityNoContent) Error() string {
-	return fmt.Sprintf("[POST /identity][%d] setIdentityNoContent ", 204)
+	return fmt.Sprintf("[POST /identity][%d] setIdentityNoContent", 204)
 }
 
 func (o *SetIdentityNoContent) String() string {
-	return fmt.Sprintf("[POST /identity][%d] setIdentityNoContent ", 204)
+	return fmt.Sprintf("[POST /identity][%d] setIdentityNoContent", 204)
 }
 
 func (o *SetIdentityNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -147,11 +148,13 @@ func (o *SetIdentityBadRequest) Code() int {
 }
 
 func (o *SetIdentityBadRequest) Error() string {
-	return fmt.Sprintf("[POST /identity][%d] setIdentityBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /identity][%d] setIdentityBadRequest %s", 400, payload)
 }
 
 func (o *SetIdentityBadRequest) String() string {
-	return fmt.Sprintf("[POST /identity][%d] setIdentityBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /identity][%d] setIdentityBadRequest %s", 400, payload)
 }
 
 func (o *SetIdentityBadRequest) GetPayload() *models.APIHTTPError {
@@ -215,11 +218,13 @@ func (o *SetIdentityInternalServerError) Code() int {
 }
 
 func (o *SetIdentityInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /identity][%d] setIdentityInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /identity][%d] setIdentityInternalServerError %s", 500, payload)
 }
 
 func (o *SetIdentityInternalServerError) String() string {
-	return fmt.Sprintf("[POST /identity][%d] setIdentityInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /identity][%d] setIdentityInternalServerError %s", 500, payload)
 }
 
 func (o *SetIdentityInternalServerError) GetPayload() *models.APIHTTPError {

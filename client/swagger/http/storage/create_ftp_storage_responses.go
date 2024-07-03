@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateFtpStorageOK) Code() int {
 }
 
 func (o *CreateFtpStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageOK %s", 200, payload)
 }
 
 func (o *CreateFtpStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageOK %s", 200, payload)
 }
 
 func (o *CreateFtpStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateFtpStorageBadRequest) Code() int {
 }
 
 func (o *CreateFtpStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateFtpStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateFtpStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateFtpStorageInternalServerError) Code() int {
 }
 
 func (o *CreateFtpStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateFtpStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/ftp][%d] createFtpStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateFtpStorageInternalServerError) GetPayload() *models.APIHTTPError {

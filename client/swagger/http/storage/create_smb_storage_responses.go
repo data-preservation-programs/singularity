@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateSmbStorageOK) Code() int {
 }
 
 func (o *CreateSmbStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageOK %s", 200, payload)
 }
 
 func (o *CreateSmbStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageOK %s", 200, payload)
 }
 
 func (o *CreateSmbStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateSmbStorageBadRequest) Code() int {
 }
 
 func (o *CreateSmbStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSmbStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateSmbStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateSmbStorageInternalServerError) Code() int {
 }
 
 func (o *CreateSmbStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSmbStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/smb][%d] createSmbStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateSmbStorageInternalServerError) GetPayload() *models.APIHTTPError {

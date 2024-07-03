@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3SeaweedFSStorageOK) Code() int {
 }
 
 func (o *CreateS3SeaweedFSStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3SeaweedFSStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3SeaweedFSStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3SeaweedFSStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3SeaweedFSStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3SeaweedFSStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3SeaweedFSStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3SeaweedFSStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3SeaweedFSStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3SeaweedFSStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/seaweedfs][%d] createS3SeaweedFSStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3SeaweedFSStorageInternalServerError) GetPayload() *models.APIHTTPError {

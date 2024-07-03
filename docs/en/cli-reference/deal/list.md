@@ -6,7 +6,7 @@ NAME:
    singularity deal list - List all deals
 
 USAGE:
-   singularity deal list [command options] [arguments...]
+   singularity deal list [command options]
 
 OPTIONS:
    --preparation value [ --preparation value ]  Filter deals by preparation id or name

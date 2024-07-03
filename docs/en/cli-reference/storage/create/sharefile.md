@@ -6,7 +6,7 @@ NAME:
    singularity storage create sharefile - Citrix Sharefile
 
 USAGE:
-   singularity storage create sharefile [command options] [arguments...]
+   singularity storage create sharefile [command options]
 
 DESCRIPTION:
    --upload-cutoff

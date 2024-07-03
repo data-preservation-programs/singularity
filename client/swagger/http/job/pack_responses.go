@@ -6,6 +6,7 @@ package job
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *PackOK) Code() int {
 }
 
 func (o *PackOK) Error() string {
-	return fmt.Sprintf("[POST /job/{id}/pack][%d] packOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /job/{id}/pack][%d] packOK %s", 200, payload)
 }
 
 func (o *PackOK) String() string {
-	return fmt.Sprintf("[POST /job/{id}/pack][%d] packOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /job/{id}/pack][%d] packOK %s", 200, payload)
 }
 
 func (o *PackOK) GetPayload() *models.ModelCar {
@@ -159,11 +162,13 @@ func (o *PackBadRequest) Code() int {
 }
 
 func (o *PackBadRequest) Error() string {
-	return fmt.Sprintf("[POST /job/{id}/pack][%d] packBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /job/{id}/pack][%d] packBadRequest %s", 400, payload)
 }
 
 func (o *PackBadRequest) String() string {
-	return fmt.Sprintf("[POST /job/{id}/pack][%d] packBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /job/{id}/pack][%d] packBadRequest %s", 400, payload)
 }
 
 func (o *PackBadRequest) GetPayload() string {
@@ -225,11 +230,13 @@ func (o *PackInternalServerError) Code() int {
 }
 
 func (o *PackInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /job/{id}/pack][%d] packInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /job/{id}/pack][%d] packInternalServerError %s", 500, payload)
 }
 
 func (o *PackInternalServerError) String() string {
-	return fmt.Sprintf("[POST /job/{id}/pack][%d] packInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /job/{id}/pack][%d] packInternalServerError %s", 500, payload)
 }
 
 func (o *PackInternalServerError) GetPayload() string {

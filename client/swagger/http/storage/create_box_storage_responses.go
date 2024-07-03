@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateBoxStorageOK) Code() int {
 }
 
 func (o *CreateBoxStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageOK %s", 200, payload)
 }
 
 func (o *CreateBoxStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageOK %s", 200, payload)
 }
 
 func (o *CreateBoxStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateBoxStorageBadRequest) Code() int {
 }
 
 func (o *CreateBoxStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateBoxStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateBoxStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateBoxStorageInternalServerError) Code() int {
 }
 
 func (o *CreateBoxStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateBoxStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/box][%d] createBoxStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateBoxStorageInternalServerError) GetPayload() *models.APIHTTPError {

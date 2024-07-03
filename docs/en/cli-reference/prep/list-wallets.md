@@ -6,7 +6,7 @@ NAME:
    singularity prep list-wallets - List attached wallets with a preparation
 
 USAGE:
-   singularity prep list-wallets [command options] <preparation id|name>
+   singularity prep list-wallets [command options]<preparation id|name>
 
 CATEGORY:
    Wallet Management

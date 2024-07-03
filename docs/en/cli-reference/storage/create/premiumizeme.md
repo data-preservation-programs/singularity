@@ -6,7 +6,7 @@ NAME:
    singularity storage create premiumizeme - premiumize.me
 
 USAGE:
-   singularity storage create premiumizeme [command options] [arguments...]
+   singularity storage create premiumizeme [command options]
 
 DESCRIPTION:
    --api-key

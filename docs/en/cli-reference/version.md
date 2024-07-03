@@ -6,7 +6,7 @@ NAME:
    singularity version - Print version information
 
 USAGE:
-   singularity version [command options] [arguments...]
+   singularity version [command options]
 
 OPTIONS:
    --help, -h  show help

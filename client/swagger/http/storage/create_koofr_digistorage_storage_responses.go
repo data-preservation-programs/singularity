@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateKoofrDigistorageStorageOK) Code() int {
 }
 
 func (o *CreateKoofrDigistorageStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageOK %s", 200, payload)
 }
 
 func (o *CreateKoofrDigistorageStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageOK %s", 200, payload)
 }
 
 func (o *CreateKoofrDigistorageStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateKoofrDigistorageStorageBadRequest) Code() int {
 }
 
 func (o *CreateKoofrDigistorageStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateKoofrDigistorageStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateKoofrDigistorageStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateKoofrDigistorageStorageInternalServerError) Code() int {
 }
 
 func (o *CreateKoofrDigistorageStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateKoofrDigistorageStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/koofr/digistorage][%d] createKoofrDigistorageStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateKoofrDigistorageStorageInternalServerError) GetPayload() *models.APIHTTPError {

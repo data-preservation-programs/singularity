@@ -6,7 +6,7 @@ NAME:
    singularity storage create ftp - FTP
 
 USAGE:
-   singularity storage create ftp [command options] [arguments...]
+   singularity storage create ftp [command options]
 
 DESCRIPTION:
    --host

@@ -6,7 +6,7 @@ NAME:
    singularity run dataset-worker - Start a dataset preparation worker to process dataset scanning and preparation tasks
 
 USAGE:
-   singularity run dataset-worker [command options] [arguments...]
+   singularity run dataset-worker [command options]
 
 OPTIONS:
    --concurrency value   Number of concurrent workers to run (default: 1)

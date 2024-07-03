@@ -6,6 +6,7 @@ package job
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *PauseDagGenOK) Code() int {
 }
 
 func (o *PauseDagGenOK) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenOK %s", 200, payload)
 }
 
 func (o *PauseDagGenOK) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenOK %s", 200, payload)
 }
 
 func (o *PauseDagGenOK) GetPayload() *models.ModelJob {
@@ -159,11 +162,13 @@ func (o *PauseDagGenBadRequest) Code() int {
 }
 
 func (o *PauseDagGenBadRequest) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenBadRequest %s", 400, payload)
 }
 
 func (o *PauseDagGenBadRequest) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenBadRequest %s", 400, payload)
 }
 
 func (o *PauseDagGenBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *PauseDagGenInternalServerError) Code() int {
 }
 
 func (o *PauseDagGenInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenInternalServerError %s", 500, payload)
 }
 
 func (o *PauseDagGenInternalServerError) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-daggen][%d] pauseDagGenInternalServerError %s", 500, payload)
 }
 
 func (o *PauseDagGenInternalServerError) GetPayload() *models.APIHTTPError {

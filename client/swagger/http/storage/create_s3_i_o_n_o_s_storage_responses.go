@@ -6,6 +6,7 @@ package storage
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -91,11 +92,13 @@ func (o *CreateS3IONOSStorageOK) Code() int {
 }
 
 func (o *CreateS3IONOSStorageOK) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3IONOSStorageOK) String() string {
-	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageOK %s", 200, payload)
 }
 
 func (o *CreateS3IONOSStorageOK) GetPayload() *models.ModelStorage {
@@ -159,11 +162,13 @@ func (o *CreateS3IONOSStorageBadRequest) Code() int {
 }
 
 func (o *CreateS3IONOSStorageBadRequest) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3IONOSStorageBadRequest) String() string {
-	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageBadRequest  %+v", 400, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageBadRequest %s", 400, payload)
 }
 
 func (o *CreateS3IONOSStorageBadRequest) GetPayload() *models.APIHTTPError {
@@ -227,11 +232,13 @@ func (o *CreateS3IONOSStorageInternalServerError) Code() int {
 }
 
 func (o *CreateS3IONOSStorageInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3IONOSStorageInternalServerError) String() string {
-	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageInternalServerError  %+v", 500, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /storage/s3/ionos][%d] createS3IONOSStorageInternalServerError %s", 500, payload)
 }
 
 func (o *CreateS3IONOSStorageInternalServerError) GetPayload() *models.APIHTTPError {

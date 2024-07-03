@@ -6,7 +6,7 @@ NAME:
    singularity storage update azureblob - Microsoft Azure Blob Storage
 
 USAGE:
-   singularity storage update azureblob [command options] <name|id>
+   singularity storage update azureblob [command options]<name|id>
 
 DESCRIPTION:
    --account

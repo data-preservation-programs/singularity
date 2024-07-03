@@ -6,7 +6,7 @@ NAME:
    singularity storage create netstorage - Akamai NetStorage
 
 USAGE:
-   singularity storage create netstorage [command options] [arguments...]
+   singularity storage create netstorage [command options]
 
 DESCRIPTION:
    --protocol

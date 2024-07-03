@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 alibaba - Alibaba Cloud Object Storage System (OSS) formerly Aliyun
 
 USAGE:
-   singularity storage create s3 alibaba [command options] [arguments...]
+   singularity storage create s3 alibaba [command options]
 
 DESCRIPTION:
    --env-auth
