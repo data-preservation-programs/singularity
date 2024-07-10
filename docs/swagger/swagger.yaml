@@ -2349,6 +2349,24 @@ definitions:
         description: Path of the storage
         type: string
     type: object
+  storage.createUnionStorageRequest:
+    properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
+      config:
+        allOf:
+        - $ref: '#/definitions/storage.unionConfig'
+        description: config for the storage
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
+    type: object
   storage.createUptoboxStorageRequest:
     properties:
       clientConfig:
@@ -8029,6 +8047,32 @@ definitions:
           leave this blank (v3 auth) (OS_USER_ID).
         type: string
     type: object
+  storage.unionConfig:
+    properties:
+      actionPolicy:
+        default: epall
+        description: Policy to choose upstream on ACTION category.
+        type: string
+      cacheTime:
+        default: 120
+        description: Cache time of usage and free space (in seconds).
+        type: integer
+      createPolicy:
+        default: epmfs
+        description: Policy to choose upstream on CREATE category.
+        type: string
+      minFreeSpace:
+        default: 1Gi
+        description: Minimum viable free space for lfs/eplfs policies.
+        type: string
+      searchPolicy:
+        default: ff
+        description: Policy to choose upstream on SEARCH category.
+        type: string
+      upstreams:
+        description: List of space separated upstreams.
+        type: string
+    type: object
   storage.uptoboxConfig:
     properties:
       accessToken:
@@ -11564,6 +11608,36 @@ paths:
           schema:
             $ref: '#/definitions/api.HTTPError'
       summary: Create Swift storage
+      tags:
+      - Storage
+  /storage/union:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateUnionStorage
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/storage.createUnionStorageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Storage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create Union storage
       tags:
       - Storage
   /storage/uptobox:

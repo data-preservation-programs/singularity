@@ -2957,6 +2957,34 @@ type createSwiftStorageRequest struct {
 // @Router /storage/swift [post]
 func createSwiftStorage() {}
 
+type unionConfig struct {
+	Upstreams    string `json:"upstreams"`                    // List of space separated upstreams.
+	ActionPolicy string `json:"actionPolicy" default:"epall"` // Policy to choose upstream on ACTION category.
+	CreatePolicy string `json:"createPolicy" default:"epmfs"` // Policy to choose upstream on CREATE category.
+	SearchPolicy string `json:"searchPolicy" default:"ff"`    // Policy to choose upstream on SEARCH category.
+	CacheTime    int    `json:"cacheTime" default:"120"`      // Cache time of usage and free space (in seconds).
+	MinFreeSpace string `json:"minFreeSpace" default:"1Gi"`   // Minimum viable free space for lfs/eplfs policies.
+}
+
+type createUnionStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       unionConfig        `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateUnionStorage
+// @Summary Create Union storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createUnionStorageRequest true "Request body"
+// @Router /storage/union [post]
+func createUnionStorage() {}
+
 type uptoboxConfig struct {
 	AccessToken string `json:"accessToken"`                                                                           // Your access token.
 	Encoding    string `json:"encoding" default:"Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"` // The encoding for the backend.
