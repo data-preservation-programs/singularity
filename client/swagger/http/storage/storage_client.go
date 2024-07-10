@@ -192,6 +192,8 @@ type ClientService interface {
 
 	CreateSwiftStorage(params *CreateSwiftStorageParams, opts ...ClientOption) (*CreateSwiftStorageOK, error)
 
+	CreateUnionStorage(params *CreateUnionStorageParams, opts ...ClientOption) (*CreateUnionStorageOK, error)
+
 	CreateUptoboxStorage(params *CreateUptoboxStorageParams, opts ...ClientOption) (*CreateUptoboxStorageOK, error)
 
 	CreateWebdavStorage(params *CreateWebdavStorageParams, opts ...ClientOption) (*CreateWebdavStorageOK, error)
@@ -2794,6 +2796,44 @@ func (a *Client) CreateSwiftStorage(params *CreateSwiftStorageParams, opts ...Cl
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateSwiftStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateUnionStorage creates union storage
+*/
+func (a *Client) CreateUnionStorage(params *CreateUnionStorageParams, opts ...ClientOption) (*CreateUnionStorageOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateUnionStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateUnionStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/union",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateUnionStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreateUnionStorageOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateUnionStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

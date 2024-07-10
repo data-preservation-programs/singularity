@@ -46,6 +46,7 @@ COMMANDS:
    storj            Storj Decentralized Cloud Storage
    sugarsync        Sugarsync
    swift            OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
+   union            Union merges the contents of several upstream fs
    uptobox          Uptobox
    webdav           WebDAV
    yandex           Yandex Disk
