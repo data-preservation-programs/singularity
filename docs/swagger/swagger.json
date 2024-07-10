@@ -5021,6 +5021,52 @@
                 }
             }
         },
+        "/storage/union": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Union storage",
+                "operationId": "CreateUnionStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createUnionStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/uptobox": {
             "post": {
                 "consumes": [
@@ -9066,6 +9112,36 @@
                     "allOf": [
                         {
                             "$ref": "#/definitions/storage.swiftConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createUnionStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.unionConfig"
                         }
                     ]
                 },
@@ -16145,6 +16221,40 @@
                 },
                 "userId": {
                     "description": "User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID).",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.unionConfig": {
+            "type": "object",
+            "properties": {
+                "actionPolicy": {
+                    "description": "Policy to choose upstream on ACTION category.",
+                    "type": "string",
+                    "default": "epall"
+                },
+                "cacheTime": {
+                    "description": "Cache time of usage and free space (in seconds).",
+                    "type": "integer",
+                    "default": 120
+                },
+                "createPolicy": {
+                    "description": "Policy to choose upstream on CREATE category.",
+                    "type": "string",
+                    "default": "epmfs"
+                },
+                "minFreeSpace": {
+                    "description": "Minimum viable free space for lfs/eplfs policies.",
+                    "type": "string",
+                    "default": "1Gi"
+                },
+                "searchPolicy": {
+                    "description": "Policy to choose upstream on SEARCH category.",
+                    "type": "string",
+                    "default": "ff"
+                },
+                "upstreams": {
+                    "description": "List of space separated upstreams.",
                     "type": "string"
                 }
             }
