@@ -23,7 +23,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser
-          version: latest
+          version: v2.1.0
           args: ${{ github.event_name == 'pull_request' && 'release --snapshot --skip-publish' || 'release --clean' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
