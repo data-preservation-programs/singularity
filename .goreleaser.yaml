@@ -1,4 +1,6 @@
 #file: noinspection YAMLSchemaValidation
+version: 2
+
 builds:
   - env:
       - CGO_ENABLED=0
@@ -31,7 +33,7 @@ archives:
 release:
   mode: keep-existing
 changelog:
-  skip: true
+  disable: true
 checksum:
   disable: false
 nfpms:
