@@ -6,7 +6,7 @@ NAME:
    singularity storage update union - Union merges the contents of several upstream fs
 
 USAGE:
-   singularity storage update union [command options]<name|id>
+   singularity storage update union [command options] <name|id>
 
 DESCRIPTION:
    --upstreams

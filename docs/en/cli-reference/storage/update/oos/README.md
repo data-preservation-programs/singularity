@@ -6,7 +6,7 @@ NAME:
    singularity storage update oos - Oracle Cloud Infrastructure Object Storage
 
 USAGE:
-   singularity storage update oos command [command options] 
+   singularity storage update oos command [command options]
 
 COMMANDS:
    env_auth                 automatically pickup the credentials from runtime(env), first one to provide auth wins

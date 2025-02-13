@@ -6,7 +6,7 @@ NAME:
    singularity storage update premiumizeme - premiumize.me
 
 USAGE:
-   singularity storage update premiumizeme [command options]<name|id>
+   singularity storage update premiumizeme [command options] <name|id>
 
 DESCRIPTION:
    --api-key

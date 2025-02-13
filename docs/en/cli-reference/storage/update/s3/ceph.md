@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 ceph - Ceph Object Storage
 
 USAGE:
-   singularity storage update s3 ceph [command options]<name|id>
+   singularity storage update s3 ceph [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

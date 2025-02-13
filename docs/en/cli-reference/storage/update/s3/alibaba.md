@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 alibaba - Alibaba Cloud Object Storage System (OSS) formerly Aliyun
 
 USAGE:
-   singularity storage update s3 alibaba [command options]<name|id>
+   singularity storage update s3 alibaba [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

@@ -6,7 +6,7 @@ NAME:
    singularity storage create - Create a new storage which can be used as source or output
 
 USAGE:
-   singularity storage create command [command options] 
+   singularity storage create command [command options]
 
 COMMANDS:
    acd              Amazon Drive
