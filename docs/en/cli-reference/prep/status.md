@@ -6,7 +6,7 @@ NAME:
    singularity prep status - Get the preparation job status of a preparation
 
 USAGE:
-   singularity prep status [command options]<preparation id|name>
+   singularity prep status [command options] <preparation id|name>
 
 CATEGORY:
    Job Management

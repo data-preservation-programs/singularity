@@ -6,7 +6,7 @@ NAME:
    singularity storage update local - Local Disk
 
 USAGE:
-   singularity storage update local [command options]<name|id>
+   singularity storage update local [command options] <name|id>
 
 DESCRIPTION:
    --nounc

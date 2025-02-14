@@ -6,7 +6,7 @@ NAME:
    singularity deal schedule - Schedule deals
 
 USAGE:
-   singularity deal schedule command [command options] 
+   singularity deal schedule command [command options]
 
 COMMANDS:
    create   Create a schedule to send out deals to a storage provider

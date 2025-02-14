@@ -6,7 +6,7 @@ NAME:
    singularity storage update hidrive - HiDrive
 
 USAGE:
-   singularity storage update hidrive [command options]<name|id>
+   singularity storage update hidrive [command options] <name|id>
 
 DESCRIPTION:
    --client-id

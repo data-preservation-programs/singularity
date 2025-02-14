@@ -6,7 +6,7 @@ NAME:
    singularity deal schedule update - Update an existing schedule
 
 USAGE:
-   singularity deal schedule update [command options]<schedule_id>
+   singularity deal schedule update [command options] <schedule_id>
 
 DESCRIPTION:
    CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field

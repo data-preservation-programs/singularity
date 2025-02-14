@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 chinamobile - China Mobile Ecloud Elastic Object Storage (EOS)
 
 USAGE:
-   singularity storage update s3 chinamobile [command options]<name|id>
+   singularity storage update s3 chinamobile [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

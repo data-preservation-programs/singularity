@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 arvancloud - Arvan Cloud Object Storage (AOS)
 
 USAGE:
-   singularity storage update s3 arvancloud [command options]<name|id>
+   singularity storage update s3 arvancloud [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

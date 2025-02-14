@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 ibmcos - IBM COS S3
 
 USAGE:
-   singularity storage update s3 ibmcos [command options]<name|id>
+   singularity storage update s3 ibmcos [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

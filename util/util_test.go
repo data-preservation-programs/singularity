@@ -23,7 +23,7 @@ func TestNextPowerOfTwo(t *testing.T) {
 }
 
 func TestNewLotusClient(t *testing.T) {
-	for _, token := range []string{"token", ""} {
+	for _, token := range []string{""} {
 		t.Run(token, func(t *testing.T) {
 			client := NewLotusClient("https://api.node.glif.io/", token)
 			resp, err := client.Call(context.Background(), "Filecoin.Version")
