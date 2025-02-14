@@ -6,7 +6,7 @@ NAME:
    singularity storage update onedrive - Microsoft OneDrive
 
 USAGE:
-   singularity storage update onedrive [command options]<name|id>
+   singularity storage update onedrive [command options] <name|id>
 
 DESCRIPTION:
    --client-id

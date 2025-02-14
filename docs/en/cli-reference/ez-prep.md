@@ -6,7 +6,7 @@ NAME:
    singularity ez-prep - Prepare a dataset from a local path
 
 USAGE:
-   singularity ez-prep [command options]<path>
+   singularity ez-prep [command options] <path>
 
 CATEGORY:
    Utility

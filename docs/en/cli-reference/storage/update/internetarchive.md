@@ -6,7 +6,7 @@ NAME:
    singularity storage update internetarchive - Internet Archive
 
 USAGE:
-   singularity storage update internetarchive [command options]<name|id>
+   singularity storage update internetarchive [command options] <name|id>
 
 DESCRIPTION:
    --access-key-id

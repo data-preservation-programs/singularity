@@ -6,7 +6,7 @@ NAME:
    singularity storage - Create and manage storage system connections
 
 USAGE:
-   singularity storage command [command options] 
+   singularity storage command [command options]
 
 COMMANDS:
    create   Create a new storage which can be used as source or output

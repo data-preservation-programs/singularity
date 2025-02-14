@@ -6,7 +6,7 @@ NAME:
    singularity storage update putio - Put.io
 
 USAGE:
-   singularity storage update putio [command options]<name|id>
+   singularity storage update putio [command options] <name|id>
 
 DESCRIPTION:
    --encoding

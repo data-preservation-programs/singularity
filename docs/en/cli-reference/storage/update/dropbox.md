@@ -6,7 +6,7 @@ NAME:
    singularity storage update dropbox - Dropbox
 
 USAGE:
-   singularity storage update dropbox [command options]<name|id>
+   singularity storage update dropbox [command options] <name|id>
 
 DESCRIPTION:
    --client-id
