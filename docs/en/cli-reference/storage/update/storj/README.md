@@ -6,7 +6,7 @@ NAME:
    singularity storage update storj - Storj Decentralized Cloud Storage
 
 USAGE:
-   singularity storage update storj command [command options] 
+   singularity storage update storj command [command options]
 
 COMMANDS:
    existing  Use an existing access grant.

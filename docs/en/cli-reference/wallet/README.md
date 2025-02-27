@@ -6,7 +6,7 @@ NAME:
    singularity wallet - Wallet management
 
 USAGE:
-   singularity wallet command [command options] 
+   singularity wallet command [command options]
 
 COMMANDS:
    import   Import a wallet from exported private key

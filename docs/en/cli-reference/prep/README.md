@@ -6,7 +6,7 @@ NAME:
    singularity prep - Create and manage dataset preparations
 
 USAGE:
-   singularity prep command [command options] 
+   singularity prep command [command options]
 
 COMMANDS:
    rename   Rename a preparation

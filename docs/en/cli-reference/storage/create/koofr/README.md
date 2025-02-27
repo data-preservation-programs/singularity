@@ -6,7 +6,7 @@ NAME:
    singularity storage create koofr - Koofr, Digi Storage and other Koofr-compatible storage providers
 
 USAGE:
-   singularity storage create koofr command [command options] 
+   singularity storage create koofr command [command options]
 
 COMMANDS:
    digistorage  Digi Storage, https://storage.rcs-rds.ro/

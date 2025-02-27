@@ -10,7 +10,7 @@ NAME:
                                                             https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
 
 USAGE:
-   singularity storage update oos instance_principal_auth [command options]<name|id>
+   singularity storage update oos instance_principal_auth [command options] <name|id>
 
 DESCRIPTION:
    --namespace
