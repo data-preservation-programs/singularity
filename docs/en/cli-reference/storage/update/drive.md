@@ -6,7 +6,7 @@ NAME:
    singularity storage update drive - Google Drive
 
 USAGE:
-   singularity storage update drive [command options]<name|id>
+   singularity storage update drive [command options] <name|id>
 
 DESCRIPTION:
    --client-id

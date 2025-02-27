@@ -6,7 +6,7 @@ NAME:
    singularity storage create storj - Storj Decentralized Cloud Storage
 
 USAGE:
-   singularity storage create storj command [command options] 
+   singularity storage create storj command [command options]
 
 COMMANDS:
    existing  Use an existing access grant.

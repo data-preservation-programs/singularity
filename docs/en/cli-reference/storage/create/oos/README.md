@@ -6,7 +6,7 @@ NAME:
    singularity storage create oos - Oracle Cloud Infrastructure Object Storage
 
 USAGE:
-   singularity storage create oos command [command options] 
+   singularity storage create oos command [command options]
 
 COMMANDS:
    env_auth                 automatically pickup the credentials from runtime(env), first one to provide auth wins

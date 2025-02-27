@@ -6,7 +6,7 @@ NAME:
    singularity storage update jottacloud - Jottacloud
 
 USAGE:
-   singularity storage update jottacloud [command options]<name|id>
+   singularity storage update jottacloud [command options] <name|id>
 
 DESCRIPTION:
    --md5-memory-limit

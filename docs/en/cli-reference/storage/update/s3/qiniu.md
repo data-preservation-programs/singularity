@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 qiniu - Qiniu Object Storage (Kodo)
 
 USAGE:
-   singularity storage update s3 qiniu [command options]<name|id>
+   singularity storage update s3 qiniu [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

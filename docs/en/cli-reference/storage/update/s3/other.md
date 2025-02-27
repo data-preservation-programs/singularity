@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 other - Any other S3 compatible provider
 
 USAGE:
-   singularity storage update s3 other [command options]<name|id>
+   singularity storage update s3 other [command options] <name|id>
 
 DESCRIPTION:
    --env-auth
