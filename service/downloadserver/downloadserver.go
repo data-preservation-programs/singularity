@@ -1,15 +1,15 @@
 package downloadserver
 
 import (
-	"bufio"
 	"context"
-	"io"
 	"math/rand"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
+	"io"
+	"bufio"
+	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
@@ -32,13 +32,13 @@ const maxRetries = 5
 const initialBackoff = 120 * time.Second // Relax for Fail2Ban rules
 
 type DownloadServer struct {
-	bind         string
-	api          string
-	config       map[string]string
-	clientConfig model.ClientConfig
-	usageCache   *UsageCache[contentprovider.PieceMetadata]
+    bind         string
+    api          string
+    config       map[string]string
+    clientConfig model.ClientConfig
+    usageCache   *UsageCache[contentprovider.PieceMetadata]
 
-	metadataCache sync.Map // Cache for ongoing metadata requests
+    metadataCache sync.Map // Cache for ongoing metadata requests
 }
 
 type cacheItem[C any] struct {
@@ -117,6 +117,9 @@ func (c *UsageCache[C]) Done(key string) {
 	item.usageCount--
 }
 
+var rateLimiter = time.Tick(60 * time.Second) // Allow 1 request per second
+
+
 func (d *DownloadServer) handleGetPiece(c echo.Context) error {
 	id := c.Param("id")
 	pieceCid, err := cid.Parse(id)
@@ -158,6 +161,10 @@ func (d *DownloadServer) handleGetPiece(c echo.Context) error {
 				return c.String(http.StatusInternalServerError, "Failed to fetch metadata")
 			}
 		}
+
+		// **Rate limit metadata fetch**
+		Logger.Infow("Waiting for rate limiter before fetching metadata", "pieceCID", pieceCid.String())
+		<-rateLimiter // **Wait before sending request to avoid 429 errors**
 
 		// **Fetch metadata (call standalone function)**
 		var statusCode int
