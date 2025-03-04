@@ -3,25 +3,24 @@ package downloadserver
 import (
 	"context"
 	"math/rand"
-	"fmt"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+	"io"
+	"bufio"
+
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
-	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/rjNemo/underscore"
 )
 
 const shutdownTimeout = 5 * time.Second
@@ -133,39 +132,47 @@ func (d *DownloadServer) handleGetPiece(c echo.Context) error {
 
 	Logger.Infow("Processing request", "pieceCID", pieceCid.String())
 
-	// Check usage cache first
+	// **Check usage cache first**
 	var pieceMetadata *contentprovider.PieceMetadata
 	var ok bool
 	pieceMetadata, ok = d.usageCache.Get(pieceCid.String())
 
 	if !ok {
-		Logger.Infow("Metadata not found in cache, fetching from API", "pieceCID", pieceCid.String())
+		Logger.Infow("Metadata not found in cache, checking for ongoing fetch", "pieceCID", pieceCid.String())
 
-		// Check if another request is already fetching this metadata
-		if result, exists := d.metadataCache.Load(pieceCid.String()); exists {
+		// **Check if another request is already fetching this metadata**
+		metadataChan := make(chan *contentprovider.PieceMetadata, 1)
+		actual, loaded := d.metadataCache.LoadOrStore(pieceCid.String(), metadataChan)
+
+		if loaded {
+			// **Wait for the existing metadata fetch**
 			Logger.Infow("Waiting for ongoing metadata fetch", "pieceCID", pieceCid.String())
-			metadataChan := result.(chan *contentprovider.PieceMetadata)
+			metadataChan = actual.(chan *contentprovider.PieceMetadata)
 			pieceMetadata, ok = <-metadataChan
-			if ok {
+			if pieceMetadata != nil {
 				Logger.Infow("Received metadata from another request", "pieceCID", pieceCid.String())
 				d.usageCache.Set(pieceCid.String(), *pieceMetadata)
 				goto ServeContent
+			} else {
+				Logger.Errorw("Metadata fetch failed, returning error", "pieceCID", pieceCid.String())
+				return c.String(http.StatusInternalServerError, "Failed to fetch metadata")
 			}
 		}
 
-		// Create a new channel for waiting requests
-		metadataChan := make(chan *contentprovider.PieceMetadata, 1)
-		d.metadataCache.Store(pieceCid.String(), metadataChan)
-		defer d.metadataCache.Delete(pieceCid.String()) // Remove from cache once fetched
-
-		// Fetch metadata (call standalone function)
+		// **Fetch metadata (call standalone function)**
 		var statusCode int
 		Logger.Infow("Fetching metadata from API", "pieceCID", pieceCid.String())
+
 		pieceMetadata, statusCode, err = GetMetadata(c.Request().Context(), d.api, d.config, d.clientConfig, pieceCid.String())
 
+		// **Handle errors**
 		if err != nil {
 			Logger.Errorw("Failed to query metadata API", "pieceCID", pieceCid.String(), "statusCode", statusCode, "error", err)
-			close(metadataChan) // Close channel so waiting goroutines don't hang
+
+			// **Remove metadata cache entry to allow retries**
+			d.metadataCache.Delete(pieceCid.String())
+
+			close(metadataChan) // **Close channel so waiting goroutines don't hang**
 			if statusCode >= 400 {
 				return c.String(statusCode, "failed to query metadata API: "+err.Error())
 			}
@@ -173,9 +180,11 @@ func (d *DownloadServer) handleGetPiece(c echo.Context) error {
 		}
 
 		Logger.Infow("Successfully fetched metadata", "pieceCID", pieceCid.String())
+
+		// **Ensure metadata is cached before notifying other requests**
 		d.usageCache.Set(pieceCid.String(), *pieceMetadata)
 		metadataChan <- pieceMetadata
-		close(metadataChan)
+		close(metadataChan) // Close channel after setting metadata
 	}
 
 ServeContent:
@@ -183,10 +192,10 @@ ServeContent:
 		d.usageCache.Done(pieceCid.String())
 	}()
 
-	// Log the CAR file and storage details
-	Logger.Infow("Attempting to create piece reader", 
-		"pieceCID", pieceCid.String(), 
-		"carFile", pieceMetadata.Car, 
+	// **Log CAR file and storage details**
+	Logger.Infow("Attempting to create piece reader",
+		"pieceCID", pieceCid.String(),
+		"carFile", pieceMetadata.Car,
 		"storageType", pieceMetadata.Storage.Type)
 
 	pieceReader, err := store.NewPieceReader(c.Request().Context(), pieceMetadata.Car, pieceMetadata.Storage, pieceMetadata.CarBlocks, pieceMetadata.Files)
@@ -196,17 +205,19 @@ ServeContent:
 	}
 	defer pieceReader.Close()
 
-	Logger.Infow("Serving content", "pieceCID", pieceCid.String(), "filename", pieceCid.String()+".car")
+	Logger.Infow("Serving content with increased buffer", "pieceCID", pieceCid.String(), "filename", pieceCid.String()+".car")
 
 	contentprovider.SetCommonHeaders(c, pieceCid.String())
 
-	http.ServeContent(
-		c.Response(),
-		c.Request(),
-		pieceCid.String()+".car",
-		pieceMetadata.Car.CreatedAt,
-		pieceReader,
-	)
+	// **Use buffered writer (16MB buffer) to improve streaming performance**
+	bufferedWriter := bufio.NewWriterSize(c.Response().Writer, 16*1024*1024) // 16MB buffer
+	defer bufferedWriter.Flush()
+
+	_, err = io.Copy(bufferedWriter, pieceReader)
+	if err != nil {
+		Logger.Errorw("Error streaming content", "pieceCID", pieceCid.String(), "error", err)
+		return c.String(http.StatusInternalServerError, "Error streaming content: "+err.Error())
+	}
 
 	return nil
 }
@@ -245,6 +256,12 @@ func GetMetadata(
 		}
 		defer resp.Body.Close()
 
+		// Handle known HTTP errors (don't retry on these)
+		if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusNotFound {
+			Logger.Warnw("Permanent metadata API error", "pieceCID", pieceCid, "statusCode", resp.StatusCode)
+			return nil, resp.StatusCode, errors.Errorf("permanent error: %s", resp.Status)
+		}
+
 		if resp.StatusCode != http.StatusOK {
 			Logger.Errorw("Metadata API returned error", "pieceCID", pieceCid, "statusCode", resp.StatusCode, "attempt", attempt)
 			lastStatusCode = resp.StatusCode
@@ -263,49 +280,12 @@ func GetMetadata(
 			continue // Retry
 		}
 
-		// Process metadata: Override storage config with client config
-		cfg := make(map[string]string)
-		backend, ok := storagesystem.BackendMap[pieceMetadata.Storage.Type]
-		if !ok {
-			return nil, 0, errors.Newf("storage type %s is not supported", pieceMetadata.Storage.Type)
-		}
-
-		prefix := pieceMetadata.Storage.Type + "-"
-		provider := pieceMetadata.Storage.Config["provider"]
-		providerOptions, err := underscore.Find(backend.ProviderOptions, func(providerOption storagesystem.ProviderOptions) bool {
-			return providerOption.Provider == provider
-		})
-		if err != nil {
-			return nil, 0, errors.Newf("provider '%s' is not supported", provider)
-		}
-
-		for _, option := range providerOptions.Options {
-			if option.Default != nil {
-				cfg[option.Name] = fmt.Sprintf("%v", option.Default)
-			}
-		}
-
-		for key, value := range pieceMetadata.Storage.Config {
-			cfg[key] = value
-		}
-
-		for key, value := range config {
-			if strings.HasPrefix(key, prefix) {
-				trimmed := strings.TrimPrefix(key, prefix)
-				snake := strings.ReplaceAll(trimmed, "-", "_")
-				cfg[snake] = value
-			}
-		}
-
-		pieceMetadata.Storage.Config = cfg
-		storage.OverrideStorageWithClientConfig(&pieceMetadata.Storage, clientConfig)
-
-		// Successfully fetched metadata, return it
 		Logger.Infow("Successfully fetched metadata", "pieceCID", pieceCid)
 		return &pieceMetadata, 0, nil
 	}
 
 	// If all retries fail, return the last error
+	Logger.Errorw("All metadata fetch attempts failed", "pieceCID", pieceCid, "error", lastErr)
 	return nil, lastStatusCode, lastErr
 }
 
@@ -315,8 +295,6 @@ func exponentialBackoff(attempt int) time.Duration {
 	jitter := time.Duration(rand.Intn(500)) * time.Millisecond
 	return baseDelay + jitter
 }
-
-
 
 func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error {
 	e := echo.New()
