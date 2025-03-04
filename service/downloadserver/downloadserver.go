@@ -110,46 +110,66 @@ func (c *UsageCache[C]) Done(key string) {
 }
 
 func (d *DownloadServer) handleGetPiece(c echo.Context) error {
-	id := c.Param("id")
-	pieceCid, err := cid.Parse(id)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
-	}
-	if pieceCid.Type() != cid.FilCommitmentUnsealed {
-		return c.String(http.StatusBadRequest, "CID is not a commp")
-	}
-	var pieceMetadata *contentprovider.PieceMetadata
-	var ok bool
-	pieceMetadata, ok = d.usageCache.Get(pieceCid.String())
-	if !ok {
-		var statusCode int
-		pieceMetadata, statusCode, err = GetMetadata(c.Request().Context(), d.api, d.config, d.clientConfig, pieceCid.String())
-		if err != nil && statusCode >= 400 {
-			return c.String(statusCode, "failed to query metadata API: "+err.Error())
-		}
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "failed to query metadata API: "+err.Error())
-		}
-		d.usageCache.Set(pieceCid.String(), *pieceMetadata)
-	}
-	defer func() {
-		d.usageCache.Done(pieceCid.String())
-	}()
-	pieceReader, err := store.NewPieceReader(c.Request().Context(), pieceMetadata.Car, pieceMetadata.Storage, pieceMetadata.CarBlocks, pieceMetadata.Files)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to create piece reader: "+err.Error())
-	}
-	defer pieceReader.Close()
-	contentprovider.SetCommonHeaders(c, pieceCid.String())
-	http.ServeContent(
-		c.Response(),
-		c.Request(),
-		pieceCid.String()+".car",
-		pieceMetadata.Car.CreatedAt,
-		pieceReader,
-	)
+        id := c.Param("id")
+        pieceCid, err := cid.Parse(id)
+        if err != nil {
+                Logger.Errorw("Invalid piece CID", "id", id, "error", err)
+                return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
+        }
 
-	return nil
+        if pieceCid.Type() != cid.FilCommitmentUnsealed {
+                Logger.Warnw("Received invalid CID type", "id", id, "type", pieceCid.Type())
+                return c.String(http.StatusBadRequest, "CID is not a commp")
+        }
+
+        var pieceMetadata *contentprovider.PieceMetadata
+        var ok bool
+        pieceMetadata, ok = d.usageCache.Get(pieceCid.String())
+        if !ok {
+                var statusCode int
+                Logger.Infow("Fetching metadata from API", "pieceCID", pieceCid.String())
+
+                pieceMetadata, statusCode, err = GetMetadata(c.Request().Context(), d.api, d.config, d.clientConfig, pieceCid.String())
+                if err != nil {
+                        Logger.Errorw("Failed to query metadata API", "pieceCID", pieceCid.String(), "statusCode", statusCode, "error", err)
+                        if statusCode >= 400 {
+                                return c.String(statusCode, "failed to query metadata API: "+err.Error())
+                        }
+                        return c.String(http.StatusInternalServerError, "failed to query metadata API: "+err.Error())
+                }
+                d.usageCache.Set(pieceCid.String(), *pieceMetadata)
+        }
+
+        defer func() {
+                d.usageCache.Done(pieceCid.String())
+        }()
+
+        // Log the CAR file and storage details
+        Logger.Infow("Attempting to create piece reader",
+                "pieceCID", pieceCid.String(),
+                "carFile", pieceMetadata.Car,
+                "storageType", pieceMetadata.Storage.Type)
+
+        pieceReader, err := store.NewPieceReader(c.Request().Context(), pieceMetadata.Car, pieceMetadata.Storage, pieceMetadata.CarBlocks, pieceMetadata.Files)
+        if err != nil {
+                Logger.Errorw("Failed to create piece reader", "pieceCID", pieceCid.String(), "error", err)
+                return c.String(http.StatusInternalServerError, "failed to create piece reader: "+err.Error())
+        }
+        defer pieceReader.Close()
+
+        Logger.Infow("Serving content", "pieceCID", pieceCid.String(), "filename", pieceCid.String()+".car")
+
+        contentprovider.SetCommonHeaders(c, pieceCid.String())
+
+        http.ServeContent(
+                c.Response(),
+                c.Request(),
+                pieceCid.String()+".car",
+                pieceMetadata.Car.CreatedAt,
+                pieceReader,
+        )
+
+        return nil
 }
 
 func GetMetadata(
