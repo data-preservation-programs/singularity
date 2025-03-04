@@ -33,11 +33,13 @@ const maxRetries = 5
 const initialBackoff = 120 * time.Second // Relax for Fail2Ban rules
 
 type DownloadServer struct {
-	bind         string
-	api          string
-	config       map[string]string
-	clientConfig model.ClientConfig
-	usageCache   *UsageCache[contentprovider.PieceMetadata]
+    bind         string
+    api          string
+    config       map[string]string
+    clientConfig model.ClientConfig
+    usageCache   *UsageCache[contentprovider.PieceMetadata]
+
+    metadataCache sync.Map // Cache for ongoing metadata requests
 }
 
 type cacheItem[C any] struct {
@@ -129,24 +131,54 @@ func (d *DownloadServer) handleGetPiece(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "CID is not a commp")
 	}
 
+	Logger.Infow("Processing request", "pieceCID", pieceCid.String())
+
+	// Check usage cache first
 	var pieceMetadata *contentprovider.PieceMetadata
 	var ok bool
 	pieceMetadata, ok = d.usageCache.Get(pieceCid.String())
+
 	if !ok {
+		Logger.Infow("Metadata not found in cache, fetching from API", "pieceCID", pieceCid.String())
+
+		// Check if another request is already fetching this metadata
+		if result, exists := d.metadataCache.Load(pieceCid.String()); exists {
+			Logger.Infow("Waiting for ongoing metadata fetch", "pieceCID", pieceCid.String())
+			metadataChan := result.(chan *contentprovider.PieceMetadata)
+			pieceMetadata, ok = <-metadataChan
+			if ok {
+				Logger.Infow("Received metadata from another request", "pieceCID", pieceCid.String())
+				d.usageCache.Set(pieceCid.String(), *pieceMetadata)
+				goto ServeContent
+			}
+		}
+
+		// Create a new channel for waiting requests
+		metadataChan := make(chan *contentprovider.PieceMetadata, 1)
+		d.metadataCache.Store(pieceCid.String(), metadataChan)
+		defer d.metadataCache.Delete(pieceCid.String()) // Remove from cache once fetched
+
+		// Fetch metadata (call standalone function)
 		var statusCode int
 		Logger.Infow("Fetching metadata from API", "pieceCID", pieceCid.String())
-
 		pieceMetadata, statusCode, err = GetMetadata(c.Request().Context(), d.api, d.config, d.clientConfig, pieceCid.String())
+
 		if err != nil {
 			Logger.Errorw("Failed to query metadata API", "pieceCID", pieceCid.String(), "statusCode", statusCode, "error", err)
+			close(metadataChan) // Close channel so waiting goroutines don't hang
 			if statusCode >= 400 {
 				return c.String(statusCode, "failed to query metadata API: "+err.Error())
 			}
 			return c.String(http.StatusInternalServerError, "failed to query metadata API: "+err.Error())
 		}
+
+		Logger.Infow("Successfully fetched metadata", "pieceCID", pieceCid.String())
 		d.usageCache.Set(pieceCid.String(), *pieceMetadata)
+		metadataChan <- pieceMetadata
+		close(metadataChan)
 	}
 
+ServeContent:
 	defer func() {
 		d.usageCache.Done(pieceCid.String())
 	}()
