@@ -1,10 +1,10 @@
 package storagesystem
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
-	"bufio"
 	"strings"
 	"sync"
 	"time"
