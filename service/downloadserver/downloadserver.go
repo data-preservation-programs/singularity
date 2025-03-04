@@ -9,7 +9,7 @@ import (
 	"time"
 	"io"
 	"bufio"
-
+	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
@@ -256,12 +256,22 @@ func GetMetadata(
 		}
 		defer resp.Body.Close()
 
-		// Handle known HTTP errors (don't retry on these)
-		if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusNotFound {
-			Logger.Warnw("Permanent metadata API error", "pieceCID", pieceCid, "statusCode", resp.StatusCode)
-			return nil, resp.StatusCode, errors.Errorf("permanent error: %s", resp.Status)
+		// Handle 429 Too Many Requests
+		if resp.StatusCode == http.StatusTooManyRequests {
+			retryAfter := resp.Header.Get("Retry-After")
+			waitTime := exponentialBackoff(attempt) // Default backoff
+			if retryAfter != "" {
+				parsedWait, err := strconv.Atoi(retryAfter)
+				if err == nil {
+					waitTime = time.Duration(parsedWait) * time.Second
+				}
+			}
+			Logger.Warnw("Rate limited (429), retrying after", "pieceCID", pieceCid, "retryAfter", waitTime)
+			time.Sleep(waitTime)
+			continue // Retry after waiting
 		}
 
+		// Handle other errors
 		if resp.StatusCode != http.StatusOK {
 			Logger.Errorw("Metadata API returned error", "pieceCID", pieceCid, "statusCode", resp.StatusCode, "attempt", attempt)
 			lastStatusCode = resp.StatusCode
@@ -289,7 +299,7 @@ func GetMetadata(
 	return nil, lastStatusCode, lastErr
 }
 
-// Exponential backoff function (2^attempt with jitter)
+// Exponential backoff function (2^attempt with jitter) - Ensure only one definition exists
 func exponentialBackoff(attempt int) time.Duration {
 	baseDelay := time.Duration(1<<attempt) * initialBackoff
 	jitter := time.Duration(rand.Intn(500)) * time.Millisecond
