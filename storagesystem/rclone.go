@@ -8,8 +8,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-	
-	"strconv"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/gammazero/workerpool"
@@ -18,6 +17,7 @@ import (
 	"github.com/rclone/rclone/fs/config/configmap"
 	"github.com/rclone/rclone/fs/object"
 	"golang.org/x/exp/slices"
+	"strconv"
 )
 
 var logger = log.Logger("storage")
@@ -172,69 +172,69 @@ func (r *readerWithRetry) Close() error {
 }
 
 func (r *readerWithRetry) Read(p []byte) (int, error) {
-    if r.ctx.Err() != nil {
-        return 0, r.ctx.Err()
-    }
+	if r.ctx.Err() != nil {
+		return 0, r.ctx.Err()
+	}
 
-    n, err := r.reader.Read(p)
-    r.offset += int64(n)
+	n, err := r.reader.Read(p)
+	r.offset += int64(n)
 
-    //nolint:errorlint
-    if err == io.EOF || err == nil {
-        return n, err
-    }
+	//nolint:errorlint
+	if err == io.EOF || err == nil {
+		return n, err
+	}
 
-    if r.retryCount >= r.retryCountMax {
-        return n, err
-    }
+	if r.retryCount >= r.retryCountMax {
+		return n, err
+	}
 
-    // Handle rate limiting (429 Too Many Requests)
-    if strings.Contains(err.Error(), "429 Too Many Requests") {
-        retryAfter := extractRetryAfter(err.Error())
-        if retryAfter > 0 {
-            logger.Warnf("Rate limited (429), retrying after %ds", retryAfter)
-            time.Sleep(time.Duration(retryAfter) * time.Second)
-        } else {
-            time.Sleep(r.retryDelay)
-        }
-    } else {
-        logger.Warnf("Read error: %s, retrying after %s", err, r.retryDelay)
-        select {
-        case <-r.ctx.Done():
-            return n, errors.Join(err, r.ctx.Err())
-        case <-time.After(r.retryDelay):
-        }
-    }
+	// Handle rate limiting (429 Too Many Requests)
+	if strings.Contains(err.Error(), "429 Too Many Requests") {
+		retryAfter := extractRetryAfter(err.Error())
+		if retryAfter > 0 {
+			logger.Warnf("Rate limited (429), retrying after %ds", retryAfter)
+			time.Sleep(time.Duration(retryAfter) * time.Second)
+		} else {
+			time.Sleep(r.retryDelay)
+		}
+	} else {
+		logger.Warnf("Read error: %s, retrying after %s", err, r.retryDelay)
+		select {
+		case <-r.ctx.Done():
+			return n, errors.Join(err, r.ctx.Err())
+		case <-time.After(r.retryDelay):
+		}
+	}
 
-    // Increment retry count and apply exponential backoff
-    r.retryCount++
-    r.retryDelay = time.Duration(float64(r.retryDelay) * r.retryBackoffExponential)
-    r.retryDelay += r.retryBackoff
+	// Increment retry count and apply exponential backoff
+	r.retryCount++
+	r.retryDelay = time.Duration(float64(r.retryDelay) * r.retryBackoffExponential)
+	r.retryDelay += r.retryBackoff
 
-    // Close and reopen reader
-    r.reader.Close()
-    var err2 error
-    r.reader, err2 = r.object.Open(r.ctx, &fs.SeekOption{Offset: r.offset})
-    if err2 != nil {
-        return n, errors.Join(err, err2)
-    }
+	// Close and reopen reader
+	r.reader.Close()
+	var err2 error
+	r.reader, err2 = r.object.Open(r.ctx, &fs.SeekOption{Offset: r.offset})
+	if err2 != nil {
+		return n, errors.Join(err, err2)
+	}
 
-    return n, nil
+	return n, nil
 }
 
 func extractRetryAfter(errorMsg string) int {
-    parts := strings.Split(errorMsg, " ")
-    for i, part := range parts {
-        if part == "429" && i+2 < len(parts) && parts[i+1] == "Too" && parts[i+2] == "Many" {
-            if i+3 < len(parts) {
-                retryTime, err := strconv.Atoi(parts[i+3])
-                if err == nil {
-                    return retryTime
-                }
-            }
-        }
-    }
-    return 0 // Default to no Retry-After found
+	parts := strings.Split(errorMsg, " ")
+	for i, part := range parts {
+		if part == "429" && i+2 < len(parts) && parts[i+1] == "Too" && parts[i+2] == "Many" {
+			if i+3 < len(parts) {
+				retryTime, err := strconv.Atoi(parts[i+3])
+				if err == nil {
+					return retryTime
+				}
+			}
+		}
+	}
+	return 0 // Default to no Retry-After found
 }
 
 func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error) {
@@ -297,11 +297,11 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 	config := fs.GetConfig(ctx)
 	overrideConfig(config, s)
 
-    	config.Transfers = 1                    // Limit number of concurrent transfers
-    	config.MultiThreadStreams = 1            // One parallel chunk per file
-    	config.BufferSize = 256 * 1024 * 1024    // 256MB buffer for smoother streaming
-    	config.LowLevelRetries = 5               // Reduce retry attempts to avoid API bans
-    	config.TPSLimit = 1                       // Throttle API requests
+	config.Transfers = 1                  // Limit number of concurrent transfers
+	config.MultiThreadStreams = 1         // One parallel chunk per file
+	config.BufferSize = 256 * 1024 * 1024 // 256MB buffer for smoother streaming
+	config.LowLevelRetries = 5            // Reduce retry attempts to avoid API bans
+	config.TPSLimit = 1                   // Throttle API requests
 
 	noHeadObjectConfig := make(map[string]string)
 	headObjectConfig := make(map[string]string)

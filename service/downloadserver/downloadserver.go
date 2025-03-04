@@ -1,15 +1,15 @@
 package downloadserver
 
 import (
+	"bufio"
 	"context"
+	"io"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"io"
-	"bufio"
-	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
@@ -32,13 +32,13 @@ const maxRetries = 5
 const initialBackoff = 120 * time.Second // Relax for Fail2Ban rules
 
 type DownloadServer struct {
-    bind         string
-    api          string
-    config       map[string]string
-    clientConfig model.ClientConfig
-    usageCache   *UsageCache[contentprovider.PieceMetadata]
+	bind         string
+	api          string
+	config       map[string]string
+	clientConfig model.ClientConfig
+	usageCache   *UsageCache[contentprovider.PieceMetadata]
 
-    metadataCache sync.Map // Cache for ongoing metadata requests
+	metadataCache sync.Map // Cache for ongoing metadata requests
 }
 
 type cacheItem[C any] struct {
@@ -118,7 +118,6 @@ func (c *UsageCache[C]) Done(key string) {
 }
 
 var rateLimiter = time.Tick(60 * time.Second) // Allow 1 request per second
-
 
 func (d *DownloadServer) handleGetPiece(c echo.Context) error {
 	id := c.Param("id")
