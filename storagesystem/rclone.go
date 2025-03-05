@@ -35,6 +35,31 @@ type RCloneHandler struct {
 	retryBackoff            time.Duration
 	retryBackoffExponential float64
 	scanConcurrency         int
+	closed                  bool
+	mu                      sync.Mutex
+}
+
+func (h *RCloneHandler) Close() error {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	if h.closed {
+		return nil
+	}
+	h.closed = true
+
+	// Close any open connections/resources
+	if closer, ok := h.fs.(io.Closer); ok {
+		if err := closer.Close(); err != nil {
+			return errors.WithStack(err)
+		}
+	}
+	if closer, ok := h.fsNoHead.(io.Closer); ok {
+		if err := closer.Close(); err != nil {
+			return errors.WithStack(err)
+		}
+	}
+	return nil
 }
 
 func (h RCloneHandler) Name() string {
