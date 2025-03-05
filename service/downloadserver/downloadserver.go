@@ -31,6 +31,7 @@ type DownloadServer struct {
 	config       map[string]string
 	clientConfig model.ClientConfig
 	usageCache   *UsageCache[contentprovider.PieceMetadata]
+	handlerCache *storagesystem.HandlerCache
 }
 
 type cacheItem[C any] struct {
@@ -135,10 +136,19 @@ func (d *DownloadServer) handleGetPiece(c echo.Context) error {
 	defer func() {
 		d.usageCache.Done(pieceCid.String())
 	}()
-	pieceReader, err := store.NewPieceReader(c.Request().Context(), pieceMetadata.Car, pieceMetadata.Storage, pieceMetadata.CarBlocks, pieceMetadata.Files)
+
+	handler, err := d.handlerCache.Get(c.Request().Context(), pieceMetadata.Storage)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to create piece reader: "+err.Error())
+		return c.String(http.StatusInternalServerError, "failed to get storage handler: "+err.Error())
 	}
+
+	pieceReader, err := store.NewPieceReaderWithHandler(
+		c.Request().Context(),
+		pieceMetadata.Car,
+		handler,
+		pieceMetadata.CarBlocks,
+		pieceMetadata.Files,
+	)
 	defer pieceReader.Close()
 	contentprovider.SetCommonHeaders(c, pieceCid.String())
 	http.ServeContent(
@@ -285,5 +295,6 @@ func NewDownloadServer(bind string, api string, config map[string]string, client
 		config:       config,
 		clientConfig: clientConfig,
 		usageCache:   NewUsageCache[contentprovider.PieceMetadata](time.Minute),
+		handlerCache: storagesystem.NewHandlerCache(30 * time.Minute),
 	}
 }

@@ -128,31 +128,14 @@ func (pr *PieceReader) Clone() *PieceReader {
 	return reader
 }
 
-// NewPieceReader is a function that creates a new PieceReader.
-// It takes a context, a Car model, a Source model, a slice of CarBlock models, a slice of File models, and a HandlerResolver as input.
-// It validates the input data and returns an error if any of it is invalid.
-// The returned PieceReader starts at the beginning of the data (position 0).
-//
-// Parameters:
-//   - ctx: The context for the new PieceReader. This can be used to cancel operations or set deadlines.
-//   - car: A Car model that represents the CAR (Content Addressable Archive) file being read.
-//   - source: A Source model that represents the source of the data.
-//   - carBlocks: A slice of CarBlock models that represent the blocks of data in the CAR file.
-//   - files: A slice of File models that represent the files of data being read.
-//   - resolver: A HandlerResolver that is used to resolve the handler for the source of the data.
-//
-// Returns:
-//   - A new PieceReader that has been initialized with the provided data, and an error if the initialization failed.
-func NewPieceReader(
+// NewPieceReaderWithHandler creates a new PieceReader with an existing handler
+func NewPieceReaderWithHandler(
 	ctx context.Context,
 	car model.Car,
-	storage model.Storage,
+	handler *storagesystem.RCloneHandler,
 	carBlocks []model.CarBlock,
 	files []model.File,
-) (
-	*PieceReader,
-	error,
-) {
+) (*PieceReader, error) {
 	// Sanitize carBlocks
 	if len(carBlocks) == 0 {
 		return nil, ErrNoCarBlocks
@@ -201,11 +184,6 @@ func NewPieceReader(
 		}
 	}
 
-	handler, err := storagesystem.NewRCloneHandler(ctx, storage)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
 	return &PieceReader{
 		ctx:        ctx,
 		header:     header,
@@ -215,6 +193,21 @@ func NewPieceReader(
 		files:      filesMap,
 		blockIndex: -1,
 	}, nil
+}
+
+// NewPieceReader creates a new PieceReader with a new handler
+func NewPieceReader(
+	ctx context.Context,
+	car model.Car,
+	storage model.Storage,
+	carBlocks []model.CarBlock,
+	files []model.File,
+) (*PieceReader, error) {
+	handler, err := storagesystem.NewRCloneHandler(ctx, storage)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return NewPieceReaderWithHandler(ctx, car, handler, carBlocks, files)
 }
 
 // Read is a method on the PieceReader struct that reads data into the provided byte slice.
