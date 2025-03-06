@@ -1,6 +1,7 @@
 package storagesystem
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"io"
@@ -199,12 +200,15 @@ func (r *readerWithRetry) Read(p []byte) (int, error) {
 	r.reader, err2 = r.object.Open(r.ctx, &fs.SeekOption{Offset: r.offset})
 	if err2 != nil {
 		return n, errors.Join(err, err2)
+		    	logger.Warnf("Read error: %s, retrying after 5s", err)
+    			time.Sleep(5 * time.Second) // 🔥 Add delay before retrying 🔥
 	}
 	return n, nil
 }
 
 func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error) {
 	logger.Debugw("Read: reading path", "type", h.fs.Name(), "root", h.fs.Root(), "path", path, "offset", offset, "length", length)
+
 	if length == 0 {
 		object, err := h.fs.NewObject(ctx, path)
 		if err != nil {
@@ -212,29 +216,43 @@ func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, leng
 		}
 		return io.NopCloser(bytes.NewReader(nil)), object, nil
 	}
+
+	// Fetch object from rclone storage
 	object, err := h.fsNoHead.NewObject(ctx, path)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "failed to open object %s", path)
 	}
+
 	option := &fs.SeekOption{Offset: offset}
+
+	// Open the object for reading
 	reader, err := object.Open(ctx, option)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "failed to open object stream %s", path)
+	}
+
+	// Apply a 256MB buffer & wrap it in io.NopCloser to add a Close method
+	bufferedReader := io.NopCloser(bufio.NewReaderSize(reader, 256*1024*1024)) // ✅ Wrapped with io.NopCloser
+
 	readerWithRetry := &readerWithRetry{
 		ctx:                     ctx,
 		object:                  object,
-		reader:                  reader,
+		reader:                  bufferedReader, // ✅ Now implements io.ReadCloser
 		offset:                  offset,
 		retryDelay:              h.retryDelay,
 		retryBackoff:            h.retryBackoff,
 		retryCountMax:           h.retryMaxCount,
 		retryBackoffExponential: h.retryBackoffExponential,
 	}
+
 	if length < 0 {
-		return readerWithRetry, object, errors.WithStack(err)
+		return readerWithRetry, object, nil
 	}
+
 	return readCloser{
 		Reader: io.LimitReader(readerWithRetry, length),
 		Closer: readerWithRetry,
-	}, object, errors.WithStack(err)
+	}, object, nil
 }
 
 func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, error) {
@@ -247,6 +265,7 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 	ctx, _ = fs.AddConfig(ctx)
 	config := fs.GetConfig(ctx)
 	overrideConfig(config, s)
+        config.BufferSize = 256 * 1024 * 1024    // 256MB buffer for smoother streaming
 
 	noHeadObjectConfig := make(map[string]string)
 	headObjectConfig := make(map[string]string)
@@ -345,7 +364,9 @@ func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
 	if s.ClientConfig.UseServerModTime != nil {
 		config.UseServerModTime = *s.ClientConfig.UseServerModTime
 	}
-	if s.ClientConfig.LowLevelRetries != nil {
-		config.LowLevelRetries = *s.ClientConfig.LowLevelRetries
-	}
+	config.Transfers = 1  // Only 1 file download at a time
+        config.Checkers = 1   // Only 1 checker (avoids excessive HTTP requests)
+        config.LowLevelRetries = 10
+        config.MaxBacklog = 1
+        config.BufferSize = 256 * 1024 * 1024  // 256MB buffer for smoother streaming
 }
