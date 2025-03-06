@@ -14,8 +14,8 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
-	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/store"
+	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
@@ -26,10 +26,14 @@ import (
 const shutdownTimeout = 5 * time.Second
 
 // Maximum retry attempts
-const maxRetries = 5
+const maxRetries = 60
 
 // Initial wait duration before retrying (doubles each retry)
 const initialBackoff = 120 * time.Second // Relax for Fail2Ban rules
+
+var archiveReqLock sync.Mutex // Ensures only 1 API request is active at a time
+var nextAllowedRequestTime time.Time
+var nextAllowedRequestMu sync.Mutex
 
 type DownloadServer struct {
 	bind         string
@@ -117,9 +121,12 @@ func (c *UsageCache[C]) Done(key string) {
 	item.usageCount--
 }
 
-var rateLimiter = time.Tick(60 * time.Second) // Allow 1 request per second
+var streamLimit = make(chan struct{}, 1) // Only 1 concurrent stream
 
 func (d *DownloadServer) handleGetPiece(c echo.Context) error {
+	streamLimit <- struct{}{} // Acquire semaphore (waits if limit reached)
+	defer func() { <-streamLimit }() // Release when done
+
 	id := c.Param("id")
 	pieceCid, err := cid.Parse(id)
 	if err != nil {
@@ -142,78 +149,37 @@ func (d *DownloadServer) handleGetPiece(c echo.Context) error {
 	if !ok {
 		Logger.Infow("Metadata not found in cache, checking for ongoing fetch", "pieceCID", pieceCid.String())
 
-		// **Check if another request is already fetching this metadata**
-		metadataChan := make(chan *contentprovider.PieceMetadata, 1)
-		actual, loaded := d.metadataCache.LoadOrStore(pieceCid.String(), metadataChan)
-
-		if loaded {
-			// **Wait for the existing metadata fetch**
-			Logger.Infow("Waiting for ongoing metadata fetch", "pieceCID", pieceCid.String())
-			metadataChan = actual.(chan *contentprovider.PieceMetadata)
-			pieceMetadata, ok = <-metadataChan
-			if pieceMetadata != nil {
-				Logger.Infow("Received metadata from another request", "pieceCID", pieceCid.String())
-				d.usageCache.Set(pieceCid.String(), *pieceMetadata)
-				goto ServeContent
-			} else {
-				Logger.Errorw("Metadata fetch failed, returning error", "pieceCID", pieceCid.String())
-				return c.String(http.StatusInternalServerError, "Failed to fetch metadata")
-			}
-		}
-
-		// **Rate limit metadata fetch**
-		Logger.Infow("Waiting for rate limiter before fetching metadata", "pieceCID", pieceCid.String())
-		<-rateLimiter // **Wait before sending request to avoid 429 errors**
-
-		// **Fetch metadata (call standalone function)**
+		// **Fetch metadata**
 		var statusCode int
-		Logger.Infow("Fetching metadata from API", "pieceCID", pieceCid.String())
-
 		pieceMetadata, statusCode, err = GetMetadata(c.Request().Context(), d.api, d.config, d.clientConfig, pieceCid.String())
 
 		// **Handle errors**
 		if err != nil {
 			Logger.Errorw("Failed to query metadata API", "pieceCID", pieceCid.String(), "statusCode", statusCode, "error", err)
-
-			// **Remove metadata cache entry to allow retries**
-			d.metadataCache.Delete(pieceCid.String())
-
-			close(metadataChan) // **Close channel so waiting goroutines don't hang**
-			if statusCode >= 400 {
-				return c.String(statusCode, "failed to query metadata API: "+err.Error())
-			}
-			return c.String(http.StatusInternalServerError, "failed to query metadata API: "+err.Error())
+			return c.String(statusCode, "failed to query metadata API: "+err.Error())
 		}
 
 		Logger.Infow("Successfully fetched metadata", "pieceCID", pieceCid.String())
-
-		// **Ensure metadata is cached before notifying other requests**
 		d.usageCache.Set(pieceCid.String(), *pieceMetadata)
-		metadataChan <- pieceMetadata
-		close(metadataChan) // Close channel after setting metadata
 	}
 
-ServeContent:
-	defer func() {
-		d.usageCache.Done(pieceCid.String())
-	}()
+	defer d.usageCache.Done(pieceCid.String())
 
-	// **Log CAR file and storage details**
-	Logger.Infow("Attempting to create piece reader",
-		"pieceCID", pieceCid.String(),
-		"carFile", pieceMetadata.Car,
-		"storageType", pieceMetadata.Storage.Type)
-
-	pieceReader, err := store.NewPieceReader(c.Request().Context(), pieceMetadata.Car, pieceMetadata.Storage, pieceMetadata.CarBlocks, pieceMetadata.Files)
+	// **Initialize Piece Reader - Corrected**
+	pieceReader, err := store.NewPieceReader(
+		c.Request().Context(),
+		pieceMetadata.Car,
+		pieceMetadata.Storage,
+		pieceMetadata.CarBlocks,
+		pieceMetadata.Files,
+	)
 	if err != nil {
 		Logger.Errorw("Failed to create piece reader", "pieceCID", pieceCid.String(), "error", err)
 		return c.String(http.StatusInternalServerError, "failed to create piece reader: "+err.Error())
 	}
 	defer pieceReader.Close()
 
-	Logger.Infow("Serving content with increased buffer", "pieceCID", pieceCid.String(), "filename", pieceCid.String()+".car")
-
-	contentprovider.SetCommonHeaders(c, pieceCid.String())
+	Logger.Infow("Serving content", "pieceCID", pieceCid.String(), "filename", pieceCid.String()+".car")
 
 	// **Use buffered writer (16MB buffer) to improve streaming performance**
 	bufferedWriter := bufio.NewWriterSize(c.Response().Writer, 16*1024*1024) // 16MB buffer
@@ -228,6 +194,7 @@ ServeContent:
 	return nil
 }
 
+
 func GetMetadata(
 	ctx context.Context,
 	api string,
@@ -239,10 +206,24 @@ func GetMetadata(
 	var lastErr error
 	var lastStatusCode int
 
+	// Lock to ensure only one request is in-flight
+	archiveReqLock.Lock()
+	defer archiveReqLock.Unlock()
+
+	// Wait if we are rate-limited
+	nextAllowedRequestMu.Lock()
+	waitTime := time.Until(nextAllowedRequestTime)
+	nextAllowedRequestMu.Unlock()
+
+	if waitTime > 0 {
+		Logger.Warnw("Rate limit active, waiting", "pieceCID", pieceCid, "waitTime", waitTime)
+		time.Sleep(waitTime)
+	}
+
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		Logger.Infow("Fetching metadata from API", "pieceCID", pieceCid, "attempt", attempt)
 
-		// Set request timeout (increase timeout to 120s per attempt)
+		// Set request timeout (increase timeout per attempt)
 		reqCtx, cancel := context.WithTimeout(ctx, 120*time.Second)
 		defer cancel()
 
@@ -262,20 +243,26 @@ func GetMetadata(
 		}
 		defer resp.Body.Close()
 
-		// Handle 429 Too Many Requests
-		if resp.StatusCode == http.StatusTooManyRequests {
-			retryAfter := resp.Header.Get("Retry-After")
-			waitTime := exponentialBackoff(attempt) // Default backoff
-			if retryAfter != "" {
-				parsedWait, err := strconv.Atoi(retryAfter)
-				if err == nil {
-					waitTime = time.Duration(parsedWait) * time.Second
-				}
+	// Handle 429 Too Many Requests
+	if resp.StatusCode == http.StatusTooManyRequests {
+		retryAfter := resp.Header.Get("Retry-After")
+		retryDuration := exponentialBackoff(attempt) // Default backoff
+		if retryAfter != "" {
+			parsedWait, err := strconv.Atoi(retryAfter)
+			if err == nil {
+				retryDuration = time.Duration(parsedWait) * time.Second
 			}
-			Logger.Warnw("Rate limited (429), retrying after", "pieceCID", pieceCid, "retryAfter", waitTime)
-			time.Sleep(waitTime)
-			continue // Retry after waiting
 		}
+
+		// Set global rate limit timer
+		nextAllowedRequestMu.Lock()
+		nextAllowedRequestTime = time.Now().Add(retryDuration)
+		nextAllowedRequestMu.Unlock()
+
+		Logger.Warnw("Rate limited (429), retrying after", "pieceCID", pieceCid, "retryAfter", retryDuration)
+		time.Sleep(retryDuration)
+		continue // Retry after waiting
+	}
 
 		// Handle other errors
 		if resp.StatusCode != http.StatusOK {
