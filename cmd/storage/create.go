@@ -20,7 +20,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var defaultClientConfig = fs.NewConfig()
+var defaultClientConfig = new(fs.ConfigInfo)
 
 var CommonConfigFlags = []cli.Flag{
 	&cli.IntFlag{
