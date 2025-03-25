@@ -1,3 +1,4 @@
+version: "2"
 run:
   tests: false
   skip-dirs:
@@ -13,57 +14,81 @@ run:
 linters:
   enable-all: true
   disable:
-    - typecheck
-    - interfacer
-    - structcheck
-    - golint
-    - ifshort
-    - scopelint
-    - varcheck
-    - varnamelen
-    - maligned
-    - deadcode
-    - structcheck
-    - gci
-    - goimports
-    - gofumpt
-    - nolintlint
-    - ireturn
-    - nosnakecase
-    - nlreturn
-    - godox
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - contextcheck
+    - cyclop
+    - depguard
+    - dogsled
+    - dupl
+    - dupword
+    - errname
+    - errorlint
+    - exhaustruct
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - goheader
     - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - grouper
+    - importas
+    - inamedparam
+    - ineffassign
+    - ireturn
+    - lll
+    - loggercheck
+    - maintidx
+    - makezero
+    - misspell
+    - musttag
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - nlreturn
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - paralleltest
+    - prealloc
+    - predeclared
+    - promlinter
+    - reassign
+    - revive
     - rowserrcheck
     - sqlclosecheck
-    - wastedassign
-    - gocognit
-    - wsl
-    - musttag
-    - exhaustivestruct
-    - cyclop
-    - gomnd
-    - gochecknoglobals
-    - funlen
-    - gocyclo
-    - exhaustruct
-    - wrapcheck
-    - nestif
-    - containedctx
-    - maintidx
-    - nonamedreturns
-    - nilnil
-    - prealloc
-    - gochecknoinits
-    - dupl
-    - forbidigo
-    - godot
-    - depguard
-    - nakedret
+    - staticcheck
     - tagalign
-    - lll
-    - dupword
-    - interfacebloat
-    - goconst
+    - tagliatelle
+    - tparallel
+    - unconvert
+    - unparam
+    - unused
+    - varnamelen
+    - wastedassign
+    - whitespace
+    - wrapcheck
+    - wsl
+
+formatters:
+  disable:
+    - gci
+    - gofumpt
+    - goimports
 
 linters-settings:
   errcheck:
