@@ -107,8 +107,12 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "deleteAfterExport cannot be set without output storages")
 	}
 
-	if len(outputs) == 0 && request.NoInline {
-		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "inline preparation cannot be disabled without output storages")
+	if request.NoInline && len(outputs) == 0 {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "output storage is required in non-inline mode")
+	}
+
+	if !request.NoInline && !request.NoDag && len(outputs) == 0 {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "output storage is required for DAG CAR files in inline mode when DAG generation is enabled")
 	}
 
 	return &model.Preparation{
