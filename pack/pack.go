@@ -112,7 +112,8 @@ func Pack(
 	var pieceCid cid.Cid
 	var finalPieceSize uint64
 	var fileSize int64
-	if storageWriter != nil {
+	// storage may still be attached in inline mode for DAG outpute 
+	if storageWriter != nil && job.Attachment.Preparation.NoInline {
 		var carGenerated bool
 		reader := io.TeeReader(assembler, calc)
 		filename = uuid.NewString() + ".car"
