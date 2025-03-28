@@ -36,6 +36,7 @@ type Preparation struct {
 	PieceSize         int64         `json:"pieceSize"`
 	NoInline          bool          `json:"noInline"`
 	NoDag             bool          `json:"noDag"`
+	Auto              bool          `gorm:"default:true"`
 
 	// Associations
 	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
