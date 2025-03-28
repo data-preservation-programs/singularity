@@ -256,14 +256,14 @@ func (w *Thread) run(ctx context.Context) (retErr error) {
 	}()
 
 	var jobTypes []model.JobType
-	if w.config.EnableDag {
-		jobTypes = append(jobTypes, model.DagGen)
+	if w.config.EnablePack {
+		jobTypes = append(jobTypes, model.Pack)
 	}
 	if w.config.EnableScan {
 		jobTypes = append(jobTypes, model.Scan)
 	}
-	if w.config.EnablePack {
-		jobTypes = append(jobTypes, model.Pack)
+	if w.config.EnableDag {
+		jobTypes = append(jobTypes, model.DagGen)
 	}
 
 	var timer *time.Timer
