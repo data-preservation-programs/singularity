@@ -32,6 +32,7 @@ type DagGenerator struct {
 	done         bool
 	carBlocks    []model.CarBlock
 	offset       int64
+	noInline     bool
 }
 
 // Read implements the io.Reader interface for the DagGenerator. It generates
@@ -113,13 +114,15 @@ func (d *DagGenerator) Read(p []byte) (int, error) {
 		vint := varint.ToUvarint(uint64(carBlockSize))
 		carBlockSize += len(vint)
 		readers = append(readers, bytes.NewReader(vint), bytes.NewReader(blk.Cid().Bytes()), bytes.NewReader(blk.RawData()))
-		d.carBlocks = append(d.carBlocks, model.CarBlock{
-			CID:            model.CID(blk.Cid()),
-			CarOffset:      d.offset,
-			CarBlockLength: int32(carBlockSize),
-			Varint:         vint,
-			RawBlock:       blk.RawData(),
-		})
+		if !d.noInline {
+			d.carBlocks = append(d.carBlocks, model.CarBlock{
+				CID:            model.CID(blk.Cid()),
+				CarOffset:      d.offset,
+				CarBlockLength: int32(carBlockSize),
+				Varint:         vint,
+				RawBlock:       blk.RawData(),
+			})
+		}
 		d.offset += int64(carBlockSize)
 	}
 	d.buffer = io.MultiReader(readers...)
@@ -133,13 +136,14 @@ func (d *DagGenerator) Close() error {
 	return nil
 }
 
-func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID model.SourceAttachmentID, root cid.Cid) *DagGenerator {
+func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID model.SourceAttachmentID, root cid.Cid, noInline bool) *DagGenerator {
 	return &DagGenerator{
 		ctx:          ctx,
 		db:           db,
 		attachmentID: attachmentID,
 		root:         root,
 		dirCIDs:      make(map[model.DirectoryID]model.CID),
+		noInline:     noInline,
 	}
 }
 
@@ -192,7 +196,7 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 		return errors.WithStack(err)
 	}
 
-	dagGenerator := NewDagGenerator(ctx, db, job.Attachment.ID, rootCID)
+	dagGenerator := NewDagGenerator(ctx, db, job.Attachment.ID, rootCID, job.Attachment.Preparation.NoInline)
 	defer dagGenerator.Close()
 
 	var filename string
