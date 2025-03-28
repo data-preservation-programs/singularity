@@ -52,7 +52,11 @@ func PrepareToPackFileRanges(
 		// if we still have remaining parts, we've filled up this chunk
 		packJobState := model.Created
 		if len(remainingParts) > 0 {
-			packJobState = model.Ready
+			if attachment.Preparation.Auto {
+				packJobState = model.Ready
+			} else {
+				packJobState = model.Paused
+			}
 		}
 		err = UpdatePackJob(ctx, db, nextPackJob.ID, packJobState, fileRangeSet.FileRangeIDs())
 		if err != nil {
@@ -113,7 +117,18 @@ func markPackJobsReady(
 	db *gorm.DB,
 	attachmentID model.SourceAttachmentID,
 ) error {
+	var attachment model.SourceAttachment
+	err := db.First(&attachment, attachmentID).Error
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	targetState := model.Paused
+	if attachment.Preparation.Auto {
+		targetState = model.Ready
+	}
+
 	return database.DoRetry(ctx, func() error {
-		return db.Model(&model.Job{}).Where("attachment_id = ? AND state = ?", attachmentID, model.Created).Update("state", model.Ready).Error
+		return db.Model(&model.Job{}).Where("attachment_id = ? AND state = ?", attachmentID, model.Created).Update("state", targetState).Error
 	})
 }

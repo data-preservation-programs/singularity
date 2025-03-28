@@ -91,12 +91,35 @@ func StartJobHandler(
 	return &job, errors.WithStack(err)
 }
 
+// startScanHandler starts a new scanning job
 func (DefaultHandler) StartScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id string,
 	name string) (*model.Job, error) {
-	return StartJobHandler(ctx, db, id, name, model.Scan)
+	// start the scan job
+	scanJob, err := StartJobHandler(ctx, db, id, name, model.Scan)
+	if err != nil {
+		return nil, err
+	}
+
+	// load the attachment and preparation data
+	var attachment model.SourceAttachment
+	err = db.Preload("Preparation").First(&attachment, scanJob.AttachmentID).Error
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	// in auto mode, also start a daggen job
+	// it won't run until pack jobs complete due to job type ordering
+	if attachment.Preparation.Auto && !attachment.Preparation.NoDag {
+		_, err = Default.StartDagGenHandler(ctx, db, id, name)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return scanJob, nil
 }
 
 // @ID StartScan
