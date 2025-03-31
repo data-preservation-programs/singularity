@@ -5616,6 +5616,11 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "auto": {
+                    "description": "Whether to automatically start pack and daggen jobs after scan. If disabled, jobs will need to be manually started.",
+                    "type": "boolean",
+                    "default": true
+                },
                 "deleteAfterExport": {
                     "description": "Whether to delete the source files after export",
                     "type": "boolean",
@@ -6282,6 +6287,9 @@ const docTemplate = `{
         "model.Preparation": {
             "type": "object",
             "properties": {
+                "auto": {
+                    "type": "boolean"
+                },
                 "createdAt": {
                     "type": "string"
                 },

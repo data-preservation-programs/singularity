@@ -19,6 +19,9 @@ import (
 // swagger:model model.Preparation
 type ModelPreparation struct {
 
+	// auto
+	Auto bool `json:"auto,omitempty"`
+
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
 
