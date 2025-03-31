@@ -34,6 +34,11 @@ definitions:
     type: object
   dataprep.CreateRequest:
     properties:
+      auto:
+        default: true
+        description: Whether to automatically start pack and daggen jobs after scan.
+          If disabled, jobs will need to be manually started.
+        type: boolean
       deleteAfterExport:
         default: false
         description: Whether to delete the source files after export
@@ -519,6 +524,8 @@ definitions:
     - DagGen
   model.Preparation:
     properties:
+      auto:
+        type: boolean
       createdAt:
         type: string
       deleteAfterExport:
