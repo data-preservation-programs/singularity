@@ -34,6 +34,7 @@ type Preparation struct {
 	DeleteAfterExport bool          `json:"deleteAfterExport"` // DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.
 	MaxSize           int64         `json:"maxSize"`
 	PieceSize         int64         `json:"pieceSize"`
+	MinPieceSize      int64         `json:"minPieceSize"` // Minimum piece size for the preparation, applies only to DAG and remainder pieces
 	NoInline          bool          `json:"noInline"`
 	NoDag             bool          `json:"noDag"`
 
