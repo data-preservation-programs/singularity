@@ -451,6 +451,10 @@ func TestDataPrep(t *testing.T) {
 							require.Equal(t, pieceCID, calculatedPieceCID)
 							err = os.WriteFile(filepath.Join(downloadDir, pieceCID+".car"), downloaded, 0777)
 							require.NoError(t, err)
+
+							// Verify piece size is a power of two
+							pieceSize := uint64(len(downloaded))
+							require.True(t, util.IsPowerOfTwo(pieceSize), "piece size %d is not a power of two", pieceSize)
 						}
 
 						// Download all pieces using local download server
