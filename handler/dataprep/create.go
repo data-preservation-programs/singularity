@@ -78,9 +78,14 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "maxSize needs to be reduced to leave space for padding")
 	}
 
-	minPieceSize, err := humanize.ParseBytes(request.MinPieceSizeStr)
+	minPieceSizeStr := request.MinPieceSizeStr
+	if minPieceSizeStr == "" {
+		minPieceSizeStr = "256B"
+	}
+
+	minPieceSize, err := humanize.ParseBytes(minPieceSizeStr)
 	if err != nil {
-		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "invalid value for minPieceSize: %s", request.MinPieceSizeStr))
+		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "invalid value for minPieceSize: %s", minPieceSizeStr))
 	}
 
 	if minPieceSize > pieceSize {
