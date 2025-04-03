@@ -255,6 +255,7 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 		StoragePath:   filename,
 		AttachmentID:  &job.AttachmentID,
 		PreparationID: job.Attachment.PreparationID,
+		PieceType:     model.DagPiece,
 	}
 
 	err = database.DoRetry(ctx, func() error {

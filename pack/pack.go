@@ -169,6 +169,7 @@ func Pack(
 		AttachmentID:  &job.AttachmentID,
 		PreparationID: job.Attachment.PreparationID,
 		JobID:         &job.ID,
+		PieceType:     model.DataPiece,
 	}
 
 	// Update all Files and FileRanges that have size == -1
