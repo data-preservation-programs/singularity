@@ -101,7 +101,7 @@ func (r *Retriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, r
 
 	// collect errors
 	var err error
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

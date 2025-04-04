@@ -30,7 +30,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/ybbus/jsonrpc/v3"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 const (
