@@ -175,7 +175,7 @@ func (w Worker) Run(ctx context.Context) error {
 	}()
 
 	threads := make([]service.Server, w.config.Concurrency)
-	for i := 0; i < w.config.Concurrency; i++ {
+	for i := range w.config.Concurrency {
 		id := uuid.New()
 		thread := &Thread{
 			id:           id,
