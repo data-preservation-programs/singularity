@@ -5,10 +5,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
-
-	"slices"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/analytics"
