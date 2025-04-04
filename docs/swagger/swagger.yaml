@@ -11835,6 +11835,29 @@ paths:
       summary: Remove a wallet
       tags:
       - Wallet
+  /wallet/create:
+    post:
+      operationId: CreateWallet
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Wallet'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create new wallet
+      tags:
+      - Wallet
 produces:
 - application/json
 swagger: "2.0"
