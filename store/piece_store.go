@@ -178,7 +178,7 @@ func NewPieceReader(
 		return nil, errors.Wrapf(ErrInvalidEndOffset, "expected %d, got %d", car.FileSize, lastBlock.CarOffset+int64(lastBlock.CarBlockLength))
 	}
 
-	for i := range carBlocks {
+	for i := range len(carBlocks) {
 		if i != len(carBlocks)-1 {
 			if carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength) != carBlocks[i+1].CarOffset {
 				return nil, errors.Wrapf(ErrIncontiguousBlocks, "previous offset %d, next offset %d", carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength), carBlocks[i+1].CarOffset)

@@ -201,7 +201,7 @@ func (s *Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 
 		var j int
 		// Get path parameters
-		for i := 0; i < handlerFuncType.NumIn(); i++ {
+		for i := range handlerFuncType.NumIn() {
 			paramType := handlerFuncType.In(i)
 			if paramType.String() == "context.Context" {
 				inputParams = append(inputParams, reflect.ValueOf(c.Request().Context()))

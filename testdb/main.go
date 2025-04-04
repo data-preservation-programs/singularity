@@ -138,7 +138,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	}
 
 	var files []model.File
-	for i := 0; i < r.Intn(10_000); i++ {
+	for i := range r.Intn(10_000) {
 		size := r.Int63n(1 << 20)
 		rCID := randomCID()
 		files = append(files, model.File{
