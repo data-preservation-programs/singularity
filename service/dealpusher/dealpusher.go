@@ -318,8 +318,9 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				existingPieceCIDQuery = db.Table("deals").Select("piece_cid").Where("schedule_id = ?", schedule.ID)
 			}
 			if len(allowedPieceCIDs) == 0 {
-				query := db.Where("attachment_id IN ? AND piece_cid NOT IN (?)",
+				query := db.Where("(attachment_id IN ? OR piece_type = ?) AND piece_cid NOT IN (?)",
 					underscore.Map(attachments, func(a model.SourceAttachment) model.SourceAttachmentID { return a.ID }),
+					model.DagPiece,
 					existingPieceCIDQuery)
 				if d.maxReplicas > 0 && !schedule.Force {
 					query = query.Where("piece_cid NOT IN (?)", overReplicatedCIDs)
@@ -328,8 +329,9 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			} else {
 				pieceCIDChunks := util.ChunkSlice(allowedPieceCIDs, util.BatchSize)
 				for _, pieceCIDChunk := range pieceCIDChunks {
-					query := db.Where("attachment_id IN ? AND piece_cid NOT IN (?) AND piece_cid IN ?",
+					query := db.Where("(attachment_id IN ? OR piece_type = ?) AND piece_cid NOT IN (?) AND piece_cid IN ?",
 						underscore.Map(attachments, func(a model.SourceAttachment) model.SourceAttachmentID { return a.ID }),
+						model.DagPiece,
 						existingPieceCIDQuery, pieceCIDChunk)
 					if d.maxReplicas > 0 && !schedule.Force {
 						query = query.Where("piece_cid NOT IN (?)", overReplicatedCIDs)
