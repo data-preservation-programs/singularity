@@ -18,7 +18,7 @@ type CreateRequest struct {
 	OutputStorages    []string `json:"outputStorages"`                          // Name of Output storage systems to be used for the output
 	MaxSizeStr        string   `default:"31.5GiB"     json:"maxSize"`           // Maximum size of the CAR files to be created
 	PieceSizeStr      string   `default:""            json:"pieceSize"`         // Target piece size of the CAR files used for piece commitment calculation
-	MinPieceSizeStr   string   `default:"256B"        json:"minPieceSize"`      // Minimum piece size for the preparation, applies only to DAG and remainer pieces
+	MinPieceSizeStr   string   `default:"2MiB"        json:"minPieceSize"`      // Minimum piece size for the preparation, applies only to DAG and remainer pieces
 	DeleteAfterExport bool     `default:"false"       json:"deleteAfterExport"` // Whether to delete the source files after export
 	NoInline          bool     `default:"false"       json:"noInline"`          // Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage.
 	NoDag             bool     `default:"false"       json:"noDag"`             // Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.
@@ -80,7 +80,7 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 
 	minPieceSizeStr := request.MinPieceSizeStr
 	if minPieceSizeStr == "" {
-		minPieceSizeStr = "256B"
+		minPieceSizeStr = "2MiB"
 	}
 
 	minPieceSize, err := humanize.ParseBytes(minPieceSizeStr)
