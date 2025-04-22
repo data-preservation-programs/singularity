@@ -503,7 +503,7 @@ func TestNoDuplicatedOutput(t *testing.T) {
 		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity storage create local --name source --path %s", testutil.EscapePath(source)))
 		require.NoError(t, err)
 
-		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity prep create --name test-prep --delete-after-export --source source --local-output %s --max-size=500KiB", testutil.EscapePath(output)))
+		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity prep create --name test-prep --delete-after-export --source source --local-output %s --max-size=500KiB --min-piece-size=256KiB", testutil.EscapePath(output)))
 		require.NoError(t, err)
 
 		// Start scanning
