@@ -57,9 +57,9 @@ var CreateCmd = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:        "min-piece-size",
-			Usage:       "The minimum size of a piece. Pieces smaller than this will be padded up to this size.",
-			Value:       "2MiB",
-			DefaultText: "2MiB",
+			Usage:       "The minimum size of a piece. Pieces smaller than this will be padded up to this size. It's recommended to leave this as the default",
+			Value:       "1MiB",
+			DefaultText: "1MiB",
 		},
 		&cli.BoolFlag{
 			Name:  "delete-after-export",
