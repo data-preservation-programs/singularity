@@ -88,7 +88,7 @@ func Pack(
 	job model.Job,
 ) (*model.Car, error) {
 	db = db.WithContext(ctx)
-	pieceSize := job.Attachment.Preparation.PieceSize
+	pieceSize := job.Attachment.Preparation.MinPieceSize
 	// storageWriter can be nil for inline preparation
 	storageID, storageWriter, err := storagesystem.GetRandomOutputWriter(ctx, job.Attachment.Preparation.OutputStorages)
 	if err != nil {
