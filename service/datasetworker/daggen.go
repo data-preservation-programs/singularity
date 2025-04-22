@@ -189,7 +189,7 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 	}
 
 	db := w.dbNoContext.WithContext(ctx)
-	pieceSize := job.Attachment.Preparation.MinPieceSize
+	pieceSize := job.Attachment.Preparation.GetMinPieceSize()
 	// storageWriter can be nil for inline preparation
 	storageID, storageWriter, err := storagesystem.GetRandomOutputWriter(ctx, job.Attachment.Preparation.OutputStorages)
 	if err != nil {
