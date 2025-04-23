@@ -2,6 +2,8 @@ package wallet
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -9,13 +11,71 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/go-address"
-	"github.com/ybbus/jsonrpc/v3"
+	"github.com/filecoin-project/go-crypto"
+	g1 "github.com/phoreproject/bls/g1pubs"
+	"golang.org/x/xerrors"
 	"gorm.io/gorm"
 )
 
-type ExportResponse struct {
-	PrivateKey string `json:"privateKey"` // This is the exported private key from lotus wallet export
+type KeyType string
+
+const (
+	KTSecp256k1 KeyType = "secp256k1"
+	KTBLS				KeyType = "bls"
+	// TODO: add support for "delegated" or "secp256k1-ledger" types?
+)
+
+func (kt KeyType) String() string {
+	return string(kt)
 }
+
+// GenerateKey generates a new keypair and returns the private key and address.
+// The keypair is generated using the specified key type (secp256k1 or BLS).
+func GenerateKey(keyType string) (string, string, error) {
+	var privKey string
+	var addr address.Address
+	var err error
+
+	switch keyType {
+	case KTSecp256k1.String():
+		kb := make([]byte, 32)
+		_, err = rand.Read(kb)
+		if err != nil {
+			return "", "", xerrors.Errorf("failed to generate %s private key: %w", keyType, err)
+		}
+		privKey = hex.EncodeToString(kb)
+
+		// Get the public key from private key
+		pubKey := crypto.PublicKey(kb)
+		addr, err = address.NewSecp256k1Address(pubKey)
+		if err != nil {
+			return "", "", xerrors.Errorf("failed to generate address from %s key: %w", keyType, err)
+		}
+	case KTBLS.String():
+		priv, err := g1.RandKey(rand.Reader)
+		if err != nil {
+			return "", "", xerrors.Errorf("failed to generate %s private key: %w", keyType, err)
+		}
+		privKey = priv.String()
+
+		// Get the public key from private key
+		pub := g1.PrivToPub(priv)
+		pubKey := pub.Serialize()
+		addr, err = address.NewBLSAddress(pubKey[:])
+		if err != nil {
+			return "", "", xerrors.Errorf("failed to generate address from %s key: %w", keyType, err)
+		}
+	default:
+		return "", "", xerrors.Errorf("unsupported key type: %s", keyType)
+	}
+	
+	return privKey, addr.String(), nil
+}
+
+type CreateRequest struct {
+	KeyType string `json:"keyType"` // This is either "secp256k1" or "bls"
+}
+
 
 // @ID CreateWallet
 // @Summary Create new wallet
@@ -27,12 +87,11 @@ type ExportResponse struct {
 // @Router /wallet/create [post]
 func _() {}
 
-// CreateHandler creates a new wallet using the provided Lotus RPC client and creates a new wallet record in the local database.
+// CreateHandler creates a new wallet using offline keypair generation and a new record in the local database.
 //
 // Parameters:
 //   - ctx: The context for database transactions and other operations.
 //   - db: A pointer to the gorm.DB instance representing the database connection.
-//   - lotusClient: The RPC client used to interact with a Lotus node for actor lookup.
 //
 // Returns:
 //   - A pointer to the created Wallet model if successful.
@@ -40,35 +99,20 @@ func _() {}
 func (DefaultHandler) CreateHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	lotusClient jsonrpc.RPCClient,
+	request CreateRequest,
 ) (*model.Wallet, error) {
 	db = db.WithContext(ctx)
 
-	var result string
-	err := lotusClient.CallFor(ctx, &result, "WalletNew")
+	// Generate a new keypair
+	privateKey, address, err := GenerateKey(request.KeyType)
 	if err != nil {
-		logger.Errorw("failed to create new wallet", "err", err)
-		return nil, errors.WithStack(err)
-	}
-
-	addr, err := address.NewFromString(result)
-	if err != nil {
-		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "invalid actor ID")
-	}
-
-	var export ExportResponse
-	err = lotusClient.CallFor(ctx, &export, "WalletExport", addr.String())
-	if err != nil {
-		logger.Errorw("failed to export wallet", "addr", addr, "err", err)
 		return nil, errors.WithStack(err)
 	}
 
 	wallet := model.Wallet{
-		ID: result,
-		// HACK: this ensures the address starts with the correct network prefix
-		// see ./import.go for more details
-		Address:    result[:1] + addr.String()[1:],
-		PrivateKey: export.PrivateKey,
+		ID: address,
+		Address:    address,
+		PrivateKey: privateKey,
 	}
 	err = database.DoRetry(ctx, func() error {
 		return db.Create(&wallet).Error

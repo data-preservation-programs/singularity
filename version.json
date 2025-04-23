@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-
-{"version": "v0.6.0-RC2"}
-=======
 {
-  "version": "v0.5.17-RC1"
+  "version": "v0.6.0-RC1"
 }
->>>>>>> 8e1a0f9 (Remove autobump and update version.json (#122))
+
+
