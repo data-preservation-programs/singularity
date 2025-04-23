@@ -16,7 +16,7 @@ func TestCreateHandler(t *testing.T) {
 		lotusClient := util.NewLotusClient("https://api.node.glif.io/rpc/v0", "")
 
 		t.Run("success-secp256k1", func(t *testing.T) {
-			w, err := Default.CreateHandler(ctx, db, CreateRequest{ KeyType: KTSecp256k1.String() })
+			w, err := Default.CreateHandler(ctx, db, CreateRequest{KeyType: KTSecp256k1.String()})
 			require.NoError(t, err)
 			require.NotEmpty(t, w.Address)
 			require.NotEmpty(t, w.PrivateKey)
@@ -28,7 +28,7 @@ func TestCreateHandler(t *testing.T) {
 		})
 
 		t.Run("success-bls", func(t *testing.T) {
-			w, err := Default.CreateHandler(ctx, db, CreateRequest{ KeyType: KTBLS.String() })
+			w, err := Default.CreateHandler(ctx, db, CreateRequest{KeyType: KTBLS.String()})
 			require.NoError(t, err)
 			require.NotEmpty(t, w.Address)
 			require.NotEmpty(t, w.PrivateKey)
@@ -40,7 +40,7 @@ func TestCreateHandler(t *testing.T) {
 		})
 
 		t.Run("invalid-key-type", func(t *testing.T) {
-			_, err := Default.CreateHandler(ctx, db, CreateRequest{ KeyType: "invalid-type" })
+			_, err := Default.CreateHandler(ctx, db, CreateRequest{KeyType: "invalid-type"})
 			require.Error(t, err)
 		})
 	})
