@@ -95,7 +95,6 @@ func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, w
 
 	var subCount int
 	for _, entry := range entries {
-
 		switch v := entry.(type) {
 		case fs.Directory:
 			select {
