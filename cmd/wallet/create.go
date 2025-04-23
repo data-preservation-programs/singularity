@@ -9,8 +9,8 @@ import (
 )
 
 var CreateCmd = &cli.Command{
-	Name:  "create",
-	Usage: "Create a new wallet",
+	Name:      "create",
+	Usage:     "Create a new wallet",
 	ArgsUsage: "[type]",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
@@ -22,7 +22,7 @@ var CreateCmd = &cli.Command{
 
 		// Default to secp256k1 if no type is provided
 		keyType := c.Args().Get(0)
-		if keyType == ""{
+		if keyType == "" {
 			keyType = wallet.KTSecp256k1.String()
 		}
 
