@@ -21,7 +21,7 @@ type KeyType string
 
 const (
 	KTSecp256k1 KeyType = "secp256k1"
-	KTBLS				KeyType = "bls"
+	KTBLS       KeyType = "bls"
 	// TODO: add support for "delegated" or "secp256k1-ledger" types?
 )
 
@@ -68,14 +68,13 @@ func GenerateKey(keyType string) (string, string, error) {
 	default:
 		return "", "", xerrors.Errorf("unsupported key type: %s", keyType)
 	}
-	
+
 	return privKey, addr.String(), nil
 }
 
 type CreateRequest struct {
 	KeyType string `json:"keyType"` // This is either "secp256k1" or "bls"
 }
-
 
 // @ID CreateWallet
 // @Summary Create new wallet
@@ -110,7 +109,7 @@ func (DefaultHandler) CreateHandler(
 	}
 
 	wallet := model.Wallet{
-		ID: address,
+		ID:         address,
 		Address:    address,
 		PrivateKey: privateKey,
 	}
