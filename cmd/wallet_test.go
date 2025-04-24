@@ -23,6 +23,24 @@ func swapWalletHandler(mockHandler wallet.Handler) func() {
 	}
 }
 
+func TestWalletCreate(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(wallet.MockWallet)
+		defer swapWalletHandler(mockHandler)()
+		mockHandler.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
+			ID:         "id",
+			Address:    "address",
+			PrivateKey: "private",
+		}, nil)
+		_, _, err := runner.Run(ctx, "singularity wallet create")
+		require.NoError(t, err)
+		_, _, err = runner.Run(ctx, "singularity --verbose wallet create")
+		require.NoError(t, err)
+	})
+}
+
 func TestWalletImport(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		tmp := t.TempDir()

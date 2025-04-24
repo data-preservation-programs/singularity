@@ -83,7 +83,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 
 	errChan := make(chan error, 1)
 
-	for i := 0; i < concurrency; i++ {
+	for i := range concurrency {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()

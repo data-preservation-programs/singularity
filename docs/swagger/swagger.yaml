@@ -8165,6 +8165,12 @@ definitions:
     type: object
   store.PieceReader:
     type: object
+  wallet.CreateRequest:
+    properties:
+      keyType:
+        description: This is either "secp256k1" or "bls"
+        type: string
+    type: object
   wallet.ImportRequest:
     properties:
       privateKey:
@@ -11833,6 +11839,38 @@ paths:
           schema:
             $ref: '#/definitions/api.HTTPError'
       summary: Remove a wallet
+      tags:
+      - Wallet
+  /wallet/create:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateWallet
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/wallet.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Wallet'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create new wallet
       tags:
       - Wallet
 produces:

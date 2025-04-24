@@ -5532,6 +5532,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/wallet/create": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Create new wallet",
+                "operationId": "CreateWallet",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/wallet.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Wallet"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/wallet/{address}": {
             "delete": {
                 "tags": [
@@ -16389,6 +16438,15 @@ const docTemplate = `{
         },
         "store.PieceReader": {
             "type": "object"
+        },
+        "wallet.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "keyType": {
+                    "description": "This is either \"secp256k1\" or \"bls\"",
+                    "type": "string"
+                }
+            }
         },
         "wallet.ImportRequest": {
             "type": "object",

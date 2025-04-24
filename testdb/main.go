@@ -138,7 +138,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	}
 
 	var files []model.File
-	for i := 0; i < r.Intn(10_000); i++ {
+	for i := range r.Intn(10_000) {
 		size := r.Int63n(1 << 20)
 		rCID := randomCID()
 		files = append(files, model.File{
@@ -185,7 +185,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 		FileRanges:       nil,
 	}
 
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		largeFile.FileRanges = append(largeFile.FileRanges, model.FileRange{
 			Offset: int64(i << 34),
 			Length: 1 << 34,
@@ -203,7 +203,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	}
 
 	// Setup a file with multiple versions
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		size := r.Int63n(1 << 20)
 		rCID := randomCID()
 		err = db.Create(&model.File{
@@ -258,7 +258,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	}
 
 	// Some Car files without association with the preparation
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		pieceCID, err := randomPieceCID()
 		if err != nil {
 			return errors.WithStack(err)
