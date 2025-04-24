@@ -5534,6 +5534,9 @@ const docTemplate = `{
         },
         "/wallet/create": {
             "post": {
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -5542,6 +5545,17 @@ const docTemplate = `{
                 ],
                 "summary": "Create new wallet",
                 "operationId": "CreateWallet",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/wallet.CreateRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -16424,6 +16438,15 @@ const docTemplate = `{
         },
         "store.PieceReader": {
             "type": "object"
+        },
+        "wallet.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "keyType": {
+                    "description": "This is either \"secp256k1\" or \"bls\"",
+                    "type": "string"
+                }
+            }
         },
         "wallet.ImportRequest": {
             "type": "object",
