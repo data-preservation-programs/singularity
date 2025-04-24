@@ -305,6 +305,7 @@ func TestAllAPIs(t *testing.T) {
 		t.Run("wallet", func(t *testing.T) {
 			t.Run("CreateWallet", func(t *testing.T) {
 				resp, err := client.Wallet.CreateWallet(&wallet2.CreateWalletParams{
+					Request: &models.WalletCreateRequest{},
 					Context: ctx,
 				})
 				require.NoError(t, err)
