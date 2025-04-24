@@ -14,6 +14,8 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+
+	"github.com/data-preservation-programs/singularity/client/swagger/models"
 )
 
 // NewCreateWalletParams creates a new CreateWalletParams object,
@@ -60,6 +62,13 @@ CreateWalletParams contains all the parameters to send to the API endpoint
 	Typically these are written to a http.Request.
 */
 type CreateWalletParams struct {
+
+	/* Request.
+
+	   Request body
+	*/
+	Request *models.WalletCreateRequest
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -113,6 +122,17 @@ func (o *CreateWalletParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithRequest adds the request to the create wallet params
+func (o *CreateWalletParams) WithRequest(request *models.WalletCreateRequest) *CreateWalletParams {
+	o.SetRequest(request)
+	return o
+}
+
+// SetRequest adds the request to the create wallet params
+func (o *CreateWalletParams) SetRequest(request *models.WalletCreateRequest) {
+	o.Request = request
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *CreateWalletParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -120,6 +140,11 @@ func (o *CreateWalletParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		return err
 	}
 	var res []error
+	if o.Request != nil {
+		if err := r.SetBodyParam(o.Request); err != nil {
+			return err
+		}
+	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
