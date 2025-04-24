@@ -79,7 +79,9 @@ type CreateRequest struct {
 // @ID CreateWallet
 // @Summary Create new wallet
 // @Tags Wallet
+// @Accept json
 // @Produce json
+// @Param request body CreateRequest true "Request body"
 // @Success 200 {array} model.Wallet
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
