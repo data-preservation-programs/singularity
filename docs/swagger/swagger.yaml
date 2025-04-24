@@ -8165,6 +8165,12 @@ definitions:
     type: object
   store.PieceReader:
     type: object
+  wallet.CreateRequest:
+    properties:
+      keyType:
+        description: This is either "secp256k1" or "bls"
+        type: string
+    type: object
   wallet.ImportRequest:
     properties:
       privateKey:
@@ -11837,7 +11843,16 @@ paths:
       - Wallet
   /wallet/create:
     post:
+      consumes:
+      - application/json
       operationId: CreateWallet
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/wallet.CreateRequest'
       produces:
       - application/json
       responses:
