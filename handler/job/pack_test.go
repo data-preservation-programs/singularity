@@ -137,7 +137,7 @@ func TestPackHandler_Success(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, car)
 		require.EqualValues(t, 100, car.FileSize)
-		require.EqualValues(t, "baga6ea4seaqbuglmtahbspkbeunqohciieh4yjivfhcqawufwgs4gt7mzmyfmmi", car.PieceCID.String())
+		require.EqualValues(t, "baga6ea4seaqpikooah5wmbpjmnvx3ysyf36xagymjtbccnf5twt2cpaqcgcwqha", car.PieceCID.String())
 		err = db.Find(&job, 1).Error
 		require.NoError(t, err)
 		require.Equal(t, model.Complete, job.State)
