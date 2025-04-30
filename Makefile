@@ -29,6 +29,8 @@ generate: check-go
 	go generate ./...
 
 lint: check-go install-lint-deps
+	@echo "Verifying golangci-lint configuration..."
+	golangci-lint config verify
 	gofmt -s -w .
 	golangci-lint run --no-config --fix --default=none -E tagalign --timeout 10m
 	golangci-lint run --fix --timeout 10m
