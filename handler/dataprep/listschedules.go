@@ -25,7 +25,8 @@ import (
 func (DefaultHandler) ListSchedulesHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id string) ([]model.Schedule, error) {
+	id string,
+) ([]model.Schedule, error) {
 	db = db.WithContext(ctx)
 
 	var preparation model.Preparation

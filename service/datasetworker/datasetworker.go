@@ -25,9 +25,11 @@ type Worker struct {
 	stateMonitor *StateMonitor
 }
 
-const defaultMinInterval = 5 * time.Second
-const defaultMaxInterval = 160 * time.Second
-const cleanupTimeout = 5 * time.Second
+const (
+	defaultMinInterval = 5 * time.Second
+	defaultMaxInterval = 160 * time.Second
+	cleanupTimeout     = 5 * time.Second
+)
 
 type Config struct {
 	Concurrency    int

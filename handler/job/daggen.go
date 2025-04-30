@@ -24,7 +24,8 @@ func (DefaultHandler) StartDagGenHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id string,
-	name string) (*model.Job, error) {
+	name string,
+) (*model.Job, error) {
 	return StartJobHandler(ctx, db, id, name, model.DagGen)
 }
 
@@ -58,7 +59,8 @@ func (DefaultHandler) PauseDagGenHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id string,
-	name string) (*model.Job, error) {
+	name string,
+) (*model.Job, error) {
 	return PauseJobHandler(ctx, db, id, name, model.DagGen)
 }
 

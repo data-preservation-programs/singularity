@@ -70,7 +70,8 @@ func (a *Assembler) Close() error {
 
 // NewAssembler initializes a new Assembler instance with the given parameters.
 func NewAssembler(ctx context.Context, reader storagesystem.Reader,
-	fileRanges []model.FileRange, noInline bool, skipInaccessibleFiles bool) *Assembler {
+	fileRanges []model.FileRange, noInline bool, skipInaccessibleFiles bool,
+) *Assembler {
 	return &Assembler{
 		ctx:                   ctx,
 		reader:                reader,

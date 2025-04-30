@@ -4,13 +4,12 @@ import (
 	"context"
 	"crypto/rand"
 	"io"
+	rand2 "math/rand"
 	"net"
 	"os"
 	"strings"
 	"testing"
 	"time"
-
-	rand2 "math/rand"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"

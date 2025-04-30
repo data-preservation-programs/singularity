@@ -41,7 +41,6 @@ func (DefaultHandler) DetachHandler(
 	found, err := underscore.Find(preparation.Wallets, func(w model.Wallet) bool {
 		return w.ID == wallet || w.Address == wallet
 	})
-
 	if err != nil {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not attached to preparation %d", wallet, preparationID)
 	}
@@ -49,7 +48,6 @@ func (DefaultHandler) DetachHandler(
 	err = database.DoRetry(ctx, func() error {
 		return db.Model(&preparation).Association("Wallets").Delete(&found)
 	})
-
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

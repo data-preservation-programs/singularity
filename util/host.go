@@ -28,7 +28,8 @@ const yamuxID = "/yamux/1.0.0"
 func InitHost(opts []libp2p.Option, listenAddrs ...multiaddr.Multiaddr) (host.Host, error) {
 	opts = append([]libp2p.Option{
 		libp2p.Identity(nil),
-		libp2p.ResourceManager(&network.NullResourceManager{})},
+		libp2p.ResourceManager(&network.NullResourceManager{}),
+	},
 		opts...)
 	if len(listenAddrs) > 0 {
 		opts = append([]libp2p.Option{libp2p.ListenAddrs(listenAddrs...)}, opts...)
@@ -38,17 +39,20 @@ func InitHost(opts []libp2p.Option, listenAddrs ...multiaddr.Multiaddr) (host.Ho
 		libp2p.Transport(tcp.NewTCPTransport, tcp.WithMetrics()),
 		libp2p.Transport(websocket.New),
 		libp2p.Transport(quic.NewTransport),
-		libp2p.Transport(webtransport.New)},
+		libp2p.Transport(webtransport.New),
+	},
 		opts...)
 	// add security
 	opts = append([]libp2p.Option{
 		libp2p.Security(tls.ID, tls.New),
-		libp2p.Security(noise.ID, noise.New)},
+		libp2p.Security(noise.ID, noise.New),
+	},
 		opts...)
 
 	// add muxers
 	opts = append([]libp2p.Option{
-		libp2p.Muxer(yamuxID, yamuxTransport())},
+		libp2p.Muxer(yamuxID, yamuxTransport()),
+	},
 		opts...)
 
 	//nolint:wrapcheck
