@@ -1,35 +1,32 @@
 version: "2"
 run:
   tests: false
-  skip-dirs:
-    - replication/internal
-    - cmd/embed
-    - docs
-    - dashboard/model2ts
-    - handler/datasource/generate
-    - handler/storage/gen
-  skip-files:
-    - cmd/testutil.go
 
 linters:
-  enable-all: true
+  default: all
   disable:
     - asasalint
     - asciicheck
     - bidichk
     - bodyclose
     - canonicalheader
+    - containedctx
     - contextcheck
+    - copyloopvar
     - cyclop
     - depguard
     - dogsled
     - dupl
     - dupword
+    - err113
+    - errcheck
     - errname
     - errorlint
     - exhaustruct
+    - exptostd
     - forbidigo
     - forcetypeassert
+    - funcorder
     - funlen
     - gochecknoglobals
     - gochecknoinits
@@ -38,6 +35,7 @@ linters:
     - gocritic
     - gocyclo
     - godot
+    - godox
     - goheader
     - gomoddirectives
     - gomodguard
@@ -47,16 +45,20 @@ linters:
     - importas
     - inamedparam
     - ineffassign
+    - intrange
+    - interfacebloat
     - ireturn
     - lll
     - loggercheck
     - maintidx
     - makezero
     - misspell
+    - mnd
     - musttag
     - nakedret
     - nestif
     - nilerr
+    - nilnesserr
     - nilnil
     - nlreturn
     - noctx
@@ -64,10 +66,12 @@ linters:
     - nonamedreturns
     - nosprintfhostport
     - paralleltest
+    - perfsprint
     - prealloc
     - predeclared
     - promlinter
     - reassign
+    - recvcheck
     - revive
     - rowserrcheck
     - sqlclosecheck
@@ -83,6 +87,16 @@ linters:
     - whitespace
     - wrapcheck
     - wsl
+  
+  exclusions:
+    paths:
+      - replication/internal
+      - cmd/embed
+      - docs
+      - dashboard/model2ts
+      - handler/datasource/generate
+      - handler/storage/gen
+      - cmd/testutil.go
 
 formatters:
   disable:
