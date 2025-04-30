@@ -185,7 +185,7 @@ func TestLastPieceBehaviorE2ENoInline(t *testing.T) {
 
 		// Verify we have the expected types of pieces
 		require.Equal(t, 0, otherSizePieceCount, "Should not have any cars with unexpected piece sizes")
-		require.GreaterOrEqual(t, fullSizePieceCount+halfSizePieceCount, len(packJobs), "Should have at least one car per pack job")
+		require.Equal(t, fullSizePieceCount+halfSizePieceCount, len(packJobs), "Should have exactly one car per pack job")
 
 		// At least one piece should be padded to min piece size (last piece)
 		require.GreaterOrEqual(t, halfSizePieceCount, 1, "Should have at least 1 car padded to min piece size")
@@ -402,7 +402,7 @@ func TestLastPieceBehaviorE2EInline(t *testing.T) {
 
 		// Verify we have the expected types of pieces
 		require.Equal(t, 0, otherSizePieceCount, "Should not have any cars with unexpected piece sizes")
-		require.GreaterOrEqual(t, fullSizePieceCount+halfSizePieceCount, len(packJobs), "Should have at least one car per pack job")
+		require.Equal(t, fullSizePieceCount+halfSizePieceCount, len(packJobs), "Should have exactly one car per pack job")
 
 		// At least one piece should be padded to min piece size (last piece)
 		require.GreaterOrEqual(t, halfSizePieceCount, 1, "Should have at least 1 car padded to min piece size")
