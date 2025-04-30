@@ -19,7 +19,8 @@ import (
 //   - An error, if any occurred during the operation.
 func (DefaultHandler) ListStoragesHandler(
 	ctx context.Context,
-	db *gorm.DB) ([]model.Storage, error) {
+	db *gorm.DB,
+) ([]model.Storage, error) {
 	db = db.WithContext(ctx)
 	var storages []model.Storage
 	if err := db.Preload("PreparationsAsSource").Preload("PreparationsAsOutput").Find(&storages).Error; err != nil {

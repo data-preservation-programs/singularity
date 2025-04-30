@@ -53,7 +53,8 @@ func StartJobHandler(
 	db *gorm.DB,
 	id string,
 	name string,
-	jobType model.JobType) (*model.Job, error) {
+	jobType model.JobType,
+) (*model.Job, error) {
 	db = db.WithContext(ctx)
 	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
@@ -96,7 +97,8 @@ func (DefaultHandler) StartScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id string,
-	name string) (*model.Job, error) {
+	name string,
+) (*model.Job, error) {
 	// start the scan job
 	scanJob, err := StartJobHandler(ctx, db, id, name, model.Scan)
 	if err != nil {
@@ -157,7 +159,8 @@ func PauseJobHandler(
 	db *gorm.DB,
 	id string,
 	name string,
-	jobType model.JobType) (*model.Job, error) {
+	jobType model.JobType,
+) (*model.Job, error) {
 	db = db.WithContext(ctx)
 	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
@@ -186,7 +189,8 @@ func (DefaultHandler) PauseScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id string,
-	name string) (*model.Job, error) {
+	name string,
+) (*model.Job, error) {
 	return PauseJobHandler(ctx, db, id, name, model.Scan)
 }
 

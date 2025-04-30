@@ -5,30 +5,31 @@ import (
 	"io"
 	"sort"
 
+	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/multiformats/go-varint"
 	"github.com/rclone/rclone/fs"
-
-	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-cid"
 )
 
-var logger = log.Logger("piece_store")
-var ErrNoCarBlocks = errors.New("no Blocks provided")
-var ErrInvalidStartOffset = errors.New("first block must start at car Header")
-var ErrInvalidEndOffset = errors.New("last block must end at car end")
-var ErrIncontiguousBlocks = errors.New("Blocks must be contiguous")
-var ErrInvalidVarintLength = errors.New("varint read does not match varint length")
-var ErrVarintDoesNotMatchBlockLength = errors.New("varint does not match block length")
-var ErrFileNotProvided = errors.New("file not provided")
-var ErrInvalidWhence = errors.New("invalid whence")
-var ErrNegativeOffset = errors.New("negative offset")
-var ErrOffsetOutOfRange = errors.New("position past end of file")
-var ErrTruncated = errors.New("original file has been truncated")
-var ErrFileHasChanged = errors.New("file has changed")
+var (
+	logger                           = log.Logger("piece_store")
+	ErrNoCarBlocks                   = errors.New("no Blocks provided")
+	ErrInvalidStartOffset            = errors.New("first block must start at car Header")
+	ErrInvalidEndOffset              = errors.New("last block must end at car end")
+	ErrIncontiguousBlocks            = errors.New("Blocks must be contiguous")
+	ErrInvalidVarintLength           = errors.New("varint read does not match varint length")
+	ErrVarintDoesNotMatchBlockLength = errors.New("varint does not match block length")
+	ErrFileNotProvided               = errors.New("file not provided")
+	ErrInvalidWhence                 = errors.New("invalid whence")
+	ErrNegativeOffset                = errors.New("negative offset")
+	ErrOffsetOutOfRange              = errors.New("position past end of file")
+	ErrTruncated                     = errors.New("original file has been truncated")
+	ErrFileHasChanged                = errors.New("file has changed")
+)
 
 // PieceReader is a struct that represents a reader for pieces of data.
 //

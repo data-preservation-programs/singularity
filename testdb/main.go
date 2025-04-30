@@ -324,7 +324,8 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				model.DealProposed,
 				model.DealPublished,
 				model.DealSlashed,
-				model.DealActive}
+				model.DealActive,
+			}
 			state := states[r.Intn(len(states))]
 			deal := model.Deal{
 				State:      state,

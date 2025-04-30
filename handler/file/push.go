@@ -67,7 +67,6 @@ func (DefaultHandler) PushFileHandler(
 	}
 
 	file, fileRanges, err := push.PushFile(ctx, db, obj, attachment, map[string]model.DirectoryID{})
-
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
