@@ -5,25 +5,24 @@ import (
 	"io"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
 	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/google/uuid"
-	"github.com/rjNemo/underscore"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
-
-	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/model"
 	commcid "github.com/filecoin-project/go-fil-commcid"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
+	"github.com/google/uuid"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-log/v2"
+	"github.com/rjNemo/underscore"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var logger = log.Logger("pack")

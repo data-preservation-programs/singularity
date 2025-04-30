@@ -94,7 +94,7 @@ var PrepCmd = &cli.Command{
 		outputDir := c.String("output-dir")
 		var outputStorages []string
 		if outputDir != "" {
-			err = os.MkdirAll(outputDir, 0755)
+			err = os.MkdirAll(outputDir, 0o755)
 			if err != nil {
 				return errors.Wrap(err, "failed to create output directory")
 			}

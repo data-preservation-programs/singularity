@@ -22,9 +22,11 @@ var logger = log.Logger("storage")
 
 var _ Handler = &RCloneHandler{}
 
-var ErrGetUsageNotSupported = errors.New("The backend does not support getting usage quota")
-var ErrBackendNotSupported = errors.New("This backend is not supported")
-var ErrMoveNotSupported = errors.New("The backend does not support moving files")
+var (
+	ErrGetUsageNotSupported = errors.New("The backend does not support getting usage quota")
+	ErrBackendNotSupported  = errors.New("This backend is not supported")
+	ErrMoveNotSupported     = errors.New("The backend does not support moving files")
+)
 
 type RCloneHandler struct {
 	name                    string

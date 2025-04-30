@@ -11,7 +11,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/analytics"
+	"github.com/data-preservation-programs/singularity/database"
+	_ "github.com/data-preservation-programs/singularity/docs/swagger"
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
@@ -29,17 +32,13 @@ import (
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/lassie/pkg/lassie"
-	"github.com/libp2p/go-libp2p/core/host"
-	"github.com/ybbus/jsonrpc/v3"
-
-	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/database"
-	_ "github.com/data-preservation-programs/singularity/docs/swagger"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/libp2p/go-libp2p/core/host"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/urfave/cli/v2"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 

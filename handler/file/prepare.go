@@ -13,7 +13,8 @@ import (
 func (DefaultHandler) PrepareToPackFileHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	fileID uint64) (int64, error) {
+	fileID uint64,
+) (int64, error) {
 	db = db.WithContext(ctx)
 	var file model.File
 	err := db.Preload("Attachment.Preparation").Where("id = ?", fileID).First(&file).Error

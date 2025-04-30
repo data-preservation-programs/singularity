@@ -243,8 +243,10 @@ func (p ProviderOptions) ToCLICommand(short string, long string, description str
 	return command
 }
 
-var Backends []Backend
-var BackendMap = make(map[string]Backend)
+var (
+	Backends   []Backend
+	BackendMap = make(map[string]Backend)
+)
 
 func init() {
 	for _, regInfo := range fs.Registry {

@@ -10,7 +10,6 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
-
 	format "github.com/ipfs/go-ipld-format"
 	"gorm.io/gorm"
 )

@@ -128,7 +128,6 @@ func ExtractCarHandler(ctx *cli.Context, inputDir string, output string, c cid.C
 		}
 		return nil
 	})
-
 	if err != nil {
 		return errors.Wrap(err, "failed to walk input directory")
 	}
@@ -157,7 +156,7 @@ func getOutPathForFile(outPath string, c cid.Cid) (string, error) {
 	stat, err := os.Stat(outPath)
 	// If the user supply /a/b.txt but the file does not exist, then we need to mkdir -p /a
 	if errors.Is(err, oserror.ErrNotExist) {
-		err = os.MkdirAll(filepath.Dir(outPath), 0755)
+		err = os.MkdirAll(filepath.Dir(outPath), 0o755)
 		if err != nil {
 			return "", errors.Wrapf(err, "failed to create output directory %s", filepath.Dir(outPath))
 		}
@@ -191,7 +190,7 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 			}
 		}
 		_, _ = ctx.App.Writer.Write([]byte(fmt.Sprintf("Writing to %s\n", outPath)))
-		return os.WriteFile(outPath, node.RawData(), 0600)
+		return os.WriteFile(outPath, node.RawData(), 0o600)
 	case cid.DagProtobuf:
 		fsnode, err := unixfs.ExtractFSNode(node)
 		if err != nil {
@@ -225,7 +224,7 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 				return errors.Wrapf(err, "failed to create directory from node for CID %s", c)
 			}
 			_, _ = ctx.App.Writer.Write([]byte(fmt.Sprintf("Create Dir %s\n", outPath)))
-			err = os.MkdirAll(outPath, 0755)
+			err = os.MkdirAll(outPath, 0o755)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create output directory %s", outPath)
 			}
