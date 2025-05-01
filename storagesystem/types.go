@@ -54,7 +54,7 @@ import (
 	"github.com/rclone/rclone/lib/encoder"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 // Entry is a struct that represents a single file or directory during a data source scan.
