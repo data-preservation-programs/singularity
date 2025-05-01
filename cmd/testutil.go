@@ -16,6 +16,8 @@ import (
 	"testing"
 	"time"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/fatih/color"
@@ -25,7 +27,6 @@ import (
 	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/require"
 	"github.com/urfave/cli/v2"
-	"slices"
 )
 
 type RunnerMode string
@@ -292,7 +293,9 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 
 	return result.Bytes(), nil
 }
+
 func CompareDirectories(t *testing.T, dir1, dir2 string) {
+	t.Helper()
 	filesInDir2 := make(map[string]struct{})
 
 	err := filepath.Walk(dir1, func(path1 string, info1 os.FileInfo, err error) error {
