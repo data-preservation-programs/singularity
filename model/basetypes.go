@@ -8,9 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
-	"slices"
 )
 
 var (
@@ -134,11 +135,11 @@ func (c *CID) Scan(src any) error {
 	return nil
 }
 
-func (ss StringSlice) Value() (driver.Value, error) {
+func (ss StringSlice) Value() (driver.Value, error) { //nolint:recvcheck
 	return json.Marshal(ss)
 }
 
-func (m ConfigMap) Value() (driver.Value, error) {
+func (m ConfigMap) Value() (driver.Value, error) { //nolint:recvcheck
 	return json.Marshal(m)
 }
 
@@ -193,7 +194,7 @@ func (m ConfigMap) String() string {
 	return strings.Join(values, " ")
 }
 
-func (c ClientConfig) Value() (driver.Value, error) {
+func (c ClientConfig) Value() (driver.Value, error) { //nolint:recvcheck
 	return json.Marshal(c)
 }
 
