@@ -41,6 +41,9 @@ type ModelCar struct {
 	// piece size
 	PieceSize int64 `json:"pieceSize,omitempty"`
 
+	// PieceType indicates whether this is a data piece or DAG piece
+	PieceType string `json:"pieceType,omitempty"`
+
 	// Association
 	PreparationID int64 `json:"preparationId,omitempty"`
 

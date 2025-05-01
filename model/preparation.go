@@ -260,7 +260,7 @@ type CarID uint32
 type Car struct {
 	ID          CarID      `cbor:"-"                    gorm:"primaryKey"                                        json:"id"                                  table:"verbose"`
 	CreatedAt   time.Time  `cbor:"-"                    json:"createdAt"                                         table:"verbose;format:2006-01-02 15:04:05"`
-	PieceType   PieceType  `cbor:"0,keyasint,omitempty" json:"pieceType" swaggertype:"string"` // PieceType indicates whether this is a data piece or DAG piece
+	PieceType   PieceType  `cbor:"0,keyasint,omitempty" json:"pieceType"                                         swaggertype:"string"` // PieceType indicates whether this is a data piece or DAG piece
 	PieceCID    CID        `cbor:"1,keyasint,omitempty" gorm:"column:piece_cid;index;type:bytes;size:255"        json:"pieceCid"                            swaggertype:"string"`
 	PieceSize   int64      `cbor:"2,keyasint,omitempty" json:"pieceSize"`
 	RootCID     CID        `cbor:"3,keyasint,omitempty" gorm:"column:root_cid;type:bytes"                        json:"rootCid"                             swaggertype:"string"`
