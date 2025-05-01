@@ -1,103 +1,45 @@
 version: "2"
 run:
   tests: false
-
 linters:
   default: all
   disable:
-    - asasalint
-    - asciicheck
-    - bidichk
-    - bodyclose
-    - canonicalheader
     - containedctx
-    - contextcheck
-    - copyloopvar
     - cyclop
     - depguard
-    - dogsled
     - dupl
     - dupword
-    - err113
-    - errcheck
-    - errname
-    - errorlint
     - exhaustruct
-    - exptostd
     - forbidigo
-    - forcetypeassert
-    - funcorder
     - funlen
     - gochecknoglobals
     - gochecknoinits
     - gocognit
     - goconst
-    - gocritic
     - gocyclo
     - godot
     - godox
-    - goheader
     - gomoddirectives
-    - gomodguard
-    - goprintffuncname
-    - gosec
-    - grouper
-    - importas
-    - inamedparam
-    - ineffassign
-    - intrange
     - interfacebloat
     - ireturn
     - lll
-    - loggercheck
     - maintidx
-    - makezero
-    - misspell
     - mnd
     - musttag
     - nakedret
     - nestif
-    - nilerr
-    - nilnesserr
     - nilnil
     - nlreturn
-    - noctx
     - nolintlint
     - nonamedreturns
-    - nosprintfhostport
-    - paralleltest
-    - perfsprint
     - prealloc
-    - predeclared
-    - promlinter
-    - reassign
-    - recvcheck
-    - revive
     - rowserrcheck
     - sqlclosecheck
-    - staticcheck
     - tagalign
-    - tagliatelle
-    - tparallel
-    - unconvert
-    - unparam
-    - unused
     - varnamelen
     - wastedassign
-    - whitespace
     - wrapcheck
     - wsl
-  
-  exclusions:
-    paths:
-      - replication/internal
-      - cmd/embed
-      - docs
-      - dashboard/model2ts
-      - handler/datasource/generate
-      - handler/storage/gen
-      - cmd/testutil.go
-  
   settings:
     errcheck:
       exclude-functions:
@@ -107,9 +49,23 @@ linters:
       rules:
         - name: var-naming
           disabled: true
-
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 formatters:
   enable:
     - gofmt
-    - golines
-
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
