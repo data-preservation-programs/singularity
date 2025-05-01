@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/gammazero/workerpool"
@@ -15,7 +17,6 @@ import (
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/config/configmap"
 	"github.com/rclone/rclone/fs/object"
-	"golang.org/x/exp/slices"
 )
 
 var logger = log.Logger("storage")
