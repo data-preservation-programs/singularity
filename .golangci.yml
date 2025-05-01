@@ -88,16 +88,6 @@ linters:
     - wrapcheck
     - wsl
   
-  settings:
-    errcheck:
-      exclude-functions:
-        - (github.com/libp2p/go-libp2p/network.MuxedStream).SetDeadline
-        - (github.com/data-preservation-programs/singularity/service.DatasetWorker).cleanup
-    revive:
-      rules:
-        - name: var-naming
-          disabled: true
-          
   exclusions:
     paths:
       - replication/internal
@@ -107,9 +97,19 @@ linters:
       - handler/datasource/generate
       - handler/storage/gen
       - cmd/testutil.go
+  
+  settings:
+    errcheck:
+      exclude-functions:
+        - (github.com/libp2p/go-libp2p/network.MuxedStream).SetDeadline
+        - (github.com/data-preservation-programs/singularity/service.DatasetWorker).cleanup
+    revive:
+      rules:
+        - name: var-naming
+          disabled: true
 
 formatters:
   enable:
-    - gci
-    - gofumpt
-    - goimports
+    - gofmt
+    - golines
+
