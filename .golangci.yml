@@ -60,6 +60,8 @@ linters:
       exclusions:
         - "*.Value"
         - "*.String"
+        - "*.MarshalBinary"
+        - "*.MarshalJSON"
   exclusions:
     generated: lax
     presets:
