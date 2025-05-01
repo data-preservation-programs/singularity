@@ -70,7 +70,10 @@ func MigrateSchedule(c *cli.Context) error {
 		}
 		findResult := mg.Database("singularity").Collection("scanningrequests").FindOne(ctx, bson.M{"_id": oid})
 		if findResult.Err() != nil {
-			return errors.Wrapf(err, "failed to find dataset %s", replication.DatasetID)
+			if err != nil {
+				return errors.Wrapf(err, "failed to find dataset %s", replication.DatasetID)
+			}
+			return errors.Errorf("failed to find dataset %s", replication.DatasetID)
 		}
 
 		err = findResult.Decode(&scanning)
