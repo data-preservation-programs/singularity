@@ -2,7 +2,6 @@ package migrate
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"path/filepath"
 	"strings"
@@ -112,7 +111,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 			log.Printf("failed to parse data cid %s\n", generation.DataCID)
 			dataCID = cid.Undef
 		}
-		fileName := fmt.Sprintf("%s.car", generation.PieceCID)
+		fileName := generation.PieceCID + ".car"
 		if generation.FilenameOverride != "" {
 			fileName = generation.FilenameOverride
 		}
