@@ -46,6 +46,9 @@ linters:
     - exhaustive
     - intrange
   settings:
+    gosec:
+      excludes:
+        - G115 # we do a lot of uint64 conversions unfortunately
     errcheck:
       exclude-functions:
         - path/filepath.Walk
