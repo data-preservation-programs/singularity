@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/cmd/storage"
@@ -9,7 +11,6 @@ import (
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/ipfs/go-log"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
 )
 
 var DownloadCmd = &cli.Command{
