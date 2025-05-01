@@ -335,7 +335,9 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				PieceCID:   car.PieceCID,
 				PieceSize:  car.PieceSize,
 				DealID:     nil,
+				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
 				StartEpoch: int32(10000 + r.Intn(10000)),
+				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
 				EndEpoch:   int32(20000 + r.Intn(10000)),
 				Price:      "0",
 				Verified:   true,
@@ -343,6 +345,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				ClientID:   wallet.ID,
 			}
 			if state == model.DealActive {
+				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
 				deal.SectorStartEpoch = int32(10000 + r.Intn(10000))
 			}
 			if state == model.DealProposed || state == model.DealPublished {
