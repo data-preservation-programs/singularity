@@ -72,7 +72,7 @@ func main() {
 	slices.Sort(contentMapSorted)
 	for _, tag := range contentMapSorted {
 		builder := contentMap[tag]
-		err := os.WriteFile("./docs/en/web-api-reference/"+convertStringToHyphenated(tag)+".md", []byte(builder.String()), 0644)
+		err := os.WriteFile("./docs/en/web-api-reference/"+convertStringToHyphenated(tag)+".md", []byte(builder.String()), 0644) //nolint:gosec
 		if err != nil {
 			panic(err)
 		}
@@ -95,7 +95,7 @@ func main() {
 	slices.Sort(summaries)
 	summaries = append(summaries, "* [Specification](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)", "")
 	lines = append(lines[:beginIndex+1], append([]string{"", strings.Join(summaries, "\n")}, lines[endIndex:]...)...)
-	err = os.WriteFile("docs/en/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644)
+	err = os.WriteFile("docs/en/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644) //nolint:gosec
 	if err != nil {
 		panic(err)
 	}
