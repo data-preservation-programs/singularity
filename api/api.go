@@ -60,7 +60,7 @@ type Server struct {
 	scheduleHandler schedule.Handler
 }
 
-func (s Server) Name() string {
+func (s *Server) Name() string {
 	return "api"
 }
 
@@ -74,7 +74,7 @@ func (s Server) Name() string {
 // @Failure 404 {string} string "Not Found"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /piece/{id}/metadata [get]
-func (s Server) getMetadataHandler(c echo.Context) error {
+func (s *Server) getMetadataHandler(c echo.Context) error {
 	return contentprovider.GetMetadataHandler(c, s.db)
 }
 
@@ -111,18 +111,18 @@ type APIParams struct {
 	ConnString string
 }
 
-func InitServer(ctx context.Context, params APIParams) (Server, error) {
+func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 	db, closer, err := database.OpenWithLogger(params.ConnString)
 	if err != nil {
-		return Server{}, errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 	h, err := util.InitHost(nil)
 	if err != nil {
-		return Server{}, errors.Wrap(err, "failed to init host")
+		return nil, errors.Wrap(err, "failed to init host")
 	}
 	lassie, err := lassie.NewLassie(ctx, lassie.WithHost(h))
 	if err != nil {
-		return Server{}, errors.Wrap(err, "failed to init lassie")
+		return nil, errors.Wrap(err, "failed to init lassie")
 	}
 	infoFetcher := replication.MinerInfoFetcher{
 		Client: util.NewLotusClient(params.LotusAPI, params.LotusToken),
@@ -135,7 +135,7 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 		endpointfinder.WithErrorLruSize(128),
 		endpointfinder.WithErrorLruTimeout(time.Minute*5),
 	)
-	return Server{
+	return &Server{
 		db:          db,
 		host:        h,
 		listener:    params.Listener,
@@ -183,7 +183,7 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 // This method assumes a specific ordering and kind of parameters in the handler functions.
 // It is designed to simplify the process of defining Echo handlers but has limitations
 // in terms of the variety of supported handler function signatures.
-func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
+func (s *Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		handlerFuncValue := reflect.ValueOf(handlerFunc)
 		handlerFuncType := handlerFuncValue.Type()
@@ -294,7 +294,7 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 	}
 }
 
-func (s Server) setupRoutes(e *echo.Echo) {
+func (s *Server) setupRoutes(e *echo.Echo) {
 	// Admin
 	e.POST("/api/identity", s.toEchoHandler(s.adminHandler.SetIdentityHandler))
 	// Storage
@@ -401,7 +401,7 @@ var logger = logging.Logger("api")
 //     3. Completion of analytics event flushing.
 //   - A channel (service.Fail) that reports errors that occur while the server is running.
 //   - An error if there is an issue during the initialization phase, otherwise nil.
-func (s Server) Start(ctx context.Context, exitErr chan<- error) error {
+func (s *Server) Start(ctx context.Context, exitErr chan<- error) error {
 	err := analytics.Init(ctx, s.db)
 	if err != nil {
 		return errors.WithStack(err)
