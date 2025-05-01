@@ -3,6 +3,8 @@ package job
 import (
 	"context"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
@@ -10,7 +12,6 @@ import (
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/scan"
 	"github.com/data-preservation-programs/singularity/util"
-	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 
