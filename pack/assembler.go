@@ -215,7 +215,7 @@ func (a *Assembler) prefetch() error {
 	}
 
 	// read more than 0 bytes, or the first block of an empty file
-	// nolint:goerr113
+	// nolint:err113
 	if err == nil || errors.Is(err, io.ErrUnexpectedEOF) || err == io.EOF {
 		var cidValue cid.Cid
 		var vint []byte
