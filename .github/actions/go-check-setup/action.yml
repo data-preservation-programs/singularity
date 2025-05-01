@@ -16,7 +16,7 @@ runs:
     - name: Setup Go
       uses: actions/setup-go@v5
       with:
-        go-version: ${{ inputs.go-version || 'stable' }}
+        go-version-file: 'go.mod'
 
     - name: Lint
       uses: golangci/golangci-lint-action@v7
