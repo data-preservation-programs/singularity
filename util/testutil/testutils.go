@@ -25,7 +25,7 @@ const pattern = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 func GenerateFixedBytes(length int) []byte {
 	patternLen := len(pattern)
 	result := make([]byte, length)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		result[i] = pattern[i%patternLen]
 	}
 	return result

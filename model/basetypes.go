@@ -10,7 +10,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 var (

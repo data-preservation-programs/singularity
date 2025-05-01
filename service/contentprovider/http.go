@@ -200,7 +200,7 @@ func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 
 	metadata, err := getPieceMetadata(ctx, db, car)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+		return c.String(http.StatusInternalServerError, "Error: "+err.Error())
 	}
 
 	// Remove all credentials
