@@ -40,9 +40,15 @@ linters:
     - wastedassign
     - wrapcheck
     - wsl
+    - contextcheck
+    - forcetypeassert
+    - funcorder
+    - exhaustive
+    - intrange
   settings:
     errcheck:
       exclude-functions:
+        - path/filepath.Walk
         - (github.com/libp2p/go-libp2p/network.MuxedStream).SetDeadline
         - (github.com/data-preservation-programs/singularity/service.DatasetWorker).cleanup
     revive:
