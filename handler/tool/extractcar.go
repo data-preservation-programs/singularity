@@ -189,7 +189,7 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 				return errors.Wrapf(err, "failed to get output path for CID %s", c)
 			}
 		}
-		_, _ = ctx.App.Writer.Write([]byte(fmt.Sprintf("Writing to %s\n", outPath)))
+		_, _ = fmt.Fprintf(ctx.App.Writer, "Writing to %s\n", outPath)
 		return os.WriteFile(outPath, node.RawData(), 0o600)
 	case cid.DagProtobuf:
 		fsnode, err := unixfs.ExtractFSNode(node)
@@ -213,7 +213,7 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 				return errors.Wrapf(err, "failed to create output file %s", outPath)
 			}
 			defer f.Close()
-			_, _ = ctx.App.Writer.Write([]byte(fmt.Sprintf("Writing to %s\n", outPath)))
+			_, _ = fmt.Fprintf(ctx.App.Writer, "Writing to %s\n", outPath)
 			_, err = reader.WriteTo(f)
 			if err != nil {
 				return errors.Wrapf(err, "failed to write to output file %s", outPath)
@@ -223,7 +223,7 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 			if err != nil {
 				return errors.Wrapf(err, "failed to create directory from node for CID %s", c)
 			}
-			_, _ = ctx.App.Writer.Write([]byte(fmt.Sprintf("Create Dir %s\n", outPath)))
+			_, _ = fmt.Fprintf(ctx.App.Writer, "Create Dir %s\n", outPath)
 			err = os.MkdirAll(outPath, 0o755)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create output directory %s", outPath)

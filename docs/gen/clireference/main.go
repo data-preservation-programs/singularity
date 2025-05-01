@@ -12,7 +12,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd"
 	"github.com/mattn/go-shellwords"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 var overrides = map[string]string{
@@ -110,7 +110,7 @@ func saveMarkdown(command *cli.Command, outDir string, args []string) {
 	}
 
 	var margin string
-	for i := 0; i < len(args)-1; i++ {
+	for range len(args) - 1 {
 		margin += "  "
 	}
 

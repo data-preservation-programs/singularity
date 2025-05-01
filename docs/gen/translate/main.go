@@ -35,7 +35,7 @@ func main() {
 	var wg sync.WaitGroup
 	for _, language := range languages {
 		wg.Add(1)
-		language := language
+
 		go func() {
 			defer wg.Done()
 			client := openai.NewClient(token)

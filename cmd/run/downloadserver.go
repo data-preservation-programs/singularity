@@ -8,7 +8,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service/downloadserver"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 var DownloadServerCmd = &cli.Command{

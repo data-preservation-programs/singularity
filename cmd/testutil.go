@@ -25,7 +25,7 @@ import (
 	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/require"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 type RunnerMode string
@@ -199,7 +199,7 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	// Make a HEAD request to get the size of the file
-	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, url, nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -228,7 +228,7 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 	var wg sync.WaitGroup
 	parts := make([][]byte, nThreads)
 	errChan := make(chan error, nThreads)
-	for i := 0; i < nThreads; i++ {
+	for i := range nThreads {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
@@ -239,7 +239,7 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 				end += extraSize // add the remainder to the last part
 			}
 
-			req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 			if err != nil {
 				errChan <- errors.WithStack(err)
 				return
