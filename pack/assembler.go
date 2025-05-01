@@ -246,9 +246,17 @@ func (a *Assembler) prefetch() error {
 		if !a.noInline {
 			a.carBlocks = append(a.carBlocks, carBlocks...)
 		}
+
+		// Check for negative file size
+		size := n
+		if size < 0 {
+			logger.Warnf("Encountered unknown size file (%s)", a.fileRanges[a.index].File.Path)
+			size = 0
+		}
+
 		a.pendingLinks = append(a.pendingLinks, format.Link{
 			Cid:  cidValue,
-			Size: uint64(n),
+			Size: uint64(size), //nolint:gosec
 		})
 
 		if err == nil {
