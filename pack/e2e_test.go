@@ -106,7 +106,6 @@ func TestLastPieceBehaviorE2ENoInline(t *testing.T) {
 
 		// 6. Run all pack jobs and collect CAR files for verification
 		carSizes := make(map[int64]int64)
-		var carIDs []model.CarID
 
 		for _, job := range packJobs {
 			// Load the full job with attachments - important to preload OutputStorages
@@ -125,9 +124,6 @@ func TestLastPieceBehaviorE2ENoInline(t *testing.T) {
 			}
 			t.Logf("Packed job ID %d, created car with piece size: %d, file size: %d%s",
 				job.ID, car.PieceSize, car.FileSize, fileRangeInfo)
-
-			// Save the CAR ID for verification
-			carIDs = append(carIDs, car.ID)
 
 			// Record car sizes for later verification
 			carSizes[car.PieceSize] = car.FileSize
@@ -324,9 +320,8 @@ func TestLastPieceBehaviorE2EInline(t *testing.T) {
 			t.Logf("Pack job %d created", i+1)
 		}
 
-		// 6. Run all pack jobs and collect CAR information for verification
+		// 6. Run all pack jobs and collect CAR files for verification
 		carSizes := make(map[int64]int64)
-		var carIDs []model.CarID
 
 		for _, job := range packJobs {
 			// Load the full job with attachments
@@ -345,9 +340,6 @@ func TestLastPieceBehaviorE2EInline(t *testing.T) {
 			}
 			t.Logf("Packed job ID %d, created car with piece size: %d, file size: %d%s",
 				job.ID, car.PieceSize, car.FileSize, fileRangeInfo)
-
-			// Save the CAR ID for verification
-			carIDs = append(carIDs, car.ID)
 
 			// Record car sizes for later verification
 			carSizes[car.PieceSize] = car.FileSize
