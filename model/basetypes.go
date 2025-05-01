@@ -135,11 +135,11 @@ func (c *CID) Scan(src any) error {
 	return nil
 }
 
-func (ss StringSlice) Value() (driver.Value, error) { //nolint:recvcheck
+func (ss StringSlice) Value() (driver.Value, error) {
 	return json.Marshal(ss)
 }
 
-func (m ConfigMap) Value() (driver.Value, error) { //nolint:recvcheck
+func (m ConfigMap) Value() (driver.Value, error) {
 	return json.Marshal(m)
 }
 
