@@ -7,8 +7,8 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
-	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
+	"slices"
 )
 
 var pausableStatesForScan = []model.JobState{model.Processing, model.Ready}
@@ -53,7 +53,8 @@ func StartJobHandler(
 	db *gorm.DB,
 	id string,
 	name string,
-	jobType model.JobType) (*model.Job, error) {
+	jobType model.JobType,
+) (*model.Job, error) {
 	db = db.WithContext(ctx)
 	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
@@ -95,7 +96,8 @@ func (DefaultHandler) StartScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id string,
-	name string) (*model.Job, error) {
+	name string,
+) (*model.Job, error) {
 	return StartJobHandler(ctx, db, id, name, model.Scan)
 }
 
@@ -134,7 +136,8 @@ func PauseJobHandler(
 	db *gorm.DB,
 	id string,
 	name string,
-	jobType model.JobType) (*model.Job, error) {
+	jobType model.JobType,
+) (*model.Job, error) {
 	db = db.WithContext(ctx)
 	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
@@ -163,7 +166,8 @@ func (DefaultHandler) PauseScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id string,
-	name string) (*model.Job, error) {
+	name string,
+) (*model.Job, error) {
 	return PauseJobHandler(ctx, db, id, name, model.Scan)
 }
 

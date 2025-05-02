@@ -49,7 +49,6 @@ func (DefaultHandler) AttachHandler(
 	err = database.DoRetry(ctx, func() error {
 		return db.Model(&preparation).Association("Wallets").Append(&w)
 	})
-
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

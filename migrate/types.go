@@ -6,9 +6,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type ScanningRequestStatus string
-type GenerationRequestStatus string
-type ReplicationRequestStatus string
+type (
+	ScanningRequestStatus    string
+	GenerationRequestStatus  string
+	ReplicationRequestStatus string
+)
 
 const (
 	ScanningStatusActive       ScanningRequestStatus    = "active"

@@ -63,8 +63,10 @@ func Init(ctx context.Context, db *gorm.DB) error {
 	return nil
 }
 
-var Instance string
-var Identity string
+var (
+	Instance string
+	Identity string
+)
 
 type Collector struct {
 	mu            sync.Mutex

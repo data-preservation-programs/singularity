@@ -8,11 +8,12 @@ import (
 	"path"
 	"strings"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd"
 	"github.com/mattn/go-shellwords"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
 )
 
 var overrides = map[string]string{
@@ -36,7 +37,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = os.WriteFile("docs/en/cli-reference/README.md", []byte(sb.String()), 0644)
+	err = os.WriteFile("docs/en/cli-reference/README.md", []byte(sb.String()), 0644) //nolint:gosec
 	if err != nil {
 		panic(err)
 	}
@@ -65,7 +66,7 @@ func main() {
 	}
 
 	lines = append(lines[:beginIndex+1], append([]string{"", summary.String()}, lines[endIndex:]...)...)
-	err = os.WriteFile("docs/en/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644)
+	err = os.WriteFile("docs/en/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644) //nolint:gosec
 	if err != nil {
 		panic(err)
 	}
@@ -104,13 +105,13 @@ func saveMarkdown(command *cli.Command, outDir string, args []string) {
 	sb.WriteString(stdout)
 	sb.WriteString("```\n")
 	sb.WriteString("{% endcode %}\n")
-	err = os.WriteFile(outFile, []byte(sb.String()), 0644)
+	err = os.WriteFile(outFile, []byte(sb.String()), 0644) //nolint:gosec
 	if err != nil {
 		panic(err)
 	}
 
 	var margin string
-	for i := 0; i < len(args)-1; i++ {
+	for range len(args) - 1 {
 		margin += "  "
 	}
 

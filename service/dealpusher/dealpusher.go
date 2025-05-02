@@ -7,20 +7,19 @@ import (
 	"time"
 
 	"github.com/avast/retry-go"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/ipfs/go-cid"
-	"github.com/libp2p/go-libp2p/core/host"
-	"github.com/rjNemo/underscore"
-	"github.com/robfig/cron/v3"
-
-	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/google/uuid"
+	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
+	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/rjNemo/underscore"
+	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 )
 
@@ -267,7 +266,8 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 		var total sumResult
 		err = db.Model(&model.Deal{}).
 			Where("schedule_id = ? AND state IN (?)", schedule.ID, []model.DealState{
-				model.DealActive, model.DealProposed, model.DealPublished}).Select("COUNT(*) AS deal_number, SUM(piece_size) AS deal_size").Scan(&total).Error
+				model.DealActive, model.DealProposed, model.DealPublished,
+			}).Select("COUNT(*) AS deal_number, SUM(piece_size) AS deal_size").Scan(&total).Error
 		if err != nil {
 			return model.ScheduleError, errors.Wrap(err, "failed to count total active and pending deals")
 		}
@@ -424,7 +424,8 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 }
 
 func NewDealPusher(db *gorm.DB, lotusURL string,
-	lotusToken string, numAttempts uint, maxReplicas uint) (*DealPusher, error) {
+	lotusToken string, numAttempts uint, maxReplicas uint,
+) (*DealPusher, error) {
 	if numAttempts <= 1 {
 		numAttempts = 1
 	}

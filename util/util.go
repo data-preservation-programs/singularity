@@ -42,6 +42,14 @@ func NextPowerOfTwo(x uint64) uint64 {
 	return 1 << pos
 }
 
+// IsPowerOfTwo returns true if x is a power of two.
+func IsPowerOfTwo(x uint64) bool {
+	if x == 0 {
+		return false
+	}
+	return (x & (x - 1)) == 0
+}
+
 // NewLotusClient is a function that creates a new JSON-RPC client for interacting with a Lotus node.
 // It takes the Lotus API endpoint and an optional Lotus token as input.
 // If the Lotus token is provided, it is included in the 'Authorization' header of the JSON-RPC requests.
