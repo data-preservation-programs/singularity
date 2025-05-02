@@ -256,7 +256,7 @@ func (a *Assembler) prefetch() error {
 
 		a.pendingLinks = append(a.pendingLinks, format.Link{
 			Cid:  cidValue,
-			Size: uint64(size), //nolint:gosec
+			Size: uint64(size),
 		})
 
 		if err == nil {
