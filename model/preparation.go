@@ -36,6 +36,7 @@ type Preparation struct {
 	PieceSize         int64         `json:"pieceSize"`
 	NoInline          bool          `json:"noInline"`
 	NoDag             bool          `json:"noDag"`
+	Auto              bool          `gorm:"default:true"`
 
 	// Associations
 	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
@@ -310,8 +311,10 @@ func (c CarBlock) BlockLength() int32 {
 	}
 
 	if c.RawBlock != nil {
+		//nolint:gosec // G115: Safe conversion, length of blocks will not exceed int32 max value
 		c.blockLength = int32(len(c.RawBlock))
 	} else {
+		//nolint:gosec // G115: Safe conversion, CID byte length and varint length will not exceed int32 max value
 		c.blockLength = c.CarBlockLength - int32(cid.Cid(c.CID).ByteLen()) - int32(len(c.Varint))
 	}
 

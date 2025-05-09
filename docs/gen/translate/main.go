@@ -35,7 +35,7 @@ func main() {
 	var wg sync.WaitGroup
 	for _, language := range languages {
 		wg.Add(1)
-		language := language
+
 		go func() {
 			defer wg.Done()
 			client := openai.NewClient(token)
@@ -120,7 +120,7 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
-				err = os.WriteFile(outPath, []byte(strings.Join(results, "\n")), 0644)
+				err = os.WriteFile(outPath, []byte(strings.Join(results, "\n")), 0644) //nolint:gosec
 				if err != nil {
 					panic(err)
 				}

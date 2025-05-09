@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/gammazero/workerpool"
@@ -15,16 +17,17 @@ import (
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/config/configmap"
 	"github.com/rclone/rclone/fs/object"
-	"golang.org/x/exp/slices"
 )
 
 var logger = log.Logger("storage")
 
 var _ Handler = &RCloneHandler{}
 
-var ErrGetUsageNotSupported = errors.New("The backend does not support getting usage quota")
-var ErrBackendNotSupported = errors.New("This backend is not supported")
-var ErrMoveNotSupported = errors.New("The backend does not support moving files")
+var (
+	ErrGetUsageNotSupported = errors.New("The backend does not support getting usage quota")
+	ErrBackendNotSupported  = errors.New("This backend is not supported")
+	ErrMoveNotSupported     = errors.New("The backend does not support moving files")
+)
 
 type RCloneHandler struct {
 	name                    string
@@ -95,7 +98,6 @@ func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, w
 
 	var subCount int
 	for _, entry := range entries {
-		entry := entry
 		switch v := entry.(type) {
 		case fs.Directory:
 			select {

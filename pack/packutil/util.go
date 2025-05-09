@@ -8,11 +8,11 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/boxo/ipld/merkledag"
 	"github.com/ipfs/boxo/ipld/unixfs"
-	"github.com/ipfs/boxo/ipld/unixfs/pb"
+	unixfs_pb "github.com/ipfs/boxo/ipld/unixfs/pb"
 	util2 "github.com/ipfs/boxo/util"
-	"github.com/ipfs/go-block-format"
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
-	"github.com/ipfs/go-ipld-format"
+	format "github.com/ipfs/go-ipld-format"
 	"github.com/multiformats/go-varint"
 )
 
@@ -22,8 +22,10 @@ var EmptyFileVarint = varint.ToUvarint(uint64(len(EmptyFileCid.Bytes())))
 
 var EmptyCarHeader, _ = util.GenerateCarHeader(EmptyFileCid)
 
-const ChunkSize int64 = 1 << 20
-const NumLinkPerNode = 1024
+const (
+	ChunkSize      int64 = 1 << 20
+	NumLinkPerNode       = 1024
+)
 
 // createParentNode creates a new parent ProtoNode for a given set of links.
 // It constructs a UnixFS node with the type Data_File and adds the sizes of

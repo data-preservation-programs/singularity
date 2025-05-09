@@ -7,8 +7,8 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
-	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
+	"slices"
 )
 
 var pausableStatesForScan = []model.JobState{model.Processing, model.Ready}
@@ -53,7 +53,8 @@ func StartJobHandler(
 	db *gorm.DB,
 	id string,
 	name string,
-	jobType model.JobType) (*model.Job, error) {
+	jobType model.JobType,
+) (*model.Job, error) {
 	db = db.WithContext(ctx)
 	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
@@ -91,12 +92,35 @@ func StartJobHandler(
 	return &job, errors.WithStack(err)
 }
 
+// startScanHandler starts a new scanning job
 func (DefaultHandler) StartScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id string,
 	name string) (*model.Job, error) {
-	return StartJobHandler(ctx, db, id, name, model.Scan)
+	// start the scan job
+	scanJob, err := StartJobHandler(ctx, db, id, name, model.Scan)
+	if err != nil {
+		return nil, err
+	}
+
+	// load the attachment and preparation data
+	var attachment model.SourceAttachment
+	err = db.Preload("Preparation").First(&attachment, scanJob.AttachmentID).Error
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	// in auto mode, also start a daggen job
+	// it won't run until pack jobs complete due to job type ordering
+	if attachment.Preparation.Auto && !attachment.Preparation.NoDag {
+		_, err = Default.StartDagGenHandler(ctx, db, id, name)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return scanJob, nil
 }
 
 // @ID StartScan
@@ -134,7 +158,8 @@ func PauseJobHandler(
 	db *gorm.DB,
 	id string,
 	name string,
-	jobType model.JobType) (*model.Job, error) {
+	jobType model.JobType,
+) (*model.Job, error) {
 	db = db.WithContext(ctx)
 	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
@@ -163,7 +188,8 @@ func (DefaultHandler) PauseScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id string,
-	name string) (*model.Job, error) {
+	name string,
+) (*model.Job, error) {
 	return PauseJobHandler(ctx, db, id, name, model.Scan)
 }
 

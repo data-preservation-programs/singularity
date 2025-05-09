@@ -118,7 +118,7 @@ func (ef *EndpointFinder) FindHTTPEndpoints(ctx context.Context, sps []string) (
 		}
 	}
 
-	for i := 0; i < toLookup; i++ {
+	for range toLookup {
 		select {
 		case providerAddrs := <-addrChan:
 			if providerAddrs.addrs != nil {

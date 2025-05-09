@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 type SwaggerSpec struct {
@@ -54,7 +54,7 @@ func main() {
 				contentMap[tag] = &strings.Builder{}
 				contentMap[tag].WriteString("# " + tag + "\n\n")
 			}
-			contentMap[tag].WriteString(fmt.Sprintf("{%% swagger src=\"https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml\" path=\"%s\" method=\"%s\" %%}\n", pathName, method))
+			fmt.Fprintf(contentMap[tag], "{%% swagger src=\"https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml\" path=\"%s\" method=\"%s\" %%}\n", pathName, method)
 			contentMap[tag].WriteString("[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)\n")
 			contentMap[tag].WriteString("{% endswagger %}\n\n")
 		}
@@ -72,7 +72,7 @@ func main() {
 	slices.Sort(contentMapSorted)
 	for _, tag := range contentMapSorted {
 		builder := contentMap[tag]
-		err := os.WriteFile("./docs/en/web-api-reference/"+convertStringToHyphenated(tag)+".md", []byte(builder.String()), 0644)
+		err := os.WriteFile("./docs/en/web-api-reference/"+convertStringToHyphenated(tag)+".md", []byte(builder.String()), 0644) //nolint:gosec
 		if err != nil {
 			panic(err)
 		}
@@ -95,7 +95,7 @@ func main() {
 	slices.Sort(summaries)
 	summaries = append(summaries, "* [Specification](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)", "")
 	lines = append(lines[:beginIndex+1], append([]string{"", strings.Join(summaries, "\n")}, lines[endIndex:]...)...)
-	err = os.WriteFile("docs/en/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644)
+	err = os.WriteFile("docs/en/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644) //nolint:gosec
 	if err != nil {
 		panic(err)
 	}

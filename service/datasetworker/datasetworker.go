@@ -25,9 +25,11 @@ type Worker struct {
 	stateMonitor *StateMonitor
 }
 
-const defaultMinInterval = 5 * time.Second
-const defaultMaxInterval = 160 * time.Second
-const cleanupTimeout = 5 * time.Second
+const (
+	defaultMinInterval = 5 * time.Second
+	defaultMaxInterval = 160 * time.Second
+	cleanupTimeout     = 5 * time.Second
+)
 
 type Config struct {
 	Concurrency    int
@@ -175,7 +177,7 @@ func (w Worker) Run(ctx context.Context) error {
 	}()
 
 	threads := make([]service.Server, w.config.Concurrency)
-	for i := 0; i < w.config.Concurrency; i++ {
+	for i := range w.config.Concurrency {
 		id := uuid.New()
 		thread := &Thread{
 			id:           id,
@@ -256,14 +258,14 @@ func (w *Thread) run(ctx context.Context) (retErr error) {
 	}()
 
 	var jobTypes []model.JobType
-	if w.config.EnableDag {
-		jobTypes = append(jobTypes, model.DagGen)
+	if w.config.EnablePack {
+		jobTypes = append(jobTypes, model.Pack)
 	}
 	if w.config.EnableScan {
 		jobTypes = append(jobTypes, model.Scan)
 	}
-	if w.config.EnablePack {
-		jobTypes = append(jobTypes, model.Pack)
+	if w.config.EnableDag {
+		jobTypes = append(jobTypes, model.DagGen)
 	}
 
 	var timer *time.Timer

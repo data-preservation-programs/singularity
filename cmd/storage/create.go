@@ -3,6 +3,7 @@ package storage
 import (
 	"net/url"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/cockroachdb/errors"
@@ -17,7 +18,6 @@ import (
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
 )
 
 var defaultClientConfig = fs.NewConfig()

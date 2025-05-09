@@ -2,12 +2,12 @@ package schedule
 
 import (
 	"context"
+	"slices"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
-	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 

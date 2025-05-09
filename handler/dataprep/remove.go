@@ -57,7 +57,6 @@ func (DefaultHandler) RemovePreparationHandler(ctx context.Context, db *gorm.DB,
 			return db.Delete(&preparation).Error
 		})
 	})
-
 	if err != nil {
 		return errors.WithStack(err)
 	}

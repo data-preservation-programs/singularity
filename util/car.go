@@ -3,7 +3,7 @@ package util
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
-	"github.com/ipfs/go-ipld-cbor"
+	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/ipld/go-car"
 	"github.com/multiformats/go-varint"
 )
