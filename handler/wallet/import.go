@@ -73,7 +73,7 @@ func (DefaultHandler) ImportHandler(
 	}
 
 	wallet := model.Wallet{
-		ID:         result,
+		ActorID:    result,
 		Address:    result[:1] + addr.String()[1:],
 		PrivateKey: request.PrivateKey,
 	}
