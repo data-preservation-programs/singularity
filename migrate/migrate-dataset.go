@@ -263,9 +263,9 @@ func MigrateDataset(cctx *cli.Context) error {
 		return errors.Wrap(err, "failed to connect to mongo")
 	}
 
-	err = model.AutoMigrate(db)
+	err = model.Migrator(db).Migrate()
 	if err != nil {
-		return errors.Wrap(err, "failed to auto-migrate database")
+		return errors.Wrap(err, "failed to migrate database")
 	}
 
 	resp, err := mg.Database("singularity").Collection("scanningrequests").Find(ctx, bson.M{})

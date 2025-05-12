@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/migrate/migrations"
+	"github.com/go-gormigrate/gormigrate/v2"
 	"github.com/google/uuid"
 	logging "github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
@@ -31,57 +33,61 @@ var Tables = []any{
 
 var logger = logging.Logger("model")
 
-// AutoMigrate attempts to automatically migrate the database schema.
+// Create new Gormigrate instance
 //
-// This function performs a few operations:
-//  1. Automatically migrates the tables in the database to match the structures defined in the application.
+// If no migrations are found, an init function performs a few operations:
+//  1. Automatically migrates the tables in the database to match the current structures defined in the application.
 //  2. Creates an instance ID if it doesn't already exist.
 //  3. Generates a new encryption salt and stores it in the database if it doesn't already exist.
-//
-// The purpose of the auto-migration feature is to simplify schema changes and manage
-// basic system configurations without manually altering the database. This is especially
-// useful during development or when deploying updates that include schema changes.
 //
 // Parameters:
 //   - db: A pointer to a gorm.DB object, which provides database access.
 //
 // Returns:
-//   - An error if any issues arise during the process, otherwise nil.
-func AutoMigrate(db *gorm.DB) error {
-	logger.Info("Auto migrating tables")
-	err := db.AutoMigrate(Tables...)
-	if err != nil {
-		return errors.Wrap(err, "failed to auto migrate")
-	}
+//   - A migration interface
+func Migrator(db *gorm.DB) *gormigrate.Gormigrate {
+	m := gormigrate.New(db, gormigrate.DefaultOptions, migrations.GetMigrations())
 
-	logger.Debug("Creating instance id")
-	err = db.Clauses(clause.OnConflict{
-		DoNothing: true,
-	}).Create(&Global{Key: "instance_id", Value: uuid.NewString()}).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to create instance id")
-	}
+	// Initialize database with current schema if no previous migrations are found
+	m.InitSchema(func(tx *gorm.DB) error {
+		logger.Info("Auto migrating tables")
 
-	salt := make([]byte, 8)
-	_, err = rand.Read(salt)
-	if err != nil {
-		return errors.Wrap(err, "failed to generate salt")
-	}
-	encoded := base64.StdEncoding.EncodeToString(salt)
-	row := Global{
-		Key:   "salt",
-		Value: encoded,
-	}
+		err := db.AutoMigrate(Tables...)
+		if err != nil {
+			return errors.Wrap(err, "failed to auto migrate")
+		}
 
-	logger.Debug("Creating encryption salt")
-	err = db.Clauses(clause.OnConflict{
-		DoNothing: true,
-	}).Create(row).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to create salt")
-	}
+		logger.Debug("Creating instance id")
+		err = db.Clauses(clause.OnConflict{
+			DoNothing: true,
+		}).Create(&Global{Key: "instance_id", Value: uuid.NewString()}).Error
+		if err != nil {
+			return errors.Wrap(err, "failed to create instance id")
+		}
 
-	return nil
+		salt := make([]byte, 8)
+		_, err = rand.Read(salt)
+		if err != nil {
+			return errors.Wrap(err, "failed to generate salt")
+		}
+		encoded := base64.StdEncoding.EncodeToString(salt)
+		row := Global{
+			Key:   "salt",
+			Value: encoded,
+		}
+
+		logger.Debug("Creating encryption salt")
+		err = db.Clauses(clause.OnConflict{
+			DoNothing: true,
+		}).Create(row).Error
+		if err != nil {
+			return errors.Wrap(err, "failed to create salt")
+		}
+
+		return nil
+	})
+
+	return m
 }
 
 // DropAll removes all tables specified in the Tables slice from the database.

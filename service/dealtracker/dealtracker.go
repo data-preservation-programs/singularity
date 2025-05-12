@@ -430,7 +430,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	walletIDs := make(map[string]struct{})
 	for _, wallet := range wallets {
 		Logger.Infof("tracking deals for wallet %s", wallet.ID)
-		walletIDs[wallet.ID] = struct{}{}
+		walletIDs[wallet.ActorID] = struct{}{}
 	}
 
 	knownDeals := make(map[uint64]model.DealState)

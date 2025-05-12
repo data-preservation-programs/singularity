@@ -10,7 +10,7 @@ require (
 	github.com/cockroachdb/errors v1.11.3
 	github.com/data-preservation-programs/table v0.0.3
 	github.com/dustin/go-humanize v1.0.1
-	github.com/fatih/color v1.17.0
+	github.com/fatih/color v1.18.0
 	github.com/filecoin-project/go-address v1.2.0
 	github.com/filecoin-project/go-cbor-util v0.0.1
 	github.com/filecoin-project/go-crypto v0.1.0
@@ -83,7 +83,7 @@ require (
 	gorm.io/driver/mysql v1.5.0
 	gorm.io/driver/postgres v1.5.0
 	gorm.io/driver/sqlite v1.5.2
-	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55
+	gorm.io/gorm v1.25.12
 )
 
 require (
@@ -152,6 +152,7 @@ require (
 	github.com/getsentry/sentry-go v0.27.0 // indirect
 	github.com/glebarez/go-sqlite v1.21.1 // indirect
 	github.com/go-chi/chi/v5 v5.0.8 // indirect
+	github.com/go-gormigrate/gormigrate/v2 v2.1.4
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
@@ -373,8 +374,8 @@ require (
 	google.golang.org/protobuf v1.36.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gotest.tools/gotestsum v1.12.1 // indirect
-	gotest.tools/v3 v3.5.1 // indirect
+	gotest.tools/gotestsum v1.12.2 // indirect
+	gotest.tools/v3 v3.5.2 // indirect
 	honnef.co/go/tools v0.6.1 // indirect
 	lukechampine.com/blake3 v1.3.0 // indirect
 	modernc.org/libc v1.22.3 // indirect

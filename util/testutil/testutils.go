@@ -145,7 +145,7 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 	defer cancel()
 	db = db.WithContext(ctx)
 
-	err := model.AutoMigrate(db)
+	err := model.Migrator(db).Migrate()
 	require.NoError(t, err)
 
 	t.Run(backend, func(t *testing.T) {

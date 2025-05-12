@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/model"
@@ -30,7 +32,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/ybbus/jsonrpc/v3"
-	"slices"
 )
 
 const (
@@ -589,7 +590,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 
 	dealModel := &model.Deal{
 		State:      model.DealProposed,
-		ClientID:   walletObj.ID,
+		ClientID:   walletObj.ActorID,
 		Provider:   dealConfig.Provider,
 		Label:      cid.Cid(car.RootCID).String(),
 		PieceCID:   car.PieceCID,
