@@ -16,7 +16,7 @@ var InitCmd = &cli.Command{
 			Usage: "Name of the user or service that is running the Singularity for tracking and logging purpose",
 		},
 	},
-	Description: "This commands need to be run before running any singularity daemon or after any version upgrade",
+	Description: "This command needs to be run before running any singularity daemon or after any version upgrade",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
