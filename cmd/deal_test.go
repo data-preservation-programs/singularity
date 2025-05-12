@@ -24,7 +24,7 @@ func swapDealHandler(mockHandler deal.Handler) func() {
 
 func TestSendDealHandler(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Wallet{ID: "client_id"}).Error
+		err := db.Create(&model.Wallet{ActorID: "client_id"}).Error
 		require.NoError(t, err)
 		runner := NewRunner()
 		defer runner.Save(t)

@@ -111,7 +111,7 @@ func (DefaultHandler) CreateHandler(
 	}
 
 	wallet := model.Wallet{
-		ID:         address,
+		ActorID:    address,
 		Address:    address,
 		PrivateKey: privateKey,
 	}

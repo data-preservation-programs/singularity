@@ -19,7 +19,9 @@ func TestCreateHandler(t *testing.T) {
 			w, err := Default.CreateHandler(ctx, db, CreateRequest{KeyType: KTSecp256k1.String()})
 			require.NoError(t, err)
 			require.NotEmpty(t, w.Address)
-			require.NotEmpty(t, w.PrivateKey)
+			require.Equal(t, "f1", w.Address[:2])
+			require.Equal(t, "hello", w.PrivateKey)
+
 
 			_, err = Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
 				PrivateKey: w.PrivateKey,
@@ -31,7 +33,7 @@ func TestCreateHandler(t *testing.T) {
 			w, err := Default.CreateHandler(ctx, db, CreateRequest{KeyType: KTBLS.String()})
 			require.NoError(t, err)
 			require.NotEmpty(t, w.Address)
-			require.NotEmpty(t, w.PrivateKey)
+			require.Equal(t, "f3", w.Address[:2])
 
 			_, err = Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
 				PrivateKey: w.PrivateKey,
