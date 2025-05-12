@@ -41,7 +41,7 @@ func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, ca
 	deal.ID = 0
 	deal.PieceCID = car.PieceCID
 	deal.PieceSize = car.PieceSize
-	deal.ClientID = walletObj.ID
+	deal.ClientID = walletObj.ActorID
 	deal.Provider = dealConfig.Provider
 	deal.Verified = dealConfig.Verified
 	deal.ProposalID = uuid.NewString()
@@ -112,7 +112,7 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 				SourceStorages: []model.Storage{{}},
 				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						ActorID: client, Address: "f0xx",
 					},
 				}},
 			State:                model.ScheduleActive,
@@ -168,7 +168,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 				SourceStorages: []model.Storage{{}},
 				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						ActorID: client, Address: "f0xx",
 					},
 				}},
 			State:            model.ScheduleActive,
@@ -263,7 +263,7 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 				SourceStorages: []model.Storage{{}},
 				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						ActorID: client, Address: "f0xx",
 					},
 				}},
 			State:                model.ScheduleActive,
@@ -372,7 +372,7 @@ func TestDealmakerService_Force(t *testing.T) {
 			Preparation: &model.Preparation{
 				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						ActorID: client, Address: "f0xx",
 					},
 				},
 				SourceStorages: []model.Storage{{}},
@@ -431,7 +431,7 @@ func TestDealMakerService_MaxReplica(t *testing.T) {
 			Preparation: &model.Preparation{
 				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						ActorID: client, Address: "f0xx",
 					},
 				},
 				SourceStorages: []model.Storage{{}},
@@ -497,7 +497,7 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 			Preparation: &model.Preparation{
 				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						ActorID: client, Address: "f0xx",
 					},
 				},
 				SourceStorages: []model.Storage{{}},

@@ -30,7 +30,7 @@ func TestWalletCreate(t *testing.T) {
 		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 		mockHandler.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
-			ID:         "id",
+			ActorID:    "id",
 			Address:    "address",
 			PrivateKey: "private",
 		}, nil)
@@ -51,7 +51,7 @@ func TestWalletImport(t *testing.T) {
 		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 		mockHandler.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
-			ID:         "id",
+			ActorID:    "id",
 			Address:    "address",
 			PrivateKey: "private",
 		}, nil)
@@ -69,11 +69,11 @@ func TestWalletList(t *testing.T) {
 		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 		mockHandler.On("ListHandler", mock.Anything, mock.Anything).Return([]model.Wallet{{
-			ID:         "id1",
+			ActorID:    "id1",
 			Address:    "address1",
 			PrivateKey: "private1",
 		}, {
-			ID:         "id2",
+			ActorID:    "id2",
 			Address:    "address2",
 			PrivateKey: "private2",
 		}}, nil)

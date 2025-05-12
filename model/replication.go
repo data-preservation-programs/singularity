@@ -141,8 +141,22 @@ type Schedule struct {
 	Preparation   *Preparation  `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"expand"`
 }
 
+type WalletType string
+
+const (
+	UserWallet WalletType = "UserWallet"
+	SPWallet   WalletType = "SPWallet"
+)
+
 type Wallet struct {
-	ID         string `gorm:"primaryKey;size:15"   json:"id"`      // ID is the short ID of the wallet
-	Address    string `gorm:"index"                json:"address"` // Address is the Filecoin full address of the wallet
-	PrivateKey string `json:"privateKey,omitempty" table:"-"`      // PrivateKey is the private key of the wallet
+	ID          uint       `gorm:"primaryKey"    json:"id"`
+	ActorID     string     `gorm:"index,size:15" json:"actorId"`   // ActorID is the short ID of the wallet
+	ActorName   string     `json:"actorName"`                      // ActorName is readable label for the wallet
+	Address     string     `gorm:"index"         json:"address"`   // Address is the Filecoin full address of the wallet
+	Balance     float64    `json:"balance"`                        // Balance is in Fil cached from chain
+	BalancePlus float64    `json:"balancePlus"`                    // BalancePlus is in Fil+ cached from chain
+	ContactInfo string     `json:"contactInfo"`                    // ContactInfo is optional email for SP wallets
+	Location    string     `json:"location"`                       // Location is optional region, country for SP wallets
+	PrivateKey  string     `json:"privateKey,omitempty" table:"-"` // PrivateKey is the private key of the wallet
+	Type        WalletType `json:"type"`                           // Type determines user or SP wallets
 }

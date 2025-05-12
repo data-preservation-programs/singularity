@@ -589,13 +589,12 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	}
 
 	dealModel := &model.Deal{
-		State:     model.DealProposed,
-		ClientID:  walletObj.ID,
-		Provider:  dealConfig.Provider,
-		Label:     cid.Cid(car.RootCID).String(),
-		PieceCID:  car.PieceCID,
-		PieceSize: car.PieceSize,
-		//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
+		State:      model.DealProposed,
+		ClientID:   walletObj.ActorID,
+		Provider:   dealConfig.Provider,
+		Label:      cid.Cid(car.RootCID).String(),
+		PieceCID:   car.PieceCID,
+		PieceSize:  car.PieceSize,
 		StartEpoch: int32(startEpoch),
 		//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
 		EndEpoch: int32(endEpoch),

@@ -18,7 +18,8 @@ import (
 //   - An error, if any occurred during the operation.
 func (DefaultHandler) InitHandler(ctx context.Context, db *gorm.DB) error {
 	db = db.WithContext(ctx)
-	err := model.AutoMigrate(db)
+
+	err := model.Migrator(db).Migrate()
 	if err != nil {
 		return errors.WithStack(err)
 	}
