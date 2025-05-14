@@ -16,6 +16,8 @@ import (
 	"testing"
 	"time"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/fatih/color"
@@ -25,7 +27,6 @@ import (
 	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/require"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
 )
 
 type RunnerMode string
@@ -199,7 +200,7 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	// Make a HEAD request to get the size of the file
-	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, url, nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -228,7 +229,7 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 	var wg sync.WaitGroup
 	parts := make([][]byte, nThreads)
 	errChan := make(chan error, nThreads)
-	for i := 0; i < nThreads; i++ {
+	for i := range nThreads {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
@@ -239,7 +240,7 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 				end += extraSize // add the remainder to the last part
 			}
 
-			req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 			if err != nil {
 				errChan <- errors.WithStack(err)
 				return
@@ -292,7 +293,9 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 
 	return result.Bytes(), nil
 }
+
 func CompareDirectories(t *testing.T, dir1, dir2 string) {
+	t.Helper()
 	filesInDir2 := make(map[string]struct{})
 
 	err := filepath.Walk(dir1, func(path1 string, info1 os.FileInfo, err error) error {

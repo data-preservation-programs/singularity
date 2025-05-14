@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/cockroachdb/errors"
-
 	"github.com/ipfs/go-log/v2"
 	"github.com/urfave/cli/v2"
 )

@@ -7,12 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/data-preservation-programs/singularity/handler/handlererror"
-	"github.com/dustin/go-humanize"
-
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
 )

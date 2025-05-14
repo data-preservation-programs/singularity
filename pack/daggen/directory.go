@@ -16,8 +16,10 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
-var compressor, _ = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedDefault))
-var decompressor, _ = zstd.NewReader(nil, zstd.WithDecoderConcurrency(0))
+var (
+	compressor, _   = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedDefault))
+	decompressor, _ = zstd.NewReader(nil, zstd.WithDecoderConcurrency(0))
+)
 
 type DirectoryDetail struct {
 	Dir  *model.Directory

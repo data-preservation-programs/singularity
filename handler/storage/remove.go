@@ -25,7 +25,8 @@ import (
 func (DefaultHandler) RemoveHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	name string) error {
+	name string,
+) error {
 	db = db.WithContext(ctx)
 	err := database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {

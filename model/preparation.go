@@ -310,8 +310,10 @@ func (c CarBlock) BlockLength() int32 {
 	}
 
 	if c.RawBlock != nil {
+		//nolint:gosec // G115: Safe conversion, length of blocks will not exceed int32 max value
 		c.blockLength = int32(len(c.RawBlock))
 	} else {
+		//nolint:gosec // G115: Safe conversion, CID byte length and varint length will not exceed int32 max value
 		c.blockLength = c.CarBlockLength - int32(cid.Cid(c.CID).ByteLen()) - int32(len(c.Varint))
 	}
 
