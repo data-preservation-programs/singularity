@@ -14,8 +14,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-var staleThreshold = time.Minute * 5
-var reportInterval = time.Minute
+var (
+	staleThreshold = time.Minute * 5
+	reportInterval = time.Minute
+)
 
 var cleanupInterval = time.Minute * 5
 
@@ -169,7 +171,6 @@ func ReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, workerTy
 			DoUpdates: clause.AssignmentColumns([]string{"last_heartbeat", "type", "hostname"}),
 		}).Create(&worker).Error
 	})
-
 	if err != nil {
 		logger.Errorw("failed to send heartbeat", "error", err)
 	}

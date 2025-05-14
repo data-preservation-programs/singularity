@@ -4,13 +4,12 @@ import (
 	"context"
 	"crypto/rand"
 	"io"
+	rand2 "math/rand"
 	"net"
 	"os"
 	"strings"
 	"testing"
 	"time"
-
-	rand2 "math/rand"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -26,7 +25,7 @@ const pattern = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 func GenerateFixedBytes(length int) []byte {
 	patternLen := len(pattern)
 	result := make([]byte, length)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		result[i] = pattern[i%patternLen]
 	}
 	return result

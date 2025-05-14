@@ -14,8 +14,8 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
+	"slices"
 )
 
 var HTTPClientConfigFlagsForUpdate = []cli.Flag{

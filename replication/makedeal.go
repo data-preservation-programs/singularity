@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/model"
@@ -30,7 +32,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/ybbus/jsonrpc/v3"
-	"golang.org/x/exp/slices"
 )
 
 const (
@@ -588,16 +589,18 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	}
 
 	dealModel := &model.Deal{
-		State:      model.DealProposed,
-		ClientID:   walletObj.ID,
-		Provider:   dealConfig.Provider,
-		Label:      cid.Cid(car.RootCID).String(),
-		PieceCID:   car.PieceCID,
-		PieceSize:  car.PieceSize,
+		State:     model.DealProposed,
+		ClientID:  walletObj.ID,
+		Provider:  dealConfig.Provider,
+		Label:     cid.Cid(car.RootCID).String(),
+		PieceCID:  car.PieceCID,
+		PieceSize: car.PieceSize,
+		//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
 		StartEpoch: int32(startEpoch),
-		EndEpoch:   int32(endEpoch),
-		Price:      dealConfig.GetPrice(car.PieceSize, dealConfig.Duration).String(),
-		Verified:   dealConfig.Verified,
+		//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
+		EndEpoch: int32(endEpoch),
+		Price:    dealConfig.GetPrice(car.PieceSize, dealConfig.Duration).String(),
+		Verified: dealConfig.Verified,
 	}
 	if slices.Contains(protocols, StorageProposalV120) {
 		dealID := uuid.New()
