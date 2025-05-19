@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/avast/retry-go"
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
@@ -30,7 +30,33 @@ func retryOn(err error) bool {
 }
 
 func DoRetry(ctx context.Context, f func() error) error {
-	return retry.Do(f, retry.RetryIf(retryOn), retry.LastErrorOnly(true), retry.Context(ctx))
+	var lastErr error
+	retryLimit := 3
+
+	for i := 0; i < retryLimit; i++ {
+		err := f()
+		if err == nil {
+			return nil
+		}
+		lastErr = err
+
+		if IsUniqueConstraintError(err) {
+			return errors.Wrap(handlererror.ErrDuplicateKey, err.Error())
+		}
+
+		if !retryOn(err) {
+			break
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(50 * time.Millisecond):
+			continue
+		}
+	}
+
+	return lastErr
 }
 
 type databaseLogger struct {
@@ -69,8 +95,6 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 		lvl = logging.LevelError
 	}
 
-	// Uncomment for logging everything in testing
-	// lvl = logging.LevelError
 	switch lvl {
 	case logging.LevelDebug:
 		logger.Debugw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
@@ -94,4 +118,16 @@ func OpenWithLogger(connString string) (*gorm.DB, io.Closer, error) {
 func OpenFromCLI(c *cli.Context) (*gorm.DB, io.Closer, error) {
 	connString := c.String("database-connection-string")
 	return OpenWithLogger(connString)
+}
+
+// IsUniqueConstraintError checks if an error is due to a duplicate key constraint violation.
+func IsUniqueConstraintError(err error) bool {
+	if err == nil {
+		return false
+	}
+	errMsg := err.Error()
+	return strings.Contains(errMsg, "duplicate key") ||
+		strings.Contains(errMsg, "duplicated key") ||
+		strings.Contains(errMsg, "UNIQUE constraint failed") ||
+		strings.Contains(errMsg, "violates unique constraint")
 }

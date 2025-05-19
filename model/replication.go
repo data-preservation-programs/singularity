@@ -142,7 +142,8 @@ type Schedule struct {
 }
 
 type Wallet struct {
-	ID         string `gorm:"primaryKey;size:15"   json:"id"`      // ID is the short ID of the wallet
-	Address    string `gorm:"index"                json:"address"` // Address is the Filecoin full address of the wallet
-	PrivateKey string `json:"privateKey,omitempty" table:"-"`      // PrivateKey is the private key of the wallet
+	ID         string `gorm:"primaryKey;size:15" json:"id"`
+	Address    string `gorm:"index" json:"address"`
+	ActorName  string `gorm:"size:255;default:''"json:"actorName"` // Add default
+	PrivateKey string `gorm:"-" json:"-"`                          // Completely exclude from JSON
 }

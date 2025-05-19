@@ -19,7 +19,7 @@ require (
 	github.com/filecoin-project/go-state-types v0.12.0
 	github.com/filecoin-project/lassie v0.23.2
 	github.com/filecoin-shipyard/boostly v0.0.0-20230813165216-a449c35ece79
-	github.com/fxamacker/cbor/v2 v2.4.0
+	github.com/fxamacker/cbor/v2 v2.8.0
 	github.com/gammazero/workerpool v1.1.3
 	github.com/glebarez/sqlite v1.8.0
 	github.com/go-openapi/errors v0.20.4

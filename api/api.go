@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/data-preservation-programs/singularity/analytics"
@@ -17,7 +18,6 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/handler/file"
-	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
@@ -81,9 +81,7 @@ func (s Server) getMetadataHandler(c echo.Context) error {
 
 func Run(c *cli.Context) error {
 	connString := c.String("database-connection-string")
-
 	bind := c.String("bind")
-
 	lotusAPI := c.String("lotus-api")
 	lotusToken := c.String("lotus-token")
 
@@ -160,145 +158,137 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 	}, nil
 }
 
-// toEchoHandler is a utility method to convert a generic handler function into an echo.HandlerFunc.
-// It uses reflection to introspect the signature and parameter types of the passed handler function,
-// and wraps it into a function suitable for Echo's routing.
-//
-// Supported input parameters for the handler functions are:
-//   - context.Context: Will be passed the request context.
-//   - *gorm.DB: Will be passed the Server's database instance with the request's context.
-//   - jsonrpc.RPCClient: Will be passed the Server's Lotus client.
-//   - replication.DealMaker: Will be passed the Server's deal maker.
-//   - Any other supported path parameters (string, int, uint) or a request body.
-//
-// The handler function should return either a single error or a result and an error.
-// The output will be interpreted and converted into appropriate HTTP responses.
-//
-// Parameters:
-//   - handlerFunc: A function to be converted, it should have a supported signature.
-//
-// Returns:
-//   - An echo.HandlerFunc suitable for use with Echo's router.
-//
-// Notes:
-// This method assumes a specific ordering and kind of parameters in the handler functions.
-// It is designed to simplify the process of defining Echo handlers but has limitations
-// in terms of the variety of supported handler function signatures.
 func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Error("💥 Panic in handler:", r)
+				_ = httpResponseFromError(c, fmt.Errorf("panic: %v", r))
+			}
+		}()
+
 		handlerFuncValue := reflect.ValueOf(handlerFunc)
 		handlerFuncType := handlerFuncValue.Type()
 
-		// Check the number of input parameters
-		if handlerFuncType.NumIn() == 0 ||
+		if handlerFuncType.NumIn() < 2 ||
 			handlerFuncType.In(1).String() != "*gorm.DB" ||
 			handlerFuncType.In(0).String() != "context.Context" {
 			logger.Error("Invalid handler function signature.")
 			return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
 		}
 
-		// Prepare input parameters
 		var inputParams []reflect.Value
-
 		var j int
-		// Get path parameters
+
 		for i := 0; i < handlerFuncType.NumIn(); i++ {
 			paramType := handlerFuncType.In(i)
-			if paramType.String() == "context.Context" {
+
+			switch paramType.String() {
+			case "context.Context":
 				inputParams = append(inputParams, reflect.ValueOf(c.Request().Context()))
-				continue
-			}
-			if paramType.String() == "*gorm.DB" {
+			case "*gorm.DB":
 				inputParams = append(inputParams, reflect.ValueOf(s.db.WithContext(c.Request().Context())))
-				continue
-			}
-			if paramType.String() == "jsonrpc.RPCClient" {
+			case "jsonrpc.RPCClient":
 				inputParams = append(inputParams, reflect.ValueOf(s.lotusClient))
-				continue
-			}
-			if paramType.String() == "replication.DealMaker" {
+			case "replication.DealMaker":
 				inputParams = append(inputParams, reflect.ValueOf(s.dealMaker))
-				continue
-			}
-			if paramType.Kind() == reflect.String || isIntKind(paramType.Kind()) || isUIntKind(paramType.Kind()) {
-				if j >= len(c.ParamValues()) {
-					logger.Error("Invalid handler function signature.")
-					return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler function signature"})
+			default:
+				if paramType.Kind() == reflect.String || isIntKind(paramType.Kind()) || isUIntKind(paramType.Kind()) {
+					if j >= len(c.ParamValues()) {
+						return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler function signature"})
+					}
+					paramValue := c.ParamValues()[j]
+					j++
+
+					switch paramType.Kind() {
+					case reflect.String:
+						decoded, err := url.QueryUnescape(paramValue)
+						if err != nil {
+							return c.JSON(http.StatusInternalServerError, HTTPError{Err: "failed to decode path parameter"})
+						}
+						inputParams = append(inputParams, reflect.ValueOf(decoded))
+					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+						val, err := strconv.ParseInt(paramValue, 10, paramType.Bits())
+						if err != nil {
+							return c.JSON(http.StatusBadRequest, HTTPError{Err: "failed to parse int"})
+						}
+						v := reflect.New(paramType).Elem()
+						v.SetInt(val)
+						inputParams = append(inputParams, v)
+					case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+						val, err := strconv.ParseUint(paramValue, 10, paramType.Bits())
+						if err != nil {
+							return c.JSON(http.StatusBadRequest, HTTPError{Err: "failed to parse uint"})
+						}
+						v := reflect.New(paramType).Elem()
+						v.SetUint(val)
+						inputParams = append(inputParams, v)
+					}
+				} else {
+					bodyParam := reflect.New(paramType).Elem()
+					if bodyParam.Kind() == reflect.Map {
+						bodyParam.Set(reflect.MakeMap(bodyParam.Type()))
+					}
+					if err := c.Bind(bodyParam.Addr().Interface()); err != nil {
+						return c.JSON(http.StatusBadRequest, HTTPError{Err: fmt.Sprintf("failed to bind request body: %s", err)})
+					}
+					inputParams = append(inputParams, bodyParam)
 				}
-				paramValue := c.ParamValues()[j]
-				switch {
-				case paramType.Kind() == reflect.String:
-					decoded, err := url.QueryUnescape(paramValue)
-					if err != nil {
-						return c.JSON(http.StatusInternalServerError, HTTPError{Err: "failed to decode path parameter"})
-					}
-					inputParams = append(inputParams, reflect.ValueOf(decoded))
-				case isIntKind(paramType.Kind()):
-					decoded, err := strconv.ParseInt(paramValue, 10, paramType.Bits())
-					if err != nil {
-						return c.JSON(http.StatusBadRequest, HTTPError{Err: "failed to parse path parameter as number"})
-					}
-					val := reflect.New(paramType).Elem()
-					val.SetInt(decoded)
-					inputParams = append(inputParams, val)
-				case isUIntKind(paramType.Kind()):
-					decoded, err := strconv.ParseUint(paramValue, 10, paramType.Bits())
-					if err != nil {
-						return c.JSON(http.StatusBadRequest, HTTPError{Err: "failed to parse path parameter as number"})
-					}
-					val := reflect.New(paramType).Elem()
-					val.SetUint(decoded)
-					inputParams = append(inputParams, val)
-				default:
-				}
-				j += 1
-				continue
 			}
-			bodyParam := reflect.New(paramType).Elem()
-			if bodyParam.Kind() == reflect.Map {
-				bodyParam.Set(reflect.MakeMap(bodyParam.Type()))
-			}
-			if err := c.Bind(bodyParam.Addr().Interface()); err != nil {
-				return c.JSON(http.StatusBadRequest, HTTPError{Err: fmt.Sprintf("failed to bind request body: %s", err)})
-			}
-			inputParams = append(inputParams, bodyParam)
-			break
 		}
 
-		// Call the handler function
 		results := handlerFuncValue.Call(inputParams)
 
-		if len(results) == 1 {
-			// Handle the returned error
-			if results[0].Interface() != nil {
-				err, ok := results[1].Interface().(error)
-				if !ok {
-					return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler function signature"})
-				}
+		switch len(results) {
+		case 1:
+			if errVal := results[0]; !errVal.IsNil() {
+				err, _ := errVal.Interface().(error)
+				logger.Warnf("🪝 toEchoHandler caught error (1-result): %+v", err)
 				return httpResponseFromError(c, err)
 			}
 			return c.NoContent(http.StatusNoContent)
-		}
 
-		// Handle the returned error
-		if results[1].Interface() != nil {
-			err, ok := results[1].Interface().(error)
-			if !ok {
-				return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler function signature"})
+		case 2:
+			if errVal := results[1]; !errVal.IsNil() {
+				err, _ := errVal.Interface().(error)
+				logger.Warnf("🪝 toEchoHandler caught error (2-result): %+v", err)
+				return httpResponseFromError(c, err)
 			}
-			return httpResponseFromError(c, err)
-		}
+			return c.JSON(http.StatusOK, results[0].Interface())
 
-		// Handle the returned data
-		data := results[0].Interface()
-		return c.JSON(http.StatusOK, data)
+		default:
+			return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler return signature"})
+		}
 	}
 }
 
 func (s Server) setupRoutes(e *echo.Echo) {
+	// Add debug middleware first
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			logger.Infow("Incoming request",
+				"method", c.Request().Method,
+				"path", c.Request().URL.Path,
+			)
+			return next(c)
+		}
+	})
+
 	// Admin
 	e.POST("/api/identity", s.toEchoHandler(s.adminHandler.SetIdentityHandler))
-	// Storage
+
+	// Storage - Modified DELETE route comes first
+	e.DELETE("/api/storage/*", func(c echo.Context) error {
+		path := strings.TrimPrefix(c.Request().URL.Path, "/api/storage/")
+		logger.Infow("DELETE storage request", "path", path)
+		return s.storageHandler.RemoveHandler(
+			c.Request().Context(),
+			s.db.WithContext(c.Request().Context()),
+			path,
+		)
+	})
+
+	// Other storage routes
 	e.POST("/api/storage/:type", s.toEchoHandler(s.storageHandler.CreateStorageHandler))
 	e.POST("/api/storage/:type/:provider", s.toEchoHandler(func(
 		ctx context.Context,
@@ -312,10 +302,28 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	}))
 	e.GET("/api/storage/:name/explore/:path", s.toEchoHandler(s.storageHandler.ExploreHandler))
 	e.GET("/api/storage", s.toEchoHandler(s.storageHandler.ListStoragesHandler))
-	e.DELETE("/api/storage/:name", s.toEchoHandler(s.storageHandler.RemoveHandler))
 	e.PATCH("/api/storage/:name", s.toEchoHandler(s.storageHandler.UpdateStorageHandler))
-	e.PATCH("/api/storage/:name/rename", s.toEchoHandler(s.storageHandler.RenameStorageHandler))
+	e.PATCH("/api/storage/:name/rename", func(c echo.Context) error {
+		ctx := c.Request().Context()
+		db := s.db.WithContext(ctx)
+		name := c.Param("name")
 
+		var req storage.RenameRequest
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, HTTPError{
+				Code: "INVALID_REQUEST",
+				Err:  "Invalid request body",
+			})
+		}
+
+		resp, err := s.storageHandler.RenameStorageHandler(ctx, db, name, req)
+		if err != nil {
+			// Ensure error is properly wrapped with stack trace
+			return httpResponseFromError(c, errors.WithStack(err))
+		}
+
+		return c.JSON(http.StatusOK, resp)
+	})
 	// Preparation
 	e.POST("/api/preparation", s.toEchoHandler(s.dataprepHandler.CreatePreparationHandler))
 	e.DELETE("/api/preparation/:id", s.toEchoHandler(s.dataprepHandler.RemovePreparationHandler))
@@ -381,27 +389,6 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 var logger = logging.Logger("api")
 
-// Start initializes the server, sets up routes and middlewares, and starts listening for incoming requests.
-//
-// This method:
-//   - Initializes analytics.
-//   - Configures the echo server with recovery, logging, and CORS middleware.
-//   - Sets up various routes, including serving static files for the dashboard and a swagger UI.
-//   - Starts the echo server and manages its lifecycle with background goroutines.
-//   - Gracefully shuts down the server on context cancellation.
-//   - Closes database connections and other resources.
-//
-// Parameters:
-//   - ctx: A context.Context used to control the server's lifecycle and propagate cancellation.
-//
-// Returns:
-//   - A slice of channels (service.Done) that signal when different parts of the service
-//     have completed their work. This includes:
-//     1. The main echo server's completion.
-//     2. The host's completion.
-//     3. Completion of analytics event flushing.
-//   - A channel (service.Fail) that reports errors that occur while the server is running.
-//   - An error if there is an issue during the initialization phase, otherwise nil.
 func (s Server) Start(ctx context.Context, exitErr chan<- error) error {
 	err := analytics.Init(ctx, s.db)
 	if err != nil {
@@ -409,16 +396,27 @@ func (s Server) Start(ctx context.Context, exitErr chan<- error) error {
 	}
 	e := echo.New()
 	e.Debug = true
+	e.HTTPErrorHandler = func(err error, c echo.Context) {
+		logger.Warnf("🔥 Global error handler triggered: %+v", err)
+		if herr := httpResponseFromError(c, err); herr != nil {
+			logger.Error("❌ Failed to write error response:", herr)
+			_ = c.JSON(http.StatusInternalServerError, HTTPError{
+				Code: "INTERNAL_ERROR",
+				Err:  herr.Error(),
+			})
+		}
+	}
+
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		Skipper:           middleware.DefaultSkipper,
 		StackSize:         4 << 10, // 4 KiB
 		DisableStackAll:   false,
 		DisablePrintStack: false,
 		LogLevel:          0,
-		LogErrorFunc: func(c echo.Context, err error, stack []byte) error {
-			logger.Errorw("panic", "err", err, "stack", string(stack))
-			return nil
-		},
+		//LogErrorFunc: func(c echo.Context, err error, stack []byte) error {
+		//	logger.Errorw("panic", "err", err, "stack", string(stack))
+		//	return nil
+		//},
 	}))
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus: true,
@@ -443,7 +441,6 @@ func (s Server) Start(ctx context.Context, exitErr chan<- error) error {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
-	//nolint:contextcheck
 	s.setupRoutes(e)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
@@ -470,7 +467,6 @@ func (s Server) Start(ctx context.Context, exitErr chan<- error) error {
 		<-ctx.Done()
 		ctx2, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
-		//nolint:contextcheck
 		err := e.Shutdown(ctx2)
 		if err != nil {
 			logger.Errorw("failed to shutdown api server", "err", err)
@@ -479,14 +475,12 @@ func (s Server) Start(ctx context.Context, exitErr chan<- error) error {
 		if err != nil {
 			logger.Errorw("failed to close database connection", "err", err)
 		}
-
 		s.host.Close()
 	}()
 
 	go func() {
 		defer close(eventsFlushed)
 		analytics.Default.Start(ctx)
-		//nolint:contextcheck
 		analytics.Default.Flush()
 	}()
 
@@ -502,28 +496,25 @@ func isUIntKind(kind reflect.Kind) bool {
 }
 
 type HTTPError struct {
-	Err string `json:"err"`
+	Code string `json:"code,omitempty"`
+	Err  string `json:"err"`
 }
 
 func httpResponseFromError(c echo.Context, e error) error {
-	if e == nil {
-		return c.String(http.StatusOK, "OK")
+	// Force unwrap all error layers
+	unwrapped := errors.UnwrapAll(e)
+
+	// Check the raw error message
+	if strings.Contains(unwrapped.Error(), "duplicated key not allowed") {
+		return c.JSON(http.StatusConflict, HTTPError{
+			Code: "DUPLICATE_NAME",
+			Err:  "Cannot rename: a storage with that name already exists. Please choose a different name.",
+		})
 	}
 
-	httpStatusCode := http.StatusInternalServerError
-
-	if errors.Is(e, handlererror.ErrNotFound) {
-		httpStatusCode = http.StatusNotFound
-	}
-
-	if errors.Is(e, handlererror.ErrInvalidParameter) {
-		httpStatusCode = http.StatusBadRequest
-	}
-
-	if errors.Is(e, handlererror.ErrDuplicateRecord) {
-		httpStatusCode = http.StatusConflict
-	}
-
-	logger.Errorf("%+v", e)
-	return c.JSON(httpStatusCode, HTTPError{Err: e.Error()})
+	// Default error response
+	return c.JSON(http.StatusInternalServerError, HTTPError{
+		Code: "INTERNAL_ERROR",
+		Err:  e.Error(),
+	})
 }

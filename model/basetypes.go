@@ -351,3 +351,17 @@ func (js *JobState) Set(value string) error {
 func (js *JobState) String() string {
 	return string(*js)
 }
+
+// Bytes returns the underlying byte slice of the CID
+func (c CID) Bytes() []byte {
+	return cid.Cid(c).Bytes()
+}
+
+// NewCIDFromBytes safely creates a model.CID from []byte
+func NewCIDFromBytes(b []byte) (CID, error) {
+	cidObj, err := cid.Cast(b)
+	if err != nil {
+		return CID(cid.Undef), errors.Wrap(err, "failed to cast CID from bytes")
+	}
+	return CID(cidObj), nil
+}

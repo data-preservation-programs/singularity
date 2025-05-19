@@ -18,7 +18,9 @@ import (
 var logger = log.Logger("singularity/handler/wallet")
 
 type ImportRequest struct {
-	PrivateKey string `json:"privateKey"` // This is the exported private key from lotus wallet export
+	Address    string `json:"address"`
+	PrivateKey string `json:"privateKey"`
+	ActorName  string `json:"actorName"` // Add this
 }
 
 // @ID ImportWallet
@@ -75,6 +77,7 @@ func (DefaultHandler) ImportHandler(
 	wallet := model.Wallet{
 		ID:         result,
 		Address:    result[:1] + addr.String()[1:],
+		ActorName:  request.ActorName, // Add this
 		PrivateKey: request.PrivateKey,
 	}
 

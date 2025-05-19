@@ -24,11 +24,11 @@ func (DefaultHandler) ListHandler(
 	db = db.WithContext(ctx)
 	var wallets []model.Wallet
 
-	err := db.Find(&wallets).Error
+	// Explicitly select the fields we want
+	err := db.Select("id", "address", "actor_name").Find(&wallets).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-
 	return wallets, nil
 }
 
