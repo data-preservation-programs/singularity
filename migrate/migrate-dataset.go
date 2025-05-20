@@ -263,7 +263,7 @@ func MigrateDataset(cctx *cli.Context) error {
 		return errors.Wrap(err, "failed to connect to mongo")
 	}
 
-	err = model.Migrator(db).Migrate()
+	err = model.GetMigrator(db).Migrate()
 	if err != nil {
 		return errors.Wrap(err, "failed to migrate database")
 	}

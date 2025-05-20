@@ -3,6 +3,7 @@ package model
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/migrate/migrations"
@@ -33,25 +34,62 @@ var Tables = []any{
 
 var logger = logging.Logger("model")
 
-// Create new Gormigrate instance
+// Options for gormigrate instance
+var options = &gormigrate.Options{
+	TableName:                 "migrations",
+	IDColumnName:              "id",
+	IDColumnSize:              255,
+	UseTransaction:            false,
+	ValidateUnknownMigrations: false,
+}
+
+// NOTE: this NEEDS to match the values in MigrationOptions above
 //
-// If no migrations are found, an init function performs a few operations:
+//	type <TableName (singular)> struct {
+//	  ID string `gorm:"primaryKey;column:<IDColumnName>;size:<IDColumnSize>"`
+//	}
+type migration struct {
+	ID string `gorm:"primaryKey;column:id;size:255"`
+}
+
+// Handle initializing any database if no migrations are found
+//
+// In the case of existing database:
+//  1. Migrations table is created and first migration is inserted, which should match the existing, if outdated, data
+//  2. Any remaining migrations are run
+//
+// In the case of a new database:
 //  1. Automatically migrates the tables in the database to match the current structures defined in the application.
 //  2. Creates an instance ID if it doesn't already exist.
 //  3. Generates a new encryption salt and stores it in the database if it doesn't already exist.
-//
-// Parameters:
-//   - db: A pointer to a gorm.DB object, which provides database access.
-//
-// Returns:
-//   - A migration interface
-func Migrator(db *gorm.DB) *gormigrate.Gormigrate {
-	m := gormigrate.New(db, gormigrate.DefaultOptions, migrations.GetMigrations())
+func _init(db *gorm.DB) error {
+	logger.Info("Initializing database")
 
-	// Initialize database with current schema if no previous migrations are found
-	m.InitSchema(func(tx *gorm.DB) error {
-		logger.Info("Auto migrating tables")
+	// If this is an existing database before versioned migration strategy was implemented
+	if db.Migrator().HasTable("wallets") && !db.Migrator().HasColumn("wallets", "actor_id") {
+		// NOTE: We're going to have to recreate some internals of Gormigrate. It would be cleaner
+		// to use them directly but they're private methods. The general idea is to run all the
+		// migration functions _except_ the first which is hopefully the state of the database
+		// when they were on the older automigrate strategy.
+		logger.Info("Manually creating versioned migration table in existing database")
 
+		// Create migrations table
+		err := db.Table(options.TableName).AutoMigrate(&migration{})
+		if err != nil {
+			return errors.Wrap(err, "failed to create migrations table on init")
+		}
+
+		logger.Info("Manually running missing migrations")
+		// Skip first migration, run the rest to get current
+		for _, m := range migrations.GetMigrations()[1:] {
+			err = m.Migrate(db)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("failed to run migration with ID: %s", m.ID))
+			}
+		}
+	} else {
+		logger.Info("Auto migrating tables in clean database")
+		// This is a brand new database, run automigrate script on current schema
 		err := db.AutoMigrate(Tables...)
 		if err != nil {
 			return errors.Wrap(err, "failed to auto migrate")
@@ -83,32 +121,64 @@ func Migrator(db *gorm.DB) *gormigrate.Gormigrate {
 		if err != nil {
 			return errors.Wrap(err, "failed to create salt")
 		}
+	}
 
-		return nil
-	})
-
-	return m
+	return nil
 }
 
-// DropAll removes all tables specified in the Tables slice from the database.
-//
-// This function is typically used during development or testing where a clean database
-// slate is required. It iterates over the predefined Tables list and drops each table.
-// Care should be taken when using this function in production environments as it will
-// result in data loss.
+type migrator struct {
+	gormigrate.Gormigrate
+	db      *gorm.DB
+	Options gormigrate.Options
+}
+
+// Rollback to first initial schema
+func (m *migrator) RollbackAll() error {
+	return m.RollbackTo("SCHEMA_INIT")
+}
+
+// Get all migrations run
+func (m *migrator) GetMigrationsRun() ([]migration, error) {
+	var migrations []migration
+	err := m.db.Find(&migrations).Error
+	if err != nil {
+		return nil, err
+	}
+	return migrations, nil
+}
+
+// Get ID of last migration ran
+func (m *migrator) GetLastMigration() (string, error) {
+	migrations, err := m.GetMigrationsRun()
+	if len(migrations) == 0 || err != nil {
+		return "", err
+	}
+	return migrations[len(migrations)-1].ID, nil
+}
+
+// Has migration ID ran
+func (m *migrator) HasRunMigration(id string) (bool, error) {
+	var count int64
+	err := m.db.Table(m.Options.TableName).Where(fmt.Sprintf("%s = ?", m.Options.IDColumnName), id).Count(&count).Error
+	return count > 0, err
+}
+
+// Setup new Gormigrate instance
 //
 // Parameters:
 //   - db: A pointer to a gorm.DB object, which provides database access.
 //
 // Returns:
-//   - An error if any issues arise during the table drop process, otherwise nil.
-func DropAll(db *gorm.DB) error {
-	logger.Info("Dropping all tables")
-	for _, table := range Tables {
-		err := db.Migrator().DropTable(table)
-		if err != nil {
-			return errors.Wrap(err, "failed to drop table")
-		}
+//   - A migration interface
+func GetMigrator(db *gorm.DB) *migrator {
+	g := gormigrate.New(db, options, migrations.GetMigrations())
+
+	// Initialize database with current schema if no previous migrations are found
+	g.InitSchema(_init)
+
+	return &migrator{
+		*g,
+		db,
+		*options,
 	}
-	return nil
 }
