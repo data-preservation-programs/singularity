@@ -132,9 +132,19 @@ type migrator struct {
 	Options gormigrate.Options
 }
 
-// Rollback to first initial schema
-func (m *migrator) RollbackAll() error {
-	return m.RollbackTo("SCHEMA_INIT")
+// Drop all current database tables
+func (m *migrator) DropAll() error {
+	tables, err := m.db.Migrator().GetTables()
+	if err != nil {
+		return errors.Wrap(err, "Failed to get tables")
+	}
+	for _, t := range tables {
+		err = m.db.Migrator().DropTable(t)
+		if err != nil {
+			return errors.Wrap(err, "Failed to drop all tables")
+		}
+	}
+	return nil
 }
 
 // Get all migrations run
