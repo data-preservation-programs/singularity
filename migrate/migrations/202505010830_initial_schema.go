@@ -232,6 +232,8 @@ func _202505010830_initial_schema() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202505010830",
 		Migrate: func(tx *gorm.DB) error {
+			// NOTE: this should match any existing database at the time of transition
+			// to versioned migration strategy
 			return tx.AutoMigrate(InitTables...)
 		},
 		Rollback: func(tx *gorm.DB) error {

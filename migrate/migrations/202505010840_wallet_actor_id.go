@@ -8,7 +8,7 @@ import (
 // Create migration for initial database schema
 func _202505010840_wallet_actor_id() *gormigrate.Migration {
 	// Table name
-	const WALLETS = "wallets"
+	const WALLET_TABLE_NAME = "wallets"
 
 	// Temporary struct for old schema
 	type OldWallet struct {
@@ -48,7 +48,7 @@ func _202505010840_wallet_actor_id() *gormigrate.Migration {
 
 			// Copy data from old to new table
 			var oldWallets []OldWallet
-			if err := tx.Table(WALLETS).Find(&oldWallets).Error; err != nil {
+			if err := tx.Table(WALLET_TABLE_NAME).Find(&oldWallets).Error; err != nil {
 				return err
 			}
 
@@ -64,10 +64,10 @@ func _202505010840_wallet_actor_id() *gormigrate.Migration {
 			}
 
 			// Drop old table and rename new table
-			if err := tx.Migrator().DropTable(&OldWallet{}); err != nil {
+			if err := tx.Migrator().DropTable(WALLET_TABLE_NAME); err != nil {
 				return err
 			}
-			return tx.Migrator().RenameTable(&NewWallet{}, WALLETS)
+			return tx.Migrator().RenameTable(&NewWallet{}, WALLET_TABLE_NAME)
 		},
 		Rollback: func(tx *gorm.DB) error {
 			// Create old table
@@ -78,7 +78,7 @@ func _202505010840_wallet_actor_id() *gormigrate.Migration {
 
 			// Copy data from new to old table
 			var newWallets []NewWallet
-			if err := tx.Table(WALLETS).Find(&newWallets).Error; err != nil {
+			if err := tx.Table(WALLET_TABLE_NAME).Find(&newWallets).Error; err != nil {
 				return err
 			}
 
@@ -94,10 +94,10 @@ func _202505010840_wallet_actor_id() *gormigrate.Migration {
 			}
 
 			// Drop new table and rename old table
-			if err := tx.Migrator().DropTable(&NewWallet{}); err != nil {
+			if err := tx.Migrator().DropTable(WALLET_TABLE_NAME); err != nil {
 				return err
 			}
-			return tx.Migrator().RenameTable(&OldWallet{}, WALLETS)
+			return tx.Migrator().RenameTable(&OldWallet{}, WALLET_TABLE_NAME)
 		},
 	}
 }
