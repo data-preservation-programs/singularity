@@ -22,7 +22,7 @@ import (
 func (DefaultHandler) ResetHandler(ctx context.Context, db *gorm.DB) error {
 	db = db.WithContext(ctx)
 	migrator := model.GetMigrator(db)
-	err := migrator.RollbackAll()
+	err := migrator.DropAll()
 	if err != nil {
 		return errors.WithStack(err)
 	}

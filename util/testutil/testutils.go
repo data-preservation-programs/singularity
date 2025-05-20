@@ -186,7 +186,7 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 	defer cancel()
 	db = db.WithContext(ctx)
 
-	err := model.Migrator(db).Migrate()
+	err := model.GetMigrator(db).Migrate()
 	require.NoError(t, err)
 
 	// Clear any existing data from tables with unique constraints

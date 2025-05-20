@@ -670,16 +670,45 @@ definitions:
     type: object
   model.Wallet:
     properties:
+      actorId:
+        description: ActorID is the short ID of the wallet
+        type: string
+      actorName:
+        description: ActorName is readable label for the wallet
+        type: string
       address:
         description: Address is the Filecoin full address of the wallet
         type: string
+      balance:
+        description: Balance is in Fil cached from chain
+        type: number
+      balancePlus:
+        description: BalancePlus is in Fil+ cached from chain
+        type: number
+      contactInfo:
+        description: ContactInfo is optional email for SP wallets
+        type: string
       id:
-        description: ID is the short ID of the wallet
+        type: integer
+      location:
+        description: Location is optional region, country for SP wallets
         type: string
       privateKey:
         description: PrivateKey is the private key of the wallet
         type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/model.WalletType'
+        description: Type determines user or SP wallets
     type: object
+  model.WalletType:
+    enum:
+    - UserWallet
+    - SPWallet
+    type: string
+    x-enum-varnames:
+    - UserWallet
+    - SPWallet
   schedule.CreateRequest:
     properties:
       allowedPieceCids:
