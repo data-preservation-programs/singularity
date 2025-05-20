@@ -42,12 +42,12 @@ func run() error {
 		return errors.WithStack(err)
 	}
 	defer closer.Close()
-	err = model.DropAll(db)
+	err = model.GetMigrator(db).DropAll()
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	err = model.Migrator(db).Migrate()
+	err = model.GetMigrator(db).Migrate()
 	if err != nil {
 		return errors.WithStack(err)
 	}
