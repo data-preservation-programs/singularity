@@ -6550,19 +6550,61 @@ const docTemplate = `{
         "model.Wallet": {
             "type": "object",
             "properties": {
+                "actorId": {
+                    "description": "ActorID is the short ID of the wallet",
+                    "type": "string"
+                },
+                "actorName": {
+                    "description": "ActorName is readable label for the wallet",
+                    "type": "string"
+                },
                 "address": {
                     "description": "Address is the Filecoin full address of the wallet",
                     "type": "string"
                 },
+                "balance": {
+                    "description": "Balance is in Fil cached from chain",
+                    "type": "number"
+                },
+                "balancePlus": {
+                    "description": "BalancePlus is in Fil+ cached from chain",
+                    "type": "number"
+                },
+                "contactInfo": {
+                    "description": "ContactInfo is optional email for SP wallets",
+                    "type": "string"
+                },
                 "id": {
-                    "description": "ID is the short ID of the wallet",
+                    "type": "integer"
+                },
+                "location": {
+                    "description": "Location is optional region, country for SP wallets",
                     "type": "string"
                 },
                 "privateKey": {
                     "description": "PrivateKey is the private key of the wallet",
                     "type": "string"
+                },
+                "type": {
+                    "description": "Type determines user or SP wallets",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WalletType"
+                        }
+                    ]
                 }
             }
+        },
+        "model.WalletType": {
+            "type": "string",
+            "enum": [
+                "UserWallet",
+                "SPWallet"
+            ],
+            "x-enum-varnames": [
+                "UserWallet",
+                "SPWallet"
+            ]
         },
         "schedule.CreateRequest": {
             "type": "object",
