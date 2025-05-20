@@ -409,7 +409,7 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	db = db.WithContext(ctx)
-	require.NoError(b, model.Migrator(db).Migrate())
+	require.NoError(b, model.GetMigrator(db).Migrate())
 
 	path := b.TempDir()
 	lsys := cidlink.DefaultLinkSystem()
