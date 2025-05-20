@@ -88,7 +88,7 @@ func Pack(
 	job model.Job,
 ) (*model.Car, error) {
 	db = db.WithContext(ctx)
-	pieceSize := job.Attachment.Preparation.PieceSize
+	pieceSize := job.Attachment.Preparation.GetMinPieceSize()
 	// storageWriter can be nil for inline preparation
 	storageID, storageWriter, err := storagesystem.GetRandomOutputWriter(ctx, job.Attachment.Preparation.OutputStorages)
 	if err != nil {
@@ -169,6 +169,7 @@ func Pack(
 		AttachmentID:  &job.AttachmentID,
 		PreparationID: job.Attachment.PreparationID,
 		JobID:         &job.ID,
+		PieceType:     model.DataPiece,
 	}
 
 	// Update all Files and FileRanges that have size == -1

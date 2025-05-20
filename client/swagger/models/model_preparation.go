@@ -31,6 +31,9 @@ type ModelPreparation struct {
 	// max size
 	MaxSize int64 `json:"maxSize,omitempty"`
 
+	// Minimum piece size for the preparation, applies only to DAG and remainder pieces
+	MinPieceSize int64 `json:"minPieceSize,omitempty"`
+
 	// name
 	Name string `json:"name,omitempty"`
 

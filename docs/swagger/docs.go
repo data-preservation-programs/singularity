@@ -5626,6 +5626,11 @@ const docTemplate = `{
                     "type": "string",
                     "default": "31.5GiB"
                 },
+                "minPieceSize": {
+                    "description": "Minimum piece size for the preparation, applies only to DAG and remainer pieces",
+                    "type": "string",
+                    "default": "1MiB"
+                },
                 "name": {
                     "description": "Name of the preparation",
                     "type": "string"
@@ -5952,6 +5957,10 @@ const docTemplate = `{
                 },
                 "pieceSize": {
                     "type": "integer"
+                },
+                "pieceType": {
+                    "description": "PieceType indicates whether this is a data piece or DAG piece",
+                    "type": "string"
                 },
                 "preparationId": {
                     "description": "Association",
@@ -6293,6 +6302,10 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "maxSize": {
+                    "type": "integer"
+                },
+                "minPieceSize": {
+                    "description": "Minimum piece size for the preparation, applies only to DAG and remainder pieces",
                     "type": "integer"
                 },
                 "name": {
