@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fmt"
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -21,7 +22,7 @@ var MigrateCmd = &cli.Command{
 					return errors.WithStack(err)
 				}
 				defer closer.Close()
-				return model.Migrator(db).Migrate()
+				return model.GetMigrator(db).Migrate()
 			},
 		},
 		{
@@ -33,7 +34,7 @@ var MigrateCmd = &cli.Command{
 					return errors.WithStack(err)
 				}
 				defer closer.Close()
-				return model.Migrator(db).RollbackLast()
+				return model.GetMigrator(db).RollbackLast()
 			},
 		},
 		{
@@ -47,7 +48,22 @@ var MigrateCmd = &cli.Command{
 					return errors.WithStack(err)
 				}
 				defer closer.Close()
-				return model.Migrator(db).MigrateTo(c.Args().Get(0))
+
+				id := c.Args().Get(0)
+
+				migrator := model.GetMigrator(db)
+				last, err := migrator.GetLastMigration()
+				if last == id {
+					fmt.Println("Already at requested migration")
+					return nil
+				}
+
+				alreadyRan, err := migrator.HasRunMigration(id)
+				if alreadyRan {
+					return migrator.RollbackTo(id)
+				} else {
+					return migrator.MigrateTo(id)
+				}
 			},
 		},
 	},
