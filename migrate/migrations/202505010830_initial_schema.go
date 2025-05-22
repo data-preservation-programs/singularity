@@ -56,18 +56,18 @@ type Wallet struct {
 }
 type PreparationID uint32
 type Preparation struct {
-	ID                PreparationID `gorm:"primaryKey"        json:"id"`
-	Name              string        `gorm:"unique"            json:"name"`
-	CreatedAt         time.Time     `json:"createdAt"         table:"verbose;format:2006-01-02 15:04:05"`
-	UpdatedAt         time.Time     `json:"updatedAt"         table:"verbose;format:2006-01-02 15:04:05"`
+	ID                PreparationID `gorm:"primaryKey"                                               json:"id"`
+	Name              string        `gorm:"unique"                                                   json:"name"`
+	CreatedAt         time.Time     `json:"createdAt"                                                table:"verbose;format:2006-01-02 15:04:05"`
+	UpdatedAt         time.Time     `json:"updatedAt"                                                table:"verbose;format:2006-01-02 15:04:05"`
 	DeleteAfterExport bool          `json:"deleteAfterExport"` // DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.
 	MaxSize           int64         `json:"maxSize"`
 	PieceSize         int64         `json:"pieceSize"`
 	NoInline          bool          `json:"noInline"`
 	NoDag             bool          `json:"noDag"`
-	Wallets           []Wallet      `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
-	SourceStorages    []Storage     `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" table:"expand;header:Source Storages:"`
-	OutputStorages    []Storage     `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" table:"expand;header:Output Storages:"`
+	Wallets           []Wallet      `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"                   swaggerignore:"true"                   table:"expand"`
+	SourceStorages    []Storage     `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty"            table:"expand;header:Source Storages:"`
+	OutputStorages    []Storage     `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty"            table:"expand;header:Output Storages:"`
 }
 
 func (s *Preparation) FindByIDOrName(db *gorm.DB, name string, preloads ...string) error {
@@ -95,36 +95,36 @@ func (s *Preparation) SourceAttachments(db *gorm.DB, preloads ...string) ([]Sour
 
 type StorageID uint32
 type Storage struct {
-	ID                   StorageID     `cbor:"-"                    gorm:"primaryKey" json:"id"`
-	Name                 string        `cbor:"-"                    gorm:"unique"     json:"name"`
-	CreatedAt            time.Time     `cbor:"-"                    json:"createdAt"  table:"verbose;format:2006-01-02 15:04:05"`
-	UpdatedAt            time.Time     `cbor:"-"                    json:"updatedAt"  table:"verbose;format:2006-01-02 15:04:05"`
+	ID                   StorageID     `cbor:"-"                    gorm:"primaryKey"                                               json:"id"`
+	Name                 string        `cbor:"-"                    gorm:"unique"                                                   json:"name"`
+	CreatedAt            time.Time     `cbor:"-"                    json:"createdAt"                                                table:"verbose;format:2006-01-02 15:04:05"`
+	UpdatedAt            time.Time     `cbor:"-"                    json:"updatedAt"                                                table:"verbose;format:2006-01-02 15:04:05"`
 	Type                 string        `cbor:"1,keyasint,omitempty" json:"type"`
-	Path                 string        `cbor:"2,keyasint,omitempty" json:"path"`                                                                  // Path is the path to the storage root.
-	Config               ConfigMap     `cbor:"3,keyasint,omitempty" gorm:"type:JSON"  json:"config"                              table:"verbose"` // Config is a map of key-value pairs that can be used to store RClone options.
-	ClientConfig         ClientConfig  `cbor:"4,keyasint,omitempty" gorm:"type:JSON"  json:"clientConfig"                        table:"verbose"` // ClientConfig is the HTTP configuration for the storage, if applicable.
-	PreparationsAsSource []Preparation `cbor:"-" gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsSource,omitempty" table:"expand;header:As Source: "`
-	PreparationsAsOutput []Preparation `cbor:"-" gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsOutput,omitempty" table:"expand;header:As Output: "`
+	Path                 string        `cbor:"2,keyasint,omitempty" json:"path"`                                                                                                                // Path is the path to the storage root.
+	Config               ConfigMap     `cbor:"3,keyasint,omitempty" gorm:"type:JSON"                                                json:"config"                              table:"verbose"` // Config is a map of key-value pairs that can be used to store RClone options.
+	ClientConfig         ClientConfig  `cbor:"4,keyasint,omitempty" gorm:"type:JSON"                                                json:"clientConfig"                        table:"verbose"` // ClientConfig is the HTTP configuration for the storage, if applicable.
+	PreparationsAsSource []Preparation `cbor:"-"                    gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsSource,omitempty"      table:"expand;header:As Source: "`
+	PreparationsAsOutput []Preparation `cbor:"-"                    gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsOutput,omitempty"      table:"expand;header:As Output: "`
 }
 type ScheduleID uint32
 type ScheduleState string
 type Schedule struct {
-	ID                    ScheduleID    `gorm:"primaryKey"                          json:"id"`
-	CreatedAt             time.Time     `json:"createdAt"                           table:"verbose;format:2006-01-02 15:04:05"`
-	UpdatedAt             time.Time     `json:"updatedAt"                           table:"verbose;format:2006-01-02 15:04:05"`
-	URLTemplate           string        `json:"urlTemplate"                         table:"verbose"`
-	HTTPHeaders           ConfigMap     `gorm:"type:JSON"                           json:"httpHeaders"                         table:"verbose"`
+	ID                    ScheduleID    `gorm:"primaryKey"                                           json:"id"`
+	CreatedAt             time.Time     `json:"createdAt"                                            table:"verbose;format:2006-01-02 15:04:05"`
+	UpdatedAt             time.Time     `json:"updatedAt"                                            table:"verbose;format:2006-01-02 15:04:05"`
+	URLTemplate           string        `json:"urlTemplate"                                          table:"verbose"`
+	HTTPHeaders           ConfigMap     `gorm:"type:JSON"                                            json:"httpHeaders"                         table:"verbose"`
 	Provider              string        `json:"provider"`
-	PricePerGBEpoch       float64       `json:"pricePerGbEpoch"                     table:"verbose"`
-	PricePerGB            float64       `json:"pricePerGb"                          table:"verbose"`
-	PricePerDeal          float64       `json:"pricePerDeal"                        table:"verbose"`
-	TotalDealNumber       int           `json:"totalDealNumber"                     table:"verbose"`
+	PricePerGBEpoch       float64       `json:"pricePerGbEpoch"                                      table:"verbose"`
+	PricePerGB            float64       `json:"pricePerGb"                                           table:"verbose"`
+	PricePerDeal          float64       `json:"pricePerDeal"                                         table:"verbose"`
+	TotalDealNumber       int           `json:"totalDealNumber"                                      table:"verbose"`
 	TotalDealSize         int64         `json:"totalDealSize"`
 	Verified              bool          `json:"verified"`
-	KeepUnsealed          bool          `json:"keepUnsealed"                        table:"verbose"`
-	AnnounceToIPNI        bool          `gorm:"column:announce_to_ipni"             json:"announceToIpni"                      table:"verbose"`
-	StartDelay            time.Duration `json:"startDelay"                          swaggertype:"primitive,integer"`
-	Duration              time.Duration `json:"duration"                            swaggertype:"primitive,integer"`
+	KeepUnsealed          bool          `json:"keepUnsealed"                                         table:"verbose"`
+	AnnounceToIPNI        bool          `gorm:"column:announce_to_ipni"                              json:"announceToIpni"                      table:"verbose"`
+	StartDelay            time.Duration `json:"startDelay"                                           swaggertype:"primitive,integer"`
+	Duration              time.Duration `json:"duration"                                             swaggertype:"primitive,integer"`
 	State                 ScheduleState `json:"state"`
 	ScheduleCron          string        `json:"scheduleCron"`
 	ScheduleCronPerpetual bool          `json:"scheduleCronPerpetual"`
@@ -133,36 +133,36 @@ type Schedule struct {
 	MaxPendingDealNumber  int           `json:"maxPendingDealNumber"`
 	MaxPendingDealSize    int64         `json:"maxPendingDealSize"`
 	Notes                 string        `json:"notes"`
-	ErrorMessage          string        `json:"errorMessage"                        table:"verbose"`
-	AllowedPieceCIDs      StringSlice   `gorm:"type:JSON;column:allowed_piece_cids" json:"allowedPieceCids"                    table:"verbose"`
+	ErrorMessage          string        `json:"errorMessage"                                         table:"verbose"`
+	AllowedPieceCIDs      StringSlice   `gorm:"type:JSON;column:allowed_piece_cids"                  json:"allowedPieceCids"                    table:"verbose"`
 	Force                 bool          `json:"force"`
 	PreparationID         PreparationID `json:"preparationId"`
-	Preparation           *Preparation  `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"expand"`
+	Preparation           *Preparation  `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty"               swaggerignore:"true" table:"expand"`
 }
 type DealState string
 type DealID uint64
 type Deal struct {
-	ID               DealID      `gorm:"primaryKey"                      json:"id"                                  table:"verbose"`
-	CreatedAt        time.Time   `json:"createdAt"                       table:"verbose;format:2006-01-02 15:04:05"`
-	UpdatedAt        time.Time   `json:"updatedAt"                       table:"verbose;format:2006-01-02 15:04:05"`
-	LastVerifiedAt   *time.Time  `json:"lastVerifiedAt"                  table:"verbose;format:2006-01-02 15:04:05"` // LastVerifiedAt is the last time the deal was verified as active by the tracker
-	DealID           *uint64     `gorm:"unique"                          json:"dealId"`
-	State            DealState   `gorm:"index:idx_pending"               json:"state"`
+	ID               DealID      `gorm:"primaryKey"                                         json:"id"                                  table:"verbose"`
+	CreatedAt        time.Time   `json:"createdAt"                                          table:"verbose;format:2006-01-02 15:04:05"`
+	UpdatedAt        time.Time   `json:"updatedAt"                                          table:"verbose;format:2006-01-02 15:04:05"`
+	LastVerifiedAt   *time.Time  `json:"lastVerifiedAt"                                     table:"verbose;format:2006-01-02 15:04:05"` // LastVerifiedAt is the last time the deal was verified as active by the tracker
+	DealID           *uint64     `gorm:"unique"                                             json:"dealId"`
+	State            DealState   `gorm:"index:idx_pending"                                  json:"state"`
 	Provider         string      `json:"provider"`
-	ProposalID       string      `json:"proposalId"                      table:"verbose"`
-	Label            string      `json:"label"                           table:"verbose"`
-	PieceCID         CID         `gorm:"column:piece_cid;index;size:255" json:"pieceCid"                            swaggertype:"string"`
+	ProposalID       string      `json:"proposalId"                                         table:"verbose"`
+	Label            string      `json:"label"                                              table:"verbose"`
+	PieceCID         CID         `gorm:"column:piece_cid;index;size:255"                    json:"pieceCid"                            swaggertype:"string"`
 	PieceSize        int64       `json:"pieceSize"`
 	StartEpoch       int32       `json:"startEpoch"`
-	EndEpoch         int32       `json:"endEpoch"                        table:"verbose"`
-	SectorStartEpoch int32       `json:"sectorStartEpoch"                table:"verbose"`
+	EndEpoch         int32       `json:"endEpoch"                                           table:"verbose"`
+	SectorStartEpoch int32       `json:"sectorStartEpoch"                                   table:"verbose"`
 	Price            string      `json:"price"`
 	Verified         bool        `json:"verified"`
-	ErrorMessage     string      `json:"errorMessage"                    table:"verbose"`
+	ErrorMessage     string      `json:"errorMessage"                                       table:"verbose"`
 	ScheduleID       *ScheduleID `json:"scheduleId"                                         table:"verbose"`
-	Schedule         *Schedule   `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL" json:"schedule,omitempty" swaggerignore:"true" table:"expand"`
+	Schedule         *Schedule   `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL" json:"schedule,omitempty"                  swaggerignore:"true" table:"expand"`
 	ClientID         string      `gorm:"index:idx_pending"                                  json:"clientId"`
-	Wallet           *Wallet     `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"   swaggerignore:"true" table:"expand"`
+	Wallet           *Wallet     `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"                    swaggerignore:"true" table:"expand"`
 }
 type OutputAttachment struct {
 	ID            uint32 `gorm:"primaryKey"`

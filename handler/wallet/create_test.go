@@ -22,7 +22,6 @@ func TestCreateHandler(t *testing.T) {
 			require.Equal(t, "f1", w.Address[:2])
 			require.Equal(t, "hello", w.PrivateKey)
 
-
 			_, err = Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
 				PrivateKey: w.PrivateKey,
 			})
