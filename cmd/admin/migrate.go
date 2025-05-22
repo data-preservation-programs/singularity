@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"fmt"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -47,7 +49,45 @@ var MigrateCmd = &cli.Command{
 					return errors.WithStack(err)
 				}
 				defer closer.Close()
-				return model.Migrator(db).MigrateTo(c.Args().Get(0))
+				id := c.Args().Get(0)
+
+				migrator := model.GetMigrator(db)
+				last, err := migrator.GetLastMigration()
+				if err != nil {
+					return errors.WithStack(err)
+				}
+				if last == id {
+					fmt.Println("Already at requested migration")
+					return nil
+				}
+
+				alreadyRan, err := migrator.HasRunMigration(id)
+				if err != nil {
+					return errors.WithStack(err)
+				} else if alreadyRan {
+					return migrator.RollbackTo(id)
+				} else {
+					return migrator.MigrateTo(id)
+				}
+
+			},
+		},
+		{
+			Name:  "which",
+			Usage: "Print current migration ID",
+			Action: func(c *cli.Context) error {
+				db, closer, err := database.OpenFromCLI(c)
+				if err != nil {
+					return errors.WithStack(err)
+				}
+				defer closer.Close()
+
+				last, err := model.GetMigrator(db).GetLastMigration()
+				if err != nil {
+					return errors.WithStack(err)
+				}
+				fmt.Println(fmt.Sprintf("Current migration: %s", last))
+				return nil
 			},
 		},
 	},

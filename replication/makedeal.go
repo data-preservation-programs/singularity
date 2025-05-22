@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"slices"
-
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/model"
