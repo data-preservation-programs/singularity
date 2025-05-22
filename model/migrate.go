@@ -3,7 +3,6 @@ package model
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/migrate/migrations"
@@ -84,7 +83,7 @@ func _init(db *gorm.DB) error {
 		for _, m := range migrations.GetMigrations()[1:] {
 			err = m.Migrate(db)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to run migration with ID: %s", m.ID))
+				return errors.Wrap(err, "failed to run migration with ID: "+m.ID)
 			}
 		}
 	} else {
@@ -169,7 +168,7 @@ func (m *migrator) GetLastMigration() (string, error) {
 // Has migration ID ran
 func (m *migrator) HasRunMigration(id string) (bool, error) {
 	var count int64
-	err := m.db.Table(m.Options.TableName).Where(fmt.Sprintf("%s = ?", m.Options.IDColumnName), id).Count(&count).Error
+	err := m.db.Table(m.Options.TableName).Where(m.Options.IDColumnName+" = ?", id).Count(&count).Error
 	return count > 0, err
 }
 

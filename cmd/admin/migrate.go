@@ -53,17 +53,40 @@ var MigrateCmd = &cli.Command{
 
 				migrator := model.GetMigrator(db)
 				last, err := migrator.GetLastMigration()
+				if err != nil {
+					return errors.WithStack(err)
+				}
 				if last == id {
 					fmt.Println("Already at requested migration")
 					return nil
 				}
 
 				alreadyRan, err := migrator.HasRunMigration(id)
-				if alreadyRan {
+				if err != nil {
+					return errors.WithStack(err)
+				} else if alreadyRan {
 					return migrator.RollbackTo(id)
 				} else {
 					return migrator.MigrateTo(id)
 				}
+			},
+		},
+		{
+			Name:  "which",
+			Usage: "Print current migration ID",
+			Action: func(c *cli.Context) error {
+				db, closer, err := database.OpenFromCLI(c)
+				if err != nil {
+					return errors.WithStack(err)
+				}
+				defer closer.Close()
+
+				last, err := model.GetMigrator(db).GetLastMigration()
+				if err != nil {
+					return errors.WithStack(err)
+				}
+				fmt.Println(fmt.Sprintf("Current migration: %s", last))
+				return nil
 			},
 		},
 	},
