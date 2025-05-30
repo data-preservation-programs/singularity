@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"mime"
 	"net"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"time"
@@ -527,4 +529,35 @@ func httpResponseFromError(c echo.Context, e error) error {
 
 	logger.Errorf("%+v", e)
 	return c.JSON(httpStatusCode, HTTPError{Err: e.Error()})
+}
+
+// retrieveFile handles GET /api/file/:id/retrieve
+func (s Server) retrieveFile(c echo.Context) error {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, HTTPError{Err: "invalid file ID"})
+	}
+
+	data, name, modTime, err := s.fileHandler.RetrieveFileHandler(
+		c.Request().Context(),
+		s.db,
+		s.retriever,
+		id,
+	)
+	if err != nil {
+		return httpResponseFromError(c, err)
+	}
+
+	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", name))
+
+	ext := filepath.Ext(name)
+	mimeType := mime.TypeByExtension(ext)
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+	c.Response().Header().Set("Content-Type", mimeType)
+
+	http.ServeContent(c.Response(), c.Request(), name, modTime, data)
+	return nil
 }
