@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -9,13 +10,16 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/scan"
+	"github.com/data-preservation-programs/singularity/service/autodeal"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/ipfs/go-log/v2"
 	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 
 var startableStatesForPack = []model.JobState{model.Paused, model.Created, model.Error}
 var pausableStatesForPack = []model.JobState{model.Processing, model.Ready}
+var logger = log.Logger("job-pack")
 
 // StartPackHandler initiates pack jobs for a given source storage.
 //
@@ -246,6 +250,23 @@ func (DefaultHandler) PackHandler(
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+
+	// Trigger auto-deal creation if enabled and applicable
+	go func() {
+		triggerCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		lotusClient := util.NewLotusClient("", "") // TODO: Get from config
+		err := autodeal.DefaultTriggerService.TriggerForJobCompletion(
+			triggerCtx,
+			db,
+			lotusClient,
+			packJob.ID,
+		)
+		if err != nil {
+			logger.Warnf("Failed to trigger auto-deal creation for job %d: %v", packJob.ID, err)
+		}
+	}()
 
 	return car, nil
 }

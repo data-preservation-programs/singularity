@@ -14,6 +14,7 @@ import (
 var Tables = []any{
 	&Worker{},
 	&Global{},
+	&Notification{},
 	&Preparation{},
 	&Storage{},
 	&OutputAttachment{},
