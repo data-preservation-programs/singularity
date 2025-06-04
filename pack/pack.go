@@ -55,8 +55,6 @@ func GetCommp(calc *commp.Calc, targetPieceSize uint64) (cid.Cid, uint64, error)
 		}
 
 		rawPieceSize = targetPieceSize
-	} else if rawPieceSize > targetPieceSize {
-		logger.Warn("piece size is larger than the target piece size")
 	}
 
 	commCid, err := commcid.DataCommitmentV1ToCID(rawCommp)
