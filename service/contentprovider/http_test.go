@@ -2,6 +2,7 @@ package contentprovider
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -63,6 +64,7 @@ func TestHTTPServerHandler(t *testing.T) {
 			FileSize:      59 + 1 + 36 + 5,
 			StoragePath:   "",
 			PreparationID: 1,
+			PieceType:     model.DataPiece,
 			Attachment: &model.SourceAttachment{
 				Preparation: &model.Preparation{},
 				Storage: &model.Storage{
@@ -134,6 +136,14 @@ func TestHTTPServerHandler(t *testing.T) {
 				if test.cbor {
 					require.Equal(t, "application/cbor", rec.Header().Get(echo.HeaderContentType))
 				}
+
+				// For successful responses, validate the piece_type field
+				if test.code == http.StatusOK && !test.cbor {
+					var metadata PieceMetadata
+					err = json.Unmarshal(rec.Body.Bytes(), &metadata)
+					require.NoError(t, err)
+					require.Equal(t, model.DataPiece, metadata.Car.PieceType)
+				}
 			})
 
 			t.Run(test.name, func(t *testing.T) {
@@ -148,6 +158,50 @@ func TestHTTPServerHandler(t *testing.T) {
 				require.Equal(t, test.code, rec.Code)
 			})
 		}
+
+		// Test DAG piece type
+		t.Run("dag_piece_metadata", func(t *testing.T) {
+			preparation := &model.Preparation{Name: "test_prep_dag"}
+			err := db.Create(preparation).Error
+			require.NoError(t, err)
+
+			storage := &model.Storage{Name: "test_storage_dag", Type: "local"}
+			err = db.Create(storage).Error
+			require.NoError(t, err)
+
+			attachment := &model.SourceAttachment{
+				PreparationID: preparation.ID,
+				StorageID:     storage.ID,
+			}
+			err = db.Create(attachment).Error
+			require.NoError(t, err)
+
+			dagPieceCID := cid.NewCidV1(cid.FilCommitmentUnsealed, util.Hash([]byte("dag_test")))
+			err = db.Create(&model.Car{
+				PieceCID:      model.CID(dagPieceCID),
+				PieceSize:     256,
+				PreparationID: preparation.ID,
+				PieceType:     model.DagPiece,
+				AttachmentID:  &attachment.ID,
+				RootCID:       model.CID(testutil.TestCid),
+			}).Error
+			require.NoError(t, err)
+
+			req := httptest.NewRequest(http.MethodGet, "/piece/metadata/:id", nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+			c.SetPath("/piece/metadata/:id")
+			c.SetParamNames("id")
+			c.SetParamValues(dagPieceCID.String())
+			err = s.getMetadataHandler(c)
+			require.NoError(t, err)
+			require.Equal(t, http.StatusOK, rec.Code)
+
+			var metadata PieceMetadata
+			err = json.Unmarshal(rec.Body.Bytes(), &metadata)
+			require.NoError(t, err)
+			require.Equal(t, model.DagPiece, metadata.Car.PieceType)
+		})
 
 		// Add car file
 		tmp := t.TempDir()

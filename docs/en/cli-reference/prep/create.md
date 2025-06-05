@@ -15,6 +15,7 @@ OPTIONS:
    --delete-after-export              Whether to delete the source files after export to CAR files (default: false)
    --help, -h                         show help
    --max-size value                   The maximum size of a single CAR file (default: "31.5GiB")
+   --min-piece-size value             The minimum size of a piece. Pieces smaller than this will be padded up to this size. It's recommended to leave this as the default (default: 1MiB)
    --name value                       The name for the preparation (default: Auto generated)
    --no-dag                           Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID. (default: false)
    --no-inline                        Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage. (default: false)
