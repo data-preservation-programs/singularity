@@ -75,15 +75,18 @@ func TestGetFileDealsHandler(t *testing.T) {
 		err = db.Create(cars).Error
 		require.NoError(t, err)
 
+		wallet := &model.Wallet{ActorID: "f01", Address: "f11"}
+		err = db.Create(wallet).Error
+		require.NoError(t, err)
 		deals := []model.Deal{{
 			PieceCID: model.CID(testCid1),
-			Wallet:   &model.Wallet{},
+			Wallet:   wallet,
 		}, {
 			PieceCID: model.CID(testCid2),
-			Wallet:   &model.Wallet{},
+			Wallet:   wallet,
 		}, {
 			PieceCID: model.CID(testCid2),
-			Wallet:   &model.Wallet{},
+			Wallet:   wallet,
 		}}
 		err = db.Create(deals).Error
 		require.NoError(t, err)

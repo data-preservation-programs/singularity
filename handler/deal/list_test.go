@@ -6,6 +6,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -28,7 +29,7 @@ func TestListHandler(t *testing.T) {
 					PreparationID: 1,
 				},
 				State:    model.DealActive,
-				ClientID: "f01",
+				ClientID: ptr.Of(model.WalletID(1)),
 				Provider: "provider",
 			},
 		}).Error

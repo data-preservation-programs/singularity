@@ -338,11 +338,12 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
 				StartEpoch: int32(10000 + r.Intn(10000)),
 				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
-				EndEpoch:   int32(20000 + r.Intn(10000)),
-				Price:      "0",
-				Verified:   true,
-				ScheduleID: ptr.Of(schedule.ID),
-				ClientID:   wallet.ActorID,
+				EndEpoch:      int32(20000 + r.Intn(10000)),
+				Price:         "0",
+				Verified:      true,
+				ScheduleID:    ptr.Of(schedule.ID),
+				ClientID:      &wallet.ID,
+				ClientActorID: wallet.ActorID,
 			}
 			if state == model.DealActive {
 				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062

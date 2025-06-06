@@ -58,7 +58,7 @@ CreateWalletOK describes a response with status code 200, with default header va
 OK
 */
 type CreateWalletOK struct {
-	Payload []*models.ModelWallet
+	Payload *models.ModelWallet
 }
 
 // IsSuccess returns true when this create wallet o k response has a 2xx status code
@@ -101,14 +101,16 @@ func (o *CreateWalletOK) String() string {
 	return fmt.Sprintf("[POST /wallet/create][%d] createWalletOK %s", 200, payload)
 }
 
-func (o *CreateWalletOK) GetPayload() []*models.ModelWallet {
+func (o *CreateWalletOK) GetPayload() *models.ModelWallet {
 	return o.Payload
 }
 
 func (o *CreateWalletOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	o.Payload = new(models.ModelWallet)
+
 	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 
