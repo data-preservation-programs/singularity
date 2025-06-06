@@ -2,6 +2,7 @@ package admin
 
 import (
 	"fmt"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -85,7 +86,7 @@ var MigrateCmd = &cli.Command{
 				if err != nil {
 					return errors.WithStack(err)
 				}
-				fmt.Println(fmt.Sprintf("Current migration: %s", last))
+				fmt.Printf("Current migration: " + last + "\n")
 				return nil
 			},
 		},

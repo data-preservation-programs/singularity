@@ -32,28 +32,28 @@ func _202505010840_wallet_actor_id() *gormigrate.Migration {
 	// Temporary struct for new Wallet schema
 	type NewWallet struct {
 		ID               WalletID   `gorm:"primaryKey"           json:"id"`
-		ActorID          string     `gorm:"index;size:15"        json:"actorId"`                         // ActorID is the short ID of the wallet
-		ActorName        string     `json:"actorName"`                                                   // ActorName is readable label for the wallet
-		Address          string     `gorm:"uniqueIndex;size:86"  json:"address"`                         // Address is the Filecoin full address of the wallet
-		Balance          float64    `json:"balance"`                                                     // Balance is in Fil cached from chain
-		BalancePlus      float64    `json:"balancePlus"`                                                 // BalancePlus is in Fil+ cached from chain
-		BalanceUpdatedAt *time.Time `json:"balanceUpdatedAt" table:"verbose;format:2006-01-02 15:04:05"` // BalanceUpdatedAt is a timestamp when balance info was last pulled from chain
-		ContactInfo      string     `json:"contactInfo"`                                                 // ContactInfo is optional email for SP wallets
-		Location         string     `json:"location"`                                                    // Location is optional region, country for SP wallets
-		PrivateKey       string     `json:"privateKey,omitempty" table:"-"`                              // PrivateKey is the private key of the wallet
+		ActorID          string     `gorm:"index;size:15"        json:"actorId"`                             // ActorID is the short ID of the wallet
+		ActorName        string     `json:"actorName"`                                                       // ActorName is readable label for the wallet
+		Address          string     `gorm:"uniqueIndex;size:86"  json:"address"`                             // Address is the Filecoin full address of the wallet
+		Balance          float64    `json:"balance"`                                                         // Balance is in Fil cached from chain
+		BalancePlus      float64    `json:"balancePlus"`                                                     // BalancePlus is in Fil+ cached from chain
+		BalanceUpdatedAt *time.Time `json:"balanceUpdatedAt"     table:"verbose;format:2006-01-02 15:04:05"` // BalanceUpdatedAt is a timestamp when balance info was last pulled from chain
+		ContactInfo      string     `json:"contactInfo"`                                                     // ContactInfo is optional email for SP wallets
+		Location         string     `json:"location"`                                                        // Location is optional region, country for SP wallets
+		PrivateKey       string     `json:"privateKey,omitempty" table:"-"`                                  // PrivateKey is the private key of the wallet
 		WalletType       WalletType `gorm:"default:'UserWallet'" json:"walletType"`
 	}
 
 	type NewDeal struct {
 		ID            uint64    `gorm:"column:id"`
 		ClientActorID string    `json:"clientActorId"`
-		ClientID      *WalletID `gorm:"index:idx_pending"                                  json:"clientId"`
-		Wallet        *Wallet   `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"   swaggerignore:"true" table:"expand"`
+		ClientID      *WalletID `gorm:"index:idx_pending"                                json:"clientId"`
+		Wallet        *Wallet   `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL" json:"wallet,omitempty" swaggerignore:"true" table:"expand"`
 	}
 	type OldDeal struct {
 		ID       uint64  `gorm:"column:id"`
-		ClientID string  `gorm:"index:idx_pending"                                  json:"clientId"`
-		Wallet   *Wallet `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"   swaggerignore:"true" table:"expand"`
+		ClientID string  `gorm:"index:idx_pending"                                json:"clientId"`
+		Wallet   *Wallet `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL" json:"wallet,omitempty" swaggerignore:"true" table:"expand"`
 	}
 
 	return &gormigrate.Migration{
