@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type DealState string
@@ -81,6 +83,7 @@ type Deal struct {
 	LastVerifiedAt   *time.Time `json:"lastVerifiedAt"                  table:"verbose;format:2006-01-02 15:04:05"` // LastVerifiedAt is the last time the deal was verified as active by the tracker
 	DealID           *uint64    `gorm:"unique"                          json:"dealId"`
 	State            DealState  `gorm:"index:idx_pending"               json:"state"`
+	ClientActorID    string     `json:"clientActorId"`
 	Provider         string     `json:"provider"`
 	ProposalID       string     `json:"proposalId"                      table:"verbose"`
 	Label            string     `json:"label"                           table:"verbose"`
@@ -96,13 +99,13 @@ type Deal struct {
 	// Associations
 	ScheduleID *ScheduleID `json:"scheduleId"                                         table:"verbose"`
 	Schedule   *Schedule   `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL" json:"schedule,omitempty" swaggerignore:"true" table:"expand"`
-	ClientID   string      `gorm:"index:idx_pending"                                  json:"clientId"`
+	ClientID   *WalletID   `gorm:"index:idx_pending"                                  json:"clientId"`
 	Wallet     *Wallet     `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"   swaggerignore:"true" table:"expand"`
 }
 
 // Key returns a mostly unique key to match deal from locally proposed deals and deals from the chain.
 func (d Deal) Key() string {
-	return fmt.Sprintf("%s-%s-%s-%d-%d", d.ClientID, d.Provider, d.PieceCID.String(), d.StartEpoch, d.EndEpoch)
+	return fmt.Sprintf("%s-%s-%s-%d-%d", d.ClientActorID, d.Provider, d.PieceCID.String(), d.StartEpoch, d.EndEpoch)
 }
 
 type ScheduleID uint32
@@ -141,6 +144,7 @@ type Schedule struct {
 	Preparation   *Preparation  `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"expand"`
 }
 
+// WalletType distinguishes between user wallets and storage provider wallets
 type WalletType string
 
 const (
@@ -148,16 +152,64 @@ const (
 	SPWallet   WalletType = "SPWallet"
 )
 
+var WalletTypes = []WalletType{
+	UserWallet,
+	SPWallet,
+}
+
+var WalletTypeStrings = []string{
+	string(UserWallet),
+	string(SPWallet),
+}
+
+type WalletID uint
+
 type Wallet struct {
-	ID               uint       `gorm:"primaryKey"           json:"id"`
-	ActorID          string     `gorm:"index,size:15"        json:"actorId"`                         // ActorID is the short ID of the wallet
+	ID               WalletID   `gorm:"primaryKey"           json:"id"`
+	ActorID          string     `gorm:"index;size:15"        json:"actorId"`                         // ActorID is the short ID of the wallet
 	ActorName        string     `json:"actorName"`                                                   // ActorName is readable label for the wallet
-	Address          string     `gorm:"index"                json:"address"`                         // Address is the Filecoin full address of the wallet
+	Address          string     `gorm:"uniqueIndex;size:86"  json:"address"`                         // Address is the Filecoin full address of the wallet
 	Balance          float64    `json:"balance"`                                                     // Balance is in Fil cached from chain
 	BalancePlus      float64    `json:"balancePlus"`                                                 // BalancePlus is in Fil+ cached from chain
-	BalanceUpdatedAt time.Time  `json:"balanceUpdatedAt" table:"verbose;format:2006-01-02 15:04:05"` // BalanceUpdatedAt is a timestamp when balance info was last pulled from chain
+	BalanceUpdatedAt *time.Time `json:"balanceUpdatedAt" table:"verbose;format:2006-01-02 15:04:05"` // BalanceUpdatedAt is a timestamp when balance info was last pulled from chain
 	ContactInfo      string     `json:"contactInfo"`                                                 // ContactInfo is optional email for SP wallets
 	Location         string     `json:"location"`                                                    // Location is optional region, country for SP wallets
 	PrivateKey       string     `json:"privateKey,omitempty" table:"-"`                              // PrivateKey is the private key of the wallet
-	Type             WalletType `json:"type"`                                                        // Type determines user or SP wallets
+	WalletType       WalletType `gorm:"default:'UserWallet'" json:"walletType"`
 }
+
+// Find Wallet by ID, ActorID, or Address
+func (wallet *Wallet) FindByIDOrAddr(db *gorm.DB, param interface{}) error {
+	switch v := param.(type) {
+	case uint, uint64:
+		return db.Where("id = ?", v).First(wallet).Error
+	case string:
+		// TODO: should we determine whether "f0.." or "f1..", for example?
+		return db.Where("actor_id = ? OR address = ?", v, v).First(wallet).Error
+	default:
+		return fmt.Errorf("unsupported parameter type: %T", param)
+	}
+}
+
+// Enforce unique ActorID for initialized wallets
+// func (w *Wallet) BeforeSave(tx *gorm.DB) error {
+// 	// Only check for uniqueness if ActorID is not empty, i.e. uninitialized
+// 	if w.ActorID != "" {
+// 		var count int64
+// 		// Check if another wallet with the same ActorID exists
+// 		// Exclude the current wallet if it has an ID (for updates)
+// 		query := tx.Model(&Wallet{}).Where("actor_id = ?", w.ActorID)
+// 		if w.ID != 0 {
+// 			query = query.Where("id != ?", w.ID)
+// 		}
+// 		err := query.Count(&count).Error
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		if count > 0 {
+// 			return fmt.Errorf("constraint failed: wallet with ActorID '%s' already exists", w.ActorID)
+// 		}
+// 	}
+// 	return nil
+// }

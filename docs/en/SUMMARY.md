@@ -44,6 +44,7 @@
     * [Up](cli-reference/admin/migrate/up.md)
     * [Down](cli-reference/admin/migrate/down.md)
     * [To](cli-reference/admin/migrate/to.md)
+    * [Which](cli-reference/admin/migrate/which.md)
   * [Migrate Dataset](cli-reference/admin/migrate-dataset.md)
   * [Migrate Schedule](cli-reference/admin/migrate-schedule.md)
 * [Download](cli-reference/download.md)
