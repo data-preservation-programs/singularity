@@ -45,13 +45,13 @@ func GenerateKey(keyType string) (string, string, error) {
 		if err != nil {
 			return "", "", xerrors.Errorf("failed to generate %s private key: %w", keyType, err)
 		}
-		
+
 		// Format the private key as a Lotus exported key (JSON format)
 		privKeyJSON := map[string]interface{}{
 			"Type":       "secp256k1",
 			"PrivateKey": base64.StdEncoding.EncodeToString(kb),
 		}
-		
+
 		privKeyBytes, err := json.Marshal(privKeyJSON)
 		if err != nil {
 			return "", "", xerrors.Errorf("failed to marshal private key to JSON: %w", err)
@@ -69,7 +69,7 @@ func GenerateKey(keyType string) (string, string, error) {
 		if err != nil {
 			return "", "", xerrors.Errorf("failed to generate %s private key: %w", keyType, err)
 		}
-		
+
 		// Format the private key as a Lotus exported key (JSON format)
 		// Convert the private key to base64 format
 		privKeyBytes := priv.Serialize()
@@ -77,7 +77,7 @@ func GenerateKey(keyType string) (string, string, error) {
 			"Type":       "bls",
 			"PrivateKey": base64.StdEncoding.EncodeToString(privKeyBytes[:]),
 		}
-		
+
 		privKeyJSONBytes, err := json.Marshal(privKeyJSON)
 		if err != nil {
 			return "", "", xerrors.Errorf("failed to marshal private key to JSON: %w", err)

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"gorm.io/gorm"
 )
 
@@ -166,15 +167,15 @@ type WalletID uint
 
 type Wallet struct {
 	ID               WalletID   `gorm:"primaryKey"           json:"id"`
-	ActorID          string     `gorm:"index;size:15"        json:"actorId"`                         // ActorID is the short ID of the wallet
-	ActorName        string     `json:"actorName"`                                                   // ActorName is readable label for the wallet
-	Address          string     `gorm:"uniqueIndex;size:86"  json:"address"`                         // Address is the Filecoin full address of the wallet
-	Balance          float64    `json:"balance"`                                                     // Balance is in Fil cached from chain
-	BalancePlus      float64    `json:"balancePlus"`                                                 // BalancePlus is in Fil+ cached from chain
-	BalanceUpdatedAt *time.Time `json:"balanceUpdatedAt" table:"verbose;format:2006-01-02 15:04:05"` // BalanceUpdatedAt is a timestamp when balance info was last pulled from chain
-	ContactInfo      string     `json:"contactInfo"`                                                 // ContactInfo is optional email for SP wallets
-	Location         string     `json:"location"`                                                    // Location is optional region, country for SP wallets
-	PrivateKey       string     `json:"privateKey,omitempty" table:"-"`                              // PrivateKey is the private key of the wallet
+	ActorID          string     `gorm:"index;size:15"        json:"actorId"`                             // ActorID is the short ID of the wallet
+	ActorName        string     `json:"actorName"`                                                       // ActorName is readable label for the wallet
+	Address          string     `gorm:"uniqueIndex;size:86"  json:"address"`                             // Address is the Filecoin full address of the wallet
+	Balance          float64    `json:"balance"`                                                         // Balance is in Fil cached from chain
+	BalancePlus      float64    `json:"balancePlus"`                                                     // BalancePlus is in Fil+ cached from chain
+	BalanceUpdatedAt *time.Time `json:"balanceUpdatedAt"     table:"verbose;format:2006-01-02 15:04:05"` // BalanceUpdatedAt is a timestamp when balance info was last pulled from chain
+	ContactInfo      string     `json:"contactInfo"`                                                     // ContactInfo is optional email for SP wallets
+	Location         string     `json:"location"`                                                        // Location is optional region, country for SP wallets
+	PrivateKey       string     `json:"privateKey,omitempty" table:"-"`                                  // PrivateKey is the private key of the wallet
 	WalletType       WalletType `gorm:"default:'UserWallet'" json:"walletType"`
 }
 
@@ -187,29 +188,6 @@ func (wallet *Wallet) FindByIDOrAddr(db *gorm.DB, param interface{}) error {
 		// TODO: should we determine whether "f0.." or "f1..", for example?
 		return db.Where("actor_id = ? OR address = ?", v, v).First(wallet).Error
 	default:
-		return fmt.Errorf("unsupported parameter type: %T", param)
+		return errors.Errorf("unsupported parameter type: %T", param)
 	}
 }
-
-// Enforce unique ActorID for initialized wallets
-// func (w *Wallet) BeforeSave(tx *gorm.DB) error {
-// 	// Only check for uniqueness if ActorID is not empty, i.e. uninitialized
-// 	if w.ActorID != "" {
-// 		var count int64
-// 		// Check if another wallet with the same ActorID exists
-// 		// Exclude the current wallet if it has an ID (for updates)
-// 		query := tx.Model(&Wallet{}).Where("actor_id = ?", w.ActorID)
-// 		if w.ID != 0 {
-// 			query = query.Where("id != ?", w.ID)
-// 		}
-// 		err := query.Count(&count).Error
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		if count > 0 {
-// 			return fmt.Errorf("constraint failed: wallet with ActorID '%s' already exists", w.ActorID)
-// 		}
-// 	}
-// 	return nil
-// }
