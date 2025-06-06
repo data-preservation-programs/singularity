@@ -33,6 +33,9 @@ type ModelWallet struct {
 	// BalancePlus is in Fil+ cached from chain
 	BalancePlus float64 `json:"balancePlus,omitempty"`
 
+	// BalanceUpdatedAt is a timestamp when balance info was last pulled from chain
+	BalanceUpdatedAt string `json:"balanceUpdatedAt,omitempty"`
+
 	// ContactInfo is optional email for SP wallets
 	ContactInfo string `json:"contactInfo,omitempty"`
 
@@ -45,17 +48,15 @@ type ModelWallet struct {
 	// PrivateKey is the private key of the wallet
 	PrivateKey string `json:"privateKey,omitempty"`
 
-	// Type determines user or SP wallets
-	Type struct {
-		ModelWalletType
-	} `json:"type,omitempty"`
+	// wallet type
+	WalletType ModelWalletType `json:"walletType,omitempty"`
 }
 
 // Validate validates this model wallet
 func (m *ModelWallet) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateType(formats); err != nil {
+	if err := m.validateWalletType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,9 +66,18 @@ func (m *ModelWallet) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ModelWallet) validateType(formats strfmt.Registry) error {
-	if swag.IsZero(m.Type) { // not required
+func (m *ModelWallet) validateWalletType(formats strfmt.Registry) error {
+	if swag.IsZero(m.WalletType) { // not required
 		return nil
+	}
+
+	if err := m.WalletType.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("walletType")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("walletType")
+		}
+		return err
 	}
 
 	return nil
@@ -77,7 +87,7 @@ func (m *ModelWallet) validateType(formats strfmt.Registry) error {
 func (m *ModelWallet) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateType(ctx, formats); err != nil {
+	if err := m.contextValidateWalletType(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -87,7 +97,20 @@ func (m *ModelWallet) ContextValidate(ctx context.Context, formats strfmt.Regist
 	return nil
 }
 
-func (m *ModelWallet) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+func (m *ModelWallet) contextValidateWalletType(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.WalletType) { // not required
+		return nil
+	}
+
+	if err := m.WalletType.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("walletType")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("walletType")
+		}
+		return err
+	}
 
 	return nil
 }

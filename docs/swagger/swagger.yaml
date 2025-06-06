@@ -364,8 +364,10 @@ definitions:
     type: object
   model.Deal:
     properties:
-      clientId:
+      clientActorId:
         type: string
+      clientId:
+        type: integer
       createdAt:
         type: string
       dealId:
@@ -673,6 +675,10 @@ definitions:
       balancePlus:
         description: BalancePlus is in Fil+ cached from chain
         type: number
+      balanceUpdatedAt:
+        description: BalanceUpdatedAt is a timestamp when balance info was last pulled
+          from chain
+        type: string
       contactInfo:
         description: ContactInfo is optional email for SP wallets
         type: string
@@ -684,10 +690,8 @@ definitions:
       privateKey:
         description: PrivateKey is the private key of the wallet
         type: string
-      type:
-        allOf:
-        - $ref: '#/definitions/model.WalletType'
-        description: Type determines user or SP wallets
+      walletType:
+        $ref: '#/definitions/model.WalletType'
     type: object
   model.WalletType:
     enum:
@@ -11888,9 +11892,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Wallet'
-            type: array
+            $ref: '#/definitions/model.Wallet'
         "400":
           description: Bad Request
           schema:

@@ -27,7 +27,7 @@ func TestRemoveSchedule_Success(t *testing.T) {
 		require.NoError(t, err)
 
 		err = db.Create(&model.Deal{
-			ClientID:   "f01",
+			ClientID:   ptr.Of(model.WalletID(1)),
 			ScheduleID: ptr.Of(model.ScheduleID(1)),
 		}).Error
 		require.NoError(t, err)

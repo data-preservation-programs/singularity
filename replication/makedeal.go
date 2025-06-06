@@ -517,7 +517,7 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	car model.Car, dealConfig DealConfig,
 ) (*model.Deal, error) {
-	logger.Infow("making deal", "client", walletObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
+	logger.Infow("making deal", "client", walletObj.ActorID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
 	now := time.Now().UTC()
 	addr, err := address.NewFromString(walletObj.Address)
 	if err != nil {
@@ -588,13 +588,14 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	}
 
 	dealModel := &model.Deal{
-		State:      model.DealProposed,
-		ClientID:   walletObj.ActorID,
-		Provider:   dealConfig.Provider,
-		Label:      cid.Cid(car.RootCID).String(),
-		PieceCID:   car.PieceCID,
-		PieceSize:  car.PieceSize,
-		StartEpoch: int32(startEpoch),
+		State:         model.DealProposed,
+		ClientID:      &walletObj.ID,
+		ClientActorID: walletObj.ActorID,
+		Provider:      dealConfig.Provider,
+		Label:         cid.Cid(car.RootCID).String(),
+		PieceCID:      car.PieceCID,
+		PieceSize:     car.PieceSize,
+		StartEpoch:    int32(startEpoch),
 		//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
 		EndEpoch: int32(endEpoch),
 		Price:    dealConfig.GetPrice(car.PieceSize, dealConfig.Duration).String(),
@@ -633,7 +634,7 @@ func queueDealEvent(deal model.Deal) {
 		DataCID:    deal.Label,
 		PieceSize:  deal.PieceSize,
 		Provider:   deal.Provider,
-		Client:     deal.ClientID,
+		Client:     deal.ClientActorID,
 		Verified:   deal.Verified,
 		StartEpoch: deal.StartEpoch,
 		EndEpoch:   deal.EndEpoch - deal.StartEpoch,

@@ -82,10 +82,11 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 		err := db.Create(&wallets).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Deal{
-			ClientID:  "3",
-			Verified:  true,
-			State:     model.DealProposed,
-			PieceSize: 500000,
+			ClientID:      &wallets[2].ID,
+			ClientActorID: wallets[2].ActorID,
+			Verified:      true,
+			State:         model.DealProposed,
+			PieceSize:     500000,
 		}).Error
 		require.NoError(t, err)
 
