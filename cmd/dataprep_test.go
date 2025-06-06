@@ -24,7 +24,7 @@ var testPreparation = model.Preparation{
 	MaxSize:           100,
 	PieceSize:         200,
 	Wallets: []model.Wallet{{
-		ID:         "client_id",
+		ActorID:    "client_id",
 		Address:    "client_address",
 		PrivateKey: "private_key",
 	}},

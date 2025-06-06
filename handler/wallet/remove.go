@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -27,7 +28,12 @@ func (DefaultHandler) RemoveHandler(
 	db = db.WithContext(ctx)
 	var affected int64
 	err := database.DoRetry(ctx, func() error {
-		tx := db.Where("address = ? OR id = ?", address, address).Delete(&model.Wallet{})
+		var tx *gorm.DB
+		if id, err := strconv.Atoi(address); err == nil {
+			tx = db.Where("id = ?", id).Delete(&model.Wallet{})
+		} else {
+			tx = db.Where("address = ? OR actor_id = ?", address, address).Delete(&model.Wallet{})
+		}
 		affected = tx.RowsAffected
 		return tx.Error
 	})

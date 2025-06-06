@@ -21,12 +21,13 @@ import (
 //   - An error, if any occurred during the operation.
 func (DefaultHandler) ResetHandler(ctx context.Context, db *gorm.DB) error {
 	db = db.WithContext(ctx)
-	err := model.DropAll(db)
+	migrator := model.GetMigrator(db)
+	err := migrator.DropAll()
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	err = model.AutoMigrate(db)
+	err = migrator.Migrate()
 	if err != nil {
 		return errors.WithStack(err)
 	}

@@ -14,7 +14,7 @@ import (
 func TestAttachHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Wallet{
-			ID: "test",
+			ActorID: "test",
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Preparation{}).Error

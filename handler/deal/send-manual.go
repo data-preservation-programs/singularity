@@ -71,8 +71,8 @@ func (DefaultHandler) SendManualHandler(
 ) (*model.Deal, error) {
 	db = db.WithContext(ctx)
 	// Get the wallet object
-	wallet := model.Wallet{}
-	err := db.Where("id = ? OR address = ?", request.ClientAddress, request.ClientAddress).First(&wallet).Error
+	var wallet = model.Wallet{}
+	err := wallet.FindByIDOrAddr(db, request.ClientAddress)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "client address %s not found", request.ClientAddress)
 	}

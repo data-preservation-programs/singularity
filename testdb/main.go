@@ -42,12 +42,12 @@ func run() error {
 		return errors.WithStack(err)
 	}
 	defer closer.Close()
-	err = model.DropAll(db)
+	err = model.GetMigrator(db).DropAll()
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	err = model.AutoMigrate(db)
+	err = model.GetMigrator(db).Migrate()
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -76,7 +76,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	}
 	// Setup wallet
 	wallet := model.Wallet{
-		ID:      fmt.Sprintf("f0%d", r.Intn(10000)),
+		ActorID: fmt.Sprintf("f0%d", r.Intn(10000)),
 		Address: "f1" + randomLetterString(39),
 	}
 
@@ -138,7 +138,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	}
 
 	var files []model.File
-	for i := 0; i < r.Intn(10_000); i++ {
+	for i := range r.Intn(10_000) {
 		size := r.Int63n(1 << 20)
 		rCID := randomCID()
 		files = append(files, model.File{
@@ -338,11 +338,12 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
 				StartEpoch: int32(10000 + r.Intn(10000)),
 				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
-				EndEpoch:   int32(20000 + r.Intn(10000)),
-				Price:      "0",
-				Verified:   true,
-				ScheduleID: ptr.Of(schedule.ID),
-				ClientID:   wallet.ID,
+				EndEpoch:      int32(20000 + r.Intn(10000)),
+				Price:         "0",
+				Verified:      true,
+				ScheduleID:    ptr.Of(schedule.ID),
+				ClientID:      &wallet.ID,
+				ClientActorID: wallet.ActorID,
 			}
 			if state == model.DealActive {
 				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062

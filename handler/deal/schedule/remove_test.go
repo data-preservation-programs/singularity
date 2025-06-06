@@ -16,7 +16,7 @@ func TestRemoveSchedule_Success(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
 			Wallets: []model.Wallet{{
-				ID: "f01",
+				ActorID: "f01",
 			}},
 		}).Error
 		require.NoError(t, err)
@@ -27,7 +27,7 @@ func TestRemoveSchedule_Success(t *testing.T) {
 		require.NoError(t, err)
 
 		err = db.Create(&model.Deal{
-			ClientID:   "f01",
+			ClientID:   ptr.Of(model.WalletID(1)),
 			ScheduleID: ptr.Of(model.ScheduleID(1)),
 		}).Error
 		require.NoError(t, err)
@@ -57,7 +57,7 @@ func TestRemoveSchedule_StillActive(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
 			Wallets: []model.Wallet{{
-				ID: "f01",
+				ActorID: "f01",
 			}},
 		}).Error
 		require.NoError(t, err)

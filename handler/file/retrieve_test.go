@@ -138,13 +138,17 @@ func TestRetrieveFileHandler(t *testing.T) {
 					require.NoError(t, err)
 				}
 
+				wallet := &model.Wallet{ActorID: "f01", Address: "f11"}
+				err = db.Create(wallet).Error
+				require.NoError(t, err)
+
 				deals := make([]model.Deal, 0, 4)
 				for i, testCid := range testCids {
 					deal := model.Deal{
 						State:    model.DealActive,
 						PieceCID: model.CID(testCid),
 						Provider: "apples" + strconv.Itoa(i),
-						Wallet:   &model.Wallet{},
+						Wallet:   wallet,
 					}
 					err = db.Create(&deal).Error
 					require.NoError(t, err)
@@ -158,7 +162,7 @@ func TestRetrieveFileHandler(t *testing.T) {
 						State:    state,
 						PieceCID: model.CID(testCid),
 						Provider: "oranges" + strconv.Itoa(i),
-						Wallet:   &model.Wallet{},
+						Wallet:   wallet,
 					}
 					err = db.Create(&deal).Error
 					require.NoError(t, err)
@@ -409,7 +413,7 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	db = db.WithContext(ctx)
-	require.NoError(b, model.AutoMigrate(db))
+	require.NoError(b, model.GetMigrator(db).Migrate())
 
 	path := b.TempDir()
 	lsys := cidlink.DefaultLinkSystem()
@@ -484,12 +488,16 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 		require.NoError(b, err)
 	}
 
+	wallet := &model.Wallet{ActorID: "f01", Address: "f11"}
+	err = db.Create(wallet).Error
+	require.NoError(b, err)
+
 	for i, testCid := range testCids {
 		deal := model.Deal{
 			State:    model.DealActive,
 			PieceCID: model.CID(testCid),
 			Provider: "apples" + strconv.Itoa(i),
-			Wallet:   &model.Wallet{},
+			Wallet:   wallet,
 		}
 		err = db.Create(&deal).Error
 		require.NoError(b, err)
@@ -502,7 +510,7 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 			State:    state,
 			PieceCID: model.CID(testCid),
 			Provider: "oranges" + strconv.Itoa(i),
-			Wallet:   &model.Wallet{},
+			Wallet:   wallet,
 		}
 		err = db.Create(&deal).Error
 		require.NoError(b, err)

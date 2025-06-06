@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -17,23 +18,100 @@ import (
 // swagger:model model.Wallet
 type ModelWallet struct {
 
+	// ActorID is the short ID of the wallet
+	ActorID string `json:"actorId,omitempty"`
+
+	// ActorName is readable label for the wallet
+	ActorName string `json:"actorName,omitempty"`
+
 	// Address is the Filecoin full address of the wallet
 	Address string `json:"address,omitempty"`
 
-	// ID is the short ID of the wallet
-	ID string `json:"id,omitempty"`
+	// Balance is in Fil cached from chain
+	Balance float64 `json:"balance,omitempty"`
+
+	// BalancePlus is in Fil+ cached from chain
+	BalancePlus float64 `json:"balancePlus,omitempty"`
+
+	// BalanceUpdatedAt is a timestamp when balance info was last pulled from chain
+	BalanceUpdatedAt string `json:"balanceUpdatedAt,omitempty"`
+
+	// ContactInfo is optional email for SP wallets
+	ContactInfo string `json:"contactInfo,omitempty"`
+
+	// id
+	ID int64 `json:"id,omitempty"`
+
+	// Location is optional region, country for SP wallets
+	Location string `json:"location,omitempty"`
 
 	// PrivateKey is the private key of the wallet
 	PrivateKey string `json:"privateKey,omitempty"`
+
+	// wallet type
+	WalletType ModelWalletType `json:"walletType,omitempty"`
 }
 
 // Validate validates this model wallet
 func (m *ModelWallet) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateWalletType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this model wallet based on context it is used
+func (m *ModelWallet) validateWalletType(formats strfmt.Registry) error {
+	if swag.IsZero(m.WalletType) { // not required
+		return nil
+	}
+
+	if err := m.WalletType.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("walletType")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("walletType")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this model wallet based on the context it is used
 func (m *ModelWallet) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateWalletType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ModelWallet) contextValidateWalletType(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.WalletType) { // not required
+		return nil
+	}
+
+	if err := m.WalletType.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("walletType")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("walletType")
+		}
+		return err
+	}
+
 	return nil
 }
 
