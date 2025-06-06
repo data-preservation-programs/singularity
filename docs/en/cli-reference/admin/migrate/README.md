@@ -12,6 +12,7 @@ COMMANDS:
    up       Execute any unrun migrations
    down     Rollback to previous migration
    to       Migrate to specified version
+   which    Print current migration ID
    help, h  Shows a list of commands or help for one command
 
 OPTIONS:

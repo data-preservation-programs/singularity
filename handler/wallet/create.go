@@ -3,7 +3,9 @@ package wallet
 import (
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -43,7 +45,18 @@ func GenerateKey(keyType string) (string, string, error) {
 		if err != nil {
 			return "", "", xerrors.Errorf("failed to generate %s private key: %w", keyType, err)
 		}
-		privKey = hex.EncodeToString(kb)
+		
+		// Format the private key as a Lotus exported key (JSON format)
+		privKeyJSON := map[string]interface{}{
+			"Type":       "secp256k1",
+			"PrivateKey": base64.StdEncoding.EncodeToString(kb),
+		}
+		
+		privKeyBytes, err := json.Marshal(privKeyJSON)
+		if err != nil {
+			return "", "", xerrors.Errorf("failed to marshal private key to JSON: %w", err)
+		}
+		privKey = hex.EncodeToString(privKeyBytes)
 
 		// Get the public key from private key
 		pubKey := crypto.PublicKey(kb)
@@ -56,7 +69,20 @@ func GenerateKey(keyType string) (string, string, error) {
 		if err != nil {
 			return "", "", xerrors.Errorf("failed to generate %s private key: %w", keyType, err)
 		}
-		privKey = priv.String()
+		
+		// Format the private key as a Lotus exported key (JSON format)
+		// Convert the private key to base64 format
+		privKeyBytes := priv.Serialize()
+		privKeyJSON := map[string]interface{}{
+			"Type":       "bls",
+			"PrivateKey": base64.StdEncoding.EncodeToString(privKeyBytes[:]),
+		}
+		
+		privKeyJSONBytes, err := json.Marshal(privKeyJSON)
+		if err != nil {
+			return "", "", xerrors.Errorf("failed to marshal private key to JSON: %w", err)
+		}
+		privKey = hex.EncodeToString(privKeyJSONBytes)
 
 		// Get the public key from private key
 		pub := g1.PrivToPub(priv)
@@ -82,7 +108,7 @@ type CreateRequest struct {
 // @Accept json
 // @Produce json
 // @Param request body CreateRequest true "Request body"
-// @Success 200 {array} model.Wallet
+// @Success 200 {object} model.Wallet
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
 // @Router /wallet/create [post]
@@ -111,7 +137,6 @@ func (DefaultHandler) CreateHandler(
 	}
 
 	wallet := model.Wallet{
-		ActorID:    address,
 		Address:    address,
 		PrivateKey: privateKey,
 	}

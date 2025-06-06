@@ -5560,10 +5560,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Wallet"
-                            }
+                            "$ref": "#/definitions/model.Wallet"
                         }
                     },
                     "400": {
@@ -6127,8 +6124,11 @@ const docTemplate = `{
         "model.Deal": {
             "type": "object",
             "properties": {
-                "clientId": {
+                "clientActorId": {
                     "type": "string"
+                },
+                "clientId": {
+                    "type": "integer"
                 },
                 "createdAt": {
                     "type": "string"
@@ -6570,6 +6570,10 @@ const docTemplate = `{
                     "description": "BalancePlus is in Fil+ cached from chain",
                     "type": "number"
                 },
+                "balanceUpdatedAt": {
+                    "description": "BalanceUpdatedAt is a timestamp when balance info was last pulled from chain",
+                    "type": "string"
+                },
                 "contactInfo": {
                     "description": "ContactInfo is optional email for SP wallets",
                     "type": "string"
@@ -6585,13 +6589,8 @@ const docTemplate = `{
                     "description": "PrivateKey is the private key of the wallet",
                     "type": "string"
                 },
-                "type": {
-                    "description": "Type determines user or SP wallets",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WalletType"
-                        }
-                    ]
+                "walletType": {
+                    "$ref": "#/definitions/model.WalletType"
                 }
             }
         },
