@@ -117,7 +117,7 @@ func OneWithoutReset(t *testing.T, testFunc func(ctx context.Context, t *testing
 	backend := SupportedTestDialects[0]
 	db, closer, connStr := getTestDB(t, backend)
 	if db == nil {
-		t.Log("Skip " + backend)
+		t.Skip("Skip " + backend + " - database not available")
 		return
 	}
 	defer closer.Close()
@@ -135,7 +135,7 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 	t.Helper()
 	db, closer, connStr := getTestDB(t, backend)
 	if db == nil {
-		t.Log("Skip " + backend)
+		t.Skip("Skip " + backend + " - database not available")
 		return
 	}
 	defer closer.Close()

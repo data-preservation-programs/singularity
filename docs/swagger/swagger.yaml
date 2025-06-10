@@ -42,6 +42,11 @@ definitions:
         default: 31.5GiB
         description: Maximum size of the CAR files to be created
         type: string
+      minPieceSize:
+        default: 1MiB
+        description: Minimum piece size for the preparation, applies only to DAG and
+          remainer pieces
+        type: string
       name:
         description: Name of the preparation
         type: string
@@ -277,6 +282,9 @@ definitions:
         type: string
       pieceSize:
         type: integer
+      pieceType:
+        description: PieceType indicates whether this is a data piece or DAG piece
+        type: string
       preparationId:
         description: Association
         type: integer
@@ -528,6 +536,10 @@ definitions:
       id:
         type: integer
       maxSize:
+        type: integer
+      minPieceSize:
+        description: Minimum piece size for the preparation, applies only to DAG and
+          remainder pieces
         type: integer
       name:
         type: string

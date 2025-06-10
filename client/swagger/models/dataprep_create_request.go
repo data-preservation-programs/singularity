@@ -25,6 +25,9 @@ type DataprepCreateRequest struct {
 	// Maximum size of the CAR files to be created
 	MaxSize *string `json:"maxSize,omitempty"`
 
+	// Minimum piece size for the preparation, applies only to DAG and remainer pieces
+	MinPieceSize *string `json:"minPieceSize,omitempty"`
+
 	// Name of the preparation
 	// Required: true
 	Name *string `json:"name"`

@@ -55,8 +55,6 @@ func GetCommp(calc *commp.Calc, targetPieceSize uint64) (cid.Cid, uint64, error)
 		}
 
 		rawPieceSize = targetPieceSize
-	} else if rawPieceSize > targetPieceSize {
-		logger.Warn("piece size is larger than the target piece size")
 	}
 
 	commCid, err := commcid.DataCommitmentV1ToCID(rawCommp)
@@ -88,7 +86,7 @@ func Pack(
 	job model.Job,
 ) (*model.Car, error) {
 	db = db.WithContext(ctx)
-	pieceSize := job.Attachment.Preparation.PieceSize
+	pieceSize := job.Attachment.Preparation.GetMinPieceSize()
 	// storageWriter can be nil for inline preparation
 	storageID, storageWriter, err := storagesystem.GetRandomOutputWriter(ctx, job.Attachment.Preparation.OutputStorages)
 	if err != nil {
@@ -169,6 +167,7 @@ func Pack(
 		AttachmentID:  &job.AttachmentID,
 		PreparationID: job.Attachment.PreparationID,
 		JobID:         &job.ID,
+		PieceType:     model.DataPiece,
 	}
 
 	// Update all Files and FileRanges that have size == -1
