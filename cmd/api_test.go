@@ -263,7 +263,7 @@ func TestBasicDataPrep(t *testing.T) {
 		require.True(t, listPiecesResp.IsSuccess())
 		require.Len(t, listPiecesResp.Payload, 1)
 		require.Len(t, listPiecesResp.Payload[0].Pieces, 1)
-		require.Equal(t, "baga6ea4seaqoahdvfwkrp64ecsxbjvyuqcwpz3o7ctxrjanlv2x4u2cq2qjf2ji", listPiecesResp.Payload[0].Pieces[0].PieceCid)
+		require.Equal(t, "baga6ea4seaqhmks2wnochilik4updmit54agfi5mjf6r7ehotu36ksdp46uxahi", listPiecesResp.Payload[0].Pieces[0].PieceCid)
 		// Start daggen
 		startDagGenResp, err := client.Job.StartDagGen(&job.StartDagGenParams{
 			ID:      "prep",
@@ -285,7 +285,9 @@ func TestBasicDataPrep(t *testing.T) {
 		require.True(t, listPiecesResp.IsSuccess())
 		require.Len(t, listPiecesResp.Payload, 1)
 		require.Len(t, listPiecesResp.Payload[0].Pieces, 2)
-		require.Equal(t, "baga6ea4seaqoahdvfwkrp64ecsxbjvyuqcwpz3o7ctxrjanlv2x4u2cq2qjf2ji", listPiecesResp.Payload[0].Pieces[0].PieceCid)
-		require.Equal(t, "baga6ea4seaqbkouoyih2elxfrztq3gr23rpvgpx5e3fnud2rhvvzf4b7tneeyki", listPiecesResp.Payload[0].Pieces[1].PieceCid)
+		// data piece, full size
+		require.Equal(t, "baga6ea4seaqhmks2wnochilik4updmit54agfi5mjf6r7ehotu36ksdp46uxahi", listPiecesResp.Payload[0].Pieces[0].PieceCid)
+		// dag piece, min piece size
+		require.Equal(t, "baga6ea4seaqfoo2k3wmwp7gvxnc7hbjpb7ovtvt52tehwfvzxbreljcebbnwgiq", listPiecesResp.Payload[0].Pieces[1].PieceCid)
 	})
 }

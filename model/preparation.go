@@ -11,6 +11,13 @@ import (
 	"gorm.io/gorm"
 )
 
+type PieceType string
+
+const (
+	DataPiece PieceType = "data"
+	DagPiece  PieceType = "dag"
+)
+
 type Worker struct {
 	ID            string     `gorm:"primaryKey"    json:"id"`
 	LastHeartbeat time.Time  `json:"lastHeartbeat"`
@@ -34,6 +41,7 @@ type Preparation struct {
 	DeleteAfterExport bool          `json:"deleteAfterExport"` // DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.
 	MaxSize           int64         `json:"maxSize"`
 	PieceSize         int64         `json:"pieceSize"`
+	MinPieceSize      int64         `json:"minPieceSize"` // Minimum piece size for the preparation, applies only to DAG and remainder pieces
 	NoInline          bool          `json:"noInline"`
 	NoDag             bool          `json:"noDag"`
 
@@ -252,6 +260,7 @@ type CarID uint32
 type Car struct {
 	ID          CarID      `cbor:"-"                    gorm:"primaryKey"                                        json:"id"                                  table:"verbose"`
 	CreatedAt   time.Time  `cbor:"-"                    json:"createdAt"                                         table:"verbose;format:2006-01-02 15:04:05"`
+	PieceType   PieceType  `cbor:"0,keyasint,omitempty" json:"pieceType"                                         swaggertype:"string"` // PieceType indicates whether this is a data piece or DAG piece
 	PieceCID    CID        `cbor:"1,keyasint,omitempty" gorm:"column:piece_cid;index;type:bytes;size:255"        json:"pieceCid"                            swaggertype:"string"`
 	PieceSize   int64      `cbor:"2,keyasint,omitempty" json:"pieceSize"`
 	RootCID     CID        `cbor:"3,keyasint,omitempty" gorm:"column:root_cid;type:bytes"                        json:"rootCid"                             swaggertype:"string"`
@@ -318,4 +327,13 @@ func (c CarBlock) BlockLength() int32 {
 	}
 
 	return c.blockLength
+}
+
+// GetMinPieceSize returns the minimum piece size for the preparation, with a fallback to 1MiB if not set.
+// This ensures backward compatibility with older preparations that don't have minPieceSize set.
+func (p *Preparation) GetMinPieceSize() int64 {
+	if p.MinPieceSize == 0 {
+		return 1 << 20 // 1MiB
+	}
+	return p.MinPieceSize
 }
