@@ -1,0 +1,1 @@
+failed to query metadata API: Get "http://content-provider:7777/piece/metadata/baga6ea4seaqbmbai2ugffs66zhrde6tnt7bks5ap2cryftgbakmhu4iq5rtigjy": dial tcp: lookup content-provider: no such host
