@@ -1,4 +1,3 @@
-#file: noinspection YAMLSchemaValidation
 version: 2
 
 builds:
@@ -32,10 +31,13 @@ archives:
 
 release:
   mode: keep-existing
+
 changelog:
   disable: true
+
 checksum:
   disable: false
+
 nfpms:
   - formats:
       - deb
@@ -43,6 +45,6 @@ nfpms:
       - archlinux
     vendor: Data Programs
     homepage: https://github.com/data-preservation-programs/singularity
-    maintainer: Xinan Xu <xinan.xu@protocol.ai>
+    maintainer: Jefferson Sankara <jefferson@fil.org>
     description: The new pure-go implementation of Singularity provides everything you need to onboard your, or your client's data to Filecoin network.
     license: MIT + Apache 2.0
