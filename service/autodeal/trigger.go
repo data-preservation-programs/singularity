@@ -91,26 +91,26 @@ func (s *TriggerService) TriggerForJobCompletion(
 
 	// Check if preparation has auto-deal enabled
 	if !job.Attachment.Preparation.AutoCreateDeals {
-		logger.Debugf("Preparation %s does not have auto-deal enabled, skipping trigger", 
+		logger.Debugf("Preparation %s does not have auto-deal enabled, skipping trigger",
 			job.Attachment.Preparation.Name)
 		return nil
 	}
 
 	preparationID := fmt.Sprintf("%d", job.Attachment.Preparation.ID)
-	
-	logger.Debugf("Job %d completed for preparation %s with auto-deal enabled, checking readiness", 
+
+	logger.Debugf("Job %d completed for preparation %s with auto-deal enabled, checking readiness",
 		jobID, job.Attachment.Preparation.Name)
 
 	// Check if all jobs for this preparation are complete
 	isReady, err := s.autoDealService.CheckPreparationReadiness(ctx, db, preparationID)
 	if err != nil {
-		logger.Errorf("Failed to check preparation readiness for %s: %v", 
+		logger.Errorf("Failed to check preparation readiness for %s: %v",
 			job.Attachment.Preparation.Name, err)
 		return errors.WithStack(err)
 	}
 
 	if !isReady {
-		logger.Debugf("Preparation %s is not ready yet, other jobs still in progress", 
+		logger.Debugf("Preparation %s is not ready yet, other jobs still in progress",
 			job.Attachment.Preparation.Name)
 		return nil
 	}
@@ -125,24 +125,24 @@ func (s *TriggerService) TriggerForJobCompletion(
 	}
 
 	if existingScheduleCount > 0 {
-		logger.Debugf("Preparation %s already has %d deal schedule(s), skipping auto-creation", 
+		logger.Debugf("Preparation %s already has %d deal schedule(s), skipping auto-creation",
 			job.Attachment.Preparation.Name, existingScheduleCount)
 		return nil
 	}
 
-	logger.Infof("Triggering automatic deal creation for preparation %s", 
+	logger.Infof("Triggering automatic deal creation for preparation %s",
 		job.Attachment.Preparation.Name)
 
 	// Create the deal schedule automatically
 	schedule, err := s.autoDealService.CreateAutomaticDealSchedule(ctx, db, lotusClient, preparationID)
 	if err != nil {
-		logger.Errorf("Failed to create automatic deal schedule for preparation %s: %v", 
+		logger.Errorf("Failed to create automatic deal schedule for preparation %s: %v",
 			job.Attachment.Preparation.Name, err)
 		return errors.WithStack(err)
 	}
 
 	if schedule != nil {
-		logger.Infof("Successfully created automatic deal schedule %d for preparation %s", 
+		logger.Infof("Successfully created automatic deal schedule %d for preparation %s",
 			schedule.ID, job.Attachment.Preparation.Name)
 	}
 
@@ -161,14 +161,14 @@ func (s *TriggerService) TriggerForPreparation(
 	}
 
 	logger.Infof("Manual trigger for preparation %s", preparationID)
-	
+
 	schedule, err := s.autoDealService.CreateAutomaticDealSchedule(ctx, db, lotusClient, preparationID)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
 	if schedule != nil {
-		logger.Infof("Successfully created deal schedule %d for preparation %s", 
+		logger.Infof("Successfully created deal schedule %d for preparation %s",
 			schedule.ID, preparationID)
 	}
 
@@ -186,7 +186,7 @@ func (s *TriggerService) BatchProcessReadyPreparations(
 	}
 
 	logger.Info("Starting batch processing of ready preparations")
-	
+
 	err := s.autoDealService.ProcessReadyPreparations(ctx, db, lotusClient)
 	if err != nil {
 		return errors.WithStack(err)
@@ -206,30 +206,30 @@ type MonitorService struct {
 
 // MonitorConfig configures the auto-deal monitor service
 type MonitorConfig struct {
-	CheckInterval     time.Duration
-	EnableBatchMode   bool
-	ExitOnComplete    bool
-	ExitOnError       bool
-	MaxRetries        int
-	RetryInterval     time.Duration
+	CheckInterval   time.Duration
+	EnableBatchMode bool
+	ExitOnComplete  bool
+	ExitOnError     bool
+	MaxRetries      int
+	RetryInterval   time.Duration
 }
 
 // DefaultMonitorConfig returns sensible defaults for the monitor service
 func DefaultMonitorConfig() MonitorConfig {
 	return MonitorConfig{
-		CheckInterval:     30 * time.Second,
-		EnableBatchMode:   true,
-		ExitOnComplete:    false,
-		ExitOnError:       false,
-		MaxRetries:        3,
-		RetryInterval:     5 * time.Minute,
+		CheckInterval:   30 * time.Second,
+		EnableBatchMode: true,
+		ExitOnComplete:  false,
+		ExitOnError:     false,
+		MaxRetries:      3,
+		RetryInterval:   5 * time.Minute,
 	}
 }
 
 // NewMonitorService creates a new auto-deal monitor service
 func NewMonitorService(
-	db *gorm.DB, 
-	lotusClient jsonrpc.RPCClient, 
+	db *gorm.DB,
+	lotusClient jsonrpc.RPCClient,
 	config MonitorConfig,
 ) *MonitorService {
 	return &MonitorService{
@@ -243,7 +243,7 @@ func NewMonitorService(
 // Run starts the auto-deal monitor service
 func (m *MonitorService) Run(ctx context.Context) error {
 	logger.Info("Starting auto-deal monitor service")
-	
+
 	if !m.config.EnableBatchMode {
 		logger.Info("Batch mode disabled, monitor service will exit")
 		return nil
@@ -264,13 +264,13 @@ func (m *MonitorService) Run(ctx context.Context) error {
 			err := m.triggerService.BatchProcessReadyPreparations(ctx, m.dbNoContext, m.lotusClient)
 			if err != nil {
 				retryCount++
-				logger.Errorf("Auto-deal processing failed (attempt %d/%d): %v", 
+				logger.Errorf("Auto-deal processing failed (attempt %d/%d): %v",
 					retryCount, maxRetries, err)
-				
+
 				if m.config.ExitOnError {
 					return errors.WithStack(err)
 				}
-				
+
 				if maxRetries > 0 && retryCount >= maxRetries {
 					logger.Errorf("Max retries (%d) reached, will continue with exponential backoff", maxRetries)
 					// Add exponential backoff

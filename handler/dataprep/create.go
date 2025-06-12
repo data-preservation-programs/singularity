@@ -27,22 +27,22 @@ type CreateRequest struct {
 	DeleteAfterExport bool     `default:"false"       json:"deleteAfterExport"` // Whether to delete the source files after export
 	NoInline          bool     `default:"false"       json:"noInline"`          // Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage.
 	NoDag             bool     `default:"false"       json:"noDag"`             // Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.
-	
+
 	// Auto-deal creation parameters
-	AutoCreateDeals     bool              `default:"false"       json:"autoCreateDeals"`     // Enable automatic deal schedule creation
-	DealPricePerGB      float64           `default:"0.0"         json:"dealPricePerGb"`      // Price in FIL per GiB
-	DealPricePerGBEpoch float64           `default:"0.0"         json:"dealPricePerGbEpoch"` // Price in FIL per GiB per epoch
-	DealPricePerDeal    float64           `default:"0.0"         json:"dealPricePerDeal"`    // Price in FIL per deal
-	DealDuration        time.Duration     `default:"0"           json:"dealDuration"`        // Deal duration
-	DealStartDelay      time.Duration     `default:"0"           json:"dealStartDelay"`      // Deal start delay
-	DealVerified        bool              `default:"false"       json:"dealVerified"`        // Whether deals should be verified
-	DealKeepUnsealed    bool              `default:"false"       json:"dealKeepUnsealed"`    // Whether to keep unsealed copy
-	DealAnnounceToIPNI  bool              `default:"false"       json:"dealAnnounceToIpni"`  // Whether to announce to IPNI
-	DealProvider        string            `default:""            json:"dealProvider"`        // Storage Provider ID
-	DealHTTPHeaders     model.ConfigMap   `json:"dealHttpHeaders"`                            // HTTP headers for deals
-	DealURLTemplate     string            `default:""            json:"dealUrlTemplate"`     // URL template for deals
-	WalletValidation    bool              `default:"false"       json:"walletValidation"`    // Enable wallet balance validation
-	SPValidation        bool              `default:"false"       json:"spValidation"`        // Enable storage provider validation
+	AutoCreateDeals     bool            `default:"false"       json:"autoCreateDeals"`     // Enable automatic deal schedule creation
+	DealPricePerGB      float64         `default:"0.0"         json:"dealPricePerGb"`      // Price in FIL per GiB
+	DealPricePerGBEpoch float64         `default:"0.0"         json:"dealPricePerGbEpoch"` // Price in FIL per GiB per epoch
+	DealPricePerDeal    float64         `default:"0.0"         json:"dealPricePerDeal"`    // Price in FIL per deal
+	DealDuration        time.Duration   `default:"0"           json:"dealDuration"`        // Deal duration
+	DealStartDelay      time.Duration   `default:"0"           json:"dealStartDelay"`      // Deal start delay
+	DealVerified        bool            `default:"false"       json:"dealVerified"`        // Whether deals should be verified
+	DealKeepUnsealed    bool            `default:"false"       json:"dealKeepUnsealed"`    // Whether to keep unsealed copy
+	DealAnnounceToIPNI  bool            `default:"false"       json:"dealAnnounceToIpni"`  // Whether to announce to IPNI
+	DealProvider        string          `default:""            json:"dealProvider"`        // Storage Provider ID
+	DealHTTPHeaders     model.ConfigMap `json:"dealHttpHeaders"`                           // HTTP headers for deals
+	DealURLTemplate     string          `default:""            json:"dealUrlTemplate"`     // URL template for deals
+	WalletValidation    bool            `default:"false"       json:"walletValidation"`    // Enable wallet balance validation
+	SPValidation        bool            `default:"false"       json:"spValidation"`        // Enable storage provider validation
 }
 
 // ValidateCreateRequest processes and validates the creation request parameters.
@@ -247,7 +247,7 @@ func (DefaultHandler) CreatePreparationHandler(
 // performValidation handles wallet and storage provider validation for auto-deal creation
 func performValidation(ctx context.Context, db *gorm.DB, preparation *model.Preparation) error {
 	notificationHandler := notification.Default
-	
+
 	// Create metadata for logging
 	metadata := model.ConfigMap{
 		"preparation_name": preparation.Name,
@@ -261,9 +261,9 @@ func performValidation(ctx context.Context, db *gorm.DB, preparation *model.Prep
 	}
 
 	// Log start of validation process
-	_, err := notificationHandler.LogInfo(ctx, db, "dataprep-create", 
-		"Starting Auto-Deal Validation", 
-		"Beginning validation process for auto-deal creation", 
+	_, err := notificationHandler.LogInfo(ctx, db, "dataprep-create",
+		"Starting Auto-Deal Validation",
+		"Beginning validation process for auto-deal creation",
 		metadata)
 	if err != nil {
 		return errors.WithStack(err)
@@ -290,10 +290,10 @@ func performValidation(ctx context.Context, db *gorm.DB, preparation *model.Prep
 	// If there are validation errors, log them and potentially disable auto-creation
 	if len(validationErrors) > 0 {
 		errorMetadata := model.ConfigMap{
-			"preparation_name": preparation.Name,
+			"preparation_name":  preparation.Name,
 			"validation_errors": strings.Join(validationErrors, "; "),
 		}
-		
+
 		_, err = notificationHandler.LogWarning(ctx, db, "dataprep-create",
 			"Auto-Deal Validation Issues Found",
 			"Some validation checks failed, but preparation will continue",
@@ -320,9 +320,9 @@ func performWalletValidation(ctx context.Context, db *gorm.DB, preparation *mode
 	// For now, we'll perform a basic validation without connecting to Lotus
 	// In a real implementation, you would get wallet addresses from the preparation
 	// and validate each one using the wallet validator
-	
+
 	notificationHandler := notification.Default
-	
+
 	// Get wallets associated with this preparation
 	var wallets []model.Wallet
 	err := db.WithContext(ctx).
@@ -335,7 +335,7 @@ func performWalletValidation(ctx context.Context, db *gorm.DB, preparation *mode
 
 	if len(wallets) == 0 {
 		*validationErrors = append(*validationErrors, "No wallets assigned to preparation")
-		
+
 		_, err = notificationHandler.LogWarning(ctx, db, "dataprep-create",
 			"No Wallets Found",
 			"No wallets are assigned to this preparation for auto-deal creation",
@@ -380,7 +380,7 @@ func performSPValidation(ctx context.Context, db *gorm.DB, preparation *model.Pr
 		defaultSP, err := spValidator.GetDefaultStorageProvider(ctx, db, "auto-deal-creation")
 		if err != nil {
 			*validationErrors = append(*validationErrors, "No storage provider specified and no default available")
-			
+
 			_, err = notificationHandler.LogWarning(ctx, db, "dataprep-create",
 				"No Storage Provider Available",
 				"No storage provider specified and no default providers available",
@@ -395,7 +395,7 @@ func performSPValidation(ctx context.Context, db *gorm.DB, preparation *model.Pr
 
 		// Update preparation with default provider
 		preparation.DealProvider = defaultSP.ProviderID
-		
+
 		_, err = notificationHandler.LogInfo(ctx, db, "dataprep-create",
 			"Default Storage Provider Selected",
 			"Using default storage provider for auto-deal creation",

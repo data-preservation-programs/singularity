@@ -39,14 +39,14 @@ var _ AutoDealServiceInterface = (*MockAutoDealer)(nil)
 
 func TestTriggerService_SetEnabled(t *testing.T) {
 	service := NewTriggerService()
-	
+
 	// Test initial state
 	assert.True(t, service.IsEnabled())
-	
+
 	// Test disable
 	service.SetEnabled(false)
 	assert.False(t, service.IsEnabled())
-	
+
 	// Test enable
 	service.SetEnabled(true)
 	assert.True(t, service.IsEnabled())
@@ -56,9 +56,9 @@ func TestTriggerService_TriggerForJobCompletion_Disabled(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewTriggerService()
 		service.SetEnabled(false)
-		
+
 		err := service.TriggerForJobCompletion(ctx, db, nil, 1)
-		
+
 		assert.NoError(t, err)
 	})
 }
@@ -66,35 +66,35 @@ func TestTriggerService_TriggerForJobCompletion_Disabled(t *testing.T) {
 func TestTriggerService_TriggerForJobCompletion_AutoDealDisabled(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewTriggerService()
-		
+
 		// Create test data
 		preparation := model.Preparation{
 			Name:            "test-prep",
 			AutoCreateDeals: false,
 		}
 		db.Create(&preparation)
-		
+
 		storage := model.Storage{
 			Name: "test-storage",
 			Type: "local",
 		}
 		db.Create(&storage)
-		
+
 		attachment := model.SourceAttachment{
 			PreparationID: preparation.ID,
 			StorageID:     storage.ID,
 		}
 		db.Create(&attachment)
-		
+
 		job := model.Job{
 			Type:         model.Pack,
 			State:        model.Complete,
 			AttachmentID: attachment.ID,
 		}
 		db.Create(&job)
-		
+
 		err := service.TriggerForJobCompletion(ctx, db, nil, job.ID)
-		
+
 		assert.NoError(t, err)
 	})
 }
@@ -102,42 +102,42 @@ func TestTriggerService_TriggerForJobCompletion_AutoDealDisabled(t *testing.T) {
 func TestTriggerService_TriggerForJobCompletion_NotReady(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewTriggerService()
-		
+
 		// Mock the auto-deal service
 		mockAutoDealer := &MockAutoDealer{}
 		service.SetAutoDealService(mockAutoDealer)
-		
+
 		// Create test data
 		preparation := model.Preparation{
 			Name:            "test-prep",
 			AutoCreateDeals: true,
 		}
 		db.Create(&preparation)
-		
+
 		storage := model.Storage{
 			Name: "test-storage",
 			Type: "local",
 		}
 		db.Create(&storage)
-		
+
 		attachment := model.SourceAttachment{
 			PreparationID: preparation.ID,
 			StorageID:     storage.ID,
 		}
 		db.Create(&attachment)
-		
+
 		job := model.Job{
 			Type:         model.Pack,
 			State:        model.Complete,
 			AttachmentID: attachment.ID,
 		}
 		db.Create(&job)
-		
+
 		// Mock that preparation is not ready
 		mockAutoDealer.On("CheckPreparationReadiness", mock.Anything, mock.Anything, "1").Return(false, nil)
-		
+
 		err := service.TriggerForJobCompletion(ctx, db, nil, job.ID)
-		
+
 		assert.NoError(t, err)
 		mockAutoDealer.AssertExpectations(t)
 	})
@@ -146,48 +146,48 @@ func TestTriggerService_TriggerForJobCompletion_NotReady(t *testing.T) {
 func TestTriggerService_TriggerForJobCompletion_Success(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewTriggerService()
-		
+
 		// Mock the auto-deal service
 		mockAutoDealer := &MockAutoDealer{}
 		service.SetAutoDealService(mockAutoDealer)
-		
+
 		// Create test data
 		preparation := model.Preparation{
 			Name:            "test-prep",
 			AutoCreateDeals: true,
 		}
 		db.Create(&preparation)
-		
+
 		storage := model.Storage{
 			Name: "test-storage",
 			Type: "local",
 		}
 		db.Create(&storage)
-		
+
 		attachment := model.SourceAttachment{
 			PreparationID: preparation.ID,
 			StorageID:     storage.ID,
 		}
 		db.Create(&attachment)
-		
+
 		job := model.Job{
 			Type:         model.Pack,
 			State:        model.Complete,
 			AttachmentID: attachment.ID,
 		}
 		db.Create(&job)
-		
+
 		expectedSchedule := &model.Schedule{
 			ID:            1,
 			PreparationID: preparation.ID,
 		}
-		
+
 		// Mock successful flow
 		mockAutoDealer.On("CheckPreparationReadiness", mock.Anything, mock.Anything, "1").Return(true, nil)
 		mockAutoDealer.On("CreateAutomaticDealSchedule", mock.Anything, mock.Anything, mock.Anything, "1").Return(expectedSchedule, nil)
-		
+
 		err := service.TriggerForJobCompletion(ctx, db, nil, job.ID)
-		
+
 		assert.NoError(t, err)
 		mockAutoDealer.AssertExpectations(t)
 	})
@@ -196,49 +196,49 @@ func TestTriggerService_TriggerForJobCompletion_Success(t *testing.T) {
 func TestTriggerService_TriggerForJobCompletion_ExistingSchedule(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewTriggerService()
-		
+
 		// Mock the auto-deal service
 		mockAutoDealer := &MockAutoDealer{}
 		service.SetAutoDealService(mockAutoDealer)
-		
+
 		// Create test data
 		preparation := model.Preparation{
 			Name:            "test-prep",
 			AutoCreateDeals: true,
 		}
 		db.Create(&preparation)
-		
+
 		storage := model.Storage{
 			Name: "test-storage",
 			Type: "local",
 		}
 		db.Create(&storage)
-		
+
 		attachment := model.SourceAttachment{
 			PreparationID: preparation.ID,
 			StorageID:     storage.ID,
 		}
 		db.Create(&attachment)
-		
+
 		job := model.Job{
 			Type:         model.Pack,
 			State:        model.Complete,
 			AttachmentID: attachment.ID,
 		}
 		db.Create(&job)
-		
+
 		// Create existing schedule
 		existingSchedule := model.Schedule{
 			PreparationID: preparation.ID,
 			Provider:      "f01234",
 		}
 		db.Create(&existingSchedule)
-		
+
 		// Mock that preparation is ready but should skip due to existing schedule
 		mockAutoDealer.On("CheckPreparationReadiness", mock.Anything, mock.Anything, "1").Return(true, nil)
-		
+
 		err := service.TriggerForJobCompletion(ctx, db, nil, job.ID)
-		
+
 		assert.NoError(t, err)
 		mockAutoDealer.AssertExpectations(t)
 		// CreateAutomaticDealSchedule should NOT be called due to existing schedule
@@ -250,9 +250,9 @@ func TestTriggerService_TriggerForPreparation_Disabled(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewTriggerService()
 		service.SetEnabled(false)
-		
+
 		err := service.TriggerForPreparation(ctx, nil, nil, "1")
-		
+
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "disabled")
 	})
@@ -261,20 +261,20 @@ func TestTriggerService_TriggerForPreparation_Disabled(t *testing.T) {
 func TestTriggerService_TriggerForPreparation_Success(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewTriggerService()
-		
+
 		// Mock the auto-deal service
 		mockAutoDealer := &MockAutoDealer{}
 		service.SetAutoDealService(mockAutoDealer)
-		
+
 		expectedSchedule := &model.Schedule{
 			ID:            1,
 			PreparationID: 1,
 		}
-		
+
 		mockAutoDealer.On("CreateAutomaticDealSchedule", mock.Anything, mock.Anything, mock.Anything, "1").Return(expectedSchedule, nil)
-		
+
 		err := service.TriggerForPreparation(ctx, nil, nil, "1")
-		
+
 		assert.NoError(t, err)
 		mockAutoDealer.AssertExpectations(t)
 	})
@@ -284,9 +284,9 @@ func TestTriggerService_BatchProcessReadyPreparations_Disabled(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewTriggerService()
 		service.SetEnabled(false)
-		
+
 		err := service.BatchProcessReadyPreparations(ctx, nil, nil)
-		
+
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "disabled")
 	})
@@ -295,15 +295,15 @@ func TestTriggerService_BatchProcessReadyPreparations_Disabled(t *testing.T) {
 func TestTriggerService_BatchProcessReadyPreparations_Success(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewTriggerService()
-		
+
 		// Mock the auto-deal service
 		mockAutoDealer := &MockAutoDealer{}
 		service.SetAutoDealService(mockAutoDealer)
-		
+
 		mockAutoDealer.On("ProcessReadyPreparations", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-		
+
 		err := service.BatchProcessReadyPreparations(ctx, nil, nil)
-		
+
 		assert.NoError(t, err)
 		mockAutoDealer.AssertExpectations(t)
 	})
@@ -314,11 +314,11 @@ func TestMonitorService_Run_BatchModeDisabled(t *testing.T) {
 		config := MonitorConfig{
 			EnableBatchMode: false,
 		}
-		
+
 		monitor := NewMonitorService(nil, nil, config)
-		
+
 		err := monitor.Run(ctx)
-		
+
 		assert.NoError(t, err)
 	})
 }
@@ -327,21 +327,21 @@ func TestMonitorService_Run_ContextCanceled(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		config := DefaultMonitorConfig()
 		config.CheckInterval = 100 * time.Millisecond
-		
+
 		monitor := NewMonitorService(nil, nil, config)
-		
+
 		ctx, cancel := context.WithCancel(ctx)
 		cancel() // Cancel immediately
-		
+
 		err := monitor.Run(ctx)
-		
+
 		assert.NoError(t, err)
 	})
 }
 
 func TestDefaultMonitorConfig(t *testing.T) {
 	config := DefaultMonitorConfig()
-	
+
 	assert.Equal(t, 30*time.Second, config.CheckInterval)
 	assert.True(t, config.EnableBatchMode)
 	assert.False(t, config.ExitOnComplete)
@@ -352,6 +352,6 @@ func TestDefaultMonitorConfig(t *testing.T) {
 
 func TestMonitorService_Name(t *testing.T) {
 	monitor := NewMonitorService(nil, nil, DefaultMonitorConfig())
-	
+
 	assert.Equal(t, "Auto-Deal Monitor Service", monitor.Name())
 }

@@ -27,16 +27,16 @@ func TestFullIntegrationWorkflow(t *testing.T) {
 
 		// Step 2: Create a preparation with auto-deal enabled
 		preparation := model.Preparation{
-			Name:                "auto-deal-test",
-			AutoCreateDeals:     true,
-			DealProvider:        "f01234", // Test provider
-			DealVerified:        true,
-			DealPricePerGB:      0.0000001,
-			DealDuration:        time.Hour * 24 * 365, // 1 year
-			DealStartDelay:      time.Hour * 72,       // 3 days
-			WalletValidation:    false,                // Skip validation for test
-			SPValidation:        false,                // Skip validation for test
-			PieceSize:           34359738368, // 32GiB
+			Name:             "auto-deal-test",
+			AutoCreateDeals:  true,
+			DealProvider:     "f01234", // Test provider
+			DealVerified:     true,
+			DealPricePerGB:   0.0000001,
+			DealDuration:     time.Hour * 24 * 365, // 1 year
+			DealStartDelay:   time.Hour * 72,       // 3 days
+			WalletValidation: false,                // Skip validation for test
+			SPValidation:     false,                // Skip validation for test
+			PieceSize:        34359738368,          // 32GiB
 		}
 		require.NoError(t, db.Create(&preparation).Error)
 
@@ -113,13 +113,13 @@ func TestMonitorServiceIntegration(t *testing.T) {
 
 		// Create a preparation ready for auto-deal
 		preparation := model.Preparation{
-			Name:            "monitor-test",
-			AutoCreateDeals: true,
-			DealProvider:    "f05678",
-			DealVerified:    false,
-			DealPricePerGB:  0.0000002,
+			Name:             "monitor-test",
+			AutoCreateDeals:  true,
+			DealProvider:     "f05678",
+			DealVerified:     false,
+			DealPricePerGB:   0.0000002,
 			WalletValidation: false,
-			SPValidation:    false,
+			SPValidation:     false,
 		}
 		require.NoError(t, db.Create(&preparation).Error)
 
@@ -195,33 +195,33 @@ func TestRealWorldScenario(t *testing.T) {
 		// Scenario: Multiple preparations, some with auto-deal enabled, some without
 		preparations := []model.Preparation{
 			{
-				Name:            "dataset-1",
-				AutoCreateDeals: true,
-				DealProvider:    "f01111",
-				DealVerified:    true,
+				Name:             "dataset-1",
+				AutoCreateDeals:  true,
+				DealProvider:     "f01111",
+				DealVerified:     true,
 				WalletValidation: false,
-				SPValidation:    false,
+				SPValidation:     false,
 			},
 			{
-				Name:            "dataset-2",
-				AutoCreateDeals: false, // Auto-deal disabled
-				DealProvider:    "f02222",
+				Name:             "dataset-2",
+				AutoCreateDeals:  false, // Auto-deal disabled
+				DealProvider:     "f02222",
 				WalletValidation: false,
-				SPValidation:    false,
+				SPValidation:     false,
 			},
 			{
-				Name:            "dataset-3",
-				AutoCreateDeals: true,
-				DealProvider:    "f03333",
-				DealVerified:    false,
+				Name:             "dataset-3",
+				AutoCreateDeals:  true,
+				DealProvider:     "f03333",
+				DealVerified:     false,
 				WalletValidation: false,
-				SPValidation:    false,
+				SPValidation:     false,
 			},
 		}
 
 		for i := range preparations {
 			require.NoError(t, db.Create(&preparations[i]).Error)
-			
+
 			// Attach wallet to each preparation using GORM many-to-many
 			require.NoError(t, db.Model(&preparations[i]).Association("Wallets").Append(&wallets[i]))
 		}

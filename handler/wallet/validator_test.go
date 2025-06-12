@@ -57,7 +57,7 @@ func (m *MockLotusClient) CallFor(ctx context.Context, result interface{}, metho
 	if method == "Filecoin.WalletBalance" && len(args) > 0 {
 		if addr, ok := args[0].(address.Address); ok {
 			addrStr := addr.String()
-			
+
 			// Check errors first
 			if err, exists := m.errors[addrStr]; exists {
 				return err
@@ -95,10 +95,10 @@ func (m *MockLotusClient) CallBatchRaw(ctx context.Context, requests jsonrpc.RPC
 func setupTestDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	require.NoError(t, err)
-	
+
 	err = db.AutoMigrate(&model.Notification{}, &model.Deal{})
 	require.NoError(t, err)
-	
+
 	return db
 }
 
@@ -106,54 +106,54 @@ func TestCalculateRequiredBalance(t *testing.T) {
 	validator := NewBalanceValidator()
 
 	tests := []struct {
-		name              string
-		pricePerGBEpoch   float64
-		pricePerGB        float64
-		pricePerDeal      float64
-		totalSizeBytes    int64
-		durationEpochs    int64
-		numberOfDeals     int
-		expectedAttoFIL   string
+		name            string
+		pricePerGBEpoch float64
+		pricePerGB      float64
+		pricePerDeal    float64
+		totalSizeBytes  int64
+		durationEpochs  int64
+		numberOfDeals   int
+		expectedAttoFIL string
 	}{
 		{
-			name:              "only price per GB epoch",
-			pricePerGBEpoch:   0.1,
-			pricePerGB:        0,
-			pricePerDeal:      0,
-			totalSizeBytes:    1073741824, // 1 GB
-			durationEpochs:    2880,       // ~1 day
-			numberOfDeals:     1,
-			expectedAttoFIL:   "288000000000000000000", // 0.1 * 1 * 2880 * 10^18
+			name:            "only price per GB epoch",
+			pricePerGBEpoch: 0.1,
+			pricePerGB:      0,
+			pricePerDeal:    0,
+			totalSizeBytes:  1073741824, // 1 GB
+			durationEpochs:  2880,       // ~1 day
+			numberOfDeals:   1,
+			expectedAttoFIL: "288000000000000000000", // 0.1 * 1 * 2880 * 10^18
 		},
 		{
-			name:              "only price per GB",
-			pricePerGBEpoch:   0,
-			pricePerGB:        1.0,
-			pricePerDeal:      0,
-			totalSizeBytes:    2147483648, // 2 GB
-			durationEpochs:    0,
-			numberOfDeals:     1,
-			expectedAttoFIL:   "2000000000000000000", // 1.0 * 2 * 10^18
+			name:            "only price per GB",
+			pricePerGBEpoch: 0,
+			pricePerGB:      1.0,
+			pricePerDeal:    0,
+			totalSizeBytes:  2147483648, // 2 GB
+			durationEpochs:  0,
+			numberOfDeals:   1,
+			expectedAttoFIL: "2000000000000000000", // 1.0 * 2 * 10^18
 		},
 		{
-			name:              "only price per deal",
-			pricePerGBEpoch:   0,
-			pricePerGB:        0,
-			pricePerDeal:      0.5,
-			totalSizeBytes:    0,
-			durationEpochs:    0,
-			numberOfDeals:     3,
-			expectedAttoFIL:   "1500000000000000000", // 0.5 * 3 * 10^18
+			name:            "only price per deal",
+			pricePerGBEpoch: 0,
+			pricePerGB:      0,
+			pricePerDeal:    0.5,
+			totalSizeBytes:  0,
+			durationEpochs:  0,
+			numberOfDeals:   3,
+			expectedAttoFIL: "1500000000000000000", // 0.5 * 3 * 10^18
 		},
 		{
-			name:              "combined pricing",
-			pricePerGBEpoch:   0.01,
-			pricePerGB:        0.1,
-			pricePerDeal:      0.05,
-			totalSizeBytes:    1073741824, // 1 GB
-			durationEpochs:    100,
-			numberOfDeals:     2,
-			expectedAttoFIL:   "1200000000000000000", // (0.01*1*100 + 0.1*1 + 0.05*2) * 10^18 = 1.2 * 10^18
+			name:            "combined pricing",
+			pricePerGBEpoch: 0.01,
+			pricePerGB:      0.1,
+			pricePerDeal:    0.05,
+			totalSizeBytes:  1073741824, // 1 GB
+			durationEpochs:  100,
+			numberOfDeals:   2,
+			expectedAttoFIL: "1200000000000000000", // (0.01*1*100 + 0.1*1 + 0.05*2) * 10^18 = 1.2 * 10^18
 		},
 	}
 
@@ -197,7 +197,7 @@ func TestValidateWalletExists(t *testing.T) {
 
 	t.Run("invalid wallet address format", func(t *testing.T) {
 		mockClient := NewMockLotusClient()
-		
+
 		result, err := validator.ValidateWalletExists(ctx, db, mockClient, "invalid-address", "prep1")
 		require.NoError(t, err)
 		require.False(t, result.IsValid)
@@ -225,7 +225,7 @@ func TestValidateWalletBalance(t *testing.T) {
 		mockClient := NewMockLotusClient()
 		walletAddr := "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa"
 		mockClient.SetBalance(walletAddr, "2000000000000000000") // 2 FIL
-		
+
 		requiredAmount := big.NewInt(1000000000000000000) // 1 FIL
 
 		result, err := validator.ValidateWalletBalance(ctx, db, mockClient, walletAddr, requiredAmount, "prep1")
@@ -240,7 +240,7 @@ func TestValidateWalletBalance(t *testing.T) {
 		mockClient := NewMockLotusClient()
 		walletAddr := "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa"
 		mockClient.SetBalance(walletAddr, "500000000000000000") // 0.5 FIL
-		
+
 		requiredAmount := big.NewInt(1000000000000000000) // 1 FIL
 
 		result, err := validator.ValidateWalletBalance(ctx, db, mockClient, walletAddr, requiredAmount, "prep1")
@@ -256,7 +256,7 @@ func TestValidateWalletBalance(t *testing.T) {
 		// Create valid CIDs
 		cid1, _ := cid.Parse("bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi")
 		cid2, _ := cid.Parse("bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku")
-		
+
 		deal1 := &model.Deal{
 			ClientID:  "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa",
 			State:     model.DealProposed,
@@ -273,7 +273,7 @@ func TestValidateWalletBalance(t *testing.T) {
 			PieceCID:  model.CID(cid2),
 			PieceSize: 2048,
 		}
-		
+
 		err := db.Create(deal1).Error
 		require.NoError(t, err)
 		err = db.Create(deal2).Error
@@ -282,7 +282,7 @@ func TestValidateWalletBalance(t *testing.T) {
 		mockClient := NewMockLotusClient()
 		walletAddr := "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa"
 		mockClient.SetBalance(walletAddr, "1000000000000000000") // 1 FIL
-		
+
 		requiredAmount := big.NewInt(600000000000000000) // 0.6 FIL
 
 		result, err := validator.ValidateWalletBalance(ctx, db, mockClient, walletAddr, requiredAmount, "prep1")
@@ -308,7 +308,7 @@ func TestValidateWalletBalance(t *testing.T) {
 		mockClient := NewMockLotusClient()
 		walletAddr := "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa"
 		mockClient.SetError(walletAddr, errors.New("connection failed"))
-		
+
 		requiredAmount := big.NewInt(1000000000000000000)
 
 		result, err := validator.ValidateWalletBalance(ctx, db, mockClient, walletAddr, requiredAmount, "prep1")
@@ -349,7 +349,7 @@ func TestGetPendingDealsAmount(t *testing.T) {
 		},
 		{
 			ClientID:  "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa",
-			State:     model.DealActive, // This should not be counted
+			State:     model.DealActive,     // This should not be counted
 			Price:     "300000000000000000", // 0.3 FIL
 			Provider:  "f01002",
 			PieceCID:  model.CID(cid3),
@@ -372,7 +372,7 @@ func TestGetPendingDealsAmount(t *testing.T) {
 
 	amount, err := validator.getPendingDealsAmount(ctx, db, "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa")
 	require.NoError(t, err)
-	
+
 	// Should be 0.1 + 0.2 = 0.3 FIL (only proposed and published deals for f1test123)
 	expected := big.NewInt(300000000000000000)
 	require.Equal(t, expected.String(), amount.String())
@@ -387,7 +387,7 @@ func TestWalletValidatorIntegration(t *testing.T) {
 	mockClient := NewMockLotusClient()
 	walletAddr := "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa"
 	mockClient.SetBalance(walletAddr, "500000000000000000") // 0.5 FIL
-	
+
 	requiredAmount := big.NewInt(1000000000000000000) // 1 FIL
 
 	result, err := validator.ValidateWalletBalance(ctx, db, mockClient, walletAddr, requiredAmount, "prep1")

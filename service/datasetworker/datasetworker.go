@@ -212,13 +212,13 @@ func (w *Thread) triggerAutoDealIfReady(ctx context.Context, jobID model.JobID) 
 	defer cancel()
 
 	err := autodeal.DefaultTriggerService.TriggerForJobCompletion(
-		triggerCtx, 
-		w.dbNoContext, 
-		w.lotusClient, 
+		triggerCtx,
+		w.dbNoContext,
+		w.lotusClient,
 		jobID,
 	)
 	if err != nil {
-		w.logger.Warnw("failed to trigger auto-deal creation", 
+		w.logger.Warnw("failed to trigger auto-deal creation",
 			"jobID", jobID, "error", err)
 	}
 }
@@ -238,7 +238,7 @@ func (w *Thread) handleWorkComplete(ctx context.Context, jobID model.JobID) erro
 
 	// Trigger auto-deal creation if enabled and applicable
 	w.triggerAutoDealIfReady(ctx, jobID)
-	
+
 	return nil
 }
 

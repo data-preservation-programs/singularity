@@ -14,10 +14,10 @@ import (
 func setupTestDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	require.NoError(t, err)
-	
+
 	err = db.AutoMigrate(&model.Notification{})
 	require.NoError(t, err)
-	
+
 	return db
 }
 
@@ -106,10 +106,10 @@ func TestListNotifications(t *testing.T) {
 	// Create test notifications
 	_, err := handler.LogInfo(ctx, db, "test", "Info 1", "First info message")
 	require.NoError(t, err)
-	
+
 	_, err = handler.LogWarning(ctx, db, "test", "Warning 1", "First warning message")
 	require.NoError(t, err)
-	
+
 	_, err = handler.LogError(ctx, db, "test", "Error 1", "First error message")
 	require.NoError(t, err)
 

@@ -54,7 +54,7 @@ func (s *AutoDealService) CreateAutomaticDealSchedule(
 
 	// Check if auto-deal creation is enabled
 	if !preparation.AutoCreateDeals {
-		s.logInfo(ctx, db, "Auto-Deal Not Enabled", 
+		s.logInfo(ctx, db, "Auto-Deal Not Enabled",
 			fmt.Sprintf("Preparation %s does not have auto-deal creation enabled", preparation.Name),
 			model.ConfigMap{
 				"preparation_id":   preparationID,
@@ -63,7 +63,7 @@ func (s *AutoDealService) CreateAutomaticDealSchedule(
 		return nil, nil
 	}
 
-	s.logInfo(ctx, db, "Starting Auto-Deal Schedule Creation", 
+	s.logInfo(ctx, db, "Starting Auto-Deal Schedule Creation",
 		fmt.Sprintf("Creating automatic deal schedule for preparation %s", preparation.Name),
 		model.ConfigMap{
 			"preparation_id":   preparationID,
@@ -78,11 +78,11 @@ func (s *AutoDealService) CreateAutomaticDealSchedule(
 		err = s.validateWalletsForDealCreation(ctx, db, lotusClient, &preparation, &validationErrors)
 		if err != nil {
 			validationPassed = false
-			s.logWarning(ctx, db, "Wallet Validation Failed", 
-				"Wallet validation failed during auto-deal creation", 
+			s.logWarning(ctx, db, "Wallet Validation Failed",
+				"Wallet validation failed during auto-deal creation",
 				model.ConfigMap{
 					"preparation_name": preparation.Name,
-					"error":           err.Error(),
+					"error":            err.Error(),
 				})
 		}
 	}
@@ -91,21 +91,21 @@ func (s *AutoDealService) CreateAutomaticDealSchedule(
 		err = s.validateProviderForDealCreation(ctx, db, lotusClient, &preparation, &validationErrors)
 		if err != nil {
 			validationPassed = false
-			s.logWarning(ctx, db, "Provider Validation Failed", 
-				"Storage provider validation failed during auto-deal creation", 
+			s.logWarning(ctx, db, "Provider Validation Failed",
+				"Storage provider validation failed during auto-deal creation",
 				model.ConfigMap{
 					"preparation_name": preparation.Name,
-					"error":           err.Error(),
+					"error":            err.Error(),
 				})
 		}
 	}
 
 	// If validation failed, log and return
 	if !validationPassed {
-		s.logError(ctx, db, "Auto-Deal Creation Failed", 
-			"Auto-deal creation failed due to validation errors", 
+		s.logError(ctx, db, "Auto-Deal Creation Failed",
+			"Auto-deal creation failed due to validation errors",
 			model.ConfigMap{
-				"preparation_name":   preparation.Name,
+				"preparation_name":  preparation.Name,
 				"validation_errors": fmt.Sprintf("%v", validationErrors),
 			})
 		return nil, errors.New("auto-deal creation failed validation")
@@ -113,33 +113,33 @@ func (s *AutoDealService) CreateAutomaticDealSchedule(
 
 	// Create the deal schedule using collected parameters
 	dealRequest := s.buildDealScheduleRequest(&preparation)
-	
-	s.logInfo(ctx, db, "Creating Deal Schedule", 
+
+	s.logInfo(ctx, db, "Creating Deal Schedule",
 		fmt.Sprintf("Creating deal schedule with provider %s", dealRequest.Provider),
 		model.ConfigMap{
 			"preparation_name": preparation.Name,
-			"provider":        dealRequest.Provider,
-			"verified":        fmt.Sprintf("%t", dealRequest.Verified),
-			"price_per_gb":    fmt.Sprintf("%.6f", dealRequest.PricePerGB),
+			"provider":         dealRequest.Provider,
+			"verified":         fmt.Sprintf("%t", dealRequest.Verified),
+			"price_per_gb":     fmt.Sprintf("%.6f", dealRequest.PricePerGB),
 		})
 
 	dealSchedule, err := s.scheduleHandler.CreateHandler(ctx, db, lotusClient, *dealRequest)
 	if err != nil {
-		s.logError(ctx, db, "Deal Schedule Creation Failed", 
-			"Failed to create automatic deal schedule", 
+		s.logError(ctx, db, "Deal Schedule Creation Failed",
+			"Failed to create automatic deal schedule",
 			model.ConfigMap{
 				"preparation_name": preparation.Name,
-				"error":           err.Error(),
+				"error":            err.Error(),
 			})
 		return nil, errors.WithStack(err)
 	}
 
-	s.logInfo(ctx, db, "Auto-Deal Schedule Created Successfully", 
+	s.logInfo(ctx, db, "Auto-Deal Schedule Created Successfully",
 		fmt.Sprintf("Successfully created deal schedule %d for preparation %s", dealSchedule.ID, preparation.Name),
 		model.ConfigMap{
 			"preparation_name": preparation.Name,
-			"schedule_id":     fmt.Sprintf("%d", dealSchedule.ID),
-			"provider":        dealSchedule.Provider,
+			"schedule_id":      fmt.Sprintf("%d", dealSchedule.ID),
+			"provider":         dealSchedule.Provider,
 		})
 
 	return dealSchedule, nil
@@ -163,12 +163,12 @@ func (s *AutoDealService) CheckPreparationReadiness(
 
 	isReady := incompleteJobCount == 0
 
-	s.logInfo(ctx, db, "Preparation Readiness Check", 
+	s.logInfo(ctx, db, "Preparation Readiness Check",
 		fmt.Sprintf("Preparation %s readiness: %t (incomplete jobs: %d)", preparationID, isReady, incompleteJobCount),
 		model.ConfigMap{
-			"preparation_id":     preparationID,
-			"is_ready":          fmt.Sprintf("%t", isReady),
-			"incomplete_jobs":   fmt.Sprintf("%d", incompleteJobCount),
+			"preparation_id":  preparationID,
+			"is_ready":        fmt.Sprintf("%t", isReady),
+			"incomplete_jobs": fmt.Sprintf("%d", incompleteJobCount),
 		})
 
 	return isReady, nil
@@ -189,7 +189,7 @@ func (s *AutoDealService) ProcessReadyPreparations(
 		return errors.WithStack(err)
 	}
 
-	s.logInfo(ctx, db, "Processing Ready Preparations", 
+	s.logInfo(ctx, db, "Processing Ready Preparations",
 		fmt.Sprintf("Found %d preparations with auto-deal enabled", len(preparations)),
 		model.ConfigMap{
 			"preparation_count": fmt.Sprintf("%d", len(preparations)),
@@ -238,11 +238,11 @@ func (s *AutoDealService) ProcessReadyPreparations(
 		processedCount++
 	}
 
-	s.logInfo(ctx, db, "Auto-Deal Processing Complete", 
+	s.logInfo(ctx, db, "Auto-Deal Processing Complete",
 		fmt.Sprintf("Processed %d preparations, %d errors", processedCount, errorCount),
 		model.ConfigMap{
 			"processed_count": fmt.Sprintf("%d", processedCount),
-			"error_count":    fmt.Sprintf("%d", errorCount),
+			"error_count":     fmt.Sprintf("%d", errorCount),
 		})
 
 	return nil
@@ -339,12 +339,12 @@ func (s *AutoDealService) validateProviderForDealCreation(
 		}
 		// Update preparation with default provider for deal creation
 		preparation.DealProvider = defaultSP.ProviderID
-		
-		s.logInfo(ctx, db, "Using Default Provider", 
+
+		s.logInfo(ctx, db, "Using Default Provider",
 			fmt.Sprintf("No provider specified, using default %s", defaultSP.ProviderID),
 			model.ConfigMap{
 				"preparation_name": preparation.Name,
-				"provider_id":     defaultSP.ProviderID,
+				"provider_id":      defaultSP.ProviderID,
 			})
 	}
 
@@ -354,7 +354,7 @@ func (s *AutoDealService) validateProviderForDealCreation(
 		*validationErrors = append(*validationErrors, fmt.Sprintf("Provider validation error: %v", err))
 		return err
 	}
-	
+
 	if !result.IsValid {
 		*validationErrors = append(*validationErrors, fmt.Sprintf("Provider %s is not valid: %s", preparation.DealProvider, result.Message))
 		return errors.New("provider validation failed")

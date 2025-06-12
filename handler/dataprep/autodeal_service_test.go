@@ -72,7 +72,7 @@ func TestAutoDealService_CreateAutomaticDealSchedule(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewAutoDealService()
 		mockClient := NewMockLotusClient()
-		
+
 		// Set up mock responses
 		mockClient.SetResponse("Filecoin.StateLookupID", "f01000")
 
@@ -231,7 +231,7 @@ func TestAutoDealService_ProcessReadyPreparations(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewAutoDealService()
 		mockClient := NewMockLotusClient()
-		
+
 		// Set up mock responses
 		mockClient.SetResponse("Filecoin.StateLookupID", "f01000")
 		mockClient.SetResponse("Filecoin.WalletBalance", "1000000000000000000") // 1 FIL
@@ -296,19 +296,19 @@ func TestAutoDealService_ProcessReadyPreparations(t *testing.T) {
 
 func TestAutoDealService_buildDealScheduleRequest(t *testing.T) {
 	service := NewAutoDealService()
-	
+
 	preparation := &model.Preparation{
-		ID:                 1,
-		DealProvider:       "f01000",
-		DealPricePerGB:     0.1,
+		ID:                  1,
+		DealProvider:        "f01000",
+		DealPricePerGB:      0.1,
 		DealPricePerGBEpoch: 0.0000001,
-		DealPricePerDeal:   0.01,
-		DealDuration:       time.Hour * 24 * 535,
-		DealStartDelay:     time.Hour * 72,
-		DealVerified:       true,
-		DealKeepUnsealed:   true,
-		DealAnnounceToIPNI: true,
-		DealURLTemplate:    "https://example.com/deals/{id}",
+		DealPricePerDeal:    0.01,
+		DealDuration:        time.Hour * 24 * 535,
+		DealStartDelay:      time.Hour * 72,
+		DealVerified:        true,
+		DealKeepUnsealed:    true,
+		DealAnnounceToIPNI:  true,
+		DealURLTemplate:     "https://example.com/deals/{id}",
 		DealHTTPHeaders: model.ConfigMap{
 			"Authorization": "Bearer token",
 			"Content-Type":  "application/json",
@@ -338,7 +338,7 @@ func TestAutoDealService_ValidationErrors(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service := NewAutoDealService()
 		mockClient := NewMockLotusClient()
-		
+
 		// Set up mock responses
 		mockClient.SetResponse("Filecoin.StateLookupID", "f01000")
 
@@ -354,7 +354,7 @@ func TestAutoDealService_ValidationErrors(t *testing.T) {
 			Name:             "test-auto-prep-fail",
 			AutoCreateDeals:  true,
 			DealProvider:     "f01000",
-			WalletValidation: true, // Enable validation
+			WalletValidation: true,  // Enable validation
 			SPValidation:     false, // Disable to avoid complex mocking
 			SourceStorages:   []model.Storage{*sourceStorage},
 			// No wallets - this should cause validation to fail

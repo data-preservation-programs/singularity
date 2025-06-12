@@ -10,37 +10,37 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/notification"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ybbus/jsonrpc/v3"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/ipfs/go-log/v2"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
 var logger = log.Logger("sp-validator")
 
 type SPValidationResult struct {
-	IsValid           bool            `json:"isValid"`
-	ProviderID        string          `json:"providerId"`
-	ProviderAddress   string          `json:"providerAddress,omitempty"`
-	PeerID            string          `json:"peerId,omitempty"`
-	Multiaddrs        []string        `json:"multiaddrs,omitempty"`
-	IsOnline          bool            `json:"isOnline"`
-	Power             string          `json:"power,omitempty"`
-	SectorSize        string          `json:"sectorSize,omitempty"`
-	AcceptingDeals    bool            `json:"acceptingDeals"`
-	Message           string          `json:"message"`
-	Warnings          []string        `json:"warnings,omitempty"`
-	Metadata          model.ConfigMap `json:"metadata,omitempty"`
+	IsValid         bool            `json:"isValid"`
+	ProviderID      string          `json:"providerId"`
+	ProviderAddress string          `json:"providerAddress,omitempty"`
+	PeerID          string          `json:"peerId,omitempty"`
+	Multiaddrs      []string        `json:"multiaddrs,omitempty"`
+	IsOnline        bool            `json:"isOnline"`
+	Power           string          `json:"power,omitempty"`
+	SectorSize      string          `json:"sectorSize,omitempty"`
+	AcceptingDeals  bool            `json:"acceptingDeals"`
+	Message         string          `json:"message"`
+	Warnings        []string        `json:"warnings,omitempty"`
+	Metadata        model.ConfigMap `json:"metadata,omitempty"`
 }
 
 // MinerInfo represents storage provider information
 type MinerInfo struct {
-	PeerID     *peer.ID                `json:"peerId,omitempty"`
-	Multiaddrs []multiaddr.Multiaddr   `json:"multiaddrs"`
-	SectorSize abi.SectorSize          `json:"sectorSize"`
+	PeerID     *peer.ID              `json:"peerId,omitempty"`
+	Multiaddrs []multiaddr.Multiaddr `json:"multiaddrs"`
+	SectorSize abi.SectorSize        `json:"sectorSize"`
 }
 
 // MinerPower represents storage provider power information
@@ -178,14 +178,14 @@ func (v *SPValidator) GetDefaultStorageProvider(ctx context.Context, db *gorm.DB
 	}
 
 	defaultSP := v.defaultSPs[0]
-	
+
 	// Log the selection
 	metadata := model.ConfigMap{
 		"selected_provider": defaultSP.ProviderID,
 		"criteria":          criteria,
 	}
 	v.logInfo(ctx, db, "Default Storage Provider Selected", fmt.Sprintf("Selected %s for auto-creation", defaultSP.ProviderID), metadata)
-	
+
 	return &defaultSP, nil
 }
 
@@ -246,7 +246,7 @@ func (v *SPValidator) getMinerPower(ctx context.Context, lotusClient jsonrpc.RPC
 // checkProviderConnectivity checks if the provider is reachable
 func (v *SPValidator) checkProviderConnectivity(ctx context.Context, lotusClient jsonrpc.RPCClient, peerID string, multiaddrs []string) (bool, []string) {
 	var warnings []string
-	
+
 	if peerID == "" {
 		warnings = append(warnings, "No peer ID available for connectivity check")
 		return false, warnings
@@ -315,16 +315,16 @@ func (v *SPValidator) testConnection(ctx context.Context, multiaddr string) bool
 // checkDealAcceptance checks if the provider is accepting storage deals
 func (v *SPValidator) checkDealAcceptance(ctx context.Context, lotusClient jsonrpc.RPCClient, minerAddr address.Address) (bool, []string) {
 	var warnings []string
-	
+
 	// This is a placeholder - in a real implementation, you would check:
 	// 1. Miner's ask price
 	// 2. Deal acceptance policies
 	// 3. Available storage capacity
 	// 4. Reputation/past performance
-	
+
 	// For now, we'll do a basic check if the miner has any deals
 	// You could implement more sophisticated checks here
-	
+
 	// Simple heuristic: if miner has power, they're likely accepting deals
 	power, err := v.getMinerPower(ctx, lotusClient, minerAddr)
 	if err != nil {
@@ -359,7 +359,7 @@ func getDefaultStorageProviders() []DefaultSPEntry {
 		},
 		{
 			ProviderID:     "f01001", // Example provider ID
-			Name:           "Example SP 2", 
+			Name:           "Example SP 2",
 			Description:    "Fast retrieval focused storage provider",
 			Verified:       true,
 			RecommendedUse: "Fast retrieval scenarios",

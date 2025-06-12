@@ -33,14 +33,14 @@ type Handler struct{}
 var Default = &Handler{}
 
 type CreateNotificationRequest struct {
-	Type        NotificationType  `json:"type"`
-	Level       NotificationLevel `json:"level"`
-	Title       string            `json:"title"`
-	Message     string            `json:"message"`
-	Source      string            `json:"source"`
-	SourceID    string            `json:"sourceId,omitempty"`
-	Metadata    model.ConfigMap   `json:"metadata,omitempty"`
-	Acknowledged bool             `json:"acknowledged"`
+	Type         NotificationType  `json:"type"`
+	Level        NotificationLevel `json:"level"`
+	Title        string            `json:"title"`
+	Message      string            `json:"message"`
+	Source       string            `json:"source"`
+	SourceID     string            `json:"sourceId,omitempty"`
+	Metadata     model.ConfigMap   `json:"metadata,omitempty"`
+	Acknowledged bool              `json:"acknowledged"`
 }
 
 // CreateNotification creates a new notification and saves it to the database
@@ -121,21 +121,21 @@ func (h *Handler) LogInfo(ctx context.Context, db *gorm.DB, source, title, messa
 // ListNotifications retrieves notifications with pagination and filtering
 func (h *Handler) ListNotifications(ctx context.Context, db *gorm.DB, offset, limit int, notificationType *NotificationType, acknowledged *bool) ([]*model.Notification, error) {
 	var notifications []*model.Notification
-	
+
 	query := db.WithContext(ctx).Model(&model.Notification{})
-	
+
 	if notificationType != nil {
 		query = query.Where("type = ?", string(*notificationType))
 	}
-	
+
 	if acknowledged != nil {
 		query = query.Where("acknowledged = ?", *acknowledged)
 	}
-	
+
 	if err := query.Order("created_at DESC").Offset(offset).Limit(limit).Find(&notifications).Error; err != nil {
 		return nil, errors.WithStack(err)
 	}
-	
+
 	return notifications, nil
 }
 
@@ -167,7 +167,7 @@ func (h *Handler) DeleteNotification(ctx context.Context, db *gorm.DB, id uint) 
 // logNotification logs the notification to the system logger
 func (h *Handler) logNotification(notification *model.Notification) {
 	logMsg := logger.With("source", notification.Source, "title", notification.Title)
-	
+
 	switch notification.Type {
 	case string(NotificationTypeError):
 		logMsg.Errorf("[%s] %s: %s", notification.Source, notification.Title, notification.Message)

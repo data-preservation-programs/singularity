@@ -22,24 +22,24 @@ func formatFIL(attoFIL *big.Int) string {
 	if attoFIL == nil {
 		return "0 FIL"
 	}
-	
+
 	// Convert attoFIL to FIL (divide by 10^18)
 	filValue := new(big.Float).SetInt(attoFIL)
 	filValue.Quo(filValue, big.NewFloat(1e18))
-	
+
 	// Format with appropriate precision
 	return fmt.Sprintf("%.9g FIL", filValue)
 }
 
 type ValidationResult struct {
-	IsValid         bool                `json:"isValid"`
-	WalletAddress   string              `json:"walletAddress"`
-	CurrentBalance  string              `json:"currentBalance"`  // FIL amount as string
-	RequiredBalance string              `json:"requiredBalance"` // FIL amount as string
-	AvailableBalance string             `json:"availableBalance"` // FIL amount after pending deals
-	Message         string              `json:"message"`
-	Warnings        []string            `json:"warnings,omitempty"`
-	Metadata        model.ConfigMap     `json:"metadata,omitempty"`
+	IsValid          bool            `json:"isValid"`
+	WalletAddress    string          `json:"walletAddress"`
+	CurrentBalance   string          `json:"currentBalance"`   // FIL amount as string
+	RequiredBalance  string          `json:"requiredBalance"`  // FIL amount as string
+	AvailableBalance string          `json:"availableBalance"` // FIL amount after pending deals
+	Message          string          `json:"message"`
+	Warnings         []string        `json:"warnings,omitempty"`
+	Metadata         model.ConfigMap `json:"metadata,omitempty"`
 }
 
 type BalanceValidator struct {
@@ -119,7 +119,7 @@ func (v *BalanceValidator) ValidateWalletBalance(
 		result.Message = "Insufficient wallet balance. Shortage: " + formatFIL(shortage)
 		result.Metadata["shortage_fil"] = formatFIL(shortage)
 		result.Metadata["pending_deals_fil"] = formatFIL(pendingAmount)
-		
+
 		v.logWarning(ctx, db, "Insufficient Wallet Balance", result.Message, result.Metadata)
 	}
 
