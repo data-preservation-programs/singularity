@@ -33,71 +33,56 @@ go build -o singularity .
 
 ### Basic Usage
 
-1. **Create a preparation with auto-deal enabled:**
+**Single command data onboarding with automatic deal creation:**
+
 ```bash
-singularity prep create \
+singularity onboard \
   --name "my-dataset" \
   --source "/path/to/data" \
-  --auto-create-deals \
+  --enable-deals \
   --deal-provider "f01234" \
   --deal-verified \
-  --deal-price-per-gb 0.0000001
+  --deal-price-per-gb 0.0000001 \
+  --start-workers \
+  --wait-for-completion
 ```
 
-2. **Attach a wallet:**
-```bash
-singularity prep attach-wallet "my-dataset" "f3your-wallet-address"
-```
-
-3. **Start the services:**
-```bash
-# Start dataset worker (processes data)
-singularity run dataset-worker --enable-pack &
-
-# Start auto-deal daemon (creates deals automatically)
-singularity run autodeal &
-```
-
-4. **Watch the magic happen!** ✨
-   - Data gets processed automatically
-   - When all jobs complete, deal schedules are created
-   - No manual intervention required!
+**That's it!** ✨ This single command will:
+1. Create storage connections automatically
+2. Set up data preparation with deal parameters  
+3. Start managed workers to process jobs
+4. Automatically progress through scan → pack → daggen
+5. Create storage deals when preparation completes
+6. Monitor progress until completion
 
 ## 🤖 Auto-Deal System
 
-The Auto-Deal System automatically creates deal schedules when data preparation jobs complete, eliminating manual intervention.
+The Auto-Deal System automatically creates deal schedules when data preparation jobs complete, eliminating manual intervention. The `onboard` command provides the simplest interface for complete automated workflows.
 
 ### How It Works
 
 ```
-Data Processing → Job Completion → Auto-Deal Trigger → Deal Schedule Created ✅
+Source Data → Scan → Pack → DAG Gen → Deal Schedule Created ✅
 ```
 
-### Configuration Options
+All stages progress automatically with event-driven triggering - no polling or manual monitoring required.
+
+### Configuration Options (`onboard` command)
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--auto-create-deals` | Enable automatic deal creation | `false` |
+| `--enable-deals` | Enable automatic deal creation | `true` |
 | `--deal-provider` | Storage provider ID (e.g., f01234) | Required |
 | `--deal-verified` | Create verified deals | `false` |
 | `--deal-price-per-gb` | Price per GB per epoch | `0` |
-| `--deal-duration` | Deal duration (e.g., "8760h") | `12840h` |
-| `--wallet-validation` | Validate wallets before creating deals | `true` |
-| `--sp-validation` | Validate storage provider | `true` |
+| `--deal-duration` | Deal duration (e.g., "8760h") | `535 days` |
+| `--deal-start-delay` | Deal start delay | `72h` |
+| `--validate-wallet` | Validate wallets before creating deals | `false` |
+| `--validate-provider` | Validate storage provider | `false` |
+| `--start-workers` | Start managed workers automatically | `true` |
+| `--wait-for-completion` | Monitor until completion | `false` |
 
-### Auto-Deal Daemon
-
-Monitor and batch process ready preparations:
-
-```bash
-singularity run autodeal \
-  --check-interval 30s \
-  --enable-batch-mode \
-  --enable-job-hooks \
-  --max-retries 3
-```
-
-### Manual Commands
+### Manual Override Commands
 
 ```bash
 # Create deal schedule for specific preparation
@@ -117,14 +102,16 @@ singularity prep autodeal check --preparation "my-dataset"
 
 ### Multiple Storage Providers
 
-Create different preparations for different providers:
+Onboard data to different providers with different strategies:
 
 ```bash
 # Hot storage with fast provider
-singularity prep create --name "hot-data" --deal-provider "f01234" --deal-price-per-gb 0.000001
+singularity onboard --name "hot-data" --source "/critical/data" \
+  --deal-provider "f01234" --deal-price-per-gb 0.000001 --enable-deals
 
 # Cold storage with economical provider  
-singularity prep create --name "cold-data" --deal-provider "f05678" --deal-price-per-gb 0.0000001
+singularity onboard --name "cold-data" --source "/archive/data" \
+  --deal-provider "f05678" --deal-price-per-gb 0.0000001 --enable-deals
 ```
 
 ### Conditional Auto-Deals
@@ -133,50 +120,56 @@ Use validation to control when deals are created:
 
 ```bash
 # Only create deals if wallet has sufficient balance
-singularity prep create --name "conditional" --auto-create-deals --wallet-validation
+singularity onboard --name "conditional" --source "/data" --enable-deals \
+  --deal-provider "f01234" --validate-wallet
 
-# Only create deals if provider is verified
-singularity prep create --name "verified-only" --auto-create-deals --sp-validation
+# Only create deals if provider is verified  
+singularity onboard --name "verified-only" --source "/data" --enable-deals \
+  --deal-provider "f01234" --validate-provider
 ```
 
 ### Monitoring
 
 ```bash
-# View auto-deal notifications
-singularity admin notification list --source "auto-deal-service"
+# Check preparation status
+singularity prep status "my-dataset"
 
-# Monitor daemon logs
-singularity run autodeal 2>&1 | grep "autodeal-trigger"
+# List all deal schedules
+singularity deal schedule list
+
+# Run unified service with monitoring
+singularity run unified --max-workers 5
 ```
 
 ## 🏗️ Architecture
 
-### Component Overview
+### Simplified Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Dataset Worker │    │   Pack Handler  │    │ Auto-Deal Daemon│
-│                 │────▶│                 │────▶│                 │
-│ Job Completion  │    │ Job Completion  │    │ Trigger Service │
-│     Hooks       │    │     Hooks       │    │                 │
+│  Onboard        │    │ Worker Manager  │    │ Workflow        │
+│  Command        │────▶│                 │────▶│ Orchestrator    │
+│                 │    │ • Auto-scaling  │    │                 │
+│ • One command   │    │ • Job processing│    │ • Event-driven  │
+│ • Full workflow │    │ • Monitoring    │    │ • Auto-progress │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                        │                        │
-         └────────────────────────┼────────────────────────┘
-                                  ▼
-                    ┌─────────────────────────────┐
-                    │     Auto-Deal Service       │
-                    │                             │
-                    │ • Check Readiness          │
-                    │ • Validate Wallets/SPs    │
-                    │ • Create Deal Schedules    │
-                    │ • Send Notifications       │
-                    └─────────────────────────────┘
+                                  │                        │
+                                  ▼                        ▼
+                    ┌─────────────────────────────┐ ┌──────────────┐
+                    │     Auto-Deal Service       │ │ Deal Schedule│
+                    │                             │ │    Created   │
+                    │ • Check Readiness          │ │      ✅      │
+                    │ • Validate Wallets/SPs    │ │              │
+                    │ • Create Deal Schedules    │ │              │
+                    └─────────────────────────────┘ └──────────────┘
 ```
 
-### Key Services
+### Key Components
 
-- **Dataset Worker**: Processes data and triggers auto-deals on completion
-- **Auto-Deal Daemon**: Monitors preparations and batch processes ready ones
+- **Onboard Command**: Single entry point for complete automated workflows
+- **Worker Manager**: Auto-scaling workers that process jobs intelligently  
+- **Workflow Orchestrator**: Event-driven progression through data preparation stages
+- **Auto-Deal Service**: Creates deal schedules when preparations complete
 - **Trigger Service**: Handles automatic deal creation logic
 - **Validation System**: Ensures wallets and providers are ready for deals
 - **Notification System**: Provides observability and error reporting
