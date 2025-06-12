@@ -12,6 +12,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/autodeal"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
+	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log/v2"
@@ -205,13 +206,26 @@ func (w Worker) Name() string {
 	return "Preparation Worker Main"
 }
 
-// triggerAutoDealIfReady triggers auto-deal creation if the preparation is ready
-func (w *Thread) triggerAutoDealIfReady(ctx context.Context, jobID model.JobID) {
+// triggerWorkflowProgression triggers workflow progression and auto-deal creation
+func (w *Thread) triggerWorkflowProgression(ctx context.Context, jobID model.JobID) {
 	// Use a separate context with timeout to avoid blocking the main worker
 	triggerCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	err := autodeal.DefaultTriggerService.TriggerForJobCompletion(
+	// Trigger workflow orchestration (handles scan → pack → daggen → deals)
+	err := workflow.DefaultOrchestrator.HandleJobCompletion(
+		triggerCtx,
+		w.dbNoContext,
+		w.lotusClient,
+		jobID,
+	)
+	if err != nil {
+		w.logger.Warnw("failed to trigger workflow progression",
+			"jobID", jobID, "error", err)
+	}
+
+	// Also trigger legacy auto-deal system for backwards compatibility
+	err = autodeal.DefaultTriggerService.TriggerForJobCompletion(
 		triggerCtx,
 		w.dbNoContext,
 		w.lotusClient,
@@ -236,8 +250,8 @@ func (w *Thread) handleWorkComplete(ctx context.Context, jobID model.JobID) erro
 		return err
 	}
 
-	// Trigger auto-deal creation if enabled and applicable
-	w.triggerAutoDealIfReady(ctx, jobID)
+	// Trigger workflow progression and auto-deal creation
+	w.triggerWorkflowProgression(ctx, jobID)
 
 	return nil
 }

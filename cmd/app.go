@@ -111,6 +111,7 @@ Upgrading:
 		return nil
 	},
 	Commands: []*cli.Command{
+		OnboardCmd,
 		ez.PrepCmd,
 		VersionCmd,
 		{
@@ -159,6 +160,7 @@ Upgrading:
 				run.DealPusherCmd,
 				run.DownloadServerCmd,
 				run.AutoDealCmd,
+				run.UnifiedServiceCmd,
 			},
 		},
 		{

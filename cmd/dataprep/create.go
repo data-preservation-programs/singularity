@@ -3,15 +3,19 @@ package dataprep
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"path/filepath"
+	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
+	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
@@ -149,6 +153,16 @@ var CreateCmd = &cli.Command{
 			Usage:    "Enable storage provider validation before deal creation",
 			Category: "Validation",
 		},
+		&cli.BoolFlag{
+			Name:     "auto-start",
+			Usage:    "Automatically start scanning after preparation creation",
+			Category: "Workflow Automation",
+		},
+		&cli.BoolFlag{
+			Name:     "auto-progress",
+			Usage:    "Enable automatic job progression (scan → pack → daggen → deals)",
+			Category: "Workflow Automation",
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -220,6 +234,19 @@ var CreateCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
+		// Enable workflow orchestration if auto-progress is requested
+		if c.Bool("auto-progress") {
+			enableWorkflowOrchestration(c.Context)
+		}
+
+		// Auto-start scanning if requested
+		if c.Bool("auto-start") {
+			err = autoStartScanning(c.Context, db, prep)
+			if err != nil {
+				return errors.Wrap(err, "failed to auto-start scanning")
+			}
+		}
+
 		cliutil.Print(c, *prep)
 		return nil
 	},
@@ -266,4 +293,54 @@ func randomReadableString(length int) string {
 		b[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(b)
+}
+
+// enableWorkflowOrchestration enables the workflow orchestrator for automatic job progression
+func enableWorkflowOrchestration(ctx context.Context) {
+	workflow.DefaultOrchestrator.SetEnabled(true)
+	fmt.Printf("✓ Workflow orchestration enabled (automatic scan → pack → daggen → deals)\n")
+}
+
+// autoStartScanning automatically starts scanning for all source attachments in the preparation
+func autoStartScanning(ctx context.Context, db *gorm.DB, prep *model.Preparation) error {
+	// Get all source attachments for this preparation
+	var attachments []model.SourceAttachment
+	err := db.WithContext(ctx).Where("preparation_id = ?", prep.ID).Find(&attachments).Error
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	if len(attachments) == 0 {
+		fmt.Printf("⚠ No source attachments found for preparation %s\n", prep.Name)
+		return nil
+	}
+
+	jobHandler := &job.DefaultHandler{}
+	successCount := 0
+
+	// Start scan jobs for each source attachment
+	for _, attachment := range attachments {
+		_, err = jobHandler.StartScanHandler(ctx, db, strconv.FormatUint(uint64(attachment.ID), 10), "")
+		if err != nil {
+			fmt.Printf("⚠ Failed to start scan for attachment %d: %v\n", attachment.ID, err)
+			continue
+		}
+		successCount++
+	}
+
+	if successCount > 0 {
+		fmt.Printf("✓ Started scanning for %d source attachment(s) in preparation %s\n", successCount, prep.Name)
+		if successCount < len(attachments) {
+			fmt.Printf("⚠ %d attachment(s) failed to start scanning\n", len(attachments)-successCount)
+		}
+	} else {
+		return errors.New("failed to start scanning for any attachments")
+	}
+
+	return nil
+}
+
+// StartScanningForPreparation starts scanning for all source attachments in a preparation
+func StartScanningForPreparation(ctx context.Context, db *gorm.DB, prep *model.Preparation) error {
+	return autoStartScanning(ctx, db, prep)
 }
