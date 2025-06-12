@@ -43,9 +43,8 @@ definitions:
         description: Whether to announce to IPNI
         type: boolean
       dealDuration:
-        allOf:
-        - $ref: '#/definitions/time.Duration'
         description: Deal duration
+        type: integer
       dealHttpHeaders:
         allOf:
         - $ref: '#/definitions/model.ConfigMap'
@@ -70,9 +69,8 @@ definitions:
         description: Storage Provider ID
         type: string
       dealStartDelay:
-        allOf:
-        - $ref: '#/definitions/time.Duration'
         description: Deal start delay
+        type: integer
       dealUrlTemplate:
         description: URL template for deals
         type: string
@@ -8274,26 +8272,6 @@ definitions:
     type: object
   store.PieceReader:
     type: object
-  time.Duration:
-    enum:
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    type: integer
-    x-enum-varnames:
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
   wallet.ImportRequest:
     properties:
       privateKey:

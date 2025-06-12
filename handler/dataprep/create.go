@@ -29,20 +29,20 @@ type CreateRequest struct {
 	NoDag             bool     `default:"false"       json:"noDag"`             // Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.
 
 	// Auto-deal creation parameters
-	AutoCreateDeals     bool            `default:"false"       json:"autoCreateDeals"`     // Enable automatic deal schedule creation
-	DealPricePerGB      float64         `default:"0.0"         json:"dealPricePerGb"`      // Price in FIL per GiB
-	DealPricePerGBEpoch float64         `default:"0.0"         json:"dealPricePerGbEpoch"` // Price in FIL per GiB per epoch
-	DealPricePerDeal    float64         `default:"0.0"         json:"dealPricePerDeal"`    // Price in FIL per deal
-	DealDuration        time.Duration   `json:"dealDuration"`                              // Deal duration
-	DealStartDelay      time.Duration   `json:"dealStartDelay"`                            // Deal start delay
-	DealVerified        bool            `default:"false"       json:"dealVerified"`        // Whether deals should be verified
-	DealKeepUnsealed    bool            `default:"false"       json:"dealKeepUnsealed"`    // Whether to keep unsealed copy
-	DealAnnounceToIPNI  bool            `default:"false"       json:"dealAnnounceToIpni"`  // Whether to announce to IPNI
-	DealProvider        string          `default:""            json:"dealProvider"`        // Storage Provider ID
-	DealHTTPHeaders     model.ConfigMap `json:"dealHttpHeaders"`                           // HTTP headers for deals
-	DealURLTemplate     string          `default:""            json:"dealUrlTemplate"`     // URL template for deals
-	WalletValidation    bool            `default:"false"       json:"walletValidation"`    // Enable wallet balance validation
-	SPValidation        bool            `default:"false"       json:"spValidation"`        // Enable storage provider validation
+	AutoCreateDeals     bool            `default:"false"       json:"autoCreateDeals"`               // Enable automatic deal schedule creation
+	DealPricePerGB      float64         `default:"0.0"         json:"dealPricePerGb"`                // Price in FIL per GiB
+	DealPricePerGBEpoch float64         `default:"0.0"         json:"dealPricePerGbEpoch"`           // Price in FIL per GiB per epoch
+	DealPricePerDeal    float64         `default:"0.0"         json:"dealPricePerDeal"`              // Price in FIL per deal
+	DealDuration        time.Duration   `json:"dealDuration"        swaggertype:"primitive,integer"` // Deal duration
+	DealStartDelay      time.Duration   `json:"dealStartDelay"      swaggertype:"primitive,integer"` // Deal start delay
+	DealVerified        bool            `default:"false"       json:"dealVerified"`                  // Whether deals should be verified
+	DealKeepUnsealed    bool            `default:"false"       json:"dealKeepUnsealed"`              // Whether to keep unsealed copy
+	DealAnnounceToIPNI  bool            `default:"false"       json:"dealAnnounceToIpni"`            // Whether to announce to IPNI
+	DealProvider        string          `default:""            json:"dealProvider"`                  // Storage Provider ID
+	DealHTTPHeaders     model.ConfigMap `json:"dealHttpHeaders"`                                     // HTTP headers for deals
+	DealURLTemplate     string          `default:""            json:"dealUrlTemplate"`               // URL template for deals
+	WalletValidation    bool            `default:"false"       json:"walletValidation"`              // Enable wallet balance validation
+	SPValidation        bool            `default:"false"       json:"spValidation"`                  // Enable storage provider validation
 }
 
 // ValidateCreateRequest processes and validates the creation request parameters.

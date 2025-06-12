@@ -26,9 +26,7 @@ type DataprepCreateRequest struct {
 	DealAnnounceToIpni *bool `json:"dealAnnounceToIpni,omitempty"`
 
 	// Deal duration
-	DealDuration struct {
-		TimeDuration
-	} `json:"dealDuration,omitempty"`
+	DealDuration int64 `json:"dealDuration,omitempty"`
 
 	// HTTP headers for deals
 	DealHTTPHeaders struct {
@@ -51,9 +49,7 @@ type DataprepCreateRequest struct {
 	DealProvider string `json:"dealProvider,omitempty"`
 
 	// Deal start delay
-	DealStartDelay struct {
-		TimeDuration
-	} `json:"dealStartDelay,omitempty"`
+	DealStartDelay int64 `json:"dealStartDelay,omitempty"`
 
 	// URL template for deals
 	DealURLTemplate string `json:"dealUrlTemplate,omitempty"`
@@ -100,15 +96,7 @@ type DataprepCreateRequest struct {
 func (m *DataprepCreateRequest) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateDealDuration(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateDealHTTPHeaders(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateDealStartDelay(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,24 +110,8 @@ func (m *DataprepCreateRequest) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DataprepCreateRequest) validateDealDuration(formats strfmt.Registry) error {
-	if swag.IsZero(m.DealDuration) { // not required
-		return nil
-	}
-
-	return nil
-}
-
 func (m *DataprepCreateRequest) validateDealHTTPHeaders(formats strfmt.Registry) error {
 	if swag.IsZero(m.DealHTTPHeaders) { // not required
-		return nil
-	}
-
-	return nil
-}
-
-func (m *DataprepCreateRequest) validateDealStartDelay(formats strfmt.Registry) error {
-	if swag.IsZero(m.DealStartDelay) { // not required
 		return nil
 	}
 
@@ -159,15 +131,7 @@ func (m *DataprepCreateRequest) validateName(formats strfmt.Registry) error {
 func (m *DataprepCreateRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateDealDuration(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateDealHTTPHeaders(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateDealStartDelay(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -177,17 +141,7 @@ func (m *DataprepCreateRequest) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
-func (m *DataprepCreateRequest) contextValidateDealDuration(ctx context.Context, formats strfmt.Registry) error {
-
-	return nil
-}
-
 func (m *DataprepCreateRequest) contextValidateDealHTTPHeaders(ctx context.Context, formats strfmt.Registry) error {
-
-	return nil
-}
-
-func (m *DataprepCreateRequest) contextValidateDealStartDelay(ctx context.Context, formats strfmt.Registry) error {
 
 	return nil
 }

@@ -3,6 +3,7 @@ package dataprep
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
@@ -119,7 +120,7 @@ func (s *AutoDealService) CreateAutomaticDealSchedule(
 		model.ConfigMap{
 			"preparation_name": preparation.Name,
 			"provider":         dealRequest.Provider,
-			"verified":         fmt.Sprintf("%t", dealRequest.Verified),
+			"verified":         strconv.FormatBool(dealRequest.Verified),
 			"price_per_gb":     fmt.Sprintf("%.6f", dealRequest.PricePerGB),
 		})
 
@@ -138,7 +139,7 @@ func (s *AutoDealService) CreateAutomaticDealSchedule(
 		fmt.Sprintf("Successfully created deal schedule %d for preparation %s", dealSchedule.ID, preparation.Name),
 		model.ConfigMap{
 			"preparation_name": preparation.Name,
-			"schedule_id":      fmt.Sprintf("%d", dealSchedule.ID),
+			"schedule_id":      strconv.FormatUint(uint64(dealSchedule.ID), 10),
 			"provider":         dealSchedule.Provider,
 		})
 
@@ -167,8 +168,8 @@ func (s *AutoDealService) CheckPreparationReadiness(
 		fmt.Sprintf("Preparation %s readiness: %t (incomplete jobs: %d)", preparationID, isReady, incompleteJobCount),
 		model.ConfigMap{
 			"preparation_id":  preparationID,
-			"is_ready":        fmt.Sprintf("%t", isReady),
-			"incomplete_jobs": fmt.Sprintf("%d", incompleteJobCount),
+			"is_ready":        strconv.FormatBool(isReady),
+			"incomplete_jobs": strconv.FormatInt(incompleteJobCount, 10),
 		})
 
 	return isReady, nil
@@ -192,7 +193,7 @@ func (s *AutoDealService) ProcessReadyPreparations(
 	s.logInfo(ctx, db, "Processing Ready Preparations",
 		fmt.Sprintf("Found %d preparations with auto-deal enabled", len(preparations)),
 		model.ConfigMap{
-			"preparation_count": fmt.Sprintf("%d", len(preparations)),
+			"preparation_count": strconv.Itoa(len(preparations)),
 		})
 
 	processedCount := 0
@@ -241,8 +242,8 @@ func (s *AutoDealService) ProcessReadyPreparations(
 	s.logInfo(ctx, db, "Auto-Deal Processing Complete",
 		fmt.Sprintf("Processed %d preparations, %d errors", processedCount, errorCount),
 		model.ConfigMap{
-			"processed_count": fmt.Sprintf("%d", processedCount),
-			"error_count":     fmt.Sprintf("%d", errorCount),
+			"processed_count": strconv.Itoa(processedCount),
+			"error_count":     strconv.Itoa(errorCount),
 		})
 
 	return nil
@@ -251,7 +252,7 @@ func (s *AutoDealService) ProcessReadyPreparations(
 // buildDealScheduleRequest constructs a deal schedule create request from preparation parameters
 func (s *AutoDealService) buildDealScheduleRequest(preparation *model.Preparation) *schedule.CreateRequest {
 	request := &schedule.CreateRequest{
-		Preparation:     fmt.Sprintf("%d", preparation.ID),
+		Preparation:     strconv.FormatUint(uint64(preparation.ID), 10),
 		Provider:        preparation.DealProvider,
 		PricePerGBEpoch: preparation.DealPricePerGBEpoch,
 		PricePerGB:      preparation.DealPricePerGB,
@@ -266,7 +267,7 @@ func (s *AutoDealService) buildDealScheduleRequest(preparation *model.Preparatio
 	// Convert HTTP headers from ConfigMap to []string
 	var httpHeaders []string
 	for key, value := range preparation.DealHTTPHeaders {
-		httpHeaders = append(httpHeaders, fmt.Sprintf("%s=%s", key, value))
+		httpHeaders = append(httpHeaders, key+"="+value)
 	}
 	request.HTTPHeaders = httpHeaders
 
@@ -308,7 +309,7 @@ func (s *AutoDealService) validateWalletsForDealCreation(
 	// For now, just validate that wallets exist and are accessible
 	// In a full implementation, you would calculate required balance based on data size
 	for _, wallet := range preparation.Wallets {
-		result, err := s.walletValidator.ValidateWalletExists(ctx, db, lotusClient, wallet.Address, fmt.Sprintf("%d", preparation.ID))
+		result, err := s.walletValidator.ValidateWalletExists(ctx, db, lotusClient, wallet.Address, strconv.FormatUint(uint64(preparation.ID), 10))
 		if err != nil {
 			*validationErrors = append(*validationErrors, fmt.Sprintf("Wallet validation error for %s: %v", wallet.Address, err))
 			return err
@@ -349,7 +350,7 @@ func (s *AutoDealService) validateProviderForDealCreation(
 	}
 
 	// Validate the provider (this will use the default if we just set it)
-	result, err := s.spValidator.ValidateStorageProvider(ctx, db, lotusClient, preparation.DealProvider, fmt.Sprintf("%d", preparation.ID))
+	result, err := s.spValidator.ValidateStorageProvider(ctx, db, lotusClient, preparation.DealProvider, strconv.FormatUint(uint64(preparation.ID), 10))
 	if err != nil {
 		*validationErrors = append(*validationErrors, fmt.Sprintf("Provider validation error: %v", err))
 		return err

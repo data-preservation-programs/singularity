@@ -5628,11 +5628,7 @@ const docTemplate = `{
                 },
                 "dealDuration": {
                     "description": "Deal duration",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/time.Duration"
-                        }
-                    ]
+                    "type": "integer"
                 },
                 "dealHttpHeaders": {
                     "description": "HTTP headers for deals",
@@ -5668,11 +5664,7 @@ const docTemplate = `{
                 },
                 "dealStartDelay": {
                     "description": "Deal start delay",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/time.Duration"
-                        }
-                    ]
+                    "type": "integer"
                 },
                 "dealUrlTemplate": {
                     "description": "URL template for deals",
@@ -16539,29 +16531,6 @@ const docTemplate = `{
         },
         "store.PieceReader": {
             "type": "object"
-        },
-        "time.Duration": {
-            "type": "integer",
-            "enum": [
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000
-            ],
-            "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
-            ]
         },
         "wallet.ImportRequest": {
             "type": "object",

@@ -78,7 +78,7 @@ func (v *BalanceValidator) ValidateWalletBalance(
 		result.IsValid = false
 		result.Message = "Invalid wallet address format"
 		v.logError(ctx, db, "Invalid Wallet Address", result.Message, result.Metadata)
-		return result, nil
+		return result, errors.WithStack(err)
 	}
 
 	// Get current wallet balance
@@ -148,7 +148,7 @@ func (v *BalanceValidator) ValidateWalletExists(
 		result.IsValid = false
 		result.Message = "Invalid wallet address format"
 		v.logError(ctx, db, "Invalid Wallet Address", result.Message, result.Metadata)
-		return result, nil
+		return result, errors.WithStack(err)
 	}
 
 	// Try to get wallet balance (this verifies wallet exists and is accessible)
@@ -158,7 +158,7 @@ func (v *BalanceValidator) ValidateWalletExists(
 		result.Message = "Wallet not found or not accessible"
 		result.Metadata["error"] = err.Error()
 		v.logError(ctx, db, "Wallet Not Accessible", result.Message, result.Metadata)
-		return result, nil
+		return result, errors.WithStack(err)
 	}
 
 	result.IsValid = true

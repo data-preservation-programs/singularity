@@ -284,12 +284,10 @@ func (m *MonitorService) Run(ctx context.Context) error {
 						}
 					}
 				}
-			} else {
+			} else if retryCount > 0 {
 				// Reset retry count on success
-				if retryCount > 0 {
-					logger.Info("Auto-deal processing succeeded, resetting retry count")
-					retryCount = 0
-				}
+				logger.Info("Auto-deal processing succeeded, resetting retry count")
+				retryCount = 0
 			}
 		}
 	}

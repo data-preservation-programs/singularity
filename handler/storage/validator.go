@@ -98,7 +98,7 @@ func (v *SPValidator) ValidateStorageProvider(
 		result.IsValid = false
 		result.Message = "Invalid storage provider ID format"
 		v.logError(ctx, db, "Invalid Storage Provider ID", result.Message, result.Metadata)
-		return result, nil
+		return result, errors.WithStack(err)
 	}
 
 	result.ProviderAddress = providerAddr.String()
@@ -110,7 +110,7 @@ func (v *SPValidator) ValidateStorageProvider(
 		result.Message = "Storage provider not found on network"
 		result.Metadata["error"] = err.Error()
 		v.logError(ctx, db, "Storage Provider Not Found", result.Message, result.Metadata)
-		return result, nil
+		return result, errors.WithStack(err)
 	}
 
 	// Extract peer ID and multiaddrs
