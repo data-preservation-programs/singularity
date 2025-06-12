@@ -15,7 +15,7 @@ COMMANDS:
    deal-tracker      Start a deal tracker that tracks the deal for all relevant wallets
    deal-pusher       Start a deal pusher that monitors deal schedules and pushes deals to storage providers
    download-server   An HTTP server connecting to remote metadata API to offer CAR file downloads
-   autodeal          Start the auto-deal daemon to automatically create deal schedules when preparations complete
+   unified           Start the unified auto-preparation service with worker management and workflow orchestration
    help, h           Shows a list of commands or help for one command
 
 OPTIONS:

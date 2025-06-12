@@ -137,8 +137,8 @@ The unified service provides fine-grained control over workflow progression:
 ```bash
 # Multiple manual steps
 ./singularity prep create --auto-create-deals ...
-./singularity run autodeal --check-interval 30s
-./singularity run datasetworker
+./singularity run dataset-worker --enable-pack &
+./singularity prep autodeal process
 # ... monitor manually
 ```
 
