@@ -33,9 +33,9 @@ type OrchestratorConfig struct {
 	EnableJobProgression bool          `json:"enableJobProgression"` // Enable automatic scan → pack → daggen
 	EnableAutoDeal       bool          `json:"enableAutoDeal"`       // Enable automatic deal creation
 	CheckInterval        time.Duration `json:"checkInterval"`        // How often to check for ready jobs
-	ScanToPack          bool          `json:"scanToPack"`           // Auto-progress scan → pack
-	PackToDagGen        bool          `json:"packToDagGen"`         // Auto-progress pack → daggen
-	DagGenToDeals       bool          `json:"dagGenToDeals"`        // Auto-progress daggen → deals
+	ScanToPack           bool          `json:"scanToPack"`           // Auto-progress scan → pack
+	PackToDagGen         bool          `json:"packToDagGen"`         // Auto-progress pack → daggen
+	DagGenToDeals        bool          `json:"dagGenToDeals"`        // Auto-progress daggen → deals
 }
 
 // DefaultOrchestratorConfig returns sensible defaults
@@ -44,9 +44,9 @@ func DefaultOrchestratorConfig() OrchestratorConfig {
 		EnableJobProgression: true,
 		EnableAutoDeal:       true,
 		CheckInterval:        10 * time.Second,
-		ScanToPack:          true,
-		PackToDagGen:        true,
-		DagGenToDeals:       true,
+		ScanToPack:           true,
+		PackToDagGen:         true,
+		DagGenToDeals:        true,
 	}
 }
 
@@ -104,7 +104,7 @@ func (o *WorkflowOrchestrator) HandleJobCompletion(
 	}
 
 	preparation := job.Attachment.Preparation
-	logger.Infof("Processing job completion: JobID=%d, Type=%s, Preparation=%s", 
+	logger.Infof("Processing job completion: JobID=%d, Type=%s, Preparation=%s",
 		jobID, job.Type, preparation.Name)
 
 	// Handle job progression based on type
@@ -137,7 +137,7 @@ func (o *WorkflowOrchestrator) handleScanCompletion(
 	var incompleteScanCount int64
 	err := db.WithContext(ctx).Model(&model.Job{}).
 		Joins("JOIN source_attachments ON jobs.attachment_id = source_attachments.id").
-		Where("source_attachments.preparation_id = ? AND jobs.type = ? AND jobs.state != ?", 
+		Where("source_attachments.preparation_id = ? AND jobs.type = ? AND jobs.state != ?",
 			preparation.ID, model.Scan, model.Complete).
 		Count(&incompleteScanCount).Error
 	if err != nil {
@@ -145,7 +145,7 @@ func (o *WorkflowOrchestrator) handleScanCompletion(
 	}
 
 	if incompleteScanCount > 0 {
-		logger.Debugf("Preparation %s still has %d incomplete scan jobs", 
+		logger.Debugf("Preparation %s still has %d incomplete scan jobs",
 			preparation.Name, incompleteScanCount)
 		return nil
 	}
@@ -167,12 +167,12 @@ func (o *WorkflowOrchestrator) handleScanCompletion(
 		}
 	}
 
-	o.logWorkflowProgress(ctx, db, "Scan → Pack Transition", 
+	o.logWorkflowProgress(ctx, db, "Scan → Pack Transition",
 		fmt.Sprintf("Started pack jobs for preparation %s", preparation.Name),
 		model.ConfigMap{
 			"preparation_id":   fmt.Sprintf("%d", preparation.ID),
 			"preparation_name": preparation.Name,
-			"stage":           "scan_to_pack",
+			"stage":            "scan_to_pack",
 		})
 
 	return nil
@@ -189,7 +189,7 @@ func (o *WorkflowOrchestrator) handlePackCompletion(
 	var incompletePackCount int64
 	err := db.WithContext(ctx).Model(&model.Job{}).
 		Joins("JOIN source_attachments ON jobs.attachment_id = source_attachments.id").
-		Where("source_attachments.preparation_id = ? AND jobs.type = ? AND jobs.state != ?", 
+		Where("source_attachments.preparation_id = ? AND jobs.type = ? AND jobs.state != ?",
 			preparation.ID, model.Pack, model.Complete).
 		Count(&incompletePackCount).Error
 	if err != nil {
@@ -197,7 +197,7 @@ func (o *WorkflowOrchestrator) handlePackCompletion(
 	}
 
 	if incompletePackCount > 0 {
-		logger.Debugf("Preparation %s still has %d incomplete pack jobs", 
+		logger.Debugf("Preparation %s still has %d incomplete pack jobs",
 			preparation.Name, incompletePackCount)
 		return nil
 	}
@@ -225,12 +225,12 @@ func (o *WorkflowOrchestrator) handlePackCompletion(
 		}
 	}
 
-	o.logWorkflowProgress(ctx, db, "Pack → DagGen Transition", 
+	o.logWorkflowProgress(ctx, db, "Pack → DagGen Transition",
 		fmt.Sprintf("Started daggen jobs for preparation %s", preparation.Name),
 		model.ConfigMap{
 			"preparation_id":   fmt.Sprintf("%d", preparation.ID),
 			"preparation_name": preparation.Name,
-			"stage":           "pack_to_daggen",
+			"stage":            "pack_to_daggen",
 		})
 
 	return nil
@@ -252,7 +252,7 @@ func (o *WorkflowOrchestrator) handleDagGenCompletion(
 	var incompleteJobCount int64
 	err := db.WithContext(ctx).Model(&model.Job{}).
 		Joins("JOIN source_attachments ON jobs.attachment_id = source_attachments.id").
-		Where("source_attachments.preparation_id = ? AND jobs.state != ?", 
+		Where("source_attachments.preparation_id = ? AND jobs.state != ?",
 			preparation.ID, model.Complete).
 		Count(&incompleteJobCount).Error
 	if err != nil {
@@ -260,7 +260,7 @@ func (o *WorkflowOrchestrator) handleDagGenCompletion(
 	}
 
 	if incompleteJobCount > 0 {
-		logger.Debugf("Preparation %s still has %d incomplete jobs", 
+		logger.Debugf("Preparation %s still has %d incomplete jobs",
 			preparation.Name, incompleteJobCount)
 		return nil
 	}
@@ -274,12 +274,12 @@ func (o *WorkflowOrchestrator) handleDagGenCompletion(
 		return errors.WithStack(err)
 	}
 
-	o.logWorkflowProgress(ctx, db, "DagGen → Deals Transition", 
+	o.logWorkflowProgress(ctx, db, "DagGen → Deals Transition",
 		fmt.Sprintf("Triggered auto-deal creation for preparation %s", preparation.Name),
 		model.ConfigMap{
 			"preparation_id":   fmt.Sprintf("%d", preparation.ID),
 			"preparation_name": preparation.Name,
-			"stage":           "daggen_to_deals",
+			"stage":            "daggen_to_deals",
 		})
 
 	return nil
@@ -294,7 +294,7 @@ func (o *WorkflowOrchestrator) startPackJobs(ctx context.Context, db *gorm.DB, a
 	return nil
 }
 
-// startDagGenJobs starts daggen jobs for a source attachment  
+// startDagGenJobs starts daggen jobs for a source attachment
 func (o *WorkflowOrchestrator) startDagGenJobs(ctx context.Context, db *gorm.DB, attachmentID uint) error {
 	_, err := o.jobHandler.StartDagGenHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "")
 	if err != nil {

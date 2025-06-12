@@ -6,8 +6,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/service/workermanager"
+	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/go-log/v2"
 	"github.com/urfave/cli/v2"
@@ -37,7 +37,7 @@ This is the recommended way to run fully automated data preparation.`,
 			Value: 1,
 		},
 		&cli.IntFlag{
-			Name:  "max-workers", 
+			Name:  "max-workers",
 			Usage: "Maximum number of workers to run",
 			Value: 5,
 		},
@@ -79,7 +79,7 @@ This is the recommended way to run fully automated data preparation.`,
 		},
 		&cli.BoolFlag{
 			Name:  "disable-pack-to-daggen",
-			Usage: "Disable automatic pack → daggen transitions", 
+			Usage: "Disable automatic pack → daggen transitions",
 		},
 		&cli.BoolFlag{
 			Name:  "disable-daggen-to-deals",
@@ -96,16 +96,16 @@ This is the recommended way to run fully automated data preparation.`,
 
 		// Create worker manager
 		workerConfig := workermanager.ManagerConfig{
-			CheckInterval:        c.Duration("check-interval"),
-			MinWorkers:           c.Int("min-workers"),
-			MaxWorkers:           c.Int("max-workers"),
-			ScaleUpThreshold:     c.Int("scale-up-threshold"),
-			ScaleDownThreshold:   c.Int("scale-down-threshold"),
-			WorkerIdleTimeout:    c.Duration("worker-idle-timeout"),
-			AutoScaling:          !c.Bool("disable-auto-scaling"),
-			ScanWorkerRatio:      0.3,
-			PackWorkerRatio:      0.5,
-			DagGenWorkerRatio:    0.2,
+			CheckInterval:      c.Duration("check-interval"),
+			MinWorkers:         c.Int("min-workers"),
+			MaxWorkers:         c.Int("max-workers"),
+			ScaleUpThreshold:   c.Int("scale-up-threshold"),
+			ScaleDownThreshold: c.Int("scale-down-threshold"),
+			WorkerIdleTimeout:  c.Duration("worker-idle-timeout"),
+			AutoScaling:        !c.Bool("disable-auto-scaling"),
+			ScanWorkerRatio:    0.3,
+			PackWorkerRatio:    0.5,
+			DagGenWorkerRatio:  0.2,
 		}
 
 		workerManager := workermanager.NewWorkerManager(db, workerConfig)
@@ -115,9 +115,9 @@ This is the recommended way to run fully automated data preparation.`,
 			EnableJobProgression: !c.Bool("disable-workflow-orchestration"),
 			EnableAutoDeal:       !c.Bool("disable-auto-deals"),
 			CheckInterval:        c.Duration("check-interval"),
-			ScanToPack:          !c.Bool("disable-scan-to-pack"),
-			PackToDagGen:        !c.Bool("disable-pack-to-daggen"),
-			DagGenToDeals:       !c.Bool("disable-daggen-to-deals"),
+			ScanToPack:           !c.Bool("disable-scan-to-pack"),
+			PackToDagGen:         !c.Bool("disable-pack-to-daggen"),
+			DagGenToDeals:        !c.Bool("disable-daggen-to-deals"),
 		}
 
 		orchestrator := workflow.NewWorkflowOrchestrator(orchestratorConfig)
@@ -182,10 +182,10 @@ func runUnifiedService(ctx context.Context, db *gorm.DB, workerManager *workerma
 // runWorkflowMonitor runs periodic workflow progression checks
 func runWorkflowMonitor(ctx context.Context, db *gorm.DB, orchestrator *workflow.WorkflowOrchestrator) {
 	logger.Info("Starting workflow monitor")
-	
+
 	// Create a lotus client for workflow operations
 	lotusClient := util.NewLotusClient("", "")
-	
+
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
@@ -207,14 +207,14 @@ func runWorkflowMonitor(ctx context.Context, db *gorm.DB, orchestrator *workflow
 func printServiceStatus(db *gorm.DB, workerManager *workermanager.WorkerManager, orchestrator *workflow.WorkflowOrchestrator) {
 	// Get worker manager status
 	workerStatus := workerManager.GetStatus()
-	
+
 	// Get job counts
 	var jobCounts []struct {
 		Type  string `json:"type"`
 		State string `json:"state"`
 		Count int64  `json:"count"`
 	}
-	
+
 	db.Model(&struct {
 		Type  string `gorm:"column:type"`
 		State string `gorm:"column:state"`
@@ -229,11 +229,11 @@ func printServiceStatus(db *gorm.DB, workerManager *workermanager.WorkerManager,
 	logger.Infof("=== UNIFIED SERVICE STATUS ===")
 	logger.Infof("Workers: %d active (enabled: %t)", workerStatus.TotalWorkers, workerStatus.Enabled)
 	logger.Infof("Orchestrator enabled: %t", orchestrator.IsEnabled())
-	
+
 	// Log job counts
 	readyJobs := map[string]int64{"scan": 0, "pack": 0, "daggen": 0}
 	totalJobs := map[string]int64{"scan": 0, "pack": 0, "daggen": 0}
-	
+
 	for _, jc := range jobCounts {
 		if _, exists := totalJobs[jc.Type]; exists {
 			totalJobs[jc.Type] += jc.Count
@@ -242,15 +242,15 @@ func printServiceStatus(db *gorm.DB, workerManager *workermanager.WorkerManager,
 			}
 		}
 	}
-	
+
 	logger.Infof("Jobs - Scan: %d ready/%d total, Pack: %d ready/%d total, DagGen: %d ready/%d total",
 		readyJobs["scan"], totalJobs["scan"],
 		readyJobs["pack"], totalJobs["pack"],
 		readyJobs["daggen"], totalJobs["daggen"])
-	
+
 	// Log worker details
 	for _, worker := range workerStatus.Workers {
-		logger.Infof("Worker %s: types=%v, uptime=%v", 
+		logger.Infof("Worker %s: types=%v, uptime=%v",
 			worker.ID[:8], worker.JobTypes, worker.Uptime.Truncate(time.Second))
 	}
 	logger.Infof("===============================")

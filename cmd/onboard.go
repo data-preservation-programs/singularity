@@ -11,8 +11,8 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/service/workermanager"
+	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
@@ -228,19 +228,19 @@ func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Con
 
 	// Create preparation
 	prep, err := dataprep.Default.CreatePreparationHandler(ctx, db, dataprep.CreateRequest{
-		Name:                c.String("name"),
-		SourceStorages:      sourceStorages,
-		OutputStorages:      outputStorages,
-		MaxSizeStr:          c.String("max-size"),
-		NoDag:               c.Bool("no-dag"),
-		AutoCreateDeals:     c.Bool("enable-deals"),
-		DealProvider:        c.String("deal-provider"),
-		DealPricePerGB:      c.Float64("deal-price-per-gb"),
-		DealDuration:        c.Duration("deal-duration"),
-		DealStartDelay:      c.Duration("deal-start-delay"),
-		DealVerified:        c.Bool("deal-verified"),
-		WalletValidation:    c.Bool("validate-wallet"),
-		SPValidation:        c.Bool("validate-provider"),
+		Name:             c.String("name"),
+		SourceStorages:   sourceStorages,
+		OutputStorages:   outputStorages,
+		MaxSizeStr:       c.String("max-size"),
+		NoDag:            c.Bool("no-dag"),
+		AutoCreateDeals:  c.Bool("enable-deals"),
+		DealProvider:     c.String("deal-provider"),
+		DealPricePerGB:   c.Float64("deal-price-per-gb"),
+		DealDuration:     c.Duration("deal-duration"),
+		DealStartDelay:   c.Duration("deal-start-delay"),
+		DealVerified:     c.Bool("deal-verified"),
+		WalletValidation: c.Bool("validate-wallet"),
+		SPValidation:     c.Bool("validate-provider"),
 	})
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -412,19 +412,19 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 
 	// Build status message
 	status := fmt.Sprintf("Progress: %d/%d jobs complete", completeJobs, totalJobs)
-	
+
 	if scan := jobStats["scan"]; len(scan) > 0 {
-		status += fmt.Sprintf(" | Scan: %d ready, %d processing, %d complete", 
+		status += fmt.Sprintf(" | Scan: %d ready, %d processing, %d complete",
 			scan["ready"], scan["processing"], scan["complete"])
 	}
-	
+
 	if pack := jobStats["pack"]; len(pack) > 0 {
-		status += fmt.Sprintf(" | Pack: %d ready, %d processing, %d complete", 
+		status += fmt.Sprintf(" | Pack: %d ready, %d processing, %d complete",
 			pack["ready"], pack["processing"], pack["complete"])
 	}
-	
+
 	if daggen := jobStats["daggen"]; len(daggen) > 0 {
-		status += fmt.Sprintf(" | DagGen: %d ready, %d processing, %d complete", 
+		status += fmt.Sprintf(" | DagGen: %d ready, %d processing, %d complete",
 			daggen["ready"], daggen["processing"], daggen["complete"])
 	}
 
@@ -441,14 +441,14 @@ func createLocalStorageIfNotExist(ctx context.Context, db *gorm.DB, path, prefix
 	// This would use the same logic as the dataprep create command
 	// For brevity, we'll create a simple implementation
 	storageName := fmt.Sprintf("%s-%s-%d", prefix, util.RandomName(), time.Now().Unix())
-	
+
 	// Check if storage already exists for this path
 	var existing model.Storage
 	err := db.WithContext(ctx).Where("type = ? AND path = ?", "local", path).First(&existing).Error
 	if err == nil {
 		return &existing, nil
 	}
-	
+
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.WithStack(err)
 	}
@@ -460,11 +460,11 @@ func createLocalStorageIfNotExist(ctx context.Context, db *gorm.DB, path, prefix
 		Type: "local",
 		Path: path,
 	}
-	
+
 	err = db.WithContext(ctx).Create(storage).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	
+
 	return storage, nil
 }
