@@ -203,11 +203,11 @@ export DATABASE_CONNECTION_STRING="sqlite:singularity.db"
 ### Runtime Configuration
 
 ```bash
-# Disable automatic triggering temporarily
-singularity run autodeal --enable-job-hooks=false
+# Run unified service with custom settings
+singularity run unified --max-workers 5
 
-# Increase monitoring frequency
-singularity run autodeal --check-interval=10s
+# Run with specific worker configuration
+singularity run unified --max-workers 10
 ```
 
 ## 🚨 Troubleshooting
@@ -215,10 +215,10 @@ singularity run autodeal --check-interval=10s
 ### Common Issues
 
 **Auto-deal not triggering:**
-- Ensure `--auto-create-deals` is enabled
+- Ensure `--enable-deals` is enabled when using `onboard`
 - Verify wallet is attached: `singularity prep list-wallets <prep>`
 - Check all jobs are complete
-- Verify daemon is running with `--enable-job-hooks`
+- Verify unified service is running: `singularity run unified`
 
 **Deal creation failing:**
 - Check provider ID is correct
@@ -227,9 +227,9 @@ singularity run autodeal --check-interval=10s
 - Review validation settings
 
 **Performance issues:**
-- Increase `--check-interval` for less frequent checks
-- Use `--max-retries` to limit retry attempts
-- Monitor database performance
+- Adjust `--max-workers` in unified service for better throughput
+- Monitor database performance and connections
+- Use appropriate hardware resources for large datasets
 
 ### Debug Commands
 
