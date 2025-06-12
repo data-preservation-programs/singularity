@@ -1,23 +1,15 @@
 # Auto-Prep Deal Scheduling Demo
 
-This demo showcases the new **Auto-Prep Deal Scheduling** feature that automatically creates storage deals when data preparation completes.
+This demo showcases the new **Auto-Prep Deal Scheduling** feature that provides complete data onboarding in a single command - from data source to storage deals.
 
 ## Overview
 
-The auto-prep deal scheduling feature eliminates manual intervention by:
-- Automatically creating deal schedules when all preparation jobs complete
-- Providing configurable deal parameters during preparation setup
-- Running a background monitoring service
-- Supporting batch processing of multiple preparations
-
-## Demo Scenario
-
-We'll demonstrate:
-1. Setting up auto-deal configuration
-2. Creating a preparation with auto-deal enabled
-3. Monitoring the preparation progress
-4. Automatic deal schedule creation
-5. Manual commands for checking and triggering
+The auto-prep deal scheduling feature eliminates manual intervention by providing a unified `onboard` command that:
+- Creates storage connections automatically
+- Sets up data preparation with deal parameters
+- Starts scanning, packing, and DAG generation automatically
+- Creates storage deals when preparation completes
+- Manages workers to process jobs automatically
 
 ## Prerequisites
 
@@ -25,215 +17,165 @@ We'll demonstrate:
 # Ensure Singularity is built with the latest changes
 go build -o singularity
 
-# Start the Singularity daemon (in separate terminal)
-./singularity daemon
+# Start the Singularity API (in separate terminal if not using --start-workers)
+./singularity run api
 ```
 
-## Demo Steps
+## Simple Demo - Single Command Onboarding
 
-### Step 1: Setup Storage and Wallet
+The simplest way to onboard data with automatic deal creation:
 
 ```bash
-# Add a local storage source
-./singularity storage create local source --path /path/to/your/data
-
-# Add a local storage output
-./singularity storage create local output --path /path/to/output
-
-# Create and fund a wallet
-./singularity wallet create
-# Fund the wallet with test FIL (testnet)
+# Complete onboarding in one command
+./singularity onboard \
+  --name "my-dataset" \
+  --source "/path/to/your/data" \
+  --output "/path/to/output" \
+  --enable-deals \
+  --deal-provider "f01234" \
+  --deal-verified \
+  --deal-price-per-gb 0.0000001 \
+  --deal-duration "8760h" \
+  --deal-start-delay "72h" \
+  --start-workers \
+  --wait-for-completion
 ```
 
-### Step 2: Create Preparation with Auto-Deal Configuration
-
-```bash
-# Create preparation with auto-deal enabled
-curl -X POST http://localhost:7005/preparation \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "demo-auto-dataset",
-    "source": {
-      "storageId": 1,
-      "path": ""
-    },
-    "output": {
-      "storageId": 2
-    },
-    "autoCreateDeals": true,
-    "dealProvider": "f01234",
-    "dealVerified": true,
-    "dealPricePerGb": 0.0000001,
-    "dealDuration": "8760h",
-    "dealStartDelay": "72h",
-    "dealKeepUnsealed": false,
-    "dealAnnounceToIpni": true,
-    "walletValidation": true,
-    "spValidation": true
-  }'
-```
-
-### Step 3: Start Auto-Deal Monitoring Service
-
-```bash
-# Start the auto-deal daemon (in separate terminal)
-./singularity run autodeal \
-  --check-interval 30s \
-  --enable-batch-mode \
-  --enable-job-hooks \
-  --max-retries 3 \
-  --retry-interval 5m
-```
-
-### Step 4: Monitor Preparation Progress
-
-```bash
-# Check preparation status
-./singularity preparation status demo-auto-dataset
-
-# Check if preparation is ready for auto-deal
-./singularity dataprep autodeal check --preparation demo-auto-dataset
-
-# List all jobs for the preparation
-./singularity job list --preparation demo-auto-dataset
-```
-
-### Step 5: Manual Auto-Deal Commands (Optional)
-
-```bash
-# Manually trigger auto-deal for specific preparation
-./singularity dataprep autodeal create --preparation demo-auto-dataset
-
-# Process all ready preparations in batch
-./singularity dataprep autodeal process
-
-# Check the created deal schedules
-./singularity schedule list --preparation demo-auto-dataset
-```
-
-### Step 6: Verify Deal Schedule Creation
-
-```bash
-# List deal schedules created by auto-deal system
-./singularity schedule list
-
-# Check specific schedule details
-./singularity schedule status <schedule-id>
-
-# View schedule with detailed info
-curl http://localhost:7005/preparation/demo-auto-dataset/schedules
-```
+That's it! This single command will:
+1. ✅ Create source and output storage automatically
+2. ✅ Create preparation with auto-deal configuration
+3. ✅ Start managed workers to process jobs
+4. ✅ Begin scanning immediately
+5. ✅ Automatically progress through scan → pack → daggen → deals
+6. ✅ Monitor progress until completion
 
 ## Demo Script
 
-Here's a complete demo script you can run:
+Here's a complete demo script:
 
 ```bash
 #!/bin/bash
 
-echo "=== Auto-Prep Deal Scheduling Demo ==="
+echo "=== Single Command Auto-Prep Deal Scheduling Demo ==="
 echo
 
-echo "Step 1: Setting up storages..."
-./singularity storage create local source --path ./demo-data
-./singularity storage create local output --path ./demo-output
+echo "🚀 Starting complete data onboarding with automatic deal creation..."
+echo "This will take your data from source files to Filecoin storage deals automatically."
 echo
 
-echo "Step 2: Creating preparation with auto-deal enabled..."
-PREP_RESPONSE=$(curl -s -X POST http://localhost:7005/preparation \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "demo-auto-dataset",
-    "source": {"storageId": 1, "path": ""},
-    "output": {"storageId": 2},
-    "autoCreateDeals": true,
-    "dealProvider": "f01234",
-    "dealVerified": true,
-    "dealPricePerGb": 0.0000001,
-    "dealDuration": "8760h",
-    "dealStartDelay": "72h"
-  }')
+# Create some demo data if needed
+mkdir -p ./demo-data ./demo-output
+echo "Sample file for demo" > ./demo-data/sample.txt
 
-echo "Preparation created: $PREP_RESPONSE"
+echo "Running onboard command..."
+./singularity onboard \
+  --name "demo-auto-dataset" \
+  --source "./demo-data" \
+  --output "./demo-output" \
+  --enable-deals \
+  --deal-provider "f01234" \
+  --deal-verified \
+  --deal-price-per-gb 0.0000001 \
+  --deal-duration "8760h" \
+  --deal-start-delay "72h" \
+  --start-workers \
+  --max-workers 2 \
+  --wait-for-completion \
+  --timeout "30m"
+
 echo
+echo "🎉 Demo Complete!"
+echo "Your data has been automatically processed and storage deals have been created."
+```
 
-echo "Step 3: Starting auto-deal daemon..."
-echo "Run in separate terminal: ./singularity run autodeal --check-interval 10s"
-echo
+## Manual Monitoring (Alternative to --wait-for-completion)
 
-echo "Step 4: Monitoring preparation..."
-while true; do
-  STATUS=$(./singularity dataprep autodeal check --preparation demo-auto-dataset 2>/dev/null || echo "not ready")
-  echo "Preparation status: $STATUS"
-  
-  if [[ "$STATUS" == *"ready"* ]]; then
-    echo "✅ Preparation is ready for auto-deal!"
-    break
-  fi
-  
-  sleep 5
-done
-echo
+If you prefer to monitor manually instead of using `--wait-for-completion`:
 
-echo "Step 5: Auto-deal will trigger automatically, or run manually:"
-echo "./singularity dataprep autodeal create --preparation demo-auto-dataset"
-echo
+```bash
+# Start onboarding without waiting
+./singularity onboard \
+  --name "my-dataset" \
+  --source "/path/to/data" \
+  --enable-deals \
+  --deal-provider "f01234" \
+  --start-workers
 
-echo "Step 6: Verify deal schedules created:"
-./singularity schedule list --preparation demo-auto-dataset
-echo
+# Monitor progress manually
+./singularity prep status my-dataset
 
-echo "=== Demo Complete! ==="
-echo "The auto-deal system has automatically created deal schedules for your completed preparation."
+# Check if deals were created
+./singularity deal schedule list
+
+# View schedules for this preparation
+curl http://localhost:7005/api/preparation/my-dataset/schedules
 ```
 
 ## Key Features Demonstrated
 
-1. **Automatic Triggering**: Deal schedules are created automatically when all jobs complete
-2. **Configuration Flexibility**: Deal parameters set during preparation creation
-3. **Monitoring Service**: Background daemon continuously checks for ready preparations
-4. **Manual Override**: Commands to manually check and trigger auto-deal creation
-5. **Batch Processing**: Ability to process multiple preparations simultaneously
-6. **Validation**: Optional wallet and storage provider validation
+1. **Single Command Workflow**: Complete data onboarding in one command
+2. **Automatic Storage Creation**: No need to pre-create storage connections
+3. **Integrated Worker Management**: Built-in workers process jobs automatically  
+4. **Automatic Job Progression**: Seamless flow from scanning to deal creation
+5. **Progress Monitoring**: Built-in monitoring with timeout support
+6. **Deal Configuration**: All deal parameters configured upfront
 
 ## Expected Output
 
 When the demo completes successfully, you should see:
+- ✅ Storage connections created automatically
 - ✅ Preparation created with auto-deal configuration
-- ✅ All preparation jobs completed
-- ✅ Deal schedule automatically created with correct parameters
-- ✅ Schedule visible in the schedules list
-
-## Troubleshooting
-
-```bash
-# Check daemon logs
-./singularity run autodeal --enable-batch-mode --exit-on-complete
-
-# Verify preparation completion
-./singularity job list --preparation demo-auto-dataset
-
-# Check for errors in deal schedule creation
-./singularity schedule list --all
-```
+- ✅ Workers started and processing jobs automatically
+- ✅ Progress updates showing scan → pack → daggen → deals
+- ✅ Storage deals created and visible in schedule list
 
 ## Advanced Usage
 
 ```bash
-# Run daemon with custom settings
-./singularity run autodeal \
-  --check-interval 60s \
-  --max-retries 5 \
-  --retry-interval 10m \
-  --exit-on-complete
+# Onboard multiple sources with validation
+./singularity onboard \
+  --name "multi-source-dataset" \
+  --source "/path/to/source1" \
+  --source "/path/to/source2" \
+  --output "/path/to/output1" \
+  --output "/path/to/output2" \
+  --enable-deals \
+  --deal-provider "f01234" \
+  --validate-wallet \
+  --validate-provider \
+  --start-workers \
+  --max-workers 5
 
-# Batch process all ready preparations
-./singularity dataprep autodeal process
+# Onboard without automatic deal creation
+./singularity onboard \
+  --name "prep-only-dataset" \
+  --source "/path/to/data" \
+  --enable-deals=false \
+  --start-workers
 
-# Check multiple preparations
-for prep in prep1 prep2 prep3; do
-  ./singularity dataprep autodeal check --preparation $prep
-done
+# Run with different deal parameters
+./singularity onboard \
+  --name "custom-deals-dataset" \
+  --source "/path/to/data" \
+  --enable-deals \
+  --deal-provider "f01000" \
+  --deal-verified=false \
+  --deal-price-per-gb 0.1 \
+  --deal-duration "17520h" \
+  --deal-start-delay "168h"
 ```
 
-This demo showcases how the auto-prep deal scheduling feature streamlines the storage deal creation process, reducing manual overhead and enabling automated large-scale data onboarding workflows.
+## Troubleshooting
+
+```bash
+# Check preparation status
+./singularity prep status <preparation-name>
+
+# List all deal schedules
+./singularity deal schedule list
+
+# Check worker status (if using separate terminals)
+./singularity run unified --dry-run
+```
+
+This streamlined approach reduces what used to be a complex multi-step process into a single command, making large-scale data onboarding to Filecoin much simpler and more accessible.
