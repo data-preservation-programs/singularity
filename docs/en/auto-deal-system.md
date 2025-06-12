@@ -86,19 +86,19 @@ type Preparation struct {
 }
 ```
 
-## Manual Control Commands
+## Manual Control
 
-For advanced users who need granular control:
+For advanced users who need granular control, you can:
 
 ```bash
-# Check if preparation is ready for auto-deal
-./singularity prep autodeal check --preparation <name>
+# Monitor preparation status
+./singularity prep status <preparation-name>
 
-# Manually trigger auto-deal for specific preparation
-./singularity prep autodeal create --preparation <name>
+# Check all deal schedules
+./singularity deal schedule list
 
-# Process all ready preparations in batch
-./singularity prep autodeal process
+# Use the unified service for background processing
+./singularity run unified --max-workers 10
 ```
 
 ## Configuration Options
@@ -138,7 +138,7 @@ The unified service provides fine-grained control over workflow progression:
 # Multiple manual steps
 ./singularity prep create --auto-create-deals ...
 ./singularity run dataset-worker --enable-pack &
-./singularity prep autodeal process
+./singularity run unified
 # ... monitor manually
 ```
 

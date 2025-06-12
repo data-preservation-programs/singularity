@@ -82,17 +82,17 @@ All stages progress automatically with event-driven triggering - no polling or m
 | `--start-workers` | Start managed workers automatically | `true` |
 | `--wait-for-completion` | Monitor until completion | `false` |
 
-### Manual Override Commands
+### Manual Monitoring
 
 ```bash
-# Create deal schedule for specific preparation
-singularity prep autodeal create --preparation "my-dataset"
+# Check preparation status
+singularity prep status "my-dataset"
 
-# Process all ready preparations
-singularity prep autodeal process
+# List all deal schedules
+singularity deal schedule list
 
-# Check if preparation is ready
-singularity prep autodeal check --preparation "my-dataset"
+# Run background processing service
+singularity run unified --max-workers 5
 ```
 
 ## 📖 Documentation
@@ -184,7 +184,7 @@ go test ./service/autodeal/ -v
 go test ./service/autodeal/ -v -run "TestTrigger"
 
 # Test CLI functionality
-singularity prep autodeal check --help
+singularity onboard --help
 ```
 
 ## 🔧 Configuration
@@ -234,14 +234,14 @@ singularity run autodeal --check-interval=10s
 ### Debug Commands
 
 ```bash
-# Test auto-deal creation manually
-singularity prep autodeal create --preparation "my-dataset"
+# Test onboard workflow
+singularity onboard --name "test-dataset" --source "/test/data" --enable-deals
 
 # View detailed logs
-singularity run autodeal --log-level debug
+singularity run unified --max-workers 3
 
 # Check preparation status
-singularity prep autodeal check --preparation "my-dataset"
+singularity prep status "my-dataset"
 ```
 
 ## 🤝 Migration from Manual Workflows

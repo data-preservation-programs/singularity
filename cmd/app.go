@@ -209,7 +209,6 @@ Upgrading:
 				dataprep.AttachWalletCmd,
 				dataprep.ListWalletsCmd,
 				dataprep.DetachWalletCmd,
-				dataprep.AutoDealCmd,
 				dataprep.RemoveCmd,
 			},
 		},

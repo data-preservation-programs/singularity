@@ -35,6 +35,7 @@
 <!-- cli begin -->
 
 * [Menu](cli-reference/README.md)
+* [Onboard](cli-reference/onboard.md)
 * [Ez Prep](cli-reference/ez-prep.md)
 * [Version](cli-reference/version.md)
 * [Admin](cli-reference/admin/README.md)
@@ -61,7 +62,7 @@
   * [Deal Tracker](cli-reference/run/deal-tracker.md)
   * [Deal Pusher](cli-reference/run/deal-pusher.md)
   * [Download Server](cli-reference/run/download-server.md)
-  * [Autodeal](cli-reference/run/autodeal.md)
+  * [Unified](cli-reference/run/unified.md)
 * [Wallet](cli-reference/wallet/README.md)
   * [Import](cli-reference/wallet/import.md)
   * [List](cli-reference/wallet/list.md)
@@ -247,10 +248,6 @@
   * [Attach Wallet](cli-reference/prep/attach-wallet.md)
   * [List Wallets](cli-reference/prep/list-wallets.md)
   * [Detach Wallet](cli-reference/prep/detach-wallet.md)
-  * [Autodeal](cli-reference/prep/autodeal/README.md)
-    * [Create](cli-reference/prep/autodeal/create.md)
-    * [Process](cli-reference/prep/autodeal/process.md)
-    * [Check](cli-reference/prep/autodeal/check.md)
   * [Remove](cli-reference/prep/remove.md)
 
 <!-- cli end -->
