@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -30,14 +31,27 @@ func TestWalletCreate(t *testing.T) {
 		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 		mockHandler.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
-			ActorID:    "id",
 			Address:    "address",
 			PrivateKey: "private",
 		}, nil)
 		_, _, err := runner.Run(ctx, "singularity wallet create")
 		require.NoError(t, err)
-		_, _, err = runner.Run(ctx, "singularity --verbose wallet create")
+		_, _, err = runner.Run(ctx, "singularity wallet create secp256k1")
 		require.NoError(t, err)
+		_, _, err = runner.Run(ctx, "singularity wallet create bls")
+		require.NoError(t, err)
+	})
+}
+
+func TestWalletCreate_BadType(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(wallet.MockWallet)
+		defer swapWalletHandler(mockHandler)()
+		mockHandler.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything).Return((*model.Wallet)(nil), errors.New("unsupported key type: not-a-real-type"))
+		_, _, err := runner.Run(ctx, "singularity wallet create not-a-real-type")
+		require.Error(t, err)
 	})
 }
 
@@ -58,6 +72,22 @@ func TestWalletImport(t *testing.T) {
 		_, _, err = runner.Run(ctx, "singularity wallet import "+testutil.EscapePath(filepath.Join(tmp, "private")))
 		require.NoError(t, err)
 		_, _, err = runner.Run(ctx, "singularity --verbose wallet import "+testutil.EscapePath(filepath.Join(tmp, "private")))
+		require.NoError(t, err)
+	})
+}
+
+func TestWalletInit(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(wallet.MockWallet)
+		defer swapWalletHandler(mockHandler)()
+		mockHandler.On("InitHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
+			ActorID:    "id",
+			Address:    "address",
+			PrivateKey: "private",
+		}, nil)
+		_, _, err := runner.Run(ctx, "singularity wallet init xxx")
 		require.NoError(t, err)
 	})
 }

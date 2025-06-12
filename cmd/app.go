@@ -168,6 +168,7 @@ Upgrading:
 			Subcommands: []*cli.Command{
 				wallet.CreateCmd,
 				wallet.ImportCmd,
+				wallet.InitCmd,
 				wallet.ListCmd,
 				wallet.RemoveCmd,
 			},
