@@ -33,8 +33,8 @@ type CreateRequest struct {
 	DealPricePerGB      float64         `default:"0.0"         json:"dealPricePerGb"`      // Price in FIL per GiB
 	DealPricePerGBEpoch float64         `default:"0.0"         json:"dealPricePerGbEpoch"` // Price in FIL per GiB per epoch
 	DealPricePerDeal    float64         `default:"0.0"         json:"dealPricePerDeal"`    // Price in FIL per deal
-	DealDuration        time.Duration   `default:"0"           json:"dealDuration"`        // Deal duration
-	DealStartDelay      time.Duration   `default:"0"           json:"dealStartDelay"`      // Deal start delay
+	DealDuration        time.Duration   `json:"dealDuration"`                              // Deal duration
+	DealStartDelay      time.Duration   `json:"dealStartDelay"`                            // Deal start delay
 	DealVerified        bool            `default:"false"       json:"dealVerified"`        // Whether deals should be verified
 	DealKeepUnsealed    bool            `default:"false"       json:"dealKeepUnsealed"`    // Whether to keep unsealed copy
 	DealAnnounceToIPNI  bool            `default:"false"       json:"dealAnnounceToIpni"`  // Whether to announce to IPNI

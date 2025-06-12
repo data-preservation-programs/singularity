@@ -19,6 +19,48 @@ import (
 // swagger:model dataprep.CreateRequest
 type DataprepCreateRequest struct {
 
+	// Auto-deal creation parameters
+	AutoCreateDeals *bool `json:"autoCreateDeals,omitempty"`
+
+	// Whether to announce to IPNI
+	DealAnnounceToIpni *bool `json:"dealAnnounceToIpni,omitempty"`
+
+	// Deal duration
+	DealDuration struct {
+		TimeDuration
+	} `json:"dealDuration,omitempty"`
+
+	// HTTP headers for deals
+	DealHTTPHeaders struct {
+		ModelConfigMap
+	} `json:"dealHttpHeaders,omitempty"`
+
+	// Whether to keep unsealed copy
+	DealKeepUnsealed *bool `json:"dealKeepUnsealed,omitempty"`
+
+	// Price in FIL per deal
+	DealPricePerDeal float64 `json:"dealPricePerDeal,omitempty"`
+
+	// Price in FIL per GiB
+	DealPricePerGb float64 `json:"dealPricePerGb,omitempty"`
+
+	// Price in FIL per GiB per epoch
+	DealPricePerGbEpoch float64 `json:"dealPricePerGbEpoch,omitempty"`
+
+	// Storage Provider ID
+	DealProvider string `json:"dealProvider,omitempty"`
+
+	// Deal start delay
+	DealStartDelay struct {
+		TimeDuration
+	} `json:"dealStartDelay,omitempty"`
+
+	// URL template for deals
+	DealURLTemplate string `json:"dealUrlTemplate,omitempty"`
+
+	// Whether deals should be verified
+	DealVerified *bool `json:"dealVerified,omitempty"`
+
 	// Whether to delete the source files after export
 	DeleteAfterExport *bool `json:"deleteAfterExport,omitempty"`
 
@@ -46,11 +88,29 @@ type DataprepCreateRequest struct {
 
 	// Name of Source storage systems to be used for the source
 	SourceStorages []string `json:"sourceStorages"`
+
+	// Enable storage provider validation
+	SpValidation *bool `json:"spValidation,omitempty"`
+
+	// Enable wallet balance validation
+	WalletValidation *bool `json:"walletValidation,omitempty"`
 }
 
 // Validate validates this dataprep create request
 func (m *DataprepCreateRequest) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateDealDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDealHTTPHeaders(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDealStartDelay(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
@@ -59,6 +119,30 @@ func (m *DataprepCreateRequest) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *DataprepCreateRequest) validateDealDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.DealDuration) { // not required
+		return nil
+	}
+
+	return nil
+}
+
+func (m *DataprepCreateRequest) validateDealHTTPHeaders(formats strfmt.Registry) error {
+	if swag.IsZero(m.DealHTTPHeaders) { // not required
+		return nil
+	}
+
+	return nil
+}
+
+func (m *DataprepCreateRequest) validateDealStartDelay(formats strfmt.Registry) error {
+	if swag.IsZero(m.DealStartDelay) { // not required
+		return nil
+	}
+
 	return nil
 }
 
@@ -71,8 +155,40 @@ func (m *DataprepCreateRequest) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this dataprep create request based on context it is used
+// ContextValidate validate this dataprep create request based on the context it is used
 func (m *DataprepCreateRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDealDuration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDealHTTPHeaders(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDealStartDelay(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DataprepCreateRequest) contextValidateDealDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	return nil
+}
+
+func (m *DataprepCreateRequest) contextValidateDealHTTPHeaders(ctx context.Context, formats strfmt.Registry) error {
+
+	return nil
+}
+
+func (m *DataprepCreateRequest) contextValidateDealStartDelay(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

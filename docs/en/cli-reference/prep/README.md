@@ -12,6 +12,8 @@ COMMANDS:
    rename   Rename a preparation
    remove   Remove a preparation
    help, h  Shows a list of commands or help for one command
+   Auto-Deal Management:
+     autodeal  Auto-deal management commands
    Job Management:
      status        Get the preparation job status of a preparation
      start-scan    Start scanning of the source storage
