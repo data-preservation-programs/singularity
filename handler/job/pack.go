@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
@@ -13,13 +15,14 @@ import (
 	"github.com/data-preservation-programs/singularity/service/autodeal"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/go-log/v2"
-	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 
-var startableStatesForPack = []model.JobState{model.Paused, model.Created, model.Error}
-var pausableStatesForPack = []model.JobState{model.Processing, model.Ready}
-var logger = log.Logger("job-pack")
+var (
+	startableStatesForPack = []model.JobState{model.Paused, model.Created, model.Error}
+	pausableStatesForPack  = []model.JobState{model.Processing, model.Ready}
+	logger                 = log.Logger("job-pack")
+)
 
 // StartPackHandler initiates pack jobs for a given source storage.
 //
@@ -44,7 +47,8 @@ func (DefaultHandler) StartPackHandler(
 	db *gorm.DB,
 	id string,
 	name string,
-	jobID int64) ([]model.Job, error) {
+	jobID int64,
+) ([]model.Job, error) {
 	db = db.WithContext(ctx)
 	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
@@ -151,7 +155,8 @@ func (DefaultHandler) PausePackHandler(
 	db *gorm.DB,
 	id string,
 	name string,
-	jobID int64) ([]model.Job, error) {
+	jobID int64,
+) ([]model.Job, error) {
 	db = db.WithContext(ctx)
 	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
@@ -220,7 +225,8 @@ func (DefaultHandler) PausePackHandler(
 func (DefaultHandler) PackHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	jobID uint64) (*model.Car, error) {
+	jobID uint64,
+) (*model.Car, error) {
 	db = db.WithContext(ctx)
 	var packJob model.Job
 	err := db.

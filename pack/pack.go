@@ -5,25 +5,24 @@ import (
 	"io"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
 	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/google/uuid"
-	"github.com/rjNemo/underscore"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
-
-	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/model"
 	commcid "github.com/filecoin-project/go-fil-commcid"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
+	"github.com/google/uuid"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-log/v2"
+	"github.com/rjNemo/underscore"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var logger = log.Logger("pack")
@@ -56,8 +55,6 @@ func GetCommp(calc *commp.Calc, targetPieceSize uint64) (cid.Cid, uint64, error)
 		}
 
 		rawPieceSize = targetPieceSize
-	} else if rawPieceSize > targetPieceSize {
-		logger.Warn("piece size is larger than the target piece size")
 	}
 
 	commCid, err := commcid.DataCommitmentV1ToCID(rawCommp)
@@ -89,7 +86,7 @@ func Pack(
 	job model.Job,
 ) (*model.Car, error) {
 	db = db.WithContext(ctx)
-	pieceSize := job.Attachment.Preparation.PieceSize
+	pieceSize := job.Attachment.Preparation.GetMinPieceSize()
 	// storageWriter can be nil for inline preparation
 	storageID, storageWriter, err := storagesystem.GetRandomOutputWriter(ctx, job.Attachment.Preparation.OutputStorages)
 	if err != nil {
@@ -170,6 +167,7 @@ func Pack(
 		AttachmentID:  &job.AttachmentID,
 		PreparationID: job.Attachment.PreparationID,
 		JobID:         &job.ID,
+		PieceType:     model.DataPiece,
 	}
 
 	// Update all Files and FileRanges that have size == -1

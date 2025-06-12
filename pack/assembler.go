@@ -70,7 +70,8 @@ func (a *Assembler) Close() error {
 
 // NewAssembler initializes a new Assembler instance with the given parameters.
 func NewAssembler(ctx context.Context, reader storagesystem.Reader,
-	fileRanges []model.FileRange, noInline bool, skipInaccessibleFiles bool) *Assembler {
+	fileRanges []model.FileRange, noInline bool, skipInaccessibleFiles bool,
+) *Assembler {
 	return &Assembler{
 		ctx:                   ctx,
 		reader:                reader,
@@ -214,8 +215,8 @@ func (a *Assembler) prefetch() error {
 	}
 
 	// read more than 0 bytes, or the first block of an empty file
-	// nolint:goerr113
-	if err == nil || err == io.ErrUnexpectedEOF || err == io.EOF {
+	// nolint:err113
+	if err == nil || errors.Is(err, io.ErrUnexpectedEOF) || err == io.EOF {
 		var cidValue cid.Cid
 		var vint []byte
 		if err == io.EOF {
@@ -245,9 +246,17 @@ func (a *Assembler) prefetch() error {
 		if !a.noInline {
 			a.carBlocks = append(a.carBlocks, carBlocks...)
 		}
+
+		// Check for negative file size
+		size := n
+		if size < 0 {
+			logger.Warnf("Encountered unknown size file (%s)", a.fileRanges[a.index].File.Path)
+			size = 0
+		}
+
 		a.pendingLinks = append(a.pendingLinks, format.Link{
 			Cid:  cidValue,
-			Size: uint64(n),
+			Size: uint64(size), //nolint:gosec
 		})
 
 		if err == nil {

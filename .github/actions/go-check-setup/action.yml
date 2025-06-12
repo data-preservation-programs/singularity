@@ -13,8 +13,13 @@ runs:
         restore-keys: |
           ${{ matrix.os }}-golang-${{ matrix.go }}-
 
-    - name: Lint
-      uses: golangci/golangci-lint-action@v3
+    - name: Setup Go
+      uses: actions/setup-go@v5
       with:
-        version: v1.55.2
+        go-version-file: 'go.mod'
+
+    - name: Lint
+      uses: golangci/golangci-lint-action@v7
+      with:
+        version: v2.1.5
         args: --timeout=10m

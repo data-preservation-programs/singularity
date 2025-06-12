@@ -83,7 +83,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 
 	errChan := make(chan error, 1)
 
-	for i := 0; i < concurrency; i++ {
+	for i := range concurrency {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
@@ -115,7 +115,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 			reader := io.LimitReader(clonedReader, end-start)
 			buffer := make([]byte, 4096)
 			if !cctx.Bool("quiet") {
-				_, _ = cctx.App.Writer.Write([]byte(fmt.Sprintf("[Thread %d] Downloading part %d - %d\n", i, end, start)))
+				_, _ = fmt.Fprintf(cctx.App.Writer, "[Thread %d] Downloading part %d - %d\n", i, end, start)
 			}
 			for {
 				if ctx.Err() != nil {
@@ -144,7 +144,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 				start += int64(n)
 			}
 			if !cctx.Bool("quiet") {
-				_, _ = cctx.App.Writer.Write([]byte(fmt.Sprintf("[Thread %d] Completed\n", i)))
+				_, _ = fmt.Fprintf(cctx.App.Writer, "[Thread %d] Completed\n", i)
 			}
 		}(i)
 	}

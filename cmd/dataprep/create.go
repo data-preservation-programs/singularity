@@ -56,6 +56,12 @@ var CreateCmd = &cli.Command{
 			Value:       "",
 			DefaultText: "Determined by --max-size",
 		},
+		&cli.StringFlag{
+			Name:        "min-piece-size",
+			Usage:       "The minimum size of a piece. Pieces smaller than this will be padded up to this size. It's recommended to leave this as the default",
+			Value:       "1MiB",
+			DefaultText: "1MiB",
+		},
 		&cli.BoolFlag{
 			Name:  "delete-after-export",
 			Usage: "Whether to delete the source files after export to CAR files",
@@ -159,6 +165,7 @@ var CreateCmd = &cli.Command{
 		outputStorages := c.StringSlice("output")
 		maxSizeStr := c.String("max-size")
 		pieceSizeStr := c.String("piece-size")
+		minPieceSizeStr := c.String("min-piece-size")
 		for _, sourcePath := range c.StringSlice("local-source") {
 			source, err := createStorageIfNotExist(c.Context, db, sourcePath)
 			if err != nil {
@@ -189,6 +196,7 @@ var CreateCmd = &cli.Command{
 			OutputStorages:      outputStorages,
 			MaxSizeStr:          maxSizeStr,
 			PieceSizeStr:        pieceSizeStr,
+			MinPieceSizeStr:     minPieceSizeStr,
 			DeleteAfterExport:   c.Bool("delete-after-export"),
 			Name:                name,
 			NoInline:            c.Bool("no-inline"),

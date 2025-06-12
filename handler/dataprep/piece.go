@@ -210,6 +210,7 @@ func (DefaultHandler) AddPieceHandler(
 		StoragePath:   request.FilePath,
 		PreparationID: preparation.ID,
 		FileSize:      fileSize,
+		PieceType:     model.DataPiece,
 	}
 
 	err = database.DoRetry(ctx, func() error { return db.Create(&mCar).Error })

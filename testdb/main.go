@@ -185,7 +185,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 		FileRanges:       nil,
 	}
 
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		largeFile.FileRanges = append(largeFile.FileRanges, model.FileRange{
 			Offset: int64(i << 34),
 			Length: 1 << 34,
@@ -203,7 +203,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	}
 
 	// Setup a file with multiple versions
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		size := r.Int63n(1 << 20)
 		rCID := randomCID()
 		err = db.Create(&model.File{
@@ -258,7 +258,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	}
 
 	// Some Car files without association with the preparation
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		pieceCID, err := randomPieceCID()
 		if err != nil {
 			return errors.WithStack(err)
@@ -324,7 +324,8 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				model.DealProposed,
 				model.DealPublished,
 				model.DealSlashed,
-				model.DealActive}
+				model.DealActive,
+			}
 			state := states[r.Intn(len(states))]
 			deal := model.Deal{
 				State:      state,
@@ -334,7 +335,9 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				PieceCID:   car.PieceCID,
 				PieceSize:  car.PieceSize,
 				DealID:     nil,
+				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
 				StartEpoch: int32(10000 + r.Intn(10000)),
+				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
 				EndEpoch:   int32(20000 + r.Intn(10000)),
 				Price:      "0",
 				Verified:   true,
@@ -342,6 +345,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				ClientID:   wallet.ID,
 			}
 			if state == model.DealActive {
+				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
 				deal.SectorStartEpoch = int32(10000 + r.Intn(10000))
 			}
 			if state == model.DealProposed || state == model.DealPublished {

@@ -91,8 +91,10 @@ func GetHash(ctx context.Context, object fs.ObjectInfo) (string, error) {
 
 var ErrStorageNotAvailable = errors.New("storage not available")
 
-var freeSpaceWarningThreshold = 0.05
-var freeSpaceErrorThreshold = 0.01
+var (
+	freeSpaceWarningThreshold = 0.05
+	freeSpaceErrorThreshold   = 0.01
+)
 
 // GetRandomOutputWriter selects a storage from the provided storages list based on its available
 // space and returns an associated Writer to interact with that storage.

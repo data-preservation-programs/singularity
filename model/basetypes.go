@@ -8,15 +8,18 @@ import (
 	"strings"
 	"time"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
-	"golang.org/x/exp/slices"
 )
 
-var ErrInvalidCIDEntry = errors.New("invalid CID entry in the database")
-var ErrInvalidStringSliceEntry = errors.New("invalid string slice entry in the database")
-var ErrInvalidStringMapEntry = errors.New("invalid string map entry in the database")
-var ErrInvalidHTTPConfigEntry = errors.New("invalid ClientConfig entry in the database")
+var (
+	ErrInvalidCIDEntry         = errors.New("invalid CID entry in the database")
+	ErrInvalidStringSliceEntry = errors.New("invalid string slice entry in the database")
+	ErrInvalidStringMapEntry   = errors.New("invalid string map entry in the database")
+	ErrInvalidHTTPConfigEntry  = errors.New("invalid ClientConfig entry in the database")
+)
 
 type StringSlice []string
 
@@ -135,6 +138,7 @@ func (c *CID) Scan(src any) error {
 func (ss StringSlice) Value() (driver.Value, error) {
 	return json.Marshal(ss)
 }
+
 func (m ConfigMap) Value() (driver.Value, error) {
 	return json.Marshal(m)
 }
@@ -190,7 +194,7 @@ func (m ConfigMap) String() string {
 	return strings.Join(values, " ")
 }
 
-func (c ClientConfig) Value() (driver.Value, error) {
+func (c ClientConfig) Value() (driver.Value, error) { //nolint:recvcheck
 	return json.Marshal(c)
 }
 

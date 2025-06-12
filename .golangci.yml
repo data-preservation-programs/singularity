@@ -1,76 +1,87 @@
+version: "2"
 run:
   tests: false
-  skip-dirs:
-    - replication/internal
-    - cmd/embed
-    - docs
-    - dashboard/model2ts
-    - handler/datasource/generate
-    - handler/storage/gen
-  skip-files:
-    - cmd/testutil.go
-
 linters:
-  enable-all: true
+  default: all
   disable:
-    - typecheck
-    - interfacer
-    - structcheck
-    - golint
-    - ifshort
-    - scopelint
-    - varcheck
-    - varnamelen
-    - maligned
-    - deadcode
-    - structcheck
-    - gci
-    - goimports
-    - gofumpt
-    - nolintlint
-    - ireturn
-    - nosnakecase
-    - nlreturn
+    - containedctx
+    - cyclop
+    - depguard
+    - dupl
+    - dupword
+    - exhaustruct
+    - forbidigo
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocyclo
+    - godot
     - godox
     - gomoddirectives
+    - interfacebloat
+    - ireturn
+    - lll
+    - maintidx
+    - mnd
+    - musttag
+    - nakedret
+    - nestif
+    - nilnil
+    - nlreturn
+    - nolintlint
+    - nonamedreturns
+    - prealloc
     - rowserrcheck
     - sqlclosecheck
-    - wastedassign
-    - gocognit
-    - wsl
-    - musttag
-    - exhaustivestruct
-    - cyclop
-    - gomnd
-    - gochecknoglobals
-    - funlen
-    - gocyclo
-    - exhaustruct
-    - wrapcheck
-    - nestif
-    - containedctx
-    - maintidx
-    - nonamedreturns
-    - nilnil
-    - prealloc
-    - gochecknoinits
-    - dupl
-    - forbidigo
-    - godot
-    - depguard
-    - nakedret
     - tagalign
-    - lll
-    - dupword
-    - interfacebloat
-    - goconst
-
-linters-settings:
-  errcheck:
-    exclude-functions:
-      - (github.com/libp2p/go-libp2p/network.MuxedStream).SetDeadline
-      - (github.com/data-preservation-programs/singularity/service.DatasetWorker).cleanup
-  revive:
-    rules:
-      - name: var-naming
-        disabled: true
+    - varnamelen
+    - wastedassign
+    - wrapcheck
+    - wsl
+    - contextcheck
+    - forcetypeassert
+    - funcorder
+    - exhaustive
+    - intrange
+  settings:
+    gosec:
+      excludes:
+        - G115 # we do a lot of uint64 conversions unfortunately
+    errcheck:
+      exclude-functions:
+        - path/filepath.Walk
+        - (github.com/libp2p/go-libp2p/network.MuxedStream).SetDeadline
+        - (github.com/data-preservation-programs/singularity/service.DatasetWorker).cleanup
+    revive:
+      rules:
+        - name: var-naming
+          disabled: true
+    recvcheck:
+      disable-builtin: true
+      exclusions:
+        - "*.Value"
+        - "*.String"
+        - "*.MarshalBinary"
+        - "*.MarshalJSON"
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

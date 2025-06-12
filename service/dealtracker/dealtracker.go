@@ -29,9 +29,11 @@ import (
 
 var ErrAlreadyRunning = errors.New("another worker already running")
 
-const healthRegisterRetryInterval = time.Minute
-const cleanupTimeout = 5 * time.Second
-const logStatsInterval = 15 * time.Second
+const (
+	healthRegisterRetryInterval = time.Minute
+	cleanupTimeout              = 5 * time.Second
+	logStatsInterval            = 15 * time.Second
+)
 
 type Deal struct {
 	Proposal DealProposal
@@ -105,7 +107,8 @@ func NewDealTracker(
 	dealZstURL string,
 	lotusURL string,
 	lotusToken string,
-	once bool) DealTracker {
+	once bool,
+) DealTracker {
 	return DealTracker{
 		workerID:    uuid.New(),
 		dbNoContext: db,

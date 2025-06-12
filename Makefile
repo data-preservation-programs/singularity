@@ -13,8 +13,8 @@ check-go:
 	@which go > /dev/null || (echo "Go is not installed. Please install Go." && exit 1)
 
 install-lint-deps:
-	@which golangci-lint > /dev/null || (echo "Required golangci-lint not found. Installing it..." && GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@latest)
-	@which staticcheck > /dev/null || (echo "Required staticcheck not found. Installing it..." && GO111MODULE=on go get honnef.co/go/tools/cmd/staticcheck)
+	@which golangci-lint > /dev/null || (echo "Required golangci-lint not found. Installing it..." && go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest)
+	@which staticcheck > /dev/null || (echo "Required staticcheck not found. Installing it..." && go install honnef.co/go/tools/cmd/staticcheck@latest)
 
 install-test-deps:
 	@which gotestsum > /dev/null || (echo "Installing gotestsum..." && GO111MODULE=on go get gotest.tools/gotestsum@latest)
@@ -29,8 +29,10 @@ generate: check-go
 	go generate ./...
 
 lint: check-go install-lint-deps
+	@echo "Verifying golangci-lint configuration..."
+	golangci-lint config verify
 	gofmt -s -w .
-	golangci-lint run --no-config --fix --disable-all -E tagalign --timeout 10m
+	golangci-lint run --no-config --fix --default=none -E tagalign --timeout 10m
 	golangci-lint run --fix --timeout 10m
 	staticcheck ./...
 
