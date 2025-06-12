@@ -17,8 +17,7 @@ The auto-prep deal scheduling feature eliminates manual intervention by providin
 # Ensure Singularity is built with the latest changes
 go build -o singularity
 
-# Start the Singularity API (in separate terminal if not using --start-workers)
-./singularity run api
+# No additional setup required - the onboard command manages everything automatically
 ```
 
 ## Simple Demo - Single Command Onboarding

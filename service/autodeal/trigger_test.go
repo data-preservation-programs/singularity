@@ -3,7 +3,6 @@ package autodeal
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
@@ -307,51 +306,4 @@ func TestTriggerService_BatchProcessReadyPreparations_Success(t *testing.T) {
 		assert.NoError(t, err)
 		mockAutoDealer.AssertExpectations(t)
 	})
-}
-
-func TestMonitorService_Run_BatchModeDisabled(t *testing.T) {
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		config := MonitorConfig{
-			EnableBatchMode: false,
-		}
-
-		monitor := NewMonitorService(nil, nil, config)
-
-		err := monitor.Run(ctx)
-
-		assert.NoError(t, err)
-	})
-}
-
-func TestMonitorService_Run_ContextCanceled(t *testing.T) {
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		config := DefaultMonitorConfig()
-		config.CheckInterval = 100 * time.Millisecond
-
-		monitor := NewMonitorService(nil, nil, config)
-
-		ctx, cancel := context.WithCancel(ctx)
-		cancel() // Cancel immediately
-
-		err := monitor.Run(ctx)
-
-		assert.NoError(t, err)
-	})
-}
-
-func TestDefaultMonitorConfig(t *testing.T) {
-	config := DefaultMonitorConfig()
-
-	assert.Equal(t, 30*time.Second, config.CheckInterval)
-	assert.True(t, config.EnableBatchMode)
-	assert.False(t, config.ExitOnComplete)
-	assert.False(t, config.ExitOnError)
-	assert.Equal(t, 3, config.MaxRetries)
-	assert.Equal(t, 5*time.Minute, config.RetryInterval)
-}
-
-func TestMonitorService_Name(t *testing.T) {
-	monitor := NewMonitorService(nil, nil, DefaultMonitorConfig())
-
-	assert.Equal(t, "Auto-Deal Monitor Service", monitor.Name())
 }

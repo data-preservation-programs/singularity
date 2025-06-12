@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
@@ -194,106 +193,4 @@ func (s *TriggerService) BatchProcessReadyPreparations(
 
 	logger.Info("Batch processing completed")
 	return nil
-}
-
-// MonitorService runs continuous monitoring for auto-deal creation
-type MonitorService struct {
-	triggerService *TriggerService
-	dbNoContext    *gorm.DB
-	lotusClient    jsonrpc.RPCClient
-	config         MonitorConfig
-}
-
-// MonitorConfig configures the auto-deal monitor service
-type MonitorConfig struct {
-	CheckInterval   time.Duration
-	EnableBatchMode bool
-	ExitOnComplete  bool
-	ExitOnError     bool
-	MaxRetries      int
-	RetryInterval   time.Duration
-}
-
-// DefaultMonitorConfig returns sensible defaults for the monitor service
-func DefaultMonitorConfig() MonitorConfig {
-	return MonitorConfig{
-		CheckInterval:   30 * time.Second,
-		EnableBatchMode: true,
-		ExitOnComplete:  false,
-		ExitOnError:     false,
-		MaxRetries:      3,
-		RetryInterval:   5 * time.Minute,
-	}
-}
-
-// NewMonitorService creates a new auto-deal monitor service
-func NewMonitorService(
-	db *gorm.DB,
-	lotusClient jsonrpc.RPCClient,
-	config MonitorConfig,
-) *MonitorService {
-	return &MonitorService{
-		triggerService: DefaultTriggerService,
-		dbNoContext:    db,
-		lotusClient:    lotusClient,
-		config:         config,
-	}
-}
-
-// Run starts the auto-deal monitor service
-func (m *MonitorService) Run(ctx context.Context) error {
-	logger.Info("Starting auto-deal monitor service")
-
-	if !m.config.EnableBatchMode {
-		logger.Info("Batch mode disabled, monitor service will exit")
-		return nil
-	}
-
-	ticker := time.NewTicker(m.config.CheckInterval)
-	defer ticker.Stop()
-
-	retryCount := 0
-	maxRetries := m.config.MaxRetries
-
-	for {
-		select {
-		case <-ctx.Done():
-			logger.Info("Auto-deal monitor service stopped")
-			return nil
-		case <-ticker.C:
-			err := m.triggerService.BatchProcessReadyPreparations(ctx, m.dbNoContext, m.lotusClient)
-			if err != nil {
-				retryCount++
-				logger.Errorf("Auto-deal processing failed (attempt %d/%d): %v",
-					retryCount, maxRetries, err)
-
-				if m.config.ExitOnError {
-					return errors.WithStack(err)
-				}
-
-				if maxRetries > 0 && retryCount >= maxRetries {
-					logger.Errorf("Max retries (%d) reached, will continue with exponential backoff", maxRetries)
-					// Add exponential backoff
-					backoffDelay := time.Duration(retryCount-maxRetries+1) * m.config.RetryInterval
-					if backoffDelay > 0 {
-						logger.Infof("Backing off for %s before next attempt", backoffDelay)
-						select {
-						case <-ctx.Done():
-							return nil
-						case <-time.After(backoffDelay):
-						}
-					}
-				}
-			} else if retryCount > 0 {
-				// Reset retry count on success
-				logger.Info("Auto-deal processing succeeded, resetting retry count")
-				retryCount = 0
-			}
-		}
-	}
-}
-
-// Name returns the service name for logging
-func (m *MonitorService) Name() string {
-	return "Auto-Deal Monitor Service"
 }

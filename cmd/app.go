@@ -159,7 +159,6 @@ Upgrading:
 				run.DealTrackerCmd,
 				run.DealPusherCmd,
 				run.DownloadServerCmd,
-				run.AutoDealCmd,
 				run.UnifiedServiceCmd,
 			},
 		},
