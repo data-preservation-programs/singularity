@@ -19,12 +19,12 @@ var MigrateCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		
+
 		// Check if migrations table exists (indicates versioned migration strategy is in place)
 		if !db.Migrator().HasTable("migrations") {
 			return errors.New("Database has not been initialized with versioned migration strategy. Please run 'singularity admin init' first to migrate your database to the new migration system.")
 		}
-		
+
 		return nil
 	},
 	Subcommands: []*cli.Command{
