@@ -54,6 +54,12 @@ type Handler interface {
 		db *gorm.DB,
 		address string,
 	) error
+	UpdateHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		address string,
+		request UpdateRequest,
+	) (*model.Wallet, error)
 }
 
 type DefaultHandler struct{}
@@ -104,4 +110,9 @@ func (m *MockWallet) ListAttachedHandler(ctx context.Context, db *gorm.DB, prepa
 func (m *MockWallet) RemoveHandler(ctx context.Context, db *gorm.DB, address string) error {
 	args := m.Called(ctx, db, address)
 	return args.Error(0)
+}
+
+func (m *MockWallet) UpdateHandler(ctx context.Context, db *gorm.DB, address string, request UpdateRequest) (*model.Wallet, error) {
+	args := m.Called(ctx, db, address, request)
+	return args.Get(0).(*model.Wallet), args.Error(1)
 }

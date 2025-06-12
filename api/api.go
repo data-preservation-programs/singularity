@@ -351,6 +351,7 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	e.GET("/api/wallet", s.toEchoHandler(s.walletHandler.ListHandler))
 	e.POST("/api/wallet/:address/init", s.toEchoHandler(s.walletHandler.InitHandler))
 	e.DELETE("/api/wallet/:address", s.toEchoHandler(s.walletHandler.RemoveHandler))
+	e.PATCH("/api/wallet/:address", s.toEchoHandler(s.walletHandler.UpdateHandler))
 
 	// Wallet Association
 	e.POST("/api/preparation/:id/wallet/:wallet", s.toEchoHandler(s.walletHandler.AttachHandler))

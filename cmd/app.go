@@ -171,6 +171,7 @@ Upgrading:
 				wallet.InitCmd,
 				wallet.ListCmd,
 				wallet.RemoveCmd,
+				wallet.UpdateCmd,
 			},
 		},
 		{

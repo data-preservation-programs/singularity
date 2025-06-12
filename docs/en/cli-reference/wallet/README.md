@@ -14,6 +14,7 @@ COMMANDS:
    init     Initialize a wallet
    list     List all imported wallets
    remove   Remove a wallet
+   update   Update wallet details
    help, h  Shows a list of commands or help for one command
 
 OPTIONS:

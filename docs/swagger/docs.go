@@ -5653,6 +5653,65 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/wallet/{address}/update": {
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Update wallet details",
+                "operationId": "UpdateWallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/wallet.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Wallet"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -16548,6 +16607,23 @@ const docTemplate = `{
             "properties": {
                 "privateKey": {
                     "description": "This is the exported private key from lotus wallet export",
+                    "type": "string"
+                }
+            }
+        },
+        "wallet.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "actorName": {
+                    "description": "Name is readable label for the wallet",
+                    "type": "string"
+                },
+                "contactInfo": {
+                    "description": "Contact is optional email for SP wallets",
+                    "type": "string"
+                },
+                "location": {
+                    "description": "Location is optional region, country for SP wallets",
                     "type": "string"
                 }
             }

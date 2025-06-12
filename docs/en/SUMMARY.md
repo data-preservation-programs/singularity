@@ -72,6 +72,7 @@
   * [Init](cli-reference/wallet/init.md)
   * [List](cli-reference/wallet/list.md)
   * [Remove](cli-reference/wallet/remove.md)
+  * [Update](cli-reference/wallet/update.md)
 * [Storage](cli-reference/storage/README.md)
   * [Create](cli-reference/storage/create/README.md)
     * [Acd](cli-reference/storage/create/acd.md)

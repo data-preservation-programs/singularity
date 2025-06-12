@@ -137,3 +137,45 @@ func TestWalletRemove_NoReallyDoIt(t *testing.T) {
 		require.ErrorIs(t, err, cliutil.ErrReallyDoIt)
 	})
 }
+
+func TestWalletUpdate(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(wallet.MockWallet)
+		defer swapWalletHandler(mockHandler)()
+		mockHandler.On("UpdateHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
+			ActorID:     "id",
+			ActorName:   "Updated Name",
+			Address:     "address",
+			ContactInfo: "test@example.com",
+			Location:    "US-East",
+			WalletType:  model.SPWallet,
+		}, nil)
+		_, _, err := runner.Run(ctx, "singularity wallet update --name Updated --contact test@example.com --location US-East address")
+		require.NoError(t, err)
+
+		_, _, err = runner.Run(ctx, "singularity --verbose wallet update --name Updated address")
+		require.NoError(t, err)
+	})
+}
+
+func TestWalletUpdate_NoAddress(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		_, _, err := runner.Run(ctx, "singularity wallet update --name Test")
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "incorrect number of arguments")
+	})
+}
+
+func TestWalletUpdate_NoFields(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		_, _, err := runner.Run(ctx, "singularity wallet update address")
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "at least one field must be provided for update")
+	})
+}
