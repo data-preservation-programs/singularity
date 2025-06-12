@@ -171,6 +171,30 @@ func (m *ConfigMap) Scan(src any) error {
 	return json.Unmarshal(source, m)
 }
 
+// UnmarshalJSON implements custom JSON unmarshaling to handle swagger client compatibility
+func (m *ConfigMap) UnmarshalJSON(data []byte) error {
+	// First try to unmarshal as a normal map[string]string
+	var normalMap map[string]string
+	if err := json.Unmarshal(data, &normalMap); err == nil {
+		*m = ConfigMap(normalMap)
+		return nil
+	}
+
+	// If that fails, try to handle the swagger client format: {"ModelConfigMap": {...}}
+	var wrapperStruct struct {
+		ModelConfigMap map[string]string `json:"ModelConfigMap"`
+	}
+	if err := json.Unmarshal(data, &wrapperStruct); err == nil {
+		*m = ConfigMap(wrapperStruct.ModelConfigMap)
+		return nil
+	}
+
+	// If both fail, return the original error
+	var originalMap map[string]string
+	err := json.Unmarshal(data, &originalMap)
+	return errors.WithStack(err)
+}
+
 func IsSecretConfigName(key string) bool {
 	k := strings.ToLower(key)
 	return strings.Contains(k, "secret") || strings.Contains(k, "pass") || strings.Contains(k, "token") || strings.Contains(k, "key")

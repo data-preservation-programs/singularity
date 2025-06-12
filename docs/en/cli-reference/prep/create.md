@@ -51,5 +51,10 @@ OPTIONS:
    --sp-validation      Enable storage provider validation before deal creation (default: false)
    --wallet-validation  Enable wallet balance validation before deal creation (default: false)
 
+   Workflow Automation
+
+   --auto-progress  Enable automatic job progression (scan → pack → daggen → deals) (default: false)
+   --auto-start     Automatically start scanning after preparation creation (default: false)
+
 ```
 {% endcode %}
