@@ -19,6 +19,9 @@ import (
 // swagger:model dataprep.CreateRequest
 type DataprepCreateRequest struct {
 
+	// Whether to automatically start pack and daggen jobs after scan. If disabled, jobs will need to be manually started.
+	Auto *bool `json:"auto,omitempty"`
+
 	// Whether to delete the source files after export
 	DeleteAfterExport *bool `json:"deleteAfterExport,omitempty"`
 

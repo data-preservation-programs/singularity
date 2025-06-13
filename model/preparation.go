@@ -44,6 +44,7 @@ type Preparation struct {
 	MinPieceSize      int64         `json:"minPieceSize"` // Minimum piece size for the preparation, applies only to DAG and remainder pieces
 	NoInline          bool          `json:"noInline"`
 	NoDag             bool          `json:"noDag"`
+	Auto              bool          `gorm:"default:true"`
 
 	// Associations
 	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
