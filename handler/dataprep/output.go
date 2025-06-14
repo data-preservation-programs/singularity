@@ -141,7 +141,11 @@ func (DefaultHandler) RemoveOutputStorageHandler(ctx context.Context, db *gorm.D
 	}
 
 	if preparation.NoInline && len(preparation.OutputStorages) == 1 {
-		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "cannot remove the only output storage from a preparation with inline preparation disabled")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "cannot remove the only output storage from a preparation in non-inline mode")
+	}
+
+	if !preparation.NoInline && !preparation.NoDag && len(preparation.OutputStorages) == 1 {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "cannot remove the only output storage from a preparation in inline mode with DAG generation enabled")
 	}
 
 	err = database.DoRetry(ctx, func() error {
