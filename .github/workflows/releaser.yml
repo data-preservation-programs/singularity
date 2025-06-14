@@ -1,3 +1,6 @@
+# File managed by web3-bot. DO NOT EDIT.
+# See https://github.com/protocol/.github/ for details.
+
 name: Releaser
 
 on:
@@ -14,4 +17,4 @@ concurrency:
 
 jobs:
   releaser:
-    uses: ipdxco/unified-github-workflows/.github/workflows/releaser.yml@v1.0
+    uses: protocol/.github/.github/workflows/releaser.yml@master
