@@ -30,6 +30,20 @@ type Global struct {
 	Value string `json:"value"`
 }
 
+// Notification represents system notifications for warnings, errors, and info messages
+type Notification struct {
+	ID           uint      `gorm:"primaryKey"    json:"id"`
+	CreatedAt    time.Time `json:"createdAt"     table:"format:2006-01-02 15:04:05"`
+	Type         string    `json:"type"`  // info, warning, error
+	Level        string    `json:"level"` // low, medium, high
+	Title        string    `json:"title"`
+	Message      string    `json:"message"`
+	Source       string    `json:"source"`   // Component that generated the notification
+	SourceID     string    `json:"sourceId"` // Optional ID of the source entity
+	Metadata     ConfigMap `gorm:"type:JSON" json:"metadata"`
+	Acknowledged bool      `json:"acknowledged"`
+}
+
 type PreparationID uint32
 
 // Preparation is a data preparation definition that can attach multiple source storages and up to one output storage.
@@ -44,6 +58,22 @@ type Preparation struct {
 	MinPieceSize      int64         `json:"minPieceSize"` // Minimum piece size for the preparation, applies only to DAG and remainder pieces
 	NoInline          bool          `json:"noInline"`
 	NoDag             bool          `json:"noDag"`
+
+	// Auto-deal creation parameters
+	AutoCreateDeals     bool          `json:"autoCreateDeals"`                                      // Enable automatic deal schedule creation
+	DealPricePerGB      float64       `json:"dealPricePerGb"`                                       // Price in FIL per GiB
+	DealPricePerGBEpoch float64       `json:"dealPricePerGbEpoch"`                                  // Price in FIL per GiB per epoch
+	DealPricePerDeal    float64       `json:"dealPricePerDeal"`                                     // Price in FIL per deal
+	DealDuration        time.Duration `json:"dealDuration"         swaggertype:"primitive,integer"` // Deal duration
+	DealStartDelay      time.Duration `json:"dealStartDelay"       swaggertype:"primitive,integer"` // Deal start delay
+	DealVerified        bool          `json:"dealVerified"`                                         // Whether deals should be verified
+	DealKeepUnsealed    bool          `json:"dealKeepUnsealed"`                                     // Whether to keep unsealed copy
+	DealAnnounceToIPNI  bool          `json:"dealAnnounceToIpni"`                                   // Whether to announce to IPNI
+	DealProvider        string        `json:"dealProvider"`                                         // Storage Provider ID
+	DealHTTPHeaders     ConfigMap     `gorm:"type:JSON" json:"dealHttpHeaders"`                     // HTTP headers for deals
+	DealURLTemplate     string        `json:"dealUrlTemplate"`                                      // URL template for deals
+	WalletValidation    bool          `json:"walletValidation"`                                     // Enable wallet balance validation
+	SPValidation        bool          `json:"spValidation"`                                         // Enable storage provider validation
 
 	// Associations
 	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`

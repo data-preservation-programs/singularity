@@ -41,6 +41,7 @@ DESCRIPTION:
 
 
 COMMANDS:
+   onboard     Complete data onboarding workflow (storage → preparation → scanning → deal creation)
    version, v  Print version information
    help, h     Shows a list of commands or help for one command
    Daemons:
