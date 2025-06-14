@@ -20,7 +20,7 @@ var autoDealLogger = log.Logger("auto-deal")
 
 type AutoDealService struct {
 	notificationHandler *notification.Handler
-	scheduleHandler     *schedule.DefaultHandler
+	scheduleHandler     schedule.Handler
 	walletValidator     *wallet.BalanceValidator
 	spValidator         *storage.SPValidator
 }
@@ -28,7 +28,7 @@ type AutoDealService struct {
 func NewAutoDealService() *AutoDealService {
 	return &AutoDealService{
 		notificationHandler: notification.Default,
-		scheduleHandler:     &schedule.DefaultHandler{},
+		scheduleHandler:     schedule.Default,
 		walletValidator:     wallet.DefaultBalanceValidator,
 		spValidator:         storage.DefaultSPValidator,
 	}
