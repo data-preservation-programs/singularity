@@ -29,7 +29,9 @@ type DataprepCreateRequest struct {
 	DealDuration int64 `json:"dealDuration,omitempty"`
 
 	// HTTP headers for deals
-	DealHTTPHeaders ModelConfigMap `json:"dealHttpHeaders,omitempty"`
+	DealHTTPHeaders struct {
+		ModelConfigMap
+	} `json:"dealHttpHeaders,omitempty"`
 
 	// Whether to keep unsealed copy
 	DealKeepUnsealed *bool `json:"dealKeepUnsealed,omitempty"`
