@@ -3,6 +3,7 @@ package workflow
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -130,7 +131,7 @@ func (o *WorkflowOrchestrator) HandleJobCompletion(
 func (o *WorkflowOrchestrator) handleScanCompletion(
 	ctx context.Context,
 	db *gorm.DB,
-	lotusClient jsonrpc.RPCClient,
+	_ jsonrpc.RPCClient,
 	preparation *model.Preparation,
 ) error {
 	// Check if all scan jobs for this preparation are complete
@@ -168,7 +169,7 @@ func (o *WorkflowOrchestrator) handleScanCompletion(
 	}
 
 	o.logWorkflowProgress(ctx, db, "Scan → Pack Transition",
-		fmt.Sprintf("Started pack jobs for preparation %s", preparation.Name),
+		"Started pack jobs for preparation " + preparation.Name,
 		model.ConfigMap{
 			"preparation_id":   fmt.Sprintf("%d", preparation.ID),
 			"preparation_name": preparation.Name,
@@ -226,7 +227,7 @@ func (o *WorkflowOrchestrator) handlePackCompletion(
 	}
 
 	o.logWorkflowProgress(ctx, db, "Pack → DagGen Transition",
-		fmt.Sprintf("Started daggen jobs for preparation %s", preparation.Name),
+		"Started daggen jobs for preparation " + preparation.Name,
 		model.ConfigMap{
 			"preparation_id":   fmt.Sprintf("%d", preparation.ID),
 			"preparation_name": preparation.Name,
@@ -275,7 +276,7 @@ func (o *WorkflowOrchestrator) handleDagGenCompletion(
 	}
 
 	o.logWorkflowProgress(ctx, db, "DagGen → Deals Transition",
-		fmt.Sprintf("Triggered auto-deal creation for preparation %s", preparation.Name),
+		"Triggered auto-deal creation for preparation " + preparation.Name,
 		model.ConfigMap{
 			"preparation_id":   fmt.Sprintf("%d", preparation.ID),
 			"preparation_name": preparation.Name,
@@ -287,7 +288,7 @@ func (o *WorkflowOrchestrator) handleDagGenCompletion(
 
 // startPackJobs starts pack jobs for a source attachment
 func (o *WorkflowOrchestrator) startPackJobs(ctx context.Context, db *gorm.DB, attachmentID uint) error {
-	_, err := o.jobHandler.StartPackHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "", 0)
+	_, err := o.jobHandler.StartPackHandler(ctx, db, strconv.FormatUint(uint64(attachmentID), 10), "", 0)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -296,7 +297,7 @@ func (o *WorkflowOrchestrator) startPackJobs(ctx context.Context, db *gorm.DB, a
 
 // startDagGenJobs starts daggen jobs for a source attachment
 func (o *WorkflowOrchestrator) startDagGenJobs(ctx context.Context, db *gorm.DB, attachmentID uint) error {
-	_, err := o.jobHandler.StartDagGenHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "")
+	_, err := o.jobHandler.StartDagGenHandler(ctx, db, strconv.FormatUint(uint64(attachmentID), 10), "")
 	if err != nil {
 		return errors.WithStack(err)
 	}

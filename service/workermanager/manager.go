@@ -142,10 +142,7 @@ func (m *WorkerManager) monitorLoop(ctx context.Context) {
 			}
 
 			// Clean up idle workers
-			err := m.cleanupIdleWorkers(ctx)
-			if err != nil {
-				logger.Errorf("Failed to cleanup idle workers: %v", err)
-			}
+			m.cleanupIdleWorkers(ctx)
 		}
 	}
 }
@@ -166,7 +163,7 @@ func (m *WorkerManager) evaluateScaling(ctx context.Context) error {
 
 	// Scale up if needed
 	if totalReadyJobs >= int64(m.config.ScaleUpThreshold) && currentWorkerCount < m.config.MaxWorkers {
-		workersToAdd := min(m.config.MaxWorkers-currentWorkerCount, int(totalReadyJobs/int64(m.config.ScaleUpThreshold)))
+		workersToAdd := minInt(m.config.MaxWorkers-currentWorkerCount, int(totalReadyJobs/int64(m.config.ScaleUpThreshold)))
 		logger.Infof("Scaling up: adding %d workers (ready jobs: %d)", workersToAdd, totalReadyJobs)
 
 		for i := 0; i < workersToAdd; i++ {
@@ -180,7 +177,7 @@ func (m *WorkerManager) evaluateScaling(ctx context.Context) error {
 
 	// Scale down if needed (but keep minimum)
 	if totalReadyJobs <= int64(m.config.ScaleDownThreshold) && currentWorkerCount > m.config.MinWorkers {
-		workersToRemove := min(currentWorkerCount-m.config.MinWorkers, 1) // Remove one at a time
+		workersToRemove := minInt(currentWorkerCount-m.config.MinWorkers, 1) // Remove one at a time
 		logger.Infof("Scaling down: removing %d workers (ready jobs: %d)", workersToRemove, totalReadyJobs)
 
 		for i := 0; i < workersToRemove; i++ {
@@ -367,9 +364,9 @@ func (m *WorkerManager) ensureMinimumWorkers(ctx context.Context) error {
 }
 
 // cleanupIdleWorkers removes workers that have been idle too long
-func (m *WorkerManager) cleanupIdleWorkers(ctx context.Context) error {
+func (m *WorkerManager) cleanupIdleWorkers(ctx context.Context) {
 	if m.config.WorkerIdleTimeout == 0 {
-		return nil // No cleanup if timeout is 0
+		return // No cleanup if timeout is 0
 	}
 
 	m.mutex.RLock()
@@ -393,8 +390,6 @@ func (m *WorkerManager) cleanupIdleWorkers(ctx context.Context) error {
 			}
 		}
 	}
-
-	return nil
 }
 
 // getJobCounts returns count of ready jobs by type
@@ -487,7 +482,7 @@ func (m *WorkerManager) Name() string {
 }
 
 // Helper functions
-func min(a, b int) int {
+func minInt(a, b int) int {
 	if a < b {
 		return a
 	}

@@ -244,7 +244,7 @@ func (v *SPValidator) getMinerPower(ctx context.Context, lotusClient jsonrpc.RPC
 }
 
 // checkProviderConnectivity checks if the provider is reachable
-func (v *SPValidator) checkProviderConnectivity(ctx context.Context, lotusClient jsonrpc.RPCClient, peerID string, multiaddrs []string) (bool, []string) {
+func (v *SPValidator) checkProviderConnectivity(ctx context.Context, _ jsonrpc.RPCClient, peerID string, multiaddrs []string) (bool, []string) {
 	var warnings []string
 
 	if peerID == "" {
@@ -280,7 +280,7 @@ func (v *SPValidator) checkPeerConnectivity(ctx context.Context, multiaddrs []st
 }
 
 // testConnection tests if we can connect to a multiaddr
-func (v *SPValidator) testConnection(ctx context.Context, multiaddr string) bool {
+func (v *SPValidator) testConnection(_ context.Context, multiaddr string) bool {
 	// Parse multiaddr and extract IP and port
 	// This is a simplified implementation
 	parts := strings.Split(multiaddr, "/")
