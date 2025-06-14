@@ -6,7 +6,6 @@ import (
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
-	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -15,7 +14,7 @@ func TestListHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
 			Wallets: []model.Wallet{{
-				ActorID: "f01",
+				ID: "f01",
 			}},
 			SourceStorages: []model.Storage{{
 				Name: "storage",
@@ -29,7 +28,7 @@ func TestListHandler(t *testing.T) {
 					PreparationID: 1,
 				},
 				State:    model.DealActive,
-				ClientID: ptr.Of(model.WalletID(1)),
+				ClientID: "f01",
 				Provider: "provider",
 			},
 		}).Error

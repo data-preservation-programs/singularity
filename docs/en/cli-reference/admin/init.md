@@ -9,7 +9,7 @@ USAGE:
    singularity admin init [command options]
 
 DESCRIPTION:
-   This command needs to be run before running any singularity daemon or after any version upgrade
+   This commands need to be run before running any singularity daemon or after any version upgrade
 
 OPTIONS:
    --identity value  Name of the user or service that is running the Singularity for tracking and logging purpose

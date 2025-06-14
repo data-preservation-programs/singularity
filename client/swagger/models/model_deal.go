@@ -18,11 +18,8 @@ import (
 // swagger:model model.Deal
 type ModelDeal struct {
 
-	// client actor Id
-	ClientActorID string `json:"clientActorId,omitempty"`
-
 	// client Id
-	ClientID int64 `json:"clientId,omitempty"`
+	ClientID string `json:"clientId,omitempty"`
 
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`

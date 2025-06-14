@@ -9,7 +9,6 @@ USAGE:
    singularity wallet command [command options]
 
 COMMANDS:
-   create   Create a new wallet
    import   Import a wallet from exported private key
    list     List all imported wallets
    remove   Remove a wallet

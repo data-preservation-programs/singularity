@@ -435,6 +435,9 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 	}
 	lotusClient := util.NewLotusClient(lotusURL, lotusToken)
 	dealMaker := replication.NewDealMaker(lotusClient, h, time.Hour, time.Minute)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to init deal maker")
+	}
 	return &DealPusher{
 		dbNoContext:              db,
 		activeScheduleCancelFunc: make(map[model.ScheduleID]context.CancelFunc),

@@ -382,7 +382,7 @@ type KnownDeal struct {
 }
 type UnknownDeal struct {
 	ID         model.DealID
-	ClientID   *model.WalletID
+	ClientID   string
 	Provider   string
 	PieceCID   model.CID
 	StartEpoch int32
@@ -432,8 +432,8 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 
 	walletIDs := make(map[string]struct{})
 	for _, wallet := range wallets {
-		Logger.Infof("tracking deals for wallet %s", wallet.ActorID)
-		walletIDs[wallet.ActorID] = struct{}{}
+		Logger.Infof("tracking deals for wallet %s", wallet.ID)
+		walletIDs[wallet.ID] = struct{}{}
 	}
 
 	knownDeals := make(map[uint64]model.DealState)
@@ -454,14 +454,14 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 
 	unknownDeals := make(map[string][]UnknownDeal)
 	rows, err = db.Model(&model.Deal{}).Where("deal_id IS NULL AND state NOT IN ?", []model.DealState{model.DealExpired, model.DealProposalExpired}).
-		Select("id", "deal_id", "state", "client_id", "client_actor_id", "provider", "piece_cid",
+		Select("id", "deal_id", "state", "client_id", "provider", "piece_cid",
 			"start_epoch", "end_epoch").Rows()
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	for rows.Next() {
 		var deal model.Deal
-		err = rows.Scan(&deal.ID, &deal.DealID, &deal.State, &deal.ClientID, &deal.ClientActorID, &deal.Provider, &deal.PieceCID, &deal.StartEpoch, &deal.EndEpoch)
+		err = rows.Scan(&deal.ID, &deal.DealID, &deal.State, &deal.ClientID, &deal.Provider, &deal.PieceCID, &deal.StartEpoch, &deal.EndEpoch)
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -552,17 +552,11 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to parse piece CID %s", deal.Proposal.PieceCID.Root)
 		}
-
-		var wallet model.Wallet
-		if err := db.Where("actor_id = ?", deal.Proposal.Client).First(&wallet).Error; err != nil {
-			return errors.Wrapf(err, "failed to find wallet for client %s", deal.Proposal.Client)
-		}
-
 		err = database.DoRetry(ctx, func() error {
 			return db.Create(&model.Deal{
 				DealID:           &dealID,
 				State:            newState,
-				ClientID:         &wallet.ID,
+				ClientID:         deal.Proposal.Client,
 				Provider:         deal.Proposal.Provider,
 				Label:            deal.Proposal.Label,
 				PieceCID:         model.CID(root),

@@ -41,7 +41,7 @@ var proposal = Proposal{
 
 func TestSendManualHandler_WalletNotFound(t *testing.T) {
 	wallet := model.Wallet{
-		ActorID: "f09999",
+		ID:      "f09999",
 		Address: "f10000",
 	}
 
@@ -59,7 +59,7 @@ func TestSendManualHandler_WalletNotFound(t *testing.T) {
 
 func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
 	wallet := model.Wallet{
-		ActorID: "f01000",
+		ID:      "f01000",
 		Address: "f10000",
 	}
 
@@ -79,7 +79,7 @@ func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
 
 func TestSendManualHandler_InvalidPieceCID_NOTCOMMP(t *testing.T) {
 	wallet := model.Wallet{
-		ActorID: "f01000",
+		ID:      "f01000",
 		Address: "f10000",
 	}
 
@@ -99,7 +99,7 @@ func TestSendManualHandler_InvalidPieceCID_NOTCOMMP(t *testing.T) {
 
 func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
 	wallet := model.Wallet{
-		ActorID: "f01000",
+		ID:      "f01000",
 		Address: "f10000",
 	}
 
@@ -119,7 +119,7 @@ func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
 
 func TestSendManualHandler_InvalidPieceSize_NotPowerOfTwo(t *testing.T) {
 	wallet := model.Wallet{
-		ActorID: "f01000",
+		ID:      "f01000",
 		Address: "f10000",
 	}
 
@@ -139,7 +139,7 @@ func TestSendManualHandler_InvalidPieceSize_NotPowerOfTwo(t *testing.T) {
 
 func TestSendManualHandler_InvalidRootCID(t *testing.T) {
 	wallet := model.Wallet{
-		ActorID: "f01000",
+		ID:      "f01000",
 		Address: "f10000",
 	}
 
@@ -159,7 +159,7 @@ func TestSendManualHandler_InvalidRootCID(t *testing.T) {
 
 func TestSendManualHandler_InvalidDuration(t *testing.T) {
 	wallet := model.Wallet{
-		ActorID: "f01000",
+		ID:      "f01000",
 		Address: "f10000",
 	}
 
@@ -179,7 +179,7 @@ func TestSendManualHandler_InvalidDuration(t *testing.T) {
 
 func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
 	wallet := model.Wallet{
-		ActorID: "f01000",
+		ID:      "f01000",
 		Address: "f10000",
 	}
 
@@ -199,7 +199,7 @@ func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
 
 func TestSendManualHandler(t *testing.T) {
 	wallet := model.Wallet{
-		ActorID: "f01000",
+		ID:      "f01000",
 		Address: "f10000",
 	}
 

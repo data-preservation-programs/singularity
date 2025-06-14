@@ -151,11 +151,10 @@ func TestTrackDeal(t *testing.T) {
 
 func TestRunOnce(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		wallet := model.Wallet{
-			ActorID: "t0100",
+		err := db.Create(&model.Wallet{
+			ID:      "t0100",
 			Address: "t3xxx",
-		}
-		err := db.Create(&wallet).Error
+		}).Error
 		require.NoError(t, err)
 		d1 := uint64(1)
 		d2 := uint64(2)
@@ -172,8 +171,7 @@ func TestRunOnce(t *testing.T) {
 			{
 				DealID:           &d1,
 				State:            model.DealActive,
-				ClientID:         &wallet.ID,
-				ClientActorID:    wallet.ActorID,
+				ClientID:         "t0100",
 				Provider:         "sp1",
 				ProposalID:       "proposal1",
 				Label:            "label1",
@@ -187,8 +185,7 @@ func TestRunOnce(t *testing.T) {
 			{
 				DealID:           &d2,
 				State:            model.DealPublished,
-				ClientID:         &wallet.ID,
-				ClientActorID:    wallet.ActorID,
+				ClientID:         "t0100",
 				Provider:         "sp1",
 				ProposalID:       "proposal2",
 				Label:            "label2",
@@ -201,8 +198,7 @@ func TestRunOnce(t *testing.T) {
 			},
 			{
 				State:            model.DealProposed,
-				ClientID:         &wallet.ID,
-				ClientActorID:    wallet.ActorID,
+				ClientID:         "t0100",
 				Provider:         "sp1",
 				ProposalID:       "proposal3",
 				Label:            "label3",
@@ -216,8 +212,7 @@ func TestRunOnce(t *testing.T) {
 			{
 				DealID:           &d4,
 				State:            model.DealActive,
-				ClientID:         &wallet.ID,
-				ClientActorID:    wallet.ActorID,
+				ClientID:         "t0100",
 				Provider:         "sp1",
 				ProposalID:       "proposal4",
 				Label:            "label4",
@@ -230,8 +225,7 @@ func TestRunOnce(t *testing.T) {
 			},
 			{
 				State:            model.DealActive,
-				ClientID:         &wallet.ID,
-				ClientActorID:    wallet.ActorID,
+				ClientID:         "t0100",
 				Provider:         "sp1",
 				ProposalID:       "proposal5",
 				Label:            "label5",
@@ -245,8 +239,7 @@ func TestRunOnce(t *testing.T) {
 			{
 				DealID:           &d6,
 				State:            model.DealPublished,
-				ClientID:         &wallet.ID,
-				ClientActorID:    wallet.ActorID,
+				ClientID:         "t0100",
 				Provider:         "sp1",
 				ProposalID:       "proposal6",
 				Label:            "label6",
