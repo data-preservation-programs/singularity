@@ -19,8 +19,44 @@ import (
 // swagger:model model.Preparation
 type ModelPreparation struct {
 
+	// Auto-deal creation parameters
+	AutoCreateDeals bool `json:"autoCreateDeals,omitempty"`
+
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
+
+	// Whether to announce to IPNI
+	DealAnnounceToIpni bool `json:"dealAnnounceToIpni,omitempty"`
+
+	// Deal duration
+	DealDuration int64 `json:"dealDuration,omitempty"`
+
+	// HTTP headers for deals
+	DealHTTPHeaders ModelConfigMap `json:"dealHttpHeaders,omitempty"`
+
+	// Whether to keep unsealed copy
+	DealKeepUnsealed bool `json:"dealKeepUnsealed,omitempty"`
+
+	// Price in FIL per deal
+	DealPricePerDeal float64 `json:"dealPricePerDeal,omitempty"`
+
+	// Price in FIL per GiB
+	DealPricePerGb float64 `json:"dealPricePerGb,omitempty"`
+
+	// Price in FIL per GiB per epoch
+	DealPricePerGbEpoch float64 `json:"dealPricePerGbEpoch,omitempty"`
+
+	// Storage Provider ID
+	DealProvider string `json:"dealProvider,omitempty"`
+
+	// Deal start delay
+	DealStartDelay int64 `json:"dealStartDelay,omitempty"`
+
+	// URL template for deals
+	DealURLTemplate string `json:"dealUrlTemplate,omitempty"`
+
+	// Whether deals should be verified
+	DealVerified bool `json:"dealVerified,omitempty"`
 
 	// DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.
 	DeleteAfterExport bool `json:"deleteAfterExport,omitempty"`
@@ -52,13 +88,23 @@ type ModelPreparation struct {
 	// source storages
 	SourceStorages []*ModelStorage `json:"sourceStorages"`
 
+	// Enable storage provider validation
+	SpValidation bool `json:"spValidation,omitempty"`
+
 	// updated at
 	UpdatedAt string `json:"updatedAt,omitempty"`
+
+	// Enable wallet balance validation
+	WalletValidation bool `json:"walletValidation,omitempty"`
 }
 
 // Validate validates this model preparation
 func (m *ModelPreparation) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateDealHTTPHeaders(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateOutputStorages(formats); err != nil {
 		res = append(res, err)
@@ -71,6 +117,14 @@ func (m *ModelPreparation) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelPreparation) validateDealHTTPHeaders(formats strfmt.Registry) error {
+	if swag.IsZero(m.DealHTTPHeaders) { // not required
+		return nil
+	}
+
 	return nil
 }
 
@@ -130,6 +184,10 @@ func (m *ModelPreparation) validateSourceStorages(formats strfmt.Registry) error
 func (m *ModelPreparation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDealHTTPHeaders(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateOutputStorages(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -141,6 +199,11 @@ func (m *ModelPreparation) ContextValidate(ctx context.Context, formats strfmt.R
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelPreparation) contextValidateDealHTTPHeaders(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

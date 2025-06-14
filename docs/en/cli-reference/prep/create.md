@@ -23,6 +23,21 @@ OPTIONS:
    --piece-size value                 The target piece size of the CAR files used for piece commitment calculation (default: Determined by --max-size)
    --source value [ --source value ]  The id or name of the source storage to be used for the preparation
 
+   Auto Deal Creation
+
+   --auto-create-deals              Enable automatic deal schedule creation after preparation completion (default: false)
+   --deal-announce-to-ipni          Whether to announce deals to IPNI (default: false)
+   --deal-duration value            Duration for storage deals (e.g., 535 days) (default: 0s)
+   --deal-http-headers value        HTTP headers for deals in JSON format
+   --deal-keep-unsealed             Whether to keep unsealed copy of deals (default: false)
+   --deal-price-per-deal value      Price in FIL per deal for storage deals (default: 0)
+   --deal-price-per-gb value        Price in FIL per GiB for storage deals (default: 0)
+   --deal-price-per-gb-epoch value  Price in FIL per GiB per epoch for storage deals (default: 0)
+   --deal-provider value            Storage Provider ID for deals (e.g., f01000)
+   --deal-start-delay value         Start delay for storage deals (e.g., 72h) (default: 0s)
+   --deal-url-template value        URL template for deals
+   --deal-verified                  Whether deals should be verified (default: false)
+
    Quick creation with local output paths
 
    --local-output value [ --local-output value ]  The local output path to be used for the preparation. This is a convenient flag that will create a output storage with the provided path
@@ -30,6 +45,16 @@ OPTIONS:
    Quick creation with local source paths
 
    --local-source value [ --local-source value ]  The local source path to be used for the preparation. This is a convenient flag that will create a source storage with the provided path
+
+   Validation
+
+   --sp-validation      Enable storage provider validation before deal creation (default: false)
+   --wallet-validation  Enable wallet balance validation before deal creation (default: false)
+
+   Workflow Automation
+
+   --auto-progress  Enable automatic job progression (scan → pack → daggen → deals) (default: false)
+   --auto-start     Automatically start scanning after preparation creation (default: false)
 
 ```
 {% endcode %}
