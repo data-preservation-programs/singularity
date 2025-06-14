@@ -18,6 +18,11 @@ runs:
       with:
         go-version-file: 'go.mod'
 
+    - name: Install tools
+      shell: bash
+      run: |
+        go install honnef.co/go/tools/cmd/staticcheck
+
     - name: Lint
       uses: golangci/golangci-lint-action@v7
       with:
