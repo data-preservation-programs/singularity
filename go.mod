@@ -78,7 +78,7 @@ require (
 	go.mongodb.org/mongo-driver v1.12.1
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c
+	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c // indirect
 	golang.org/x/text v0.23.0
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
 	gorm.io/driver/mysql v1.5.0
@@ -96,7 +96,6 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.0.0 // indirect
-	github.com/BurntSushi/toml v1.4.1-0.20240526193622-a339e1f7089c // indirect
 	github.com/Jorropo/jsync v1.0.1 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Max-Sum/base32768 v0.0.0-20230304063302-18e6ce5945fd // indirect
@@ -354,18 +353,15 @@ require (
 	go.uber.org/dig v1.18.0 // indirect
 	go.uber.org/fx v1.23.0 // indirect
 	go.uber.org/mock v0.5.0 // indirect
-golang.org/x/crypto v0.36.0 // indirect
-golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c // indirect
-golang.org/x/exp/typeparams v0.0.0-20231108232855-2478ac86f678 // indirect
-golang.org/x/mod v0.23.0 // indirect
-golang.org/x/net v0.34.0 // indirect
-golang.org/x/oauth2 v0.24.0 // indirect
-golang.org/x/sync v0.12.0 // indirect
-golang.org/x/sys v0.31.0 // indirect
-golang.org/x/term v0.30.0 // indirect
-golang.org/x/time v0.5.0 // indirect
-golang.org/x/tools v0.30.0 // indirect
-google.golang.org/api v0.149.0 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/mod v0.23.0 // indirect
+	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/oauth2 v0.24.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/tools v0.30.0 // indirect
 	google.golang.org/api v0.149.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240617180043-68d350f18fd4 // indirect
 	google.golang.org/grpc v1.64.0 // indirect
@@ -373,7 +369,6 @@ google.golang.org/api v0.149.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools/v3 v3.5.1 // indirect
-	honnef.co/go/tools v0.6.1 // indirect
 	lukechampine.com/blake3 v1.3.0 // indirect
 	modernc.org/libc v1.22.3 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
