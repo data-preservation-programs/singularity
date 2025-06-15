@@ -62,6 +62,7 @@
   * [Deal Pusher](cli-reference/run/deal-pusher.md)
   * [Download Server](cli-reference/run/download-server.md)
 * [Wallet](cli-reference/wallet/README.md)
+  * [Create](cli-reference/wallet/create.md)
   * [Import](cli-reference/wallet/import.md)
   * [List](cli-reference/wallet/list.md)
   * [Remove](cli-reference/wallet/remove.md)

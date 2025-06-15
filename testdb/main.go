@@ -47,7 +47,7 @@ func run() error {
 		return errors.WithStack(err)
 	}
 
-	err = model.AutoMigrate(db)
+	err = model.Migrator(db).Migrate()
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -76,7 +76,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	}
 	// Setup wallet
 	wallet := model.Wallet{
-		ID:      fmt.Sprintf("f0%d", r.Intn(10000)),
+		ActorID: fmt.Sprintf("f0%d", r.Intn(10000)),
 		Address: "f1" + randomLetterString(39),
 	}
 
@@ -342,7 +342,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				Price:      "0",
 				Verified:   true,
 				ScheduleID: ptr.Of(schedule.ID),
-				ClientID:   wallet.ID,
+				ClientID:   wallet.ActorID,
 			}
 			if state == model.DealActive {
 				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062

@@ -116,7 +116,7 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
 	wallet := model.Wallet{
-		ID:         "f047684",
+		ActorID:    "f047684",
 		Address:    addr,
 		PrivateKey: key,
 	}

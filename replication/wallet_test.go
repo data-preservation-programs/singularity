@@ -48,10 +48,10 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 
 		// Set up the test data
 		wallets := []model.Wallet{
-			{ID: "1", Address: "address1"},
-			{ID: "2", Address: "address2"},
-			{ID: "3", Address: "address3"},
-			{ID: "4", Address: "address4"},
+			{ActorID: "1", Address: "address1"},
+			{ActorID: "2", Address: "address2"},
+			{ActorID: "3", Address: "address3"},
+			{ActorID: "4", Address: "address4"},
 		}
 
 		// Set up expectations for the lotusClient mock
@@ -111,8 +111,8 @@ func TestRandomWalletChooser(t *testing.T) {
 	chooser := &RandomWalletChooser{}
 	ctx := context.Background()
 	wallet, err := chooser.Choose(ctx, []model.Wallet{
-		{ID: "1", Address: "address1"},
-		{ID: "2", Address: "address2"},
+		{ActorID: "1", Address: "address1"},
+		{ActorID: "2", Address: "address2"},
 	})
 	require.NoError(t, err)
 	require.Contains(t, wallet.Address, "address")

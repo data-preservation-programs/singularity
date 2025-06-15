@@ -26,7 +26,7 @@ func (DefaultHandler) ResetHandler(ctx context.Context, db *gorm.DB) error {
 		return errors.WithStack(err)
 	}
 
-	err = model.AutoMigrate(db)
+	err = model.Migrator(db).Migrate()
 	if err != nil {
 		return errors.WithStack(err)
 	}
