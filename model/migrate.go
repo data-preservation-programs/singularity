@@ -33,45 +33,12 @@ var Tables = []any{
 
 var logger = logging.Logger("model")
 
-// Create new Gormigrate instance
-//
-// If no migrations are found, an init function performs a few operations:
-//  1. Automatically migrates the tables in the database to match the current structures defined in the application.
-//  2. Creates an instance ID if it doesn't already exist.
-//  3. Generates a new encryption salt and stores it in the database if it doesn't already exist.
-//
-// Parameters:
-//   - db: A pointer to a gorm.DB object, which provides database access.
-//
-// Returns:
-//   - A migration interface
+// Migrator creates a new Gormigrate instance with optional schema initialization.
 func Migrator(db *gorm.DB) *gormigrate.Gormigrate {
 	m := gormigrate.New(db, gormigrate.DefaultOptions, migrations.GetMigrations())
 
-	// Initialize database with current schema if no previous migrations are found
 	m.InitSchema(func(tx *gorm.DB) error {
 		logger.Info("Auto migrating tables")
-
-<<<<<<< HEAD
-=======
-		// Create migrations table
-		err := db.Table(options.TableName).AutoMigrate(&migration{})
-		if err != nil {
-			return errors.Wrap(err, "failed to create migrations table on init")
-		}
-
-		logger.Info("Manually running missing migrations")
-		// Skip first migration, run the rest to get current
-		for _, m := range migrations.GetMigrations()[1:] {
-			err = m.Migrate(db)
-			if err != nil {
-				return errors.Wrap(err, "failed to run migration with ID: "+m.ID)
-			}
-		}
-	} else {
-		logger.Info("Auto migrating tables in clean database")
-		// This is a brand new database, run automigrate script on current schema
->>>>>>> 792cb49 (feat: add `admin migrate which` command)
 		err := db.AutoMigrate(Tables...)
 		if err != nil {
 			return errors.Wrap(err, "failed to auto migrate")
@@ -110,21 +77,23 @@ func Migrator(db *gorm.DB) *gormigrate.Gormigrate {
 	return m
 }
 
-<<<<<<< HEAD
-// DropAll removes all tables specified in the Tables slice from the database.
-//
-// This function is typically used during development or testing where a clean database
-// slate is required. It iterates over the predefined Tables list and drops each table.
-// Care should be taken when using this function in production environments as it will
-// result in data loss.
-=======
 type migrator struct {
 	gormigrate.Gormigrate
 	db      *gorm.DB
 	Options gormigrate.Options
 }
 
-// Drop all current database tables
+// GetMigrator returns a customized migrator with extended helper methods.
+func GetMigrator(db *gorm.DB) *migrator {
+	options := gormigrate.DefaultOptions
+	return &migrator{
+		Gormigrate: *gormigrate.New(db, options, migrations.GetMigrations()),
+		db:         db,
+		Options:    options,
+	}
+}
+
+// DropAll removes all tables in the database.
 func (m *migrator) DropAll() error {
 	tables, err := m.db.Migrator().GetTables()
 	if err != nil {
@@ -139,7 +108,7 @@ func (m *migrator) DropAll() error {
 	return nil
 }
 
-// Get all migrations run
+// GetMigrationsRun returns a list of all applied migrations.
 func (m *migrator) GetMigrationsRun() ([]migration, error) {
 	var migrations []migration
 	err := m.db.Find(&migrations).Error
@@ -149,30 +118,23 @@ func (m *migrator) GetMigrationsRun() ([]migration, error) {
 	return migrations, nil
 }
 
-// Get ID of last migration ran
+// GetLastMigration returns the ID of the last migration applied.
 func (m *migrator) GetLastMigration() (string, error) {
 	migrations, err := m.GetMigrationsRun()
-	if len(migrations) == 0 || err != nil {
+	if err != nil || len(migrations) == 0 {
 		return "", err
 	}
 	return migrations[len(migrations)-1].ID, nil
 }
 
-// Has migration ID ran
+// HasRunMigration checks if a migration by ID has already run.
 func (m *migrator) HasRunMigration(id string) (bool, error) {
 	var count int64
 	err := m.db.Table(m.Options.TableName).Where(m.Options.IDColumnName+" = ?", id).Count(&count).Error
 	return count > 0, err
 }
 
-// Setup new Gormigrate instance
->>>>>>> 792cb49 (feat: add `admin migrate which` command)
-//
-// Parameters:
-//   - db: A pointer to a gorm.DB object, which provides database access.
-//
-// Returns:
-//   - An error if any issues arise during the table drop process, otherwise nil.
+// DropAll is also exposed globally for convenience.
 func DropAll(db *gorm.DB) error {
 	logger.Info("Dropping all tables")
 	for _, table := range Tables {
