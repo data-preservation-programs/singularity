@@ -186,10 +186,10 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to find deal template: %s", request.DealTemplate)
 		}
-		
+
 		// Apply template values (only if current values are defaults/zero)
 		dealtemplate.Default.ApplyTemplateToPreparation(template, preparation)
-		
+
 		// Set the template reference
 		preparation.DealTemplateID = &template.ID
 	}

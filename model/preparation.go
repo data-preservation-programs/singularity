@@ -50,12 +50,12 @@ type DealTemplateID uint32
 
 // DealTemplate stores reusable deal parameters that can be applied during preparation creation
 type DealTemplate struct {
-	ID                  DealTemplateID `gorm:"primaryKey" json:"id"`
-	Name                string         `gorm:"unique" json:"name"`
-	Description         string         `json:"description"`
-	CreatedAt           time.Time      `json:"createdAt" table:"format:2006-01-02 15:04:05"`
-	UpdatedAt           time.Time      `json:"updatedAt" table:"format:2006-01-02 15:04:05"`
-	
+	ID          DealTemplateID `gorm:"primaryKey" json:"id"`
+	Name        string         `gorm:"unique" json:"name"`
+	Description string         `json:"description"`
+	CreatedAt   time.Time      `json:"createdAt" table:"format:2006-01-02 15:04:05"`
+	UpdatedAt   time.Time      `json:"updatedAt" table:"format:2006-01-02 15:04:05"`
+
 	// Deal Parameters
 	DealPricePerGB      float64       `json:"dealPricePerGb"`                                       // Price in FIL per GiB
 	DealPricePerGBEpoch float64       `json:"dealPricePerGbEpoch"`                                  // Price in FIL per GiB per epoch
@@ -100,21 +100,21 @@ type Preparation struct {
 	NoDag             bool          `json:"noDag"`
 
 	// Auto-deal creation parameters
-	AutoCreateDeals     bool          `json:"autoCreateDeals"`                                      // Enable automatic deal schedule creation
-	DealTemplateID      *DealTemplateID `json:"dealTemplateId,omitempty"`                            // Optional deal template to use
-	DealPricePerGB      float64       `json:"dealPricePerGb"`                                       // Price in FIL per GiB
-	DealPricePerGBEpoch float64       `json:"dealPricePerGbEpoch"`                                  // Price in FIL per GiB per epoch
-	DealPricePerDeal    float64       `json:"dealPricePerDeal"`                                     // Price in FIL per deal
-	DealDuration        time.Duration `json:"dealDuration"         swaggertype:"primitive,integer"` // Deal duration
-	DealStartDelay      time.Duration `json:"dealStartDelay"       swaggertype:"primitive,integer"` // Deal start delay
-	DealVerified        bool          `json:"dealVerified"`                                         // Whether deals should be verified
-	DealKeepUnsealed    bool          `json:"dealKeepUnsealed"`                                     // Whether to keep unsealed copy
-	DealAnnounceToIPNI  bool          `json:"dealAnnounceToIpni"`                                   // Whether to announce to IPNI
-	DealProvider        string        `json:"dealProvider"`                                         // Storage Provider ID
-	DealHTTPHeaders     ConfigMap     `gorm:"type:JSON" json:"dealHttpHeaders"`                     // HTTP headers for deals
-	DealURLTemplate     string        `json:"dealUrlTemplate"`                                      // URL template for deals
-	WalletValidation    bool          `json:"walletValidation"`                                     // Enable wallet balance validation
-	SPValidation        bool          `json:"spValidation"`                                         // Enable storage provider validation
+	AutoCreateDeals     bool            `json:"autoCreateDeals"`                                      // Enable automatic deal schedule creation
+	DealTemplateID      *DealTemplateID `json:"dealTemplateId,omitempty"`                             // Optional deal template to use
+	DealPricePerGB      float64         `json:"dealPricePerGb"`                                       // Price in FIL per GiB
+	DealPricePerGBEpoch float64         `json:"dealPricePerGbEpoch"`                                  // Price in FIL per GiB per epoch
+	DealPricePerDeal    float64         `json:"dealPricePerDeal"`                                     // Price in FIL per deal
+	DealDuration        time.Duration   `json:"dealDuration"         swaggertype:"primitive,integer"` // Deal duration
+	DealStartDelay      time.Duration   `json:"dealStartDelay"       swaggertype:"primitive,integer"` // Deal start delay
+	DealVerified        bool            `json:"dealVerified"`                                         // Whether deals should be verified
+	DealKeepUnsealed    bool            `json:"dealKeepUnsealed"`                                     // Whether to keep unsealed copy
+	DealAnnounceToIPNI  bool            `json:"dealAnnounceToIpni"`                                   // Whether to announce to IPNI
+	DealProvider        string          `json:"dealProvider"`                                         // Storage Provider ID
+	DealHTTPHeaders     ConfigMap       `gorm:"type:JSON" json:"dealHttpHeaders"`                     // HTTP headers for deals
+	DealURLTemplate     string          `json:"dealUrlTemplate"`                                      // URL template for deals
+	WalletValidation    bool            `json:"walletValidation"`                                     // Enable wallet balance validation
+	SPValidation        bool            `json:"spValidation"`                                         // Enable storage provider validation
 
 	// Associations
 	DealTemplate   *DealTemplate `gorm:"foreignKey:DealTemplateID;constraint:OnDelete:SET NULL" json:"dealTemplate,omitempty"   swaggerignore:"true"                   table:"expand"`
