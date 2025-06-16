@@ -35,6 +35,7 @@ OPTIONS:
    --deal-price-per-gb-epoch value  Price in FIL per GiB per epoch for storage deals (default: 0)
    --deal-provider value            Storage Provider ID for deals (e.g., f01000)
    --deal-start-delay value         Start delay for storage deals (e.g., 72h) (default: 0s)
+   --deal-template value            Name or ID of deal template to use (optional - can specify deal parameters directly instead)
    --deal-url-template value        URL template for deals
    --deal-verified                  Whether deals should be verified (default: false)
 

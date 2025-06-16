@@ -5666,6 +5666,10 @@ const docTemplate = `{
                     "description": "Deal start delay",
                     "type": "integer"
                 },
+                "dealTemplate": {
+                    "description": "Deal template name or ID to use (optional)",
+                    "type": "string"
+                },
                 "dealUrlTemplate": {
                     "description": "URL template for deals",
                     "type": "string"
@@ -6405,6 +6409,10 @@ const docTemplate = `{
                 },
                 "dealStartDelay": {
                     "description": "Deal start delay",
+                    "type": "integer"
+                },
+                "dealTemplateId": {
+                    "description": "Optional deal template to use",
                     "type": "integer"
                 },
                 "dealUrlTemplate": {

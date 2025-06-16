@@ -32,7 +32,9 @@ type ModelPreparation struct {
 	DealDuration int64 `json:"dealDuration,omitempty"`
 
 	// HTTP headers for deals
-	DealHTTPHeaders ModelConfigMap `json:"dealHttpHeaders,omitempty"`
+	DealHTTPHeaders struct {
+		ModelConfigMap
+	} `json:"dealHttpHeaders,omitempty"`
 
 	// Whether to keep unsealed copy
 	DealKeepUnsealed bool `json:"dealKeepUnsealed,omitempty"`
@@ -51,6 +53,9 @@ type ModelPreparation struct {
 
 	// Deal start delay
 	DealStartDelay int64 `json:"dealStartDelay,omitempty"`
+
+	// Optional deal template to use
+	DealTemplateID int64 `json:"dealTemplateId,omitempty"`
 
 	// URL template for deals
 	DealURLTemplate string `json:"dealUrlTemplate,omitempty"`

@@ -1,25 +1,22 @@
-# Deal Template Commands
+# Deal template management
 
-Deal template commands allow you to create, manage, and use reusable deal configurations for data preparation workflows.
-
-## Available Commands
-
-* [create](create.md) - Create a new deal template
-* [list](list.md) - List all deal templates  
-* [get](get.md) - Get details of a specific deal template
-* [delete](delete.md) - Delete a deal template
-
-## Quick Examples
-
-```bash
-# Create a template
-singularity deal-template create --name "standard" --deal-price-per-gb 0.0000000001 --deal-duration 535days
-
-# List templates
-singularity deal-template list
-
-# Use template in preparation
-singularity prep create --source /data --deal-template standard --auto-create-deals
+{% code fullWidth="true" %}
 ```
+NAME:
+   singularity deal-template - Deal template management
 
-For detailed usage and examples, see the [Deal Templates guide](../../deal-templates.md).
+USAGE:
+   singularity deal-template command [command options]
+
+COMMANDS:
+   help, h  Shows a list of commands or help for one command
+   Deal Template Management:
+     create  Create a new deal template
+     list    List all deal templates
+     get     Get a deal template by ID or name
+     delete  Delete a deal template by ID or name
+
+OPTIONS:
+   --help, -h  show help
+```
+{% endcode %}
