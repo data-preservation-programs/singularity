@@ -8,6 +8,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/dealtemplate"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/handler/notification"
 	"github.com/data-preservation-programs/singularity/handler/storage"
@@ -30,6 +31,7 @@ type CreateRequest struct {
 
 	// Auto-deal creation parameters
 	AutoCreateDeals     bool            `default:"false"       json:"autoCreateDeals"`               // Enable automatic deal schedule creation
+	DealTemplate        string          `default:""            json:"dealTemplate"`                  // Deal template name or ID to use (optional)
 	DealPricePerGB      float64         `default:"0.0"         json:"dealPricePerGb"`                // Price in FIL per GiB
 	DealPricePerGBEpoch float64         `default:"0.0"         json:"dealPricePerGbEpoch"`           // Price in FIL per GiB per epoch
 	DealPricePerDeal    float64         `default:"0.0"         json:"dealPricePerDeal"`              // Price in FIL per deal
@@ -151,7 +153,8 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "inline preparation cannot be disabled without output storages")
 	}
 
-	return &model.Preparation{
+	// Create preparation with basic fields
+	preparation := &model.Preparation{
 		MaxSize:             int64(maxSize),
 		PieceSize:           int64(pieceSize),
 		MinPieceSize:        int64(minPieceSize),
@@ -175,7 +178,23 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		DealURLTemplate:     request.DealURLTemplate,
 		WalletValidation:    request.WalletValidation,
 		SPValidation:        request.SPValidation,
-	}, nil
+	}
+
+	// Apply deal template if specified and auto-deal creation is enabled
+	if request.AutoCreateDeals && request.DealTemplate != "" {
+		template, err := dealtemplate.Default.GetHandler(ctx, db, request.DealTemplate)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to find deal template: %s", request.DealTemplate)
+		}
+		
+		// Apply template values (only if current values are defaults/zero)
+		dealtemplate.Default.ApplyTemplateToPreparation(template, preparation)
+		
+		// Set the template reference
+		preparation.DealTemplateID = &template.ID
+	}
+
+	return preparation, nil
 }
 
 // CreatePreparationHandler handles the creation of a new Preparation entity based on the provided

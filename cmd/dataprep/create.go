@@ -83,6 +83,11 @@ var CreateCmd = &cli.Command{
 			Usage:    "Enable automatic deal schedule creation after preparation completion",
 			Category: "Auto Deal Creation",
 		},
+		&cli.StringFlag{
+			Name:     "deal-template",
+			Usage:    "Name or ID of deal template to use (optional - can specify deal parameters directly instead)",
+			Category: "Auto Deal Creation",
+		},
 		&cli.Float64Flag{
 			Name:     "deal-price-per-gb",
 			Usage:    "Price in FIL per GiB for storage deals",
@@ -216,6 +221,7 @@ var CreateCmd = &cli.Command{
 			NoInline:            c.Bool("no-inline"),
 			NoDag:               c.Bool("no-dag"),
 			AutoCreateDeals:     c.Bool("auto-create-deals"),
+			DealTemplate:        c.String("deal-template"),
 			DealPricePerGB:      c.Float64("deal-price-per-gb"),
 			DealPricePerGBEpoch: c.Float64("deal-price-per-gb-epoch"),
 			DealPricePerDeal:    c.Float64("deal-price-per-deal"),

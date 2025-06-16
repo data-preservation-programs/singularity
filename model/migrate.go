@@ -15,6 +15,7 @@ var Tables = []any{
 	&Worker{},
 	&Global{},
 	&Notification{},
+	&DealTemplate{},
 	&Preparation{},
 	&Storage{},
 	&OutputAttachment{},

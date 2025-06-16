@@ -46,6 +46,46 @@ type Notification struct {
 
 type PreparationID uint32
 
+type DealTemplateID uint32
+
+// DealTemplate stores reusable deal parameters that can be applied during preparation creation
+type DealTemplate struct {
+	ID                  DealTemplateID `gorm:"primaryKey" json:"id"`
+	Name                string         `gorm:"unique" json:"name"`
+	Description         string         `json:"description"`
+	CreatedAt           time.Time      `json:"createdAt" table:"format:2006-01-02 15:04:05"`
+	UpdatedAt           time.Time      `json:"updatedAt" table:"format:2006-01-02 15:04:05"`
+	
+	// Deal Parameters
+	DealPricePerGB      float64       `json:"dealPricePerGb"`                                       // Price in FIL per GiB
+	DealPricePerGBEpoch float64       `json:"dealPricePerGbEpoch"`                                  // Price in FIL per GiB per epoch
+	DealPricePerDeal    float64       `json:"dealPricePerDeal"`                                     // Price in FIL per deal
+	DealDuration        time.Duration `json:"dealDuration"         swaggertype:"primitive,integer"` // Deal duration
+	DealStartDelay      time.Duration `json:"dealStartDelay"       swaggertype:"primitive,integer"` // Deal start delay
+	DealVerified        bool          `json:"dealVerified"`                                         // Whether deals should be verified
+	DealKeepUnsealed    bool          `json:"dealKeepUnsealed"`                                     // Whether to keep unsealed copy
+	DealAnnounceToIPNI  bool          `json:"dealAnnounceToIpni"`                                   // Whether to announce to IPNI
+	DealProvider        string        `json:"dealProvider"`                                         // Storage Provider ID
+	DealHTTPHeaders     ConfigMap     `gorm:"type:JSON" json:"dealHttpHeaders"`                     // HTTP headers for deals
+	DealURLTemplate     string        `json:"dealUrlTemplate"`                                      // URL template for deals
+}
+
+// FindByIDOrName finds a deal template by ID or name
+func (t *DealTemplate) FindByIDOrName(db *gorm.DB, name string, preloads ...string) error {
+	id, err := strconv.ParseUint(name, 10, 32)
+	if err == nil {
+		for _, preload := range preloads {
+			db = db.Preload(preload)
+		}
+		return db.First(t, id).Error
+	} else {
+		for _, preload := range preloads {
+			db = db.Preload(preload)
+		}
+		return db.Where("name = ?", name).First(t).Error
+	}
+}
+
 // Preparation is a data preparation definition that can attach multiple source storages and up to one output storage.
 type Preparation struct {
 	ID                PreparationID `gorm:"primaryKey"        json:"id"`
@@ -61,6 +101,7 @@ type Preparation struct {
 
 	// Auto-deal creation parameters
 	AutoCreateDeals     bool          `json:"autoCreateDeals"`                                      // Enable automatic deal schedule creation
+	DealTemplateID      *DealTemplateID `json:"dealTemplateId,omitempty"`                            // Optional deal template to use
 	DealPricePerGB      float64       `json:"dealPricePerGb"`                                       // Price in FIL per GiB
 	DealPricePerGBEpoch float64       `json:"dealPricePerGbEpoch"`                                  // Price in FIL per GiB per epoch
 	DealPricePerDeal    float64       `json:"dealPricePerDeal"`                                     // Price in FIL per deal
@@ -76,9 +117,10 @@ type Preparation struct {
 	SPValidation        bool          `json:"spValidation"`                                         // Enable storage provider validation
 
 	// Associations
-	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
-	SourceStorages []Storage `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" table:"expand;header:Source Storages:"`
-	OutputStorages []Storage `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" table:"expand;header:Output Storages:"`
+	DealTemplate   *DealTemplate `gorm:"foreignKey:DealTemplateID;constraint:OnDelete:SET NULL" json:"dealTemplate,omitempty"   swaggerignore:"true"                   table:"expand"`
+	Wallets        []Wallet      `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
+	SourceStorages []Storage     `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" table:"expand;header:Source Storages:"`
+	OutputStorages []Storage     `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" table:"expand;header:Output Storages:"`
 }
 
 func (s *Preparation) FindByIDOrName(db *gorm.DB, name string, preloads ...string) error {
