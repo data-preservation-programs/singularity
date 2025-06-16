@@ -25,6 +25,7 @@
 ## Deal Making <a href="#deal-making" id="deal-making"></a>
 
 * [Create a deal schedule](deal-making/create-a-deal-schedule.md)
+* [Deal Templates](deal-templates.md)
 
 ## Topics <a href="#topics" id="topics"></a>
 
