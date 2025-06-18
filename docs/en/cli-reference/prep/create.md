@@ -12,6 +12,7 @@ CATEGORY:
    Preparation Management
 
 OPTIONS:
+   --auto                             Whether to automatically start pack and daggen jobs after scan. If disabled, jobs will need to be manually started. (default: true)
    --delete-after-export              Whether to delete the source files after export to CAR files (default: false)
    --help, -h                         show help
    --max-size value                   The maximum size of a single CAR file (default: "31.5GiB")

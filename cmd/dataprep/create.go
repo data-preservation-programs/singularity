@@ -73,6 +73,11 @@ var CreateCmd = &cli.Command{
 			Name:  "no-dag",
 			Usage: "Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.",
 		},
+		&cli.BoolFlag{
+			Name:  "auto",
+			Usage: "Whether to automatically start pack and daggen jobs after scan. If disabled, jobs will need to be manually started.",
+			Value: true,
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -115,6 +120,7 @@ var CreateCmd = &cli.Command{
 			DeleteAfterExport: c.Bool("delete-after-export"),
 			NoInline:          c.Bool("no-inline"),
 			NoDag:             c.Bool("no-dag"),
+			Auto:              c.Bool("auto"),
 		})
 		if err != nil {
 			return errors.WithStack(err)
