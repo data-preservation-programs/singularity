@@ -16596,8 +16596,25 @@ const docTemplate = `{
         "wallet.CreateRequest": {
             "type": "object",
             "properties": {
+                "actorId": {
+                    "type": "string"
+                },
+                "address": {
+                    "description": "For SPWallet creation",
+                    "type": "string"
+                },
+                "contact": {
+                    "type": "string"
+                },
                 "keyType": {
-                    "description": "This is either \"secp256k1\" or \"bls\"",
+                    "description": "For UserWallet creation (generates new keypair)",
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Optional fields for adding details to Wallet",
                     "type": "string"
                 }
             }
