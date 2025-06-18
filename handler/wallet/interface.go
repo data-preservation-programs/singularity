@@ -34,6 +34,12 @@ type Handler interface {
 		lotusClient jsonrpc.RPCClient,
 		request ImportRequest,
 	) (*model.Wallet, error)
+	InitHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		lotusClient jsonrpc.RPCClient,
+		address string,
+	) (*model.Wallet, error)
 	ListHandler(
 		ctx context.Context,
 		db *gorm.DB,
@@ -77,6 +83,11 @@ func (m *MockWallet) DetachHandler(ctx context.Context, db *gorm.DB, preparation
 
 func (m *MockWallet) ImportHandler(ctx context.Context, db *gorm.DB, lotusClient jsonrpc.RPCClient, request ImportRequest) (*model.Wallet, error) {
 	args := m.Called(ctx, db, lotusClient, request)
+	return args.Get(0).(*model.Wallet), args.Error(1)
+}
+
+func (m *MockWallet) InitHandler(ctx context.Context, db *gorm.DB, lotusClient jsonrpc.RPCClient, wallet string) (*model.Wallet, error) {
+	args := m.Called(ctx, db, lotusClient, wallet)
 	return args.Get(0).(*model.Wallet), args.Error(1)
 }
 
