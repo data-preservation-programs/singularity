@@ -312,6 +312,19 @@ func TestAllAPIs(t *testing.T) {
 				require.True(t, resp.IsSuccess())
 				require.NotNil(t, resp.Payload)
 			})
+
+			t.Run("CreateWallet_privateKeyShouldBeRedacted", func(t *testing.T) {
+				resp, err := client.Wallet.CreateWallet(&wallet2.CreateWalletParams{
+					Request: &models.WalletCreateRequest{
+						KeyType: "bls",
+					},
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.NotNil(t, resp.Payload)
+				require.Empty(t, resp.Payload.PrivateKey, "Private key should be redacted from response")
+			})
 			t.Run("ImportWallet", func(t *testing.T) {
 				resp, err := client.Wallet.ImportWallet(&wallet2.ImportWalletParams{
 					Request: &models.WalletImportRequest{},
