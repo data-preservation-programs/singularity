@@ -22,17 +22,18 @@ DESCRIPTION:
 
 OPTIONS:
    --auto-create-deals                Enable automatic deal creation after preparation completion (default: true)
+   --json                             Output result in JSON format for automation (default: false)
    --max-size value                   Maximum size of a single CAR file (default: "31.5GiB")
    --max-workers value                Maximum number of workers to run (default: 3)
    --name value                       Name for the preparation
    --no-dag                           Disable maintaining folder DAG structure (default: false)
    --output value [ --output value ]  Local output path(s) for CAR files (optional)
    --source value [ --source value ]  Local source path(s) to onboard
+   --sp-validation                    Enable storage provider validation (default: false)
    --start-workers                    Start managed workers to process jobs automatically (default: true)
    --timeout value                    Timeout for waiting for completion (0 = no timeout) (default: 0s)
-   --sp-validation                    Enable storage provider validation (default: false)
-   --wallet-validation                Enable wallet balance validation (default: false)
    --wait-for-completion              Wait and monitor until all jobs complete (default: false)
+   --wallet-validation                Enable wallet balance validation (default: false)
 
    Deal Settings
 

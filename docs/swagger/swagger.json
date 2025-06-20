@@ -6255,6 +6255,67 @@
                 }
             }
         },
+        "model.DealConfig": {
+            "type": "object",
+            "properties": {
+                "autoCreateDeals": {
+                    "description": "AutoCreateDeals enables automatic deal creation after preparation completes",
+                    "type": "boolean"
+                },
+                "dealAnnounceToIpni": {
+                    "description": "DealAnnounceToIpni indicates whether to announce to IPNI",
+                    "type": "boolean"
+                },
+                "dealDuration": {
+                    "description": "DealDuration specifies the deal duration (time.Duration for backward compatibility)",
+                    "type": "integer"
+                },
+                "dealHttpHeaders": {
+                    "description": "DealHTTPHeaders contains HTTP headers for deals",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ConfigMap"
+                        }
+                    ]
+                },
+                "dealKeepUnsealed": {
+                    "description": "DealKeepUnsealed indicates whether to keep unsealed copy",
+                    "type": "boolean"
+                },
+                "dealPricePerDeal": {
+                    "description": "DealPricePerDeal specifies the price in FIL per deal",
+                    "type": "number"
+                },
+                "dealPricePerGb": {
+                    "description": "DealPricePerGb specifies the price in FIL per GiB",
+                    "type": "number"
+                },
+                "dealPricePerGbEpoch": {
+                    "description": "DealPricePerGbEpoch specifies the price in FIL per GiB per epoch",
+                    "type": "number"
+                },
+                "dealProvider": {
+                    "description": "DealProvider specifies the Storage Provider ID for deals",
+                    "type": "string"
+                },
+                "dealStartDelay": {
+                    "description": "DealStartDelay specifies the deal start delay (time.Duration for backward compatibility)",
+                    "type": "integer"
+                },
+                "dealTemplate": {
+                    "description": "DealTemplate specifies the deal template name or ID to use (optional)",
+                    "type": "string"
+                },
+                "dealUrlTemplate": {
+                    "description": "DealURLTemplate specifies the URL template for deals",
+                    "type": "string"
+                },
+                "dealVerified": {
+                    "description": "DealVerified indicates whether deals should be verified",
+                    "type": "boolean"
+                }
+            }
+        },
         "model.DealState": {
             "type": "string",
             "enum": [
@@ -6407,64 +6468,20 @@
         "model.Preparation": {
             "type": "object",
             "properties": {
-                "autoCreateDeals": {
-                    "description": "Auto-deal creation parameters",
-                    "type": "boolean"
-                },
                 "createdAt": {
                     "type": "string"
                 },
-                "dealAnnounceToIpni": {
-                    "description": "Whether to announce to IPNI",
-                    "type": "boolean"
-                },
-                "dealDuration": {
-                    "description": "Deal duration",
-                    "type": "integer"
-                },
-                "dealHttpHeaders": {
-                    "description": "HTTP headers for deals",
+                "dealConfig": {
+                    "description": "Deal configuration (encapsulated in DealConfig struct)",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/model.ConfigMap"
+                            "$ref": "#/definitions/model.DealConfig"
                         }
                     ]
-                },
-                "dealKeepUnsealed": {
-                    "description": "Whether to keep unsealed copy",
-                    "type": "boolean"
-                },
-                "dealPricePerDeal": {
-                    "description": "Price in FIL per deal",
-                    "type": "number"
-                },
-                "dealPricePerGb": {
-                    "description": "Price in FIL per GiB",
-                    "type": "number"
-                },
-                "dealPricePerGbEpoch": {
-                    "description": "Price in FIL per GiB per epoch",
-                    "type": "number"
-                },
-                "dealProvider": {
-                    "description": "Storage Provider ID",
-                    "type": "string"
-                },
-                "dealStartDelay": {
-                    "description": "Deal start delay",
-                    "type": "integer"
                 },
                 "dealTemplateId": {
                     "description": "Optional deal template to use",
                     "type": "integer"
-                },
-                "dealUrlTemplate": {
-                    "description": "URL template for deals",
-                    "type": "string"
-                },
-                "dealVerified": {
-                    "description": "Whether deals should be verified",
-                    "type": "boolean"
                 },
                 "deleteAfterExport": {
                     "description": "DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.",

@@ -19,49 +19,16 @@ import (
 // swagger:model model.Preparation
 type ModelPreparation struct {
 
-	// Auto-deal creation parameters
-	AutoCreateDeals bool `json:"autoCreateDeals,omitempty"`
-
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
 
-	// Whether to announce to IPNI
-	DealAnnounceToIpni bool `json:"dealAnnounceToIpni,omitempty"`
-
-	// Deal duration
-	DealDuration int64 `json:"dealDuration,omitempty"`
-
-	// HTTP headers for deals
-	DealHTTPHeaders struct {
-		ModelConfigMap
-	} `json:"dealHttpHeaders,omitempty"`
-
-	// Whether to keep unsealed copy
-	DealKeepUnsealed bool `json:"dealKeepUnsealed,omitempty"`
-
-	// Price in FIL per deal
-	DealPricePerDeal float64 `json:"dealPricePerDeal,omitempty"`
-
-	// Price in FIL per GiB
-	DealPricePerGb float64 `json:"dealPricePerGb,omitempty"`
-
-	// Price in FIL per GiB per epoch
-	DealPricePerGbEpoch float64 `json:"dealPricePerGbEpoch,omitempty"`
-
-	// Storage Provider ID
-	DealProvider string `json:"dealProvider,omitempty"`
-
-	// Deal start delay
-	DealStartDelay int64 `json:"dealStartDelay,omitempty"`
+	// Deal configuration (encapsulated in DealConfig struct)
+	DealConfig struct {
+		ModelDealConfig
+	} `json:"dealConfig,omitempty"`
 
 	// Optional deal template to use
 	DealTemplateID int64 `json:"dealTemplateId,omitempty"`
-
-	// URL template for deals
-	DealURLTemplate string `json:"dealUrlTemplate,omitempty"`
-
-	// Whether deals should be verified
-	DealVerified bool `json:"dealVerified,omitempty"`
 
 	// DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.
 	DeleteAfterExport bool `json:"deleteAfterExport,omitempty"`
@@ -107,7 +74,7 @@ type ModelPreparation struct {
 func (m *ModelPreparation) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateDealHTTPHeaders(formats); err != nil {
+	if err := m.validateDealConfig(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -125,8 +92,8 @@ func (m *ModelPreparation) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ModelPreparation) validateDealHTTPHeaders(formats strfmt.Registry) error {
-	if swag.IsZero(m.DealHTTPHeaders) { // not required
+func (m *ModelPreparation) validateDealConfig(formats strfmt.Registry) error {
+	if swag.IsZero(m.DealConfig) { // not required
 		return nil
 	}
 
@@ -189,7 +156,7 @@ func (m *ModelPreparation) validateSourceStorages(formats strfmt.Registry) error
 func (m *ModelPreparation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateDealHTTPHeaders(ctx, formats); err != nil {
+	if err := m.contextValidateDealConfig(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -207,7 +174,7 @@ func (m *ModelPreparation) ContextValidate(ctx context.Context, formats strfmt.R
 	return nil
 }
 
-func (m *ModelPreparation) contextValidateDealHTTPHeaders(ctx context.Context, formats strfmt.Registry) error {
+func (m *ModelPreparation) contextValidateDealConfig(ctx context.Context, formats strfmt.Registry) error {
 
 	return nil
 }
