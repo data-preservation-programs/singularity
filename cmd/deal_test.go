@@ -24,7 +24,7 @@ func swapDealHandler(mockHandler deal.Handler) func() {
 
 func TestSendDealHandler(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Wallet{ID: "client_id"}).Error
+		err := db.Create(&model.Wallet{ActorID: "client_id"}).Error
 		require.NoError(t, err)
 		runner := NewRunner()
 		defer runner.Save(t)
@@ -42,7 +42,8 @@ func TestSendDealHandler(t *testing.T) {
 			SectorStartEpoch: 1500,
 			Price:            "0",
 			Verified:         true,
-			ClientID:         "client_id",
+			ClientID:         ptr.Of(model.WalletID(1)),
+			ClientActorID:    "client_id",
 		}, nil).Once()
 		_, _, err = runner.Run(ctx, "singularity deal send-manual --client client --provider provider --piece-cid piece_cid --piece-size 1024 --save")
 		require.NoError(t, err)
@@ -58,7 +59,8 @@ func TestSendDealHandler(t *testing.T) {
 			SectorStartEpoch: 1500,
 			Price:            "0",
 			Verified:         true,
-			ClientID:         "client_id",
+			ClientID:         ptr.Of(model.WalletID(1)),
+			ClientActorID:    "client_id",
 		}, nil).Once()
 		_, _, err = runner.Run(ctx, "singularity --verbose deal send-manual --client client --provider provider --piece-cid piece_cid --piece-size 1024 --save")
 		require.NoError(t, err)
@@ -89,7 +91,8 @@ func TestListDealHandler(t *testing.T) {
 				Price:            "0",
 				Verified:         true,
 				ScheduleID:       ptr.Of(model.ScheduleID(5)),
-				ClientID:         "client_id",
+				ClientID:         ptr.Of(model.WalletID(1)),
+				ClientActorID:    "client_id",
 			},
 			{
 				ID:               2,
@@ -107,7 +110,8 @@ func TestListDealHandler(t *testing.T) {
 				Price:            "0",
 				Verified:         false,
 				ScheduleID:       ptr.Of(model.ScheduleID(5)),
-				ClientID:         "client_id",
+				ClientID:         ptr.Of(model.WalletID(1)),
+				ClientActorID:    "client_id",
 			},
 		}, nil)
 		_, _, err := runner.Run(ctx, "singularity deal list --preparation 1 --source source --schedule 5 --provider f01 --state active")
