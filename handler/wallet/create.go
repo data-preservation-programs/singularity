@@ -150,5 +150,8 @@ func (DefaultHandler) CreateHandler(
 		return nil, errors.WithStack(err)
 	}
 
+	// Redacting private Keys before returning
+	wallet.PrivateKey = ""
+
 	return &wallet, nil
 }
