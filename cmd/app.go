@@ -120,6 +120,7 @@ Upgrading:
 			Subcommands: []*cli.Command{
 				admin.InitCmd,
 				admin.ResetCmd,
+				admin.MigrateCmd,
 				admin.MigrateDatasetCmd,
 				admin.MigrateScheduleCmd,
 			},
@@ -165,6 +166,7 @@ Upgrading:
 			Category: "Operations",
 			Usage:    "Wallet management",
 			Subcommands: []*cli.Command{
+				wallet.CreateCmd,
 				wallet.ImportCmd,
 				wallet.ListCmd,
 				wallet.RemoveCmd,

@@ -17,6 +17,11 @@ type Handler interface {
 		preparation string,
 		wallet string,
 	) (*model.Preparation, error)
+	CreateHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		request CreateRequest,
+	) (*model.Wallet, error)
 	DetachHandler(
 		ctx context.Context,
 		db *gorm.DB,
@@ -58,6 +63,11 @@ type MockWallet struct {
 func (m *MockWallet) AttachHandler(ctx context.Context, db *gorm.DB, preparation string, wallet string) (*model.Preparation, error) {
 	args := m.Called(ctx, db, preparation, wallet)
 	return args.Get(0).(*model.Preparation), args.Error(1)
+}
+
+func (m *MockWallet) CreateHandler(ctx context.Context, db *gorm.DB, request CreateRequest) (*model.Wallet, error) {
+	args := m.Called(ctx, db, request)
+	return args.Get(0).(*model.Wallet), args.Error(1)
 }
 
 func (m *MockWallet) DetachHandler(ctx context.Context, db *gorm.DB, preparation string, wallet string) (*model.Preparation, error) {

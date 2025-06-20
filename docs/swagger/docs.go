@@ -5532,6 +5532,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/wallet/create": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Create new wallet",
+                "operationId": "CreateWallet",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/wallet.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Wallet"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/wallet/{address}": {
             "delete": {
                 "tags": [
@@ -6078,8 +6124,11 @@ const docTemplate = `{
         "model.Deal": {
             "type": "object",
             "properties": {
-                "clientId": {
+                "clientActorId": {
                     "type": "string"
+                },
+                "clientId": {
+                    "type": "integer"
                 },
                 "createdAt": {
                     "type": "string"
@@ -6501,19 +6550,60 @@ const docTemplate = `{
         "model.Wallet": {
             "type": "object",
             "properties": {
+                "actorId": {
+                    "description": "ActorID is the short ID of the wallet",
+                    "type": "string"
+                },
+                "actorName": {
+                    "description": "ActorName is readable label for the wallet",
+                    "type": "string"
+                },
                 "address": {
                     "description": "Address is the Filecoin full address of the wallet",
                     "type": "string"
                 },
+                "balance": {
+                    "description": "Balance is in Fil cached from chain",
+                    "type": "number"
+                },
+                "balancePlus": {
+                    "description": "BalancePlus is in Fil+ cached from chain",
+                    "type": "number"
+                },
+                "balanceUpdatedAt": {
+                    "description": "BalanceUpdatedAt is a timestamp when balance info was last pulled from chain",
+                    "type": "string"
+                },
+                "contactInfo": {
+                    "description": "ContactInfo is optional email for SP wallets",
+                    "type": "string"
+                },
                 "id": {
-                    "description": "ID is the short ID of the wallet",
+                    "type": "integer"
+                },
+                "location": {
+                    "description": "Location is optional region, country for SP wallets",
                     "type": "string"
                 },
                 "privateKey": {
                     "description": "PrivateKey is the private key of the wallet",
                     "type": "string"
+                },
+                "walletType": {
+                    "$ref": "#/definitions/model.WalletType"
                 }
             }
+        },
+        "model.WalletType": {
+            "type": "string",
+            "enum": [
+                "UserWallet",
+                "SPWallet"
+            ],
+            "x-enum-varnames": [
+                "UserWallet",
+                "SPWallet"
+            ]
         },
         "schedule.CreateRequest": {
             "type": "object",
@@ -16402,6 +16492,15 @@ const docTemplate = `{
         },
         "store.PieceReader": {
             "type": "object"
+        },
+        "wallet.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "keyType": {
+                    "description": "This is either \"secp256k1\" or \"bls\"",
+                    "type": "string"
+                }
+            }
         },
         "wallet.ImportRequest": {
             "type": "object",
