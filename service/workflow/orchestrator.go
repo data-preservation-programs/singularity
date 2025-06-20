@@ -134,8 +134,8 @@ func (o *WorkflowOrchestrator) HandleJobCompletion(
 		jobID, job.Type, preparation.Name)
 
 	// Acquire preparation-specific lock to prevent concurrent workflow transitions
-	o.lockPreparation(preparation.ID)
-	defer o.unlockPreparation(preparation.ID)
+	o.lockPreparation(uint(preparation.ID))
+	defer o.unlockPreparation(uint(preparation.ID))
 
 	// Handle job progression based on type
 	switch job.Type {
@@ -461,8 +461,8 @@ func (o *WorkflowOrchestrator) checkPreparationWorkflow(
 	preparation *model.Preparation,
 ) error {
 	// Acquire preparation-specific lock to prevent concurrent workflow transitions
-	o.lockPreparation(preparation.ID)
-	defer o.unlockPreparation(preparation.ID)
+	o.lockPreparation(uint(preparation.ID))
+	defer o.unlockPreparation(uint(preparation.ID))
 	// Get job counts by type and state
 	type JobCount struct {
 		Type  model.JobType  `json:"type"`

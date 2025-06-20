@@ -155,29 +155,31 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 
 	// Create preparation with basic fields
 	preparation := &model.Preparation{
-		MaxSize:             int64(maxSize),
-		PieceSize:           int64(pieceSize),
-		MinPieceSize:        int64(minPieceSize),
-		SourceStorages:      sources,
-		OutputStorages:      outputs,
-		DeleteAfterExport:   request.DeleteAfterExport,
-		Name:                request.Name,
-		NoInline:            request.NoInline,
-		NoDag:               request.NoDag,
-		AutoCreateDeals:     request.AutoCreateDeals,
-		DealPricePerGB:      request.DealPricePerGB,
-		DealPricePerGBEpoch: request.DealPricePerGBEpoch,
-		DealPricePerDeal:    request.DealPricePerDeal,
-		DealDuration:        request.DealDuration,
-		DealStartDelay:      request.DealStartDelay,
-		DealVerified:        request.DealVerified,
-		DealKeepUnsealed:    request.DealKeepUnsealed,
-		DealAnnounceToIPNI:  request.DealAnnounceToIPNI,
-		DealProvider:        request.DealProvider,
-		DealHTTPHeaders:     request.DealHTTPHeaders,
-		DealURLTemplate:     request.DealURLTemplate,
-		WalletValidation:    request.WalletValidation,
-		SPValidation:        request.SPValidation,
+		MaxSize:           int64(maxSize),
+		PieceSize:         int64(pieceSize),
+		MinPieceSize:      int64(minPieceSize),
+		SourceStorages:    sources,
+		OutputStorages:    outputs,
+		DeleteAfterExport: request.DeleteAfterExport,
+		Name:              request.Name,
+		NoInline:          request.NoInline,
+		NoDag:             request.NoDag,
+		DealConfig: model.DealConfig{
+			AutoCreateDeals:     request.AutoCreateDeals,
+			DealPricePerGb:      request.DealPricePerGB,
+			DealPricePerGbEpoch: request.DealPricePerGBEpoch,
+			DealPricePerDeal:    request.DealPricePerDeal,
+			DealDuration:        request.DealDuration,
+			DealStartDelay:      request.DealStartDelay,
+			DealVerified:        request.DealVerified,
+			DealKeepUnsealed:    request.DealKeepUnsealed,
+			DealAnnounceToIpni:  request.DealAnnounceToIPNI,
+			DealProvider:        request.DealProvider,
+			DealHTTPHeaders:     request.DealHTTPHeaders,
+			DealURLTemplate:     request.DealURLTemplate,
+		},
+		WalletValidation: request.WalletValidation,
+		SPValidation:     request.SPValidation,
 	}
 
 	// Apply deal template if specified and auto-deal creation is enabled
@@ -226,7 +228,7 @@ func (DefaultHandler) CreatePreparationHandler(
 	}
 
 	// Perform validation if auto-deal creation is enabled
-	if preparation.AutoCreateDeals {
+	if preparation.DealConfig.AutoCreateDeals {
 		err = performValidation(ctx, db, preparation)
 		if err != nil {
 			return nil, errors.WithStack(err)
@@ -272,7 +274,7 @@ func performValidation(ctx context.Context, db *gorm.DB, preparation *model.Prep
 		"preparation_name": preparation.Name,
 		"preparation_id":   strconv.FormatUint(uint64(preparation.ID), 10),
 		"auto_create_deals": func() string {
-			if preparation.AutoCreateDeals {
+			if preparation.DealConfig.AutoCreateDeals {
 				return "true"
 			}
 			return "false"
@@ -394,7 +396,7 @@ func performSPValidation(ctx context.Context, db *gorm.DB, preparation *model.Pr
 	spValidator := storage.DefaultSPValidator
 
 	// Check if a storage provider is specified
-	if preparation.DealProvider == "" {
+	if preparation.DealConfig.DealProvider == "" {
 		// Try to get a default storage provider
 		defaultSP, err := spValidator.GetDefaultStorageProvider(ctx, db, "auto-deal-creation")
 		if err != nil {
@@ -413,7 +415,7 @@ func performSPValidation(ctx context.Context, db *gorm.DB, preparation *model.Pr
 		}
 
 		// Update preparation with default provider
-		preparation.DealProvider = defaultSP.ProviderID
+		preparation.DealConfig.DealProvider = defaultSP.ProviderID
 
 		_, err = notificationHandler.LogInfo(ctx, db, "dataprep-create",
 			"Default Storage Provider Selected",
@@ -435,7 +437,7 @@ func performSPValidation(ctx context.Context, db *gorm.DB, preparation *model.Pr
 		"Storage provider validation is enabled for auto-deal creation",
 		model.ConfigMap{
 			"preparation_name": preparation.Name,
-			"provider_id":      preparation.DealProvider,
+			"provider_id":      preparation.DealConfig.DealProvider,
 		})
 	if err != nil {
 		return errors.WithStack(err)

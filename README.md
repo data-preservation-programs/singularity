@@ -39,7 +39,7 @@ go build -o singularity .
 singularity onboard \
   --name "my-dataset" \
   --source "/path/to/data" \
-  --enable-deals \
+  --auto-create-deals \
   --deal-provider "f01234" \
   --deal-verified \
   --deal-price-per-gb 0.0000001 \
@@ -71,7 +71,7 @@ All stages progress automatically with event-driven triggering - no polling or m
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--enable-deals` | Enable automatic deal creation | `true` |
+| `--auto-create-deals` | Enable automatic deal creation | `true` |
 | `--deal-provider` | Storage provider ID (e.g., f01234) | Required |
 | `--deal-verified` | Create verified deals | `false` |
 | `--deal-price-per-gb` | Price per GB per epoch | `0` |
@@ -107,11 +107,11 @@ Onboard data to different providers with different strategies:
 ```bash
 # Hot storage with fast provider
 singularity onboard --name "hot-data" --source "/critical/data" \
-  --deal-provider "f01234" --deal-price-per-gb 0.000001 --enable-deals
+  --deal-provider "f01234" --deal-price-per-gb 0.000001 --auto-create-deals
 
 # Cold storage with economical provider  
 singularity onboard --name "cold-data" --source "/archive/data" \
-  --deal-provider "f05678" --deal-price-per-gb 0.0000001 --enable-deals
+  --deal-provider "f05678" --deal-price-per-gb 0.0000001 --auto-create-deals
 ```
 
 ### Conditional Auto-Deals
@@ -120,12 +120,12 @@ Use validation to control when deals are created:
 
 ```bash
 # Only create deals if wallet has sufficient balance
-singularity onboard --name "conditional" --source "/data" --enable-deals \
-  --deal-provider "f01234" --validate-wallet
+singularity onboard --name "conditional" --source "/data" --auto-create-deals \
+  --deal-provider "f01234" --wallet-validation
 
 # Only create deals if provider is verified  
-singularity onboard --name "verified-only" --source "/data" --enable-deals \
-  --deal-provider "f01234" --validate-provider
+singularity onboard --name "verified-only" --source "/data" --auto-create-deals \
+  --deal-provider "f01234" --sp-validation
 ```
 
 ### Monitoring
@@ -215,7 +215,7 @@ singularity run unified --max-workers 10
 ### Common Issues
 
 **Auto-deal not triggering:**
-- Ensure `--enable-deals` is enabled when using `onboard`
+- Ensure `--auto-create-deals` is enabled when using `onboard`
 - Verify wallet is attached: `singularity prep list-wallets <prep>`
 - Check all jobs are complete
 - Verify unified service is running: `singularity run unified`
@@ -235,7 +235,7 @@ singularity run unified --max-workers 10
 
 ```bash
 # Test onboard workflow
-singularity onboard --name "test-dataset" --source "/test/data" --enable-deals
+singularity onboard --name "test-dataset" --source "/test/data" --auto-create-deals
 
 # View detailed logs
 singularity run unified --max-workers 3

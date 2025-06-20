@@ -21,7 +21,7 @@ DESCRIPTION:
    This is the simplest way to onboard data from source to storage deals.
 
 OPTIONS:
-   --enable-deals                     Enable automatic deal creation after preparation completion (default: true)
+   --auto-create-deals                Enable automatic deal creation after preparation completion (default: true)
    --max-size value                   Maximum size of a single CAR file (default: "31.5GiB")
    --max-workers value                Maximum number of workers to run (default: 3)
    --name value                       Name for the preparation
@@ -30,8 +30,8 @@ OPTIONS:
    --source value [ --source value ]  Local source path(s) to onboard
    --start-workers                    Start managed workers to process jobs automatically (default: true)
    --timeout value                    Timeout for waiting for completion (0 = no timeout) (default: 0s)
-   --validate-provider                Enable storage provider validation (default: false)
-   --validate-wallet                  Enable wallet balance validation (default: false)
+   --sp-validation                    Enable storage provider validation (default: false)
+   --wallet-validation                Enable wallet balance validation (default: false)
    --wait-for-completion              Wait and monitor until all jobs complete (default: false)
 
    Deal Settings

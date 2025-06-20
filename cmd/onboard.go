@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/job"
+	storageHandlers "github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/workermanager"
 	"github.com/data-preservation-programs/singularity/service/workflow"
@@ -17,6 +19,19 @@ import (
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
+
+// OnboardResult represents the JSON output for the onboard command
+type OnboardResult struct {
+	Success       bool                   `json:"success"`
+	PreparationID uint32                 `json:"preparationId"`
+	Name          string                 `json:"name"`
+	SourcePaths   []string               `json:"sourcePaths"`
+	OutputPaths   []string               `json:"outputPaths"`
+	AutoDeals     bool                   `json:"autoDeals"`
+	WorkersCount  int                    `json:"workersCount"`
+	NextSteps     []string               `json:"nextSteps"`
+	Error         string                 `json:"error,omitempty"`
+}
 
 // OnboardCmd provides a single command for complete data onboarding
 var OnboardCmd = &cli.Command{
@@ -62,7 +77,7 @@ This is the simplest way to onboard data from source to storage deals.`,
 
 		// Deal configuration
 		&cli.BoolFlag{
-			Name:  "enable-deals",
+			Name:  "auto-create-deals",
 			Usage: "Enable automatic deal creation after preparation completion",
 			Value: true,
 		},
@@ -120,83 +135,162 @@ This is the simplest way to onboard data from source to storage deals.`,
 
 		// Validation
 		&cli.BoolFlag{
-			Name:  "validate-wallet",
+			Name:  "wallet-validation",
 			Usage: "Enable wallet balance validation",
 		},
 		&cli.BoolFlag{
-			Name:  "validate-provider",
+			Name:  "sp-validation",
 			Usage: "Enable storage provider validation",
+		},
+
+		// Output format
+		&cli.BoolFlag{
+			Name:  "json",
+			Usage: "Output result in JSON format for automation",
 		},
 	},
 	Action: func(c *cli.Context) error {
-		fmt.Println("🚀 Starting unified data onboarding...")
+		isJSON := c.Bool("json")
+		
+		// Helper function to output JSON error and exit
+		outputJSONError := func(msg string, err error) error {
+			if isJSON {
+				result := OnboardResult{
+					Success: false,
+					Error:   fmt.Sprintf("%s: %v", msg, err),
+				}
+				data, _ := json.Marshal(result)
+				fmt.Println(string(data))
+			}
+			return errors.Wrap(err, msg)
+		}
+
+		if !isJSON {
+			fmt.Println("🚀 Starting unified data onboarding...")
+		}
 
 		// Initialize database
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return errors.WithStack(err)
+			return outputJSONError("failed to initialize database", err)
 		}
 		defer closer.Close()
 
 		ctx := c.Context
 
 		// Step 1: Create preparation with deal configuration
-		fmt.Println("\n📋 Creating data preparation...")
+		if !isJSON {
+			fmt.Println("\n📋 Creating data preparation...")
+		}
 		prep, err := createPreparationForOnboarding(ctx, db, c)
 		if err != nil {
-			return errors.Wrap(err, "failed to create preparation")
+			return outputJSONError("failed to create preparation", err)
 		}
-		fmt.Printf("✓ Created preparation: %s (ID: %d)\n", prep.Name, prep.ID)
+		if !isJSON {
+			fmt.Printf("✓ Created preparation: %s (ID: %d)\n", prep.Name, prep.ID)
+		}
 
 		// Step 2: Enable workflow orchestration
-		fmt.Println("\n⚙️  Enabling workflow orchestration...")
+		if !isJSON {
+			fmt.Println("\n⚙️  Enabling workflow orchestration...")
+		}
 		workflow.DefaultOrchestrator.SetEnabled(true)
-		fmt.Println("✓ Automatic job progression enabled (scan → pack → daggen → deals)")
+		if !isJSON {
+			fmt.Println("✓ Automatic job progression enabled (scan → pack → daggen → deals)")
+		}
 
 		// Step 3: Start workers if requested
 		var workerManager *workermanager.WorkerManager
+		workersCount := 0
 		if c.Bool("start-workers") {
-			fmt.Println("\n👷 Starting managed workers...")
+			if !isJSON {
+				fmt.Println("\n👷 Starting managed workers...")
+			}
 			workerManager, err = startManagedWorkers(ctx, db, c.Int("max-workers"))
 			if err != nil {
-				return errors.Wrap(err, "failed to start workers")
+				return outputJSONError("failed to start workers", err)
 			}
-			fmt.Printf("✓ Started %d managed workers\n", c.Int("max-workers"))
+			workersCount = c.Int("max-workers")
+			if !isJSON {
+				fmt.Printf("✓ Started %d managed workers\n", workersCount)
+			}
 		}
 
 		// Step 4: Start scanning
-		fmt.Println("\n🔍 Starting initial scanning...")
+		if !isJSON {
+			fmt.Println("\n🔍 Starting initial scanning...")
+		}
 		err = startScanningForPreparation(ctx, db, prep)
 		if err != nil {
-			return errors.Wrap(err, "failed to start scanning")
+			return outputJSONError("failed to start scanning", err)
 		}
-		fmt.Println("✓ Scanning started for all source attachments")
+		if !isJSON {
+			fmt.Println("✓ Scanning started for all source attachments")
+		}
 
 		// Step 5: Monitor progress if requested
 		if c.Bool("wait-for-completion") {
-			fmt.Println("\n📊 Monitoring progress...")
+			if !isJSON {
+				fmt.Println("\n📊 Monitoring progress...")
+			}
 			err = monitorProgress(ctx, db, prep, c.Duration("timeout"))
 			if err != nil {
-				return errors.Wrap(err, "monitoring failed")
-			}
-		} else {
-			fmt.Println("\n✅ Onboarding initiated successfully!")
-			fmt.Println("\n📝 Next steps:")
-			fmt.Println("   • Monitor progress: singularity prep status", prep.Name)
-			fmt.Println("   • Check jobs: singularity job list")
-			if c.Bool("start-workers") {
-				fmt.Println("   • Workers will process jobs automatically")
-			} else {
-				fmt.Println("   • Start workers: singularity run unified")
+				return outputJSONError("monitoring failed", err)
 			}
 		}
 
 		// Cleanup workers if we started them
 		if workerManager != nil {
-			fmt.Println("\n🧹 Cleaning up workers...")
+			if !isJSON {
+				fmt.Println("\n🧹 Cleaning up workers...")
+			}
 			err = workerManager.Stop(ctx)
 			if err != nil {
-				fmt.Printf("⚠ Warning: failed to stop workers cleanly: %v\n", err)
+				if !isJSON {
+					fmt.Printf("⚠ Warning: failed to stop workers cleanly: %v\n", err)
+				}
+			}
+		}
+
+		// Output results
+		if isJSON {
+			// Prepare next steps
+			nextSteps := []string{
+				fmt.Sprintf("Monitor progress: singularity prep status %s", prep.Name),
+				"Check jobs: singularity job list",
+			}
+			if c.Bool("start-workers") {
+				nextSteps = append(nextSteps, "Workers will process jobs automatically")
+			} else {
+				nextSteps = append(nextSteps, "Start workers: singularity run unified")
+			}
+
+			result := OnboardResult{
+				Success:       true,
+				PreparationID: uint32(prep.ID),
+				Name:          prep.Name,
+				SourcePaths:   c.StringSlice("source"),
+				OutputPaths:   c.StringSlice("output"),
+				AutoDeals:     c.Bool("auto-create-deals"),
+				WorkersCount:  workersCount,
+				NextSteps:     nextSteps,
+			}
+			data, err := json.Marshal(result)
+			if err != nil {
+				return errors.Wrap(err, "failed to marshal JSON result")
+			}
+			fmt.Println(string(data))
+		} else {
+			if !c.Bool("wait-for-completion") {
+				fmt.Println("\n✅ Onboarding initiated successfully!")
+				fmt.Println("\n📝 Next steps:")
+				fmt.Println("   • Monitor progress: singularity prep status", prep.Name)
+				fmt.Println("   • Check jobs: singularity job list")
+				if c.Bool("start-workers") {
+					fmt.Println("   • Workers will process jobs automatically")
+				} else {
+					fmt.Println("   • Start workers: singularity run unified")
+				}
 			}
 		}
 
@@ -233,14 +327,14 @@ func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Con
 		OutputStorages:   outputStorages,
 		MaxSizeStr:       c.String("max-size"),
 		NoDag:            c.Bool("no-dag"),
-		AutoCreateDeals:  c.Bool("enable-deals"),
+		AutoCreateDeals:  c.Bool("auto-create-deals"),
 		DealProvider:     c.String("deal-provider"),
 		DealPricePerGB:   c.Float64("deal-price-per-gb"),
 		DealDuration:     c.Duration("deal-duration"),
 		DealStartDelay:   c.Duration("deal-start-delay"),
 		DealVerified:     c.Bool("deal-verified"),
-		WalletValidation: c.Bool("validate-wallet"),
-		SPValidation:     c.Bool("validate-provider"),
+		WalletValidation: c.Bool("wallet-validation"),
+		SPValidation:     c.Bool("sp-validation"),
 	})
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -438,10 +532,6 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 
 // Helper function to create local storage if it doesn't exist
 func createLocalStorageIfNotExist(ctx context.Context, db *gorm.DB, path, prefix string) (*model.Storage, error) {
-	// This would use the same logic as the dataprep create command
-	// For brevity, we'll create a simple implementation
-	storageName := fmt.Sprintf("%s-%s-%d", prefix, util.RandomName(), time.Now().Unix())
-
 	// Check if storage already exists for this path
 	var existing model.Storage
 	err := db.WithContext(ctx).Where("type = ? AND path = ?", "local", path).First(&existing).Error
@@ -453,15 +543,20 @@ func createLocalStorageIfNotExist(ctx context.Context, db *gorm.DB, path, prefix
 		return nil, errors.WithStack(err)
 	}
 
-	// Create new storage
-	// This is a simplified version - in practice would use the storage handler
-	storage := &model.Storage{
-		Name: storageName,
-		Type: "local",
-		Path: path,
+	// Generate a unique storage name
+	storageName := fmt.Sprintf("%s-%s-%d", prefix, util.RandomName(), time.Now().Unix())
+
+	// Use the storage handler to create new storage with proper validation
+	storageHandler := storageHandlers.Default
+	request := storageHandlers.CreateRequest{
+		Name:         storageName,
+		Path:         path,
+		Provider:     "local",
+		Config:       make(map[string]string),
+		ClientConfig: model.ClientConfig{},
 	}
 
-	err = db.WithContext(ctx).Create(storage).Error
+	storage, err := storageHandler.CreateStorageHandler(ctx, db, "local", request)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

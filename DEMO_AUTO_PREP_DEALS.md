@@ -140,7 +140,7 @@ echo "Creating research dataset with template override..."
   --source "./demo-data" \
   --auto-create-deals \
   --deal-template "research-archive" \
-  --deal-provider "f01000" \  # Override template provider
+  --deal-provider "f01000" \
   --auto-start \
   --auto-progress
 
@@ -240,9 +240,9 @@ When the demo completes successfully, you should see:
   --source "/path/to/data" \
   --auto-create-deals \
   --deal-template "research-archive" \
-  --deal-provider "f01000" \        # Override template provider
-  --deal-verified=false \           # Override template verification
-  --deal-price-per-gb 0.0000000005  # Override template pricing
+  --deal-provider "f01000" \
+  --deal-verified=false \
+  --deal-price-per-gb 0.0000000005
 
 # Multiple templates for different tiers
 ./singularity deal-template create --name "hot-storage" --deal-duration 180days --deal-price-per-gb 0.0000000005

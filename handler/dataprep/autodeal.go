@@ -54,7 +54,7 @@ func (s *AutoDealService) CreateAutomaticDealSchedule(
 	}
 
 	// Check if auto-deal creation is enabled
-	if !preparation.AutoCreateDeals {
+	if !preparation.DealConfig.AutoCreateDeals {
 		s.logInfo(ctx, db, "Auto-Deal Not Enabled",
 			fmt.Sprintf("Preparation %s does not have auto-deal creation enabled", preparation.Name),
 			model.ConfigMap{
@@ -253,33 +253,33 @@ func (s *AutoDealService) ProcessReadyPreparations(
 func (s *AutoDealService) buildDealScheduleRequest(preparation *model.Preparation) *schedule.CreateRequest {
 	request := &schedule.CreateRequest{
 		Preparation:     strconv.FormatUint(uint64(preparation.ID), 10),
-		Provider:        preparation.DealProvider,
-		PricePerGBEpoch: preparation.DealPricePerGBEpoch,
-		PricePerGB:      preparation.DealPricePerGB,
-		PricePerDeal:    preparation.DealPricePerDeal,
-		Verified:        preparation.DealVerified,
-		IPNI:            preparation.DealAnnounceToIPNI,
-		KeepUnsealed:    preparation.DealKeepUnsealed,
-		URLTemplate:     preparation.DealURLTemplate,
+		Provider:        preparation.DealConfig.DealProvider,
+		PricePerGBEpoch: preparation.DealConfig.DealPricePerGbEpoch,
+		PricePerGB:      preparation.DealConfig.DealPricePerGb,
+		PricePerDeal:    preparation.DealConfig.DealPricePerDeal,
+		Verified:        preparation.DealConfig.DealVerified,
+		IPNI:            preparation.DealConfig.DealAnnounceToIpni,
+		KeepUnsealed:    preparation.DealConfig.DealKeepUnsealed,
+		URLTemplate:     preparation.DealConfig.DealURLTemplate,
 		Notes:           "Automatically created by auto-deal system",
 	}
 
 	// Convert HTTP headers from ConfigMap to []string
 	var httpHeaders []string
-	for key, value := range preparation.DealHTTPHeaders {
+	for key, value := range preparation.DealConfig.DealHTTPHeaders {
 		httpHeaders = append(httpHeaders, key+"="+value)
 	}
 	request.HTTPHeaders = httpHeaders
 
 	// Convert durations to strings
-	if preparation.DealStartDelay > 0 {
-		request.StartDelay = preparation.DealStartDelay.String()
+	if preparation.DealConfig.DealStartDelay > 0 {
+		request.StartDelay = preparation.DealConfig.DealStartDelay.String()
 	} else {
 		request.StartDelay = "72h" // Default
 	}
 
-	if preparation.DealDuration > 0 {
-		request.Duration = preparation.DealDuration.String()
+	if preparation.DealConfig.DealDuration > 0 {
+		request.Duration = preparation.DealConfig.DealDuration.String()
 	} else {
 		request.Duration = "12840h" // Default (~535 days)
 	}
@@ -331,7 +331,7 @@ func (s *AutoDealService) validateProviderForDealCreation(
 	preparation *model.Preparation,
 	validationErrors *[]string,
 ) error {
-	if preparation.DealProvider == "" {
+	if preparation.DealConfig.DealProvider == "" {
 		// Try to get a default provider
 		defaultSP, err := s.spValidator.GetDefaultStorageProvider(ctx, db, "auto-deal-creation")
 		if err != nil {
@@ -339,7 +339,7 @@ func (s *AutoDealService) validateProviderForDealCreation(
 			return err
 		}
 		// Update preparation with default provider for deal creation
-		preparation.DealProvider = defaultSP.ProviderID
+		preparation.DealConfig.DealProvider = defaultSP.ProviderID
 
 		s.logInfo(ctx, db, "Using Default Provider",
 			fmt.Sprintf("No provider specified, using default %s", defaultSP.ProviderID),
@@ -350,14 +350,14 @@ func (s *AutoDealService) validateProviderForDealCreation(
 	}
 
 	// Validate the provider (this will use the default if we just set it)
-	result, err := s.spValidator.ValidateStorageProvider(ctx, db, lotusClient, preparation.DealProvider, strconv.FormatUint(uint64(preparation.ID), 10))
+	result, err := s.spValidator.ValidateStorageProvider(ctx, db, lotusClient, preparation.DealConfig.DealProvider, strconv.FormatUint(uint64(preparation.ID), 10))
 	if err != nil {
 		*validationErrors = append(*validationErrors, fmt.Sprintf("Provider validation error: %v", err))
 		return err
 	}
 
 	if !result.IsValid {
-		*validationErrors = append(*validationErrors, fmt.Sprintf("Provider %s is not valid: %s", preparation.DealProvider, result.Message))
+		*validationErrors = append(*validationErrors, fmt.Sprintf("Provider %s is not valid: %s", preparation.DealConfig.DealProvider, result.Message))
 		return errors.New("provider validation failed")
 	}
 

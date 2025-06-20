@@ -6,8 +6,11 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
+
+var logger = log.Logger("dealtemplate")
 
 type Handler struct{}
 
@@ -45,19 +48,22 @@ func (h *Handler) CreateHandler(ctx context.Context, db *gorm.DB, request Create
 	}
 
 	template := model.DealTemplate{
-		Name:                request.Name,
-		Description:         request.Description,
-		DealPricePerGB:      request.DealPricePerGB,
-		DealPricePerGBEpoch: request.DealPricePerGBEpoch,
-		DealPricePerDeal:    request.DealPricePerDeal,
-		DealDuration:        request.DealDuration,
-		DealStartDelay:      request.DealStartDelay,
-		DealVerified:        request.DealVerified,
-		DealKeepUnsealed:    request.DealKeepUnsealed,
-		DealAnnounceToIPNI:  request.DealAnnounceToIPNI,
-		DealProvider:        request.DealProvider,
-		DealHTTPHeaders:     request.DealHTTPHeaders,
-		DealURLTemplate:     request.DealURLTemplate,
+		Name:        request.Name,
+		Description: request.Description,
+		DealConfig: model.DealConfig{
+			AutoCreateDeals:     true, // Templates are for auto-creation
+			DealPricePerGb:      request.DealPricePerGB,
+			DealPricePerGbEpoch: request.DealPricePerGBEpoch,
+			DealPricePerDeal:    request.DealPricePerDeal,
+			DealDuration:        request.DealDuration,
+			DealStartDelay:      request.DealStartDelay,
+			DealVerified:        request.DealVerified,
+			DealKeepUnsealed:    request.DealKeepUnsealed,
+			DealAnnounceToIpni:  request.DealAnnounceToIPNI,
+			DealProvider:        request.DealProvider,
+			DealHTTPHeaders:     request.DealHTTPHeaders,
+			DealURLTemplate:     request.DealURLTemplate,
+		},
 	}
 
 	err = db.Create(&template).Error
@@ -199,44 +205,20 @@ func (h *Handler) DeleteHandler(ctx context.Context, db *gorm.DB, idOrName strin
 	return nil
 }
 
-// ApplyTemplateToPreparation applies deal template parameters to a preparation
+// ApplyTemplateToPreparation applies deal template parameters to a preparation.
+// Preparation fields take precedence. Template values are only applied to fields that are unset
+// (i.e. zero-value: 0, false, "", or nil). This ensures user-specified values are not overridden.
 func (h *Handler) ApplyTemplateToPreparation(template *model.DealTemplate, prep *model.Preparation) {
 	if template == nil {
+		logger.Debug("No template provided, skipping template application")
 		return
 	}
 
-	// Only apply template values if the preparation doesn't have values set
-	if prep.DealPricePerGB == 0 {
-		prep.DealPricePerGB = template.DealPricePerGB
-	}
-	if prep.DealPricePerGBEpoch == 0 {
-		prep.DealPricePerGBEpoch = template.DealPricePerGBEpoch
-	}
-	if prep.DealPricePerDeal == 0 {
-		prep.DealPricePerDeal = template.DealPricePerDeal
-	}
-	if prep.DealDuration == 0 {
-		prep.DealDuration = template.DealDuration
-	}
-	if prep.DealStartDelay == 0 {
-		prep.DealStartDelay = template.DealStartDelay
-	}
-	if !prep.DealVerified {
-		prep.DealVerified = template.DealVerified
-	}
-	if !prep.DealKeepUnsealed {
-		prep.DealKeepUnsealed = template.DealKeepUnsealed
-	}
-	if !prep.DealAnnounceToIPNI {
-		prep.DealAnnounceToIPNI = template.DealAnnounceToIPNI
-	}
-	if prep.DealProvider == "" {
-		prep.DealProvider = template.DealProvider
-	}
-	if prep.DealURLTemplate == "" {
-		prep.DealURLTemplate = template.DealURLTemplate
-	}
-	if len(prep.DealHTTPHeaders) == 0 && len(template.DealHTTPHeaders) > 0 {
-		prep.DealHTTPHeaders = template.DealHTTPHeaders
-	}
+	logger.Debugf("Applying deal template %s to preparation %s", template.Name, prep.Name)
+
+	// Use the DealConfig ApplyOverrides method for clean and consistent override logic
+	prep.DealConfig.ApplyOverrides(&template.DealConfig)
+
+	logger.Debugf("Applied template %s to preparation %s - template values applied for unset fields only", 
+		template.Name, prep.Name)
 }

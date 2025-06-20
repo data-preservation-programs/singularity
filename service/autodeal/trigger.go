@@ -89,7 +89,7 @@ func (s *TriggerService) TriggerForJobCompletion(
 	}
 
 	// Check if preparation has auto-deal enabled
-	if !job.Attachment.Preparation.AutoCreateDeals {
+	if !job.Attachment.Preparation.DealConfig.AutoCreateDeals {
 		logger.Debugf("Preparation %s does not have auto-deal enabled, skipping trigger",
 			job.Attachment.Preparation.Name)
 		return nil
