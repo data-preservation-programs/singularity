@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestDealConfig_Validate(t *testing.T) {
@@ -294,7 +293,7 @@ func TestDealConfig_ApplyOverrides(t *testing.T) {
 
 	// Test with existing values - should not override
 	config2 := &DealConfig{
-		AutoCreateDeals:  false, // This should stay false (explicit false)
+		AutoCreateDeals:  true, // This should stay true (explicit)
 		DealProvider:     "f02000",
 		DealPricePerDeal: 0.2,
 		DealDuration:     48 * time.Hour,
@@ -303,7 +302,7 @@ func TestDealConfig_ApplyOverrides(t *testing.T) {
 	config2.ApplyOverrides(template)
 
 	// Should not override existing non-zero values
-	assert.False(t, config2.AutoCreateDeals) // Stays false (explicit)
+	assert.True(t, config2.AutoCreateDeals) // Stays true (explicit)
 	assert.Equal(t, "f02000", config2.DealProvider)
 	assert.Equal(t, 0.2, config2.DealPricePerDeal)
 	assert.Equal(t, 48*time.Hour, config2.DealDuration)

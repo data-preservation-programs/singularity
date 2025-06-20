@@ -77,7 +77,7 @@ func TestGenerateFixedBytes(t *testing.T) {
 	}
 }
 
-func TestGenerateRandomBytes(t *testing.T) {
+func TestGenerateRandomBytesVariousLengths(t *testing.T) {
 	// Test with various lengths
 	testCases := []int{0, 1, 10, 100}
 
