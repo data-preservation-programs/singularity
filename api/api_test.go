@@ -313,6 +313,7 @@ func TestAllAPIs(t *testing.T) {
 				require.NotNil(t, resp.Payload)
 			})
 
+
 			t.Run("CreateWallet_privateKeyShouldBeRedacted", func(t *testing.T) {
 				resp, err := client.Wallet.CreateWallet(&wallet2.CreateWalletParams{
 					Request: &models.WalletCreateRequest{
