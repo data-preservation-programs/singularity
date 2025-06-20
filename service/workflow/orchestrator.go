@@ -98,7 +98,7 @@ func (o *WorkflowOrchestrator) unlockPreparation(preparationID uint) {
 	o.locksMutex.RLock()
 	mutex := o.preparationLocks[preparationID]
 	o.locksMutex.RUnlock()
-	
+
 	if mutex != nil {
 		mutex.Unlock()
 	}

@@ -22,15 +22,15 @@ import (
 
 // OnboardResult represents the JSON output for the onboard command
 type OnboardResult struct {
-	Success       bool                   `json:"success"`
-	PreparationID uint32                 `json:"preparationId"`
-	Name          string                 `json:"name"`
-	SourcePaths   []string               `json:"sourcePaths"`
-	OutputPaths   []string               `json:"outputPaths"`
-	AutoDeals     bool                   `json:"autoDeals"`
-	WorkersCount  int                    `json:"workersCount"`
-	NextSteps     []string               `json:"nextSteps"`
-	Error         string                 `json:"error,omitempty"`
+	Success       bool     `json:"success"`
+	PreparationID uint32   `json:"preparationId"`
+	Name          string   `json:"name"`
+	SourcePaths   []string `json:"sourcePaths"`
+	OutputPaths   []string `json:"outputPaths"`
+	AutoDeals     bool     `json:"autoDeals"`
+	WorkersCount  int      `json:"workersCount"`
+	NextSteps     []string `json:"nextSteps"`
+	Error         string   `json:"error,omitempty"`
 }
 
 // OnboardCmd provides a single command for complete data onboarding
@@ -151,7 +151,7 @@ This is the simplest way to onboard data from source to storage deals.`,
 	},
 	Action: func(c *cli.Context) error {
 		isJSON := c.Bool("json")
-		
+
 		// Helper function to output JSON error and exit
 		outputJSONError := func(msg string, err error) error {
 			if isJSON {

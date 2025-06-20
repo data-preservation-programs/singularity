@@ -28,7 +28,7 @@ func TestDefaultOrchestratorConfig(t *testing.T) {
 func TestNewWorkflowOrchestrator(t *testing.T) {
 	config := DefaultOrchestratorConfig()
 	orchestrator := NewWorkflowOrchestrator(config)
-	
+
 	assert.NotNil(t, orchestrator)
 	assert.Equal(t, config, orchestrator.config)
 	assert.True(t, orchestrator.enabled)
@@ -39,11 +39,11 @@ func TestNewWorkflowOrchestrator(t *testing.T) {
 
 func TestWorkflowOrchestrator_SetEnabled(t *testing.T) {
 	orchestrator := NewWorkflowOrchestrator(DefaultOrchestratorConfig())
-	
+
 	// Test enabling/disabling
 	orchestrator.SetEnabled(false)
 	assert.False(t, orchestrator.IsEnabled())
-	
+
 	orchestrator.SetEnabled(true)
 	assert.True(t, orchestrator.IsEnabled())
 }
@@ -52,7 +52,7 @@ func TestWorkflowOrchestrator_HandleJobCompletion_Disabled(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		orchestrator := NewWorkflowOrchestrator(DefaultOrchestratorConfig())
 		orchestrator.SetEnabled(false)
-		
+
 		err := orchestrator.HandleJobCompletion(ctx, db, nil, 1)
 		assert.NoError(t, err)
 	})
@@ -61,7 +61,7 @@ func TestWorkflowOrchestrator_HandleJobCompletion_Disabled(t *testing.T) {
 func TestWorkflowOrchestrator_HandleJobCompletion_JobNotFound(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		orchestrator := NewWorkflowOrchestrator(DefaultOrchestratorConfig())
-		
+
 		err := orchestrator.HandleJobCompletion(ctx, db, nil, 99999)
 		assert.NoError(t, err) // Should not error for missing job
 	})
@@ -71,7 +71,7 @@ func TestWorkflowOrchestrator_HandleScanCompletion(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		// Set up test data
 		preparation := &model.Preparation{
-			Name:      "test-prep",
+			Name: "test-prep",
 			SourceStorages: []model.Storage{
 				{
 					Name: "test-storage",
@@ -81,13 +81,13 @@ func TestWorkflowOrchestrator_HandleScanCompletion(t *testing.T) {
 			},
 		}
 		require.NoError(t, db.Create(preparation).Error)
-		
+
 		sourceAttachment := &model.SourceAttachment{
 			PreparationID: preparation.ID,
 			StorageID:     preparation.SourceStorages[0].ID,
 		}
 		require.NoError(t, db.Create(sourceAttachment).Error)
-		
+
 		// Create a completed scan job
 		scanJob := &model.Job{
 			Type:         model.Scan,
@@ -95,15 +95,15 @@ func TestWorkflowOrchestrator_HandleScanCompletion(t *testing.T) {
 			AttachmentID: sourceAttachment.ID,
 		}
 		require.NoError(t, db.Create(scanJob).Error)
-		
+
 		// Create mock handlers
 		orchestrator := NewWorkflowOrchestrator(DefaultOrchestratorConfig())
 		orchestrator.jobHandler = &job.DefaultHandler{}
 		orchestrator.notificationHandler = notification.Default
-		
+
 		// Test scan completion handling
 		err := orchestrator.HandleJobCompletion(ctx, db, nil, scanJob.ID)
-		
+
 		// Should not error (though actual pack job creation may fail due to missing setup)
 		assert.NoError(t, err)
 	})
@@ -113,7 +113,7 @@ func TestWorkflowOrchestrator_HandleScanCompletion_IncompleteScanJobs(t *testing
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		// Set up test data
 		preparation := &model.Preparation{
-			Name:      "test-prep",
+			Name: "test-prep",
 			SourceStorages: []model.Storage{
 				{
 					Name: "test-storage",
@@ -123,13 +123,13 @@ func TestWorkflowOrchestrator_HandleScanCompletion_IncompleteScanJobs(t *testing
 			},
 		}
 		require.NoError(t, db.Create(preparation).Error)
-		
+
 		sourceAttachment := &model.SourceAttachment{
 			PreparationID: preparation.ID,
 			StorageID:     preparation.SourceStorages[0].ID,
 		}
 		require.NoError(t, db.Create(sourceAttachment).Error)
-		
+
 		// Create completed and incomplete scan jobs
 		completedScanJob := &model.Job{
 			Type:         model.Scan,
@@ -137,20 +137,20 @@ func TestWorkflowOrchestrator_HandleScanCompletion_IncompleteScanJobs(t *testing
 			AttachmentID: sourceAttachment.ID,
 		}
 		require.NoError(t, db.Create(completedScanJob).Error)
-		
+
 		incompleteScanJob := &model.Job{
 			Type:         model.Scan,
 			State:        model.Processing,
 			AttachmentID: sourceAttachment.ID,
 		}
 		require.NoError(t, db.Create(incompleteScanJob).Error)
-		
+
 		orchestrator := NewWorkflowOrchestrator(DefaultOrchestratorConfig())
-		
+
 		// Test that pack jobs are not started when scan jobs are incomplete
 		err := orchestrator.handleScanCompletion(ctx, db, nil, preparation)
 		assert.NoError(t, err)
-		
+
 		// Verify no pack jobs were created
 		var packJobCount int64
 		err = db.Model(&model.Job{}).
@@ -166,24 +166,24 @@ func TestWorkflowOrchestrator_HandlePackCompletion_NoDag(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		// Set up test data with NoDag enabled
 		preparation := &model.Preparation{
-			Name:      "test-prep",
-			NoDag:     true,
+			Name:  "test-prep",
+			NoDag: true,
 			SourceStorages: []model.Storage{
 				{
-					Name: "test-storage", 
+					Name: "test-storage",
 					Type: "local",
 					Path: "/tmp/test",
 				},
 			},
 		}
 		require.NoError(t, db.Create(preparation).Error)
-		
+
 		sourceAttachment := &model.SourceAttachment{
 			PreparationID: preparation.ID,
 			StorageID:     preparation.SourceStorages[0].ID,
 		}
 		require.NoError(t, db.Create(sourceAttachment).Error)
-		
+
 		// Create a completed pack job
 		packJob := &model.Job{
 			Type:         model.Pack,
@@ -191,13 +191,13 @@ func TestWorkflowOrchestrator_HandlePackCompletion_NoDag(t *testing.T) {
 			AttachmentID: sourceAttachment.ID,
 		}
 		require.NoError(t, db.Create(packJob).Error)
-		
+
 		orchestrator := NewWorkflowOrchestrator(DefaultOrchestratorConfig())
 		orchestrator.triggerService = &autodeal.TriggerService{}
-		
+
 		// Test pack completion with NoDag - should skip directly to deal creation
 		err := orchestrator.handlePackCompletion(ctx, db, nil, preparation)
-		
+
 		// Should not error (though auto-deal creation may fail due to missing setup)
 		assert.NoError(t, err)
 	})
@@ -207,7 +207,7 @@ func TestWorkflowOrchestrator_ProcessPendingWorkflows_Disabled(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		orchestrator := NewWorkflowOrchestrator(DefaultOrchestratorConfig())
 		orchestrator.SetEnabled(false)
-		
+
 		err := orchestrator.ProcessPendingWorkflows(ctx, db, nil)
 		assert.NoError(t, err)
 	})
@@ -217,29 +217,7 @@ func TestWorkflowOrchestrator_ProcessPendingWorkflows(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		// Set up test data
 		preparation := &model.Preparation{
-			Name:      "test-prep",
-			SourceStorages: []model.Storage{
-				{
-					Name: "test-storage",
-					Type: "local", 
-					Path: "/tmp/test",
-				},
-			},
-		}
-		require.NoError(t, db.Create(preparation).Error)
-		
-		orchestrator := NewWorkflowOrchestrator(DefaultOrchestratorConfig())
-		
-		err := orchestrator.ProcessPendingWorkflows(ctx, db, nil)
-		assert.NoError(t, err)
-	})
-}
-
-func TestWorkflowOrchestrator_CheckPreparationWorkflow(t *testing.T) {
-	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		// Set up test data
-		preparation := &model.Preparation{
-			Name:      "test-prep",
+			Name: "test-prep",
 			SourceStorages: []model.Storage{
 				{
 					Name: "test-storage",
@@ -249,13 +227,35 @@ func TestWorkflowOrchestrator_CheckPreparationWorkflow(t *testing.T) {
 			},
 		}
 		require.NoError(t, db.Create(preparation).Error)
-		
+
+		orchestrator := NewWorkflowOrchestrator(DefaultOrchestratorConfig())
+
+		err := orchestrator.ProcessPendingWorkflows(ctx, db, nil)
+		assert.NoError(t, err)
+	})
+}
+
+func TestWorkflowOrchestrator_CheckPreparationWorkflow(t *testing.T) {
+	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		// Set up test data
+		preparation := &model.Preparation{
+			Name: "test-prep",
+			SourceStorages: []model.Storage{
+				{
+					Name: "test-storage",
+					Type: "local",
+					Path: "/tmp/test",
+				},
+			},
+		}
+		require.NoError(t, db.Create(preparation).Error)
+
 		sourceAttachment := &model.SourceAttachment{
 			PreparationID: preparation.ID,
 			StorageID:     preparation.SourceStorages[0].ID,
 		}
 		require.NoError(t, db.Create(sourceAttachment).Error)
-		
+
 		// Create a completed scan job
 		scanJob := &model.Job{
 			Type:         model.Scan,
@@ -263,13 +263,13 @@ func TestWorkflowOrchestrator_CheckPreparationWorkflow(t *testing.T) {
 			AttachmentID: sourceAttachment.ID,
 		}
 		require.NoError(t, db.Create(scanJob).Error)
-		
+
 		orchestrator := NewWorkflowOrchestrator(DefaultOrchestratorConfig())
 		orchestrator.jobHandler = &job.DefaultHandler{}
 		orchestrator.notificationHandler = notification.Default
-		
+
 		err := orchestrator.checkPreparationWorkflow(ctx, db, nil, preparation)
-		
+
 		// Should not error (though actual pack job creation may fail due to missing setup)
 		assert.NoError(t, err)
 	})
@@ -285,12 +285,12 @@ func TestWorkflowOrchestrator_ConfigurationDisabled(t *testing.T) {
 			PackToDagGen:         false,
 			DagGenToDeals:        false,
 		}
-		
+
 		orchestrator := NewWorkflowOrchestrator(config)
-		
+
 		// Set up test data
 		preparation := &model.Preparation{
-			Name:      "test-prep",
+			Name: "test-prep",
 			SourceStorages: []model.Storage{
 				{
 					Name: "test-storage",
@@ -300,24 +300,24 @@ func TestWorkflowOrchestrator_ConfigurationDisabled(t *testing.T) {
 			},
 		}
 		require.NoError(t, db.Create(preparation).Error)
-		
+
 		sourceAttachment := &model.SourceAttachment{
 			PreparationID: preparation.ID,
 			StorageID:     preparation.SourceStorages[0].ID,
 		}
 		require.NoError(t, db.Create(sourceAttachment).Error)
-		
+
 		scanJob := &model.Job{
 			Type:         model.Scan,
 			State:        model.Complete,
 			AttachmentID: sourceAttachment.ID,
 		}
 		require.NoError(t, db.Create(scanJob).Error)
-		
+
 		// Should do nothing when workflow stages are disabled
 		err := orchestrator.HandleJobCompletion(ctx, db, nil, scanJob.ID)
 		assert.NoError(t, err)
-		
+
 		// Verify no pack jobs were created
 		var packJobCount int64
 		err = db.Model(&model.Job{}).

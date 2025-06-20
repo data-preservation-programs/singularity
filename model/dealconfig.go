@@ -156,11 +156,11 @@ func (dc *DealConfig) SetStartDelayFromString(delayStr string) error {
 // ToMap converts the DealConfig to a map for template override operations
 func (dc *DealConfig) ToMap() map[string]interface{} {
 	result := make(map[string]interface{})
-	
+
 	// Use reflection-like approach with json marshaling/unmarshaling
 	jsonData, _ := json.Marshal(dc)
 	json.Unmarshal(jsonData, &result)
-	
+
 	return result
 }
 

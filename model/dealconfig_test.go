@@ -151,11 +151,11 @@ func TestDealConfig_IsEmpty(t *testing.T) {
 
 func TestDealConfig_SetDurationFromString(t *testing.T) {
 	tests := []struct {
-		name         string
-		durationStr  string
-		expectDur    time.Duration
-		expectErr    bool
-		errMsg       string
+		name        string
+		durationStr string
+		expectDur   time.Duration
+		expectErr   bool
+		errMsg      string
 	}{
 		{
 			name:        "valid epoch number",
@@ -199,7 +199,7 @@ func TestDealConfig_SetDurationFromString(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			config := &DealConfig{}
 			err := config.SetDurationFromString(tt.durationStr)
-			
+
 			if tt.expectErr {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errMsg)
@@ -255,7 +255,7 @@ func TestDealConfig_SetStartDelayFromString(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			config := &DealConfig{}
 			err := config.SetStartDelayFromString(tt.delayStr)
-			
+
 			if tt.expectErr {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errMsg)
@@ -311,11 +311,11 @@ func TestDealConfig_ApplyOverrides(t *testing.T) {
 
 func TestDealConfig_ToMap(t *testing.T) {
 	config := &DealConfig{
-		AutoCreateDeals:     true,
-		DealProvider:        "f01000",
-		DealPricePerDeal:    0.1,
-		DealDuration:        24 * time.Hour,
-		DealAnnounceToIpni:  true,
+		AutoCreateDeals:    true,
+		DealProvider:       "f01000",
+		DealPricePerDeal:   0.1,
+		DealDuration:       24 * time.Hour,
+		DealAnnounceToIpni: true,
 	}
 
 	result := config.ToMap()

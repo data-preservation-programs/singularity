@@ -21,7 +21,7 @@ import (
 func TestNewUsageCache(t *testing.T) {
 	cache := NewUsageCache[string](time.Millisecond * 100)
 	defer cache.Close()
-	
+
 	assert.NotNil(t, cache)
 	assert.NotNil(t, cache.data)
 	assert.Equal(t, time.Millisecond*100, cache.ttl)
@@ -30,14 +30,14 @@ func TestNewUsageCache(t *testing.T) {
 func TestUsageCache_SetAndGet(t *testing.T) {
 	cache := NewUsageCache[string](time.Second)
 	defer cache.Close()
-	
+
 	// Test setting and getting
 	cache.Set("key1", "value1")
-	
+
 	value, ok := cache.Get("key1")
 	assert.True(t, ok)
 	assert.Equal(t, "value1", *value)
-	
+
 	// Test getting non-existent key
 	_, ok = cache.Get("nonexistent")
 	assert.False(t, ok)
@@ -46,14 +46,14 @@ func TestUsageCache_SetAndGet(t *testing.T) {
 func TestUsageCache_Done(t *testing.T) {
 	cache := NewUsageCache[string](time.Second)
 	defer cache.Close()
-	
+
 	// Set a value and increment usage
 	cache.Set("key1", "value1")
 	cache.Get("key1") // This increments usage count
-	
+
 	// Test done decrements usage count
 	cache.Done("key1")
-	
+
 	// Test done on non-existent key doesn't panic
 	cache.Done("nonexistent")
 }
@@ -61,16 +61,16 @@ func TestUsageCache_Done(t *testing.T) {
 func TestUsageCache_TTL_Cleanup(t *testing.T) {
 	cache := NewUsageCache[string](time.Millisecond * 50)
 	defer cache.Close()
-	
+
 	// Set a value
 	cache.Set("key1", "value1")
-	
+
 	// Mark as done so usage count is 0
 	cache.Done("key1")
-	
+
 	// Wait for TTL + cleanup cycle
 	time.Sleep(time.Millisecond * 150)
-	
+
 	// Should still be available if cleanup didn't run yet
 	_, ok := cache.Get("key1")
 	// The cleanup might or might not have run, so we don't assert specific behavior
@@ -81,9 +81,9 @@ func TestUsageCache_TTL_Cleanup(t *testing.T) {
 func TestNewDownloadServer(t *testing.T) {
 	config := map[string]string{"test": "value"}
 	clientConfig := model.ClientConfig{}
-	
+
 	server := NewDownloadServer(":8080", "http://api.example.com", config, clientConfig)
-	
+
 	assert.Equal(t, ":8080", server.bind)
 	assert.Equal(t, "http://api.example.com", server.api)
 	assert.Equal(t, config, server.config)
@@ -98,7 +98,7 @@ func TestDownloadServer_Name(t *testing.T) {
 
 func TestDownloadServer_handleGetPiece_InvalidCID(t *testing.T) {
 	server := NewDownloadServer(":8080", "http://api.example.com", nil, model.ClientConfig{})
-	
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/piece/invalid-cid", nil)
 	rec := httptest.NewRecorder()
@@ -106,7 +106,7 @@ func TestDownloadServer_handleGetPiece_InvalidCID(t *testing.T) {
 	c.SetPath("/piece/:id")
 	c.SetParamNames("id")
 	c.SetParamValues("invalid-cid")
-	
+
 	err := server.handleGetPiece(c)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
@@ -115,10 +115,10 @@ func TestDownloadServer_handleGetPiece_InvalidCID(t *testing.T) {
 
 func TestDownloadServer_handleGetPiece_NotCommP(t *testing.T) {
 	server := NewDownloadServer(":8080", "http://api.example.com", nil, model.ClientConfig{})
-	
+
 	// Create a non-CommP CID (regular file CID)
 	regularCid := cid.NewCidV1(cid.Raw, []byte("test"))
-	
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/piece/"+regularCid.String(), nil)
 	rec := httptest.NewRecorder()
@@ -126,7 +126,7 @@ func TestDownloadServer_handleGetPiece_NotCommP(t *testing.T) {
 	c.SetPath("/piece/:id")
 	c.SetParamNames("id")
 	c.SetParamValues(regularCid.String())
-	
+
 	err := server.handleGetPiece(c)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
@@ -137,7 +137,7 @@ func TestGetMetadata_InvalidAPI(t *testing.T) {
 	ctx := context.Background()
 	config := map[string]string{}
 	clientConfig := model.ClientConfig{}
-	
+
 	// Test with invalid URL
 	_, statusCode, err := GetMetadata(ctx, "://invalid-url", config, clientConfig, "test-piece-cid")
 	assert.Error(t, err)
@@ -159,22 +159,22 @@ func TestGetMetadata_Success(t *testing.T) {
 			},
 		},
 	}
-	
+
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Contains(t, r.URL.Path, "/piece/metadata/")
 		assert.Equal(t, "application/cbor", r.Header.Get("Accept"))
-		
+
 		w.Header().Set("Content-Type", "application/cbor")
 		encoder := cbor.NewEncoder(w)
 		err := encoder.Encode(mockMetadata)
 		require.NoError(t, err)
 	}))
 	defer mockServer.Close()
-	
+
 	ctx := context.Background()
 	config := map[string]string{}
 	clientConfig := model.ClientConfig{}
-	
+
 	metadata, statusCode, err := GetMetadata(ctx, mockServer.URL, config, clientConfig, "test-piece-cid")
 	assert.NoError(t, err)
 	assert.Equal(t, 0, statusCode)
@@ -188,11 +188,11 @@ func TestGetMetadata_404(t *testing.T) {
 		fmt.Fprint(w, "not found")
 	}))
 	defer mockServer.Close()
-	
+
 	ctx := context.Background()
 	config := map[string]string{}
 	clientConfig := model.ClientConfig{}
-	
+
 	_, statusCode, err := GetMetadata(ctx, mockServer.URL, config, clientConfig, "test-piece-cid")
 	assert.Error(t, err)
 	assert.Equal(t, http.StatusNotFound, statusCode)
@@ -205,11 +205,11 @@ func TestGetMetadata_InvalidResponse(t *testing.T) {
 		w.Write([]byte("invalid cbor data"))
 	}))
 	defer mockServer.Close()
-	
+
 	ctx := context.Background()
 	config := map[string]string{}
 	clientConfig := model.ClientConfig{}
-	
+
 	_, statusCode, err := GetMetadata(ctx, mockServer.URL, config, clientConfig, "test-piece-cid")
 	assert.Error(t, err)
 	assert.Equal(t, 0, statusCode)
@@ -230,26 +230,26 @@ func TestGetMetadata_ConfigProcessing(t *testing.T) {
 			},
 		},
 	}
-	
+
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/cbor")
 		encoder := cbor.NewEncoder(w)
 		encoder.Encode(mockMetadata)
 	}))
 	defer mockServer.Close()
-	
+
 	ctx := context.Background()
 	config := map[string]string{
-		"local-path": "/override/path",
+		"local-path":  "/override/path",
 		"local-other": "override-value",
 	}
 	clientConfig := model.ClientConfig{}
-	
+
 	metadata, statusCode, err := GetMetadata(ctx, mockServer.URL, config, clientConfig, "test-piece-cid")
 	assert.NoError(t, err)
 	assert.Equal(t, 0, statusCode)
 	assert.NotNil(t, metadata)
-	
+
 	// Test that config overrides are applied
 	assert.Equal(t, "/override/path", metadata.Storage.Config["path"])
 	assert.Equal(t, "override-value", metadata.Storage.Config["other"])
@@ -257,21 +257,21 @@ func TestGetMetadata_ConfigProcessing(t *testing.T) {
 
 func TestDownloadServer_Start_Health(t *testing.T) {
 	server := NewDownloadServer("127.0.0.1:0", "http://api.example.com", nil, model.ClientConfig{})
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()
-	
+
 	exitErr := make(chan error, 1)
-	
+
 	err := server.Start(ctx, exitErr)
 	assert.NoError(t, err)
-	
+
 	// Give the server a moment to start
 	time.Sleep(time.Millisecond * 100)
-	
+
 	// The server should shut down when context is cancelled
 	cancel()
-	
+
 	select {
 	case err := <-exitErr:
 		// Server should shutdown cleanly

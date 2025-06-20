@@ -219,6 +219,6 @@ func (h *Handler) ApplyTemplateToPreparation(template *model.DealTemplate, prep 
 	// Use the DealConfig ApplyOverrides method for clean and consistent override logic
 	prep.DealConfig.ApplyOverrides(&template.DealConfig)
 
-	logger.Debugf("Applied template %s to preparation %s - template values applied for unset fields only", 
+	logger.Debugf("Applied template %s to preparation %s - template values applied for unset fields only",
 		template.Name, prep.Name)
 }

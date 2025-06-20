@@ -91,9 +91,9 @@ type Preparation struct {
 
 	// Deal configuration (encapsulated in DealConfig struct)
 	DealConfig       DealConfig      `gorm:"embedded;embeddedPrefix:deal_config_" json:"dealConfig"`
-	DealTemplateID   *DealTemplateID `json:"dealTemplateId,omitempty"`                             // Optional deal template to use
-	WalletValidation bool            `json:"walletValidation"`                                     // Enable wallet balance validation
-	SPValidation     bool            `json:"spValidation"`                                         // Enable storage provider validation
+	DealTemplateID   *DealTemplateID `json:"dealTemplateId,omitempty"` // Optional deal template to use
+	WalletValidation bool            `json:"walletValidation"`         // Enable wallet balance validation
+	SPValidation     bool            `json:"spValidation"`             // Enable storage provider validation
 
 	// Associations
 	DealTemplate   *DealTemplate `gorm:"foreignKey:DealTemplateID;constraint:OnDelete:SET NULL" json:"dealTemplate,omitempty"   swaggerignore:"true"                   table:"expand"`
