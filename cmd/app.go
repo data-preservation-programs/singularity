@@ -15,6 +15,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/dataprep"
 	"github.com/data-preservation-programs/singularity/cmd/deal"
 	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
+	"github.com/data-preservation-programs/singularity/cmd/dealtemplate"
 	"github.com/data-preservation-programs/singularity/cmd/ez"
 	"github.com/data-preservation-programs/singularity/cmd/run"
 	"github.com/data-preservation-programs/singularity/cmd/storage"
@@ -111,6 +112,7 @@ Upgrading:
 		return nil
 	},
 	Commands: []*cli.Command{
+		OnboardCmd,
 		ez.PrepCmd,
 		VersionCmd,
 		{
@@ -149,6 +151,17 @@ Upgrading:
 			},
 		},
 		{
+			Name:     "deal-template",
+			Usage:    "Deal template management",
+			Category: "Operations",
+			Subcommands: []*cli.Command{
+				dealtemplate.CreateCmd,
+				dealtemplate.ListCmd,
+				dealtemplate.GetCmd,
+				dealtemplate.DeleteCmd,
+			},
+		},
+		{
 			Name:     "run",
 			Category: "Daemons",
 			Usage:    "run different singularity components",
@@ -159,6 +172,7 @@ Upgrading:
 				run.DealTrackerCmd,
 				run.DealPusherCmd,
 				run.DownloadServerCmd,
+				run.UnifiedServiceCmd,
 			},
 		},
 		{

@@ -22,6 +22,14 @@ type ModelPreparation struct {
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
 
+	// Deal configuration (encapsulated in DealConfig struct)
+	DealConfig struct {
+		ModelDealConfig
+	} `json:"dealConfig,omitempty"`
+
+	// Optional deal template to use
+	DealTemplateID int64 `json:"dealTemplateId,omitempty"`
+
 	// DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.
 	DeleteAfterExport bool `json:"deleteAfterExport,omitempty"`
 
@@ -52,13 +60,23 @@ type ModelPreparation struct {
 	// source storages
 	SourceStorages []*ModelStorage `json:"sourceStorages"`
 
+	// Enable storage provider validation
+	SpValidation bool `json:"spValidation,omitempty"`
+
 	// updated at
 	UpdatedAt string `json:"updatedAt,omitempty"`
+
+	// Enable wallet balance validation
+	WalletValidation bool `json:"walletValidation,omitempty"`
 }
 
 // Validate validates this model preparation
 func (m *ModelPreparation) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateDealConfig(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateOutputStorages(formats); err != nil {
 		res = append(res, err)
@@ -71,6 +89,14 @@ func (m *ModelPreparation) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelPreparation) validateDealConfig(formats strfmt.Registry) error {
+	if swag.IsZero(m.DealConfig) { // not required
+		return nil
+	}
+
 	return nil
 }
 
@@ -130,6 +156,10 @@ func (m *ModelPreparation) validateSourceStorages(formats strfmt.Registry) error
 func (m *ModelPreparation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDealConfig(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateOutputStorages(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -141,6 +171,11 @@ func (m *ModelPreparation) ContextValidate(ctx context.Context, formats strfmt.R
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelPreparation) contextValidateDealConfig(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

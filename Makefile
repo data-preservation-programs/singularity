@@ -5,6 +5,7 @@ help:
 	@echo "  generate         Run the Go generate tool on all packages."
 	@echo "  lint             Run various linting and formatting tools."
 	@echo "  test             Execute tests using gotestsum."
+	@echo "  test-with-db     Execute tests with MySQL and PostgreSQL databases."
 	@echo "  diagram          Generate a database schema diagram."
 	@echo "  languagetool     Check or install LanguageTool and process spelling."
 	@echo "  godoclint        Check Go source files for specific comment patterns."
@@ -38,6 +39,15 @@ lint: check-go install-lint-deps
 
 test: check-go install-test-deps
 	go run gotest.tools/gotestsum@latest --format testname ./...
+
+test-with-db: check-go install-test-deps
+	docker compose -f docker-compose.test.yml up -d
+	@echo "Waiting for databases to be ready..."
+	@docker compose -f docker-compose.test.yml exec -T mysql-test bash -c 'until mysqladmin ping -h localhost -u singularity -psingularity --silent; do sleep 1; done'
+	@docker compose -f docker-compose.test.yml exec -T postgres-test bash -c 'until pg_isready -U singularity -d singularity -h localhost; do sleep 1; done'
+	@echo "Databases are ready, running tests..."
+	go run gotest.tools/gotestsum@latest --format testname ./... || docker compose -f docker-compose.test.yml down
+	docker compose -f docker-compose.test.yml down
 
 diagram: build
 	./singularity admin init

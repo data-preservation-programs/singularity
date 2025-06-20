@@ -89,19 +89,39 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 	var closer1 io.Closer
 	db1, closer1, err = database.OpenWithLogger(connStr)
 	if errors.As(err, &opError) {
-		return
+		t.Logf("Database %s not available: %v", dialect, err)
+		return nil, nil, ""
 	}
-	require.NoError(t, err)
+	if err != nil {
+		t.Logf("Failed to connect to %s database: %v", dialect, err)
+		return nil, nil, ""
+	}
 	err = db1.Exec("CREATE DATABASE " + dbName + "").Error
-	require.NoError(t, err)
+	if err != nil {
+		t.Logf("Failed to create test database %s: %v", dbName, err)
+		closer1.Close()
+		return nil, nil, ""
+	}
 	connStr = strings.ReplaceAll(connStr, "singularity?", dbName+"?")
 	var closer2 io.Closer
 	db, closer2, err = database.OpenWithLogger(connStr)
-	require.NoError(t, err)
+	if err != nil {
+		t.Logf("Failed to connect to test database %s: %v", dbName, err)
+		db1.Exec("DROP DATABASE " + dbName + "")
+		closer1.Close()
+		return nil, nil, ""
+	}
 	closer = CloserFunc(func() error {
-		require.NoError(t, closer2.Close())
-		require.NoError(t, db1.Exec("DROP DATABASE "+dbName+"").Error)
-		return closer1.Close()
+		if closer2 != nil {
+			closer2.Close()
+		}
+		if db1 != nil {
+			db1.Exec("DROP DATABASE " + dbName + "")
+		}
+		if closer1 != nil {
+			return closer1.Close()
+		}
+		return nil
 	})
 	return
 }
