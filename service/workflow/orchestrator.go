@@ -26,6 +26,8 @@ type WorkflowOrchestrator struct {
 	mutex               sync.RWMutex
 	enabled             bool
 	config              OrchestratorConfig
+	preparationLocks    map[uint]*sync.Mutex // Per-preparation locks for workflow transitions
+	locksMutex          sync.RWMutex         // Protects the preparationLocks map
 }
 
 // OrchestratorConfig configures the workflow orchestrator
@@ -58,6 +60,7 @@ func NewWorkflowOrchestrator(config OrchestratorConfig) *WorkflowOrchestrator {
 		jobHandler:          &job.DefaultHandler{},
 		enabled:             true,
 		config:              config,
+		preparationLocks:    make(map[uint]*sync.Mutex),
 	}
 }
 
@@ -76,6 +79,29 @@ func (o *WorkflowOrchestrator) IsEnabled() bool {
 	o.mutex.RLock()
 	defer o.mutex.RUnlock()
 	return o.enabled
+}
+
+// lockPreparation acquires a lock for a specific preparation to prevent concurrent workflow transitions
+func (o *WorkflowOrchestrator) lockPreparation(preparationID uint) {
+	o.locksMutex.Lock()
+	if _, exists := o.preparationLocks[preparationID]; !exists {
+		o.preparationLocks[preparationID] = &sync.Mutex{}
+	}
+	mutex := o.preparationLocks[preparationID]
+	o.locksMutex.Unlock()
+
+	mutex.Lock()
+}
+
+// unlockPreparation releases the lock for a specific preparation
+func (o *WorkflowOrchestrator) unlockPreparation(preparationID uint) {
+	o.locksMutex.RLock()
+	mutex := o.preparationLocks[preparationID]
+	o.locksMutex.RUnlock()
+	
+	if mutex != nil {
+		mutex.Unlock()
+	}
 }
 
 // HandleJobCompletion processes job completion and triggers next stage if appropriate
@@ -106,6 +132,10 @@ func (o *WorkflowOrchestrator) HandleJobCompletion(
 	preparation := job.Attachment.Preparation
 	logger.Infof("Processing job completion: JobID=%d, Type=%s, Preparation=%s",
 		jobID, job.Type, preparation.Name)
+
+	// Acquire preparation-specific lock to prevent concurrent workflow transitions
+	o.lockPreparation(preparation.ID)
+	defer o.unlockPreparation(preparation.ID)
 
 	// Handle job progression based on type
 	switch job.Type {
@@ -152,19 +182,60 @@ func (o *WorkflowOrchestrator) handleScanCompletion(
 
 	logger.Infof("All scan jobs complete for preparation %s, starting pack jobs", preparation.Name)
 
-	// Start pack jobs for all source attachments
-	var attachments []model.SourceAttachment
-	err = db.WithContext(ctx).Where("preparation_id = ?", preparation.ID).Find(&attachments).Error
+	// Use a transaction to ensure atomicity when starting pack jobs
+	err = db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Re-check scan job completion within transaction to prevent race conditions
+		var incompleteScanCount int64
+		err := tx.Model(&model.Job{}).
+			Joins("JOIN source_attachments ON jobs.attachment_id = source_attachments.id").
+			Where("source_attachments.preparation_id = ? AND jobs.type = ? AND jobs.state != ?",
+				preparation.ID, model.Scan, model.Complete).
+			Count(&incompleteScanCount).Error
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if incompleteScanCount > 0 {
+			logger.Debugf("Preparation %s still has %d incomplete scan jobs (double-checked in transaction)",
+				preparation.Name, incompleteScanCount)
+			return nil // No error, just nothing to do
+		}
+
+		// Check if pack jobs have already been started (prevent duplicate creation)
+		var existingPackCount int64
+		err = tx.Model(&model.Job{}).
+			Joins("JOIN source_attachments ON jobs.attachment_id = source_attachments.id").
+			Where("source_attachments.preparation_id = ? AND jobs.type = ?",
+				preparation.ID, model.Pack).
+			Count(&existingPackCount).Error
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if existingPackCount > 0 {
+			logger.Debugf("Pack jobs already exist for preparation %s, skipping", preparation.Name)
+			return nil
+		}
+
+		// Start pack jobs for all source attachments
+		var attachments []model.SourceAttachment
+		err = tx.Where("preparation_id = ?", preparation.ID).Find(&attachments).Error
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		for _, attachment := range attachments {
+			err = o.startPackJobs(ctx, tx, uint(attachment.ID))
+			if err != nil {
+				logger.Errorf("Failed to start pack jobs for attachment %d: %v", attachment.ID, err)
+				return errors.WithStack(err) // Fail the transaction on any error
+			}
+		}
+
+		return nil
+	})
 	if err != nil {
 		return errors.WithStack(err)
-	}
-
-	for _, attachment := range attachments {
-		err = o.startPackJobs(ctx, db, uint(attachment.ID))
-		if err != nil {
-			logger.Errorf("Failed to start pack jobs for attachment %d: %v", attachment.ID, err)
-			continue
-		}
 	}
 
 	o.logWorkflowProgress(ctx, db, "Scan → Pack Transition",
@@ -210,19 +281,60 @@ func (o *WorkflowOrchestrator) handlePackCompletion(
 
 	logger.Infof("All pack jobs complete for preparation %s, starting daggen jobs", preparation.Name)
 
-	// Start daggen jobs for all source attachments
-	var attachments []model.SourceAttachment
-	err = db.WithContext(ctx).Where("preparation_id = ?", preparation.ID).Find(&attachments).Error
+	// Use a transaction to ensure atomicity when starting daggen jobs
+	err = db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Re-check pack job completion within transaction to prevent race conditions
+		var incompletePackCount int64
+		err := tx.Model(&model.Job{}).
+			Joins("JOIN source_attachments ON jobs.attachment_id = source_attachments.id").
+			Where("source_attachments.preparation_id = ? AND jobs.type = ? AND jobs.state != ?",
+				preparation.ID, model.Pack, model.Complete).
+			Count(&incompletePackCount).Error
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if incompletePackCount > 0 {
+			logger.Debugf("Preparation %s still has %d incomplete pack jobs (double-checked in transaction)",
+				preparation.Name, incompletePackCount)
+			return nil // No error, just nothing to do
+		}
+
+		// Check if daggen jobs have already been started (prevent duplicate creation)
+		var existingDagGenCount int64
+		err = tx.Model(&model.Job{}).
+			Joins("JOIN source_attachments ON jobs.attachment_id = source_attachments.id").
+			Where("source_attachments.preparation_id = ? AND jobs.type = ?",
+				preparation.ID, model.DagGen).
+			Count(&existingDagGenCount).Error
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if existingDagGenCount > 0 {
+			logger.Debugf("DagGen jobs already exist for preparation %s, skipping", preparation.Name)
+			return nil
+		}
+
+		// Start daggen jobs for all source attachments
+		var attachments []model.SourceAttachment
+		err = tx.Where("preparation_id = ?", preparation.ID).Find(&attachments).Error
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		for _, attachment := range attachments {
+			err = o.startDagGenJobs(ctx, tx, uint(attachment.ID))
+			if err != nil {
+				logger.Errorf("Failed to start daggen jobs for attachment %d: %v", attachment.ID, err)
+				return errors.WithStack(err) // Fail the transaction on any error
+			}
+		}
+
+		return nil
+	})
 	if err != nil {
 		return errors.WithStack(err)
-	}
-
-	for _, attachment := range attachments {
-		err = o.startDagGenJobs(ctx, db, uint(attachment.ID))
-		if err != nil {
-			logger.Errorf("Failed to start daggen jobs for attachment %d: %v", attachment.ID, err)
-			continue
-		}
 	}
 
 	o.logWorkflowProgress(ctx, db, "Pack → DagGen Transition",
@@ -348,6 +460,9 @@ func (o *WorkflowOrchestrator) checkPreparationWorkflow(
 	lotusClient jsonrpc.RPCClient,
 	preparation *model.Preparation,
 ) error {
+	// Acquire preparation-specific lock to prevent concurrent workflow transitions
+	o.lockPreparation(preparation.ID)
+	defer o.unlockPreparation(preparation.ID)
 	// Get job counts by type and state
 	type JobCount struct {
 		Type  model.JobType  `json:"type"`

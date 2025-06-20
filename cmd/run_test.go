@@ -14,10 +14,25 @@ import (
 
 func TestRunDealTracker(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		ctx, cancel := context.WithTimeout(ctx, time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
-		_, _, err := NewRunner().Run(ctx, "singularity run deal-tracker")
-		require.ErrorIs(t, err, context.DeadlineExceeded)
+		
+		done := make(chan error, 1)
+		go func() {
+			_, _, err := NewRunner().Run(ctx, "singularity run deal-tracker")
+			done <- err
+		}()
+		
+		// Give the service time to start and initialize
+		time.Sleep(2 * time.Second)
+		cancel()
+		
+		select {
+		case err := <-done:
+			require.ErrorIs(t, err, context.Canceled)
+		case <-time.After(5 * time.Second):
+			t.Fatal("Service did not shut down within timeout")
+		}
 	})
 }
 
@@ -51,35 +66,95 @@ func TestRunAPI(t *testing.T) {
 
 func TestRunDatasetWorker(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		ctx, cancel := context.WithTimeout(ctx, time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
-		_, _, err := NewRunner().Run(ctx, "singularity run dataset-worker")
-		require.ErrorIs(t, err, context.DeadlineExceeded)
+		
+		done := make(chan error, 1)
+		go func() {
+			_, _, err := NewRunner().Run(ctx, "singularity run dataset-worker")
+			done <- err
+		}()
+		
+		// Give the service time to start and initialize
+		time.Sleep(2 * time.Second)
+		cancel()
+		
+		select {
+		case err := <-done:
+			require.ErrorIs(t, err, context.Canceled)
+		case <-time.After(5 * time.Second):
+			t.Fatal("Service did not shut down within timeout")
+		}
 	})
 }
 
 func TestRunContentProvider(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		ctx, cancel := context.WithTimeout(ctx, time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
-		_, _, err := NewRunner().Run(ctx, "singularity run content-provider --http-bind "+contentProviderBind)
-		require.ErrorIs(t, err, context.DeadlineExceeded)
+		
+		done := make(chan error, 1)
+		go func() {
+			_, _, err := NewRunner().Run(ctx, "singularity run content-provider --http-bind "+contentProviderBind)
+			done <- err
+		}()
+		
+		// Give the service time to start and initialize
+		time.Sleep(2 * time.Second)
+		cancel()
+		
+		select {
+		case err := <-done:
+			require.ErrorIs(t, err, context.Canceled)
+		case <-time.After(5 * time.Second):
+			t.Fatal("Service did not shut down within timeout")
+		}
 	})
 }
 
 func TestRunDealPusher(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		ctx, cancel := context.WithTimeout(ctx, time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
-		_, _, err := NewRunner().Run(ctx, "singularity run deal-pusher")
-		require.ErrorIs(t, err, context.DeadlineExceeded)
+		
+		done := make(chan error, 1)
+		go func() {
+			_, _, err := NewRunner().Run(ctx, "singularity run deal-pusher")
+			done <- err
+		}()
+		
+		// Give the service time to start and initialize
+		time.Sleep(2 * time.Second)
+		cancel()
+		
+		select {
+		case err := <-done:
+			require.ErrorIs(t, err, context.Canceled)
+		case <-time.After(5 * time.Second):
+			t.Fatal("Service did not shut down within timeout")
+		}
 	})
 }
 
 func TestRunDownloadServer(t *testing.T) {
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	_, _, err := NewRunner().Run(ctx, "singularity run download-server")
-	require.ErrorIs(t, err, context.DeadlineExceeded)
+	
+	done := make(chan error, 1)
+	go func() {
+		_, _, err := NewRunner().Run(ctx, "singularity run download-server")
+		done <- err
+	}()
+	
+	// Give the service time to start and initialize
+	time.Sleep(2 * time.Second)
+	cancel()
+	
+	select {
+	case err := <-done:
+		require.ErrorIs(t, err, context.Canceled)
+	case <-time.After(5 * time.Second):
+		t.Fatal("Service did not shut down within timeout")
+	}
 }
