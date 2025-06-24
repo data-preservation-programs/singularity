@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
+	"github.com/ipfs/go-log/v2"
 )
+
+var dealConfigLogger = log.Logger("dealconfig")
 
 // DealConfig encapsulates all deal-related configuration parameters
 type DealConfig struct {
@@ -170,44 +174,61 @@ func (dc *DealConfig) ApplyOverrides(template *DealConfig) {
 		return
 	}
 
+	dealConfigLogger.Debug("Applying template overrides to DealConfig")
+	
 	// Apply template values only to zero-value fields
 	if !dc.AutoCreateDeals && template.AutoCreateDeals {
+		dealConfigLogger.Debugf("Overriding AutoCreateDeals: %v -> %v", dc.AutoCreateDeals, template.AutoCreateDeals)
 		dc.AutoCreateDeals = template.AutoCreateDeals
 	}
 	if dc.DealProvider == "" && template.DealProvider != "" {
+		dealConfigLogger.Debugf("Overriding DealProvider: '%s' -> '%s'", dc.DealProvider, template.DealProvider)
 		dc.DealProvider = template.DealProvider
 	}
 	if dc.DealTemplate == "" && template.DealTemplate != "" {
+		dealConfigLogger.Debugf("Overriding DealTemplate: '%s' -> '%s'", dc.DealTemplate, template.DealTemplate)
 		dc.DealTemplate = template.DealTemplate
 	}
 	if !dc.DealVerified && template.DealVerified {
+		dealConfigLogger.Debugf("Overriding DealVerified: %v -> %v", dc.DealVerified, template.DealVerified)
 		dc.DealVerified = template.DealVerified
 	}
 	if !dc.DealKeepUnsealed && template.DealKeepUnsealed {
+		dealConfigLogger.Debugf("Overriding DealKeepUnsealed: %v -> %v", dc.DealKeepUnsealed, template.DealKeepUnsealed)
 		dc.DealKeepUnsealed = template.DealKeepUnsealed
 	}
 	if !dc.DealAnnounceToIpni && template.DealAnnounceToIpni {
+		dealConfigLogger.Debugf("Overriding DealAnnounceToIpni: %v -> %v", dc.DealAnnounceToIpni, template.DealAnnounceToIpni)
 		dc.DealAnnounceToIpni = template.DealAnnounceToIpni
 	}
 	if dc.DealDuration == 0 && template.DealDuration != 0 {
+		dealConfigLogger.Debugf("Overriding DealDuration: %v -> %v", dc.DealDuration, template.DealDuration)
 		dc.DealDuration = template.DealDuration
 	}
 	if dc.DealStartDelay == 0 && template.DealStartDelay != 0 {
+		dealConfigLogger.Debugf("Overriding DealStartDelay: %v -> %v", dc.DealStartDelay, template.DealStartDelay)
 		dc.DealStartDelay = template.DealStartDelay
 	}
 	if dc.DealPricePerDeal == 0 && template.DealPricePerDeal != 0 {
+		dealConfigLogger.Debugf("Overriding DealPricePerDeal: %v -> %v", dc.DealPricePerDeal, template.DealPricePerDeal)
 		dc.DealPricePerDeal = template.DealPricePerDeal
 	}
 	if dc.DealPricePerGb == 0 && template.DealPricePerGb != 0 {
+		dealConfigLogger.Debugf("Overriding DealPricePerGb: %v -> %v", dc.DealPricePerGb, template.DealPricePerGb)
 		dc.DealPricePerGb = template.DealPricePerGb
 	}
 	if dc.DealPricePerGbEpoch == 0 && template.DealPricePerGbEpoch != 0 {
+		dealConfigLogger.Debugf("Overriding DealPricePerGbEpoch: %v -> %v", dc.DealPricePerGbEpoch, template.DealPricePerGbEpoch)
 		dc.DealPricePerGbEpoch = template.DealPricePerGbEpoch
 	}
 	if dc.DealURLTemplate == "" && template.DealURLTemplate != "" {
+		dealConfigLogger.Debugf("Overriding DealURLTemplate: '%s' -> '%s'", dc.DealURLTemplate, template.DealURLTemplate)
 		dc.DealURLTemplate = template.DealURLTemplate
 	}
 	if len(dc.DealHTTPHeaders) == 0 && len(template.DealHTTPHeaders) > 0 {
+		dealConfigLogger.Debugf("Overriding DealHTTPHeaders: %d headers -> %d headers", len(dc.DealHTTPHeaders), len(template.DealHTTPHeaders))
 		dc.DealHTTPHeaders = template.DealHTTPHeaders
 	}
+	
+	dealConfigLogger.Debug("Template override application completed")
 }

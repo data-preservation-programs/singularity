@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/notification"
 	"github.com/data-preservation-programs/singularity/model"
@@ -38,6 +39,7 @@ type OrchestratorConfig struct {
 	ScanToPack           bool          `json:"scanToPack"`           // Auto-progress scan → pack
 	PackToDagGen         bool          `json:"packToDagGen"`         // Auto-progress pack → daggen
 	DagGenToDeals        bool          `json:"dagGenToDeals"`        // Auto-progress daggen → deals
+	RetryEnabled         bool          `json:"retryEnabled"`         // Enable database retry for job creation
 }
 
 // DefaultOrchestratorConfig returns sensible defaults
@@ -49,6 +51,7 @@ func DefaultOrchestratorConfig() OrchestratorConfig {
 		ScanToPack:           true,
 		PackToDagGen:         true,
 		DagGenToDeals:        true,
+		RetryEnabled:         true,
 	}
 }
 
@@ -399,20 +402,28 @@ func (o *WorkflowOrchestrator) handleDagGenCompletion(
 
 // startPackJobs starts pack jobs for a source attachment
 func (o *WorkflowOrchestrator) startPackJobs(ctx context.Context, db *gorm.DB, attachmentID uint) error {
-	_, err := o.jobHandler.StartPackHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "", 0)
-	if err != nil {
+	if o.config.RetryEnabled {
+		return database.DoRetry(ctx, func() error {
+			_, err := o.jobHandler.StartPackHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "", 0)
+			return err
+		})
+	} else {
+		_, err := o.jobHandler.StartPackHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "", 0)
 		return errors.WithStack(err)
 	}
-	return nil
 }
 
 // startDagGenJobs starts daggen jobs for a source attachment
 func (o *WorkflowOrchestrator) startDagGenJobs(ctx context.Context, db *gorm.DB, attachmentID uint) error {
-	_, err := o.jobHandler.StartDagGenHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "")
-	if err != nil {
+	if o.config.RetryEnabled {
+		return database.DoRetry(ctx, func() error {
+			_, err := o.jobHandler.StartDagGenHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "")
+			return err
+		})
+	} else {
+		_, err := o.jobHandler.StartDagGenHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "")
 		return errors.WithStack(err)
 	}
-	return nil
 }
 
 // logWorkflowProgress logs workflow progression events

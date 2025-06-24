@@ -184,6 +184,8 @@ func runWorkflowMonitor(ctx context.Context, db *gorm.DB, orchestrator *workflow
 	logger.Info("Starting workflow monitor")
 
 	// Create a lotus client for workflow operations
+	// Note: Using default empty credentials - client will connect to local lotus node
+	// or fail gracefully with appropriate error handling in workflow operations
 	lotusClient := util.NewLotusClient("", "")
 
 	ticker := time.NewTicker(30 * time.Second)

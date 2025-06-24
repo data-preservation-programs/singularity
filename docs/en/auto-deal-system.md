@@ -73,16 +73,12 @@ The `Preparation` model includes auto-deal configuration:
 type Preparation struct {
     // ... existing fields
     
-    // Auto-deal configuration
-    AutoCreateDeals     bool          `gorm:"default:false"`
-    DealProvider        string        
-    DealVerified        bool          `gorm:"default:false"`
-    DealPricePerGB      float64       
-    DealDuration        time.Duration 
-    DealStartDelay      time.Duration `gorm:"default:72h"`
-    WalletValidation    bool          `gorm:"default:true"`
-    SPValidation        bool          `gorm:"default:true"`
-    // ... additional deal parameters
+    // Deal configuration (encapsulated in DealConfig struct)
+    DealConfig       DealConfig      `gorm:"embedded;embeddedPrefix:deal_config_"`
+    DealTemplateID   *DealTemplateID // Optional deal template to use
+    WalletValidation bool            // Enable wallet balance validation  
+    SPValidation     bool            // Enable storage provider validation
+    // ... additional fields
 }
 ```
 

@@ -118,7 +118,12 @@ echo
 
 echo "🚀 Step 2: Onboarding data using templates..."
 
-# Create some demo data if needed
+# Create some demo data if needed (check if directories already exist)
+if [ -d "./demo-data" ] && [ "$(ls -A ./demo-data)" ]; then
+    echo "Warning: ./demo-data directory already exists and contains files. Please remove or backup existing content before proceeding."
+    echo "Use: rm -rf ./demo-data ./demo-output"
+    exit 1
+fi
 mkdir -p ./demo-data ./demo-output
 echo "Sample file for enterprise demo" > ./demo-data/enterprise-data.txt
 echo "Sample file for research demo" > ./demo-data/research-data.txt
