@@ -9,5 +9,6 @@ func GetMigrations() []*gormigrate.Migration {
 	return []*gormigrate.Migration{
 		_202505010830_initial_schema(),
 		_202505010840_wallet_actor_id(),
+		_202506240930_create_deal_templates(),
 	}
 }
