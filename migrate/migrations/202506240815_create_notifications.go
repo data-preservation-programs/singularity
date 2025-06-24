@@ -12,14 +12,14 @@ func _202506240815_create_notifications() *gormigrate.Migration {
 	type ConfigMap map[string]string
 
 	type Notification struct {
-		ID           uint      `gorm:"primaryKey"`
+		ID           uint `gorm:"primaryKey"`
 		CreatedAt    time.Time
-		Type         string    // info, warning, error
-		Level        string    // low, medium, high
+		Type         string // info, warning, error
+		Level        string // low, medium, high
 		Title        string
 		Message      string
-		Source       string   // Component that generated the notification
-		SourceID     string   // Optional ID of the source entity
+		Source       string    // Component that generated the notification
+		SourceID     string    // Optional ID of the source entity
 		Metadata     ConfigMap `gorm:"type:JSON"`
 		Acknowledged bool
 	}

@@ -138,22 +138,22 @@ func (s *TriggerService) TriggerForJobCompletion(
 	if err != nil {
 		logger.Errorf("Failed to create automatic deal schedule for preparation %s: %v",
 			job.Attachment.Preparation.Name, err)
-		
+
 		// Create notification for auto-deal failure
-		_, notifErr := notification.Default.LogError(ctx, db, 
-			"auto-deal-service", 
+		_, notifErr := notification.Default.LogError(ctx, db,
+			"auto-deal-service",
 			"Auto-deal Creation Failed",
-			fmt.Sprintf("Failed to create automatic deal schedule for preparation %s: %v", 
+			fmt.Sprintf("Failed to create automatic deal schedule for preparation %s: %v",
 				job.Attachment.Preparation.Name, err),
 			model.ConfigMap{
 				"preparation_id":   fmt.Sprintf("%d", job.Attachment.Preparation.ID),
 				"preparation_name": job.Attachment.Preparation.Name,
-				"error":           err.Error(),
+				"error":            err.Error(),
 			})
 		if notifErr != nil {
 			logger.Errorf("Failed to create notification for auto-deal failure: %v", notifErr)
 		}
-		
+
 		return errors.WithStack(err)
 	}
 

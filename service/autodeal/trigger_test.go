@@ -71,8 +71,8 @@ func TestTriggerService_TriggerForJobCompletion_AutoDealDisabled(t *testing.T) {
 			Name: "test-prep",
 			DealConfig: model.DealConfig{
 				DealConfig: model.DealConfig{
-				AutoCreateDeals: false,
-			},
+					AutoCreateDeals: false,
+				},
 			},
 		}
 		db.Create(&preparation)
@@ -112,7 +112,7 @@ func TestTriggerService_TriggerForJobCompletion_NotReady(t *testing.T) {
 
 		// Create test data
 		preparation := model.Preparation{
-			Name:            "test-prep",
+			Name: "test-prep",
 			DealConfig: model.DealConfig{
 				AutoCreateDeals: true,
 			},
@@ -158,7 +158,7 @@ func TestTriggerService_TriggerForJobCompletion_Success(t *testing.T) {
 
 		// Create test data
 		preparation := model.Preparation{
-			Name:            "test-prep",
+			Name: "test-prep",
 			DealConfig: model.DealConfig{
 				AutoCreateDeals: true,
 			},
@@ -210,7 +210,7 @@ func TestTriggerService_TriggerForJobCompletion_ExistingSchedule(t *testing.T) {
 
 		// Create test data
 		preparation := model.Preparation{
-			Name:            "test-prep",
+			Name: "test-prep",
 			DealConfig: model.DealConfig{
 				AutoCreateDeals: true,
 			},

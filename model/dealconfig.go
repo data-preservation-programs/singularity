@@ -175,7 +175,7 @@ func (dc *DealConfig) ApplyOverrides(template *DealConfig) {
 	}
 
 	dealConfigLogger.Debug("Applying template overrides to DealConfig")
-	
+
 	// Apply template values only to zero-value fields
 	if !dc.AutoCreateDeals && template.AutoCreateDeals {
 		dealConfigLogger.Debugf("Overriding AutoCreateDeals: %v -> %v", dc.AutoCreateDeals, template.AutoCreateDeals)
@@ -229,6 +229,6 @@ func (dc *DealConfig) ApplyOverrides(template *DealConfig) {
 		dealConfigLogger.Debugf("Overriding DealHTTPHeaders: %d headers -> %d headers", len(dc.DealHTTPHeaders), len(template.DealHTTPHeaders))
 		dc.DealHTTPHeaders = template.DealHTTPHeaders
 	}
-	
+
 	dealConfigLogger.Debug("Template override application completed")
 }
