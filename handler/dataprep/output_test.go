@@ -45,7 +45,7 @@ func TestAddOutputStorageHandler_AlreadyAttached(t *testing.T) {
 			OutputStorages: []model.Storage{
 				{
 					Name: "output-already-attached",
-					Type: "local", 
+					Type: "local",
 					Path: "/tmp",
 				},
 			},
