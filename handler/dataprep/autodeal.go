@@ -56,7 +56,7 @@ func (s *AutoDealService) CreateAutomaticDealSchedule(
 	// Check if auto-deal creation is enabled
 	if !preparation.DealConfig.AutoCreateDeals {
 		s.logInfo(ctx, db, "Auto-Deal Not Enabled",
-			"Preparation " + preparation.Name + " does not have auto-deal creation enabled",
+			"Preparation "+preparation.Name+" does not have auto-deal creation enabled",
 			model.ConfigMap{
 				"preparation_id":   preparationID,
 				"preparation_name": preparation.Name,
@@ -65,7 +65,7 @@ func (s *AutoDealService) CreateAutomaticDealSchedule(
 	}
 
 	s.logInfo(ctx, db, "Starting Auto-Deal Schedule Creation",
-		"Creating automatic deal schedule for preparation " + preparation.Name,
+		"Creating automatic deal schedule for preparation "+preparation.Name,
 		model.ConfigMap{
 			"preparation_id":   preparationID,
 			"preparation_name": preparation.Name,
