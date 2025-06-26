@@ -136,7 +136,7 @@ func TestWorkerManager_GetStatus(t *testing.T) {
 		assert.Equal(t, 0, len(status.Workers))
 
 		// Add a mock worker
-		startTime := time.Now()
+		startTime := time.Now().Add(-10 * time.Millisecond) // Set start time slightly in the past
 		mockWorker := &ManagedWorker{
 			ID:           "test-worker",
 			JobTypes:     []model.JobType{model.Scan, model.Pack},
