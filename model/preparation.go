@@ -382,9 +382,9 @@ func (c CarBlock) BlockLength() int32 {
 
 // GetMinPieceSize returns the minimum piece size for the preparation, with a fallback to 1MiB if not set.
 // This ensures backward compatibility with older preparations that don't have minPieceSize set.
-func (p *Preparation) GetMinPieceSize() int64 {
-	if p.MinPieceSize == 0 {
+func (s *Preparation) GetMinPieceSize() int64 {
+	if s.MinPieceSize == 0 {
 		return 1 << 20 // 1MiB
 	}
-	return p.MinPieceSize
+	return s.MinPieceSize
 }

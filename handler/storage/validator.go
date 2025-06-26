@@ -244,7 +244,7 @@ func (v *SPValidator) getMinerPower(ctx context.Context, lotusClient jsonrpc.RPC
 }
 
 // checkProviderConnectivity checks if the provider is reachable
-func (v *SPValidator) checkProviderConnectivity(ctx context.Context, _ jsonrpc.RPCClient, peerID string, multiaddrs []string) (bool, []string) {
+func (v *SPValidator) checkProviderConnectivity(_ context.Context, _ jsonrpc.RPCClient, peerID string, multiaddrs []string) (bool, []string) {
 	var warnings []string
 
 	if peerID == "" {
