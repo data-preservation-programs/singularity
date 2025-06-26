@@ -402,26 +402,40 @@ func (o *WorkflowOrchestrator) handleDagGenCompletion(
 
 // startPackJobs starts pack jobs for a source attachment
 func (o *WorkflowOrchestrator) startPackJobs(ctx context.Context, db *gorm.DB, attachmentID uint) error {
+	// Load the attachment with its associations
+	var attachment model.SourceAttachment
+	err := db.Preload("Preparation").Preload("Storage").First(&attachment, attachmentID).Error
+	if err != nil {
+		return errors.Wrapf(err, "failed to load source attachment %d", attachmentID)
+	}
+
 	if o.config.RetryEnabled {
 		return database.DoRetry(ctx, func() error {
-			_, err := o.jobHandler.StartPackHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "", 0)
+			_, err := o.jobHandler.StartPackHandler(ctx, db, attachment.Preparation.Name, attachment.Storage.Name, 0)
 			return err
 		})
 	} else {
-		_, err := o.jobHandler.StartPackHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "", 0)
+		_, err := o.jobHandler.StartPackHandler(ctx, db, attachment.Preparation.Name, attachment.Storage.Name, 0)
 		return errors.WithStack(err)
 	}
 }
 
 // startDagGenJobs starts daggen jobs for a source attachment
 func (o *WorkflowOrchestrator) startDagGenJobs(ctx context.Context, db *gorm.DB, attachmentID uint) error {
+	// Load the attachment with its associations
+	var attachment model.SourceAttachment
+	err := db.Preload("Preparation").Preload("Storage").First(&attachment, attachmentID).Error
+	if err != nil {
+		return errors.Wrapf(err, "failed to load source attachment %d", attachmentID)
+	}
+
 	if o.config.RetryEnabled {
 		return database.DoRetry(ctx, func() error {
-			_, err := o.jobHandler.StartDagGenHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "")
+			_, err := o.jobHandler.StartDagGenHandler(ctx, db, attachment.Preparation.Name, attachment.Storage.Name)
 			return err
 		})
 	} else {
-		_, err := o.jobHandler.StartDagGenHandler(ctx, db, fmt.Sprintf("%d", attachmentID), "")
+		_, err := o.jobHandler.StartDagGenHandler(ctx, db, attachment.Preparation.Name, attachment.Storage.Name)
 		return errors.WithStack(err)
 	}
 }

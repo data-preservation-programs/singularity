@@ -47,7 +47,7 @@ type DealConfig struct {
 	DealPricePerGbEpoch float64 `json:"dealPricePerGbEpoch" gorm:"default:0"`
 
 	// DealHTTPHeaders contains HTTP headers for deals
-	DealHTTPHeaders ConfigMap `json:"dealHttpHeaders" gorm:"type:text"`
+	DealHTTPHeaders ConfigMap `json:"dealHttpHeaders" gorm:"type:text" swaggertype:"object"`
 
 	// DealURLTemplate specifies the URL template for deals
 	DealURLTemplate string `json:"dealUrlTemplate" gorm:"type:text"`

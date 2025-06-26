@@ -8,7 +8,6 @@ package models
 import (
 	"context"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -28,9 +27,7 @@ type ModelDealConfig struct {
 	DealDuration int64 `json:"dealDuration,omitempty"`
 
 	// DealHTTPHeaders contains HTTP headers for deals
-	DealHTTPHeaders struct {
-		ModelConfigMap
-	} `json:"dealHttpHeaders,omitempty"`
+	DealHTTPHeaders interface{} `json:"dealHttpHeaders,omitempty"`
 
 	// DealKeepUnsealed indicates whether to keep unsealed copy
 	DealKeepUnsealed bool `json:"dealKeepUnsealed,omitempty"`
@@ -62,42 +59,11 @@ type ModelDealConfig struct {
 
 // Validate validates this model deal config
 func (m *ModelDealConfig) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateDealHTTPHeaders(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
-func (m *ModelDealConfig) validateDealHTTPHeaders(formats strfmt.Registry) error {
-	if swag.IsZero(m.DealHTTPHeaders) { // not required
-		return nil
-	}
-
-	return nil
-}
-
-// ContextValidate validate this model deal config based on the context it is used
+// ContextValidate validates this model deal config based on context it is used
 func (m *ModelDealConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateDealHTTPHeaders(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ModelDealConfig) contextValidateDealHTTPHeaders(ctx context.Context, formats strfmt.Registry) error {
-
 	return nil
 }
 

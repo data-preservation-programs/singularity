@@ -485,9 +485,8 @@ definitions:
           compatibility)
         type: integer
       dealHttpHeaders:
-        allOf:
-        - $ref: '#/definitions/model.ConfigMap'
         description: DealHTTPHeaders contains HTTP headers for deals
+        type: object
       dealKeepUnsealed:
         description: DealKeepUnsealed indicates whether to keep unsealed copy
         type: boolean

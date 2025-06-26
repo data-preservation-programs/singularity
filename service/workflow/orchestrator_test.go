@@ -82,11 +82,9 @@ func TestWorkflowOrchestrator_HandleScanCompletion(t *testing.T) {
 		}
 		require.NoError(t, db.Create(preparation).Error)
 
-		sourceAttachment := &model.SourceAttachment{
-			PreparationID: preparation.ID,
-			StorageID:     preparation.SourceStorages[0].ID,
-		}
-		require.NoError(t, db.Create(sourceAttachment).Error)
+		// Source attachment is created automatically by GORM when creating preparation with SourceStorages
+		var sourceAttachment model.SourceAttachment
+		require.NoError(t, db.Where("preparation_id = ? AND storage_id = ?", preparation.ID, preparation.SourceStorages[0].ID).First(&sourceAttachment).Error)
 
 		// Create a completed scan job
 		scanJob := &model.Job{
@@ -124,11 +122,9 @@ func TestWorkflowOrchestrator_HandleScanCompletion_IncompleteScanJobs(t *testing
 		}
 		require.NoError(t, db.Create(preparation).Error)
 
-		sourceAttachment := &model.SourceAttachment{
-			PreparationID: preparation.ID,
-			StorageID:     preparation.SourceStorages[0].ID,
-		}
-		require.NoError(t, db.Create(sourceAttachment).Error)
+		// Source attachment is created automatically by GORM when creating preparation with SourceStorages
+		var sourceAttachment model.SourceAttachment
+		require.NoError(t, db.Where("preparation_id = ? AND storage_id = ?", preparation.ID, preparation.SourceStorages[0].ID).First(&sourceAttachment).Error)
 
 		// Create completed and incomplete scan jobs
 		completedScanJob := &model.Job{
@@ -178,11 +174,9 @@ func TestWorkflowOrchestrator_HandlePackCompletion_NoDag(t *testing.T) {
 		}
 		require.NoError(t, db.Create(preparation).Error)
 
-		sourceAttachment := &model.SourceAttachment{
-			PreparationID: preparation.ID,
-			StorageID:     preparation.SourceStorages[0].ID,
-		}
-		require.NoError(t, db.Create(sourceAttachment).Error)
+		// Source attachment is created automatically by GORM when creating preparation with SourceStorages
+		var sourceAttachment model.SourceAttachment
+		require.NoError(t, db.Where("preparation_id = ? AND storage_id = ?", preparation.ID, preparation.SourceStorages[0].ID).First(&sourceAttachment).Error)
 
 		// Create a completed pack job
 		packJob := &model.Job{
@@ -193,7 +187,9 @@ func TestWorkflowOrchestrator_HandlePackCompletion_NoDag(t *testing.T) {
 		require.NoError(t, db.Create(packJob).Error)
 
 		orchestrator := NewWorkflowOrchestrator(DefaultOrchestratorConfig())
-		orchestrator.triggerService = &autodeal.TriggerService{}
+		triggerService := autodeal.NewTriggerService()
+		triggerService.SetEnabled(true)
+		orchestrator.triggerService = triggerService
 
 		// Test pack completion with NoDag - should skip directly to deal creation
 		err := orchestrator.handlePackCompletion(ctx, db, nil, preparation)
@@ -250,11 +246,9 @@ func TestWorkflowOrchestrator_CheckPreparationWorkflow(t *testing.T) {
 		}
 		require.NoError(t, db.Create(preparation).Error)
 
-		sourceAttachment := &model.SourceAttachment{
-			PreparationID: preparation.ID,
-			StorageID:     preparation.SourceStorages[0].ID,
-		}
-		require.NoError(t, db.Create(sourceAttachment).Error)
+		// Source attachment is created automatically by GORM when creating preparation with SourceStorages
+		var sourceAttachment model.SourceAttachment
+		require.NoError(t, db.Where("preparation_id = ? AND storage_id = ?", preparation.ID, preparation.SourceStorages[0].ID).First(&sourceAttachment).Error)
 
 		// Create a completed scan job
 		scanJob := &model.Job{
@@ -301,11 +295,9 @@ func TestWorkflowOrchestrator_ConfigurationDisabled(t *testing.T) {
 		}
 		require.NoError(t, db.Create(preparation).Error)
 
-		sourceAttachment := &model.SourceAttachment{
-			PreparationID: preparation.ID,
-			StorageID:     preparation.SourceStorages[0].ID,
-		}
-		require.NoError(t, db.Create(sourceAttachment).Error)
+		// Source attachment is created automatically by GORM when creating preparation with SourceStorages
+		var sourceAttachment model.SourceAttachment
+		require.NoError(t, db.Where("preparation_id = ? AND storage_id = ?", preparation.ID, preparation.SourceStorages[0].ID).First(&sourceAttachment).Error)
 
 		scanJob := &model.Job{
 			Type:         model.Scan,

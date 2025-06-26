@@ -6278,11 +6278,7 @@ const docTemplate = `{
                 },
                 "dealHttpHeaders": {
                     "description": "DealHTTPHeaders contains HTTP headers for deals",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.ConfigMap"
-                        }
-                    ]
+                    "type": "object"
                 },
                 "dealKeepUnsealed": {
                     "description": "DealKeepUnsealed indicates whether to keep unsealed copy",

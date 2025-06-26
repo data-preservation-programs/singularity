@@ -70,9 +70,7 @@ func TestTriggerService_TriggerForJobCompletion_AutoDealDisabled(t *testing.T) {
 		preparation := model.Preparation{
 			Name: "test-prep",
 			DealConfig: model.DealConfig{
-				DealConfig: model.DealConfig{
-					AutoCreateDeals: false,
-				},
+				AutoCreateDeals: false,
 			},
 		}
 		db.Create(&preparation)
