@@ -130,7 +130,7 @@ func TestDownloadServer_handleGetPiece_NotCommP(t *testing.T) {
 	err := server.handleGetPiece(c)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
-	assert.Contains(t, rec.Body.String(), "CID is not a commp")
+	assert.Contains(t, rec.Body.String(), "failed to parse piece CID")
 }
 
 func TestGetMetadata_InvalidAPI(t *testing.T) {
