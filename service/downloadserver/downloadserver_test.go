@@ -3,6 +3,7 @@ package downloadserver
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -255,26 +256,59 @@ func TestGetMetadata_ConfigProcessing(t *testing.T) {
 }
 
 func TestDownloadServer_Start_Health(t *testing.T) {
-	server := NewDownloadServer("127.0.0.1:0", "http://api.example.com", nil, model.ClientConfig{})
+	// Find an available port
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	port := listener.Addr().(*net.TCPAddr).Port
+	listener.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	bindAddr := fmt.Sprintf("127.0.0.1:%d", port)
+	server := NewDownloadServer(bindAddr, "http://api.example.com", nil, model.ClientConfig{})
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	exitErr := make(chan error, 1)
 
-	err := server.Start(ctx, exitErr)
+	err = server.Start(ctx, exitErr)
 	assert.NoError(t, err)
 
-	// Give the server a moment to start
-	time.Sleep(time.Millisecond * 100)
+	// Wait for the server to be ready by polling the health endpoint
+	serverURL := fmt.Sprintf("http://%s", bindAddr)
+	client := &http.Client{Timeout: time.Second}
 
-	// The server should shut down when context is cancelled
+	var healthResp *http.Response
+	for i := 0; i < 50; i++ { // Try for up to 5 seconds
+		healthResp, err = client.Get(serverURL + "/health")
+		if err == nil {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	// Server should be ready now
+	require.NoError(t, err, "Server failed to start within timeout")
+	require.NotNil(t, healthResp)
+	defer healthResp.Body.Close()
+
+	// Test the health endpoint
+	assert.Equal(t, http.StatusOK, healthResp.StatusCode)
+
+	// Make another health check to ensure server is stable
+	resp2, err := client.Get(serverURL + "/health")
+	require.NoError(t, err)
+	defer resp2.Body.Close()
+	assert.Equal(t, http.StatusOK, resp2.StatusCode)
+
+	// Now shutdown the server
 	cancel()
 
 	select {
 	case err := <-exitErr:
-		// Server should shutdown cleanly
-		assert.NoError(t, err)
+		// Server should shutdown cleanly - "http: Server closed" is expected during graceful shutdown
+		if err != nil && err.Error() != "http: Server closed" {
+			t.Fatalf("Unexpected shutdown error: %v", err)
+		}
 	case <-time.After(time.Second * 3):
 		t.Fatal("Server did not shut down within timeout")
 	}
