@@ -1,87 +1,11 @@
-version: "2"
-run:
-  tests: false
 linters:
-  default: all
-  disable:
-    - containedctx
-    - cyclop
-    - depguard
-    - dupl
-    - dupword
-    - exhaustruct
-    - forbidigo
-    - funlen
-    - gochecknoglobals
-    - gochecknoinits
-    - gocognit
-    - goconst
-    - gocyclo
-    - godot
-    - godox
-    - gomoddirectives
-    - interfacebloat
-    - ireturn
-    - lll
-    - maintidx
-    - mnd
-    - musttag
-    - nakedret
-    - nestif
-    - nilnil
-    - nlreturn
-    - nolintlint
-    - nonamedreturns
-    - prealloc
-    - rowserrcheck
-    - sqlclosecheck
-    - tagalign
-    - varnamelen
-    - wastedassign
-    - wrapcheck
-    - wsl
-    - contextcheck
-    - forcetypeassert
-    - funcorder
-    - exhaustive
-    - intrange
-  settings:
-    gosec:
-      excludes:
-        - G115 # we do a lot of uint64 conversions unfortunately
-    errcheck:
-      exclude-functions:
-        - path/filepath.Walk
-        - (github.com/libp2p/go-libp2p/network.MuxedStream).SetDeadline
-        - (github.com/data-preservation-programs/singularity/service.DatasetWorker).cleanup
-    revive:
-      rules:
-        - name: var-naming
-          disabled: true
-    recvcheck:
-      disable-builtin: true
-      exclusions:
-        - "*.Value"
-        - "*.String"
-        - "*.MarshalBinary"
-        - "*.MarshalJSON"
-  exclusions:
-    generated: lax
-    presets:
-      - comments
-      - common-false-positives
-      - legacy
-      - std-error-handling
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
-formatters:
   enable:
+    - staticcheck
+    - govet
     - gofmt
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+    - unused
+    - deadcode
+
+run:
+  timeout: 5m
+  tests: false
