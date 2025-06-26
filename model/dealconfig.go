@@ -13,14 +13,14 @@ var dealConfigLogger = log.Logger("dealconfig")
 
 // Static errors for validation
 var (
-	ErrNegativePricePerDeal     = errors.New("dealPricePerDeal cannot be negative")
-	ErrNegativePricePerGb       = errors.New("dealPricePerGb cannot be negative")
-	ErrNegativePricePerGbEpoch  = errors.New("dealPricePerGbEpoch cannot be negative")
-	ErrNonPositiveDuration      = errors.New("dealDuration must be positive")
-	ErrNegativeStartDelay       = errors.New("dealStartDelay cannot be negative")
-	ErrInvalidProviderFormat    = errors.New("dealProvider must be a valid miner ID")
-	ErrInvalidDurationFormat    = errors.New("invalid duration format")
-	ErrInvalidDelayFormat       = errors.New("invalid delay format")
+	ErrNegativePricePerDeal    = errors.New("dealPricePerDeal cannot be negative")
+	ErrNegativePricePerGb      = errors.New("dealPricePerGb cannot be negative")
+	ErrNegativePricePerGbEpoch = errors.New("dealPricePerGbEpoch cannot be negative")
+	ErrNonPositiveDuration     = errors.New("dealDuration must be positive")
+	ErrNegativeStartDelay      = errors.New("dealStartDelay cannot be negative")
+	ErrInvalidProviderFormat   = errors.New("dealProvider must be a valid miner ID")
+	ErrInvalidDurationFormat   = errors.New("invalid duration format")
+	ErrInvalidDelayFormat      = errors.New("invalid delay format")
 )
 
 // DealConfig encapsulates all deal-related configuration parameters
@@ -84,10 +84,8 @@ func (dc *DealConfig) Validate() error {
 		return errors.Wrapf(ErrNegativeStartDelay, "%v", dc.DealStartDelay)
 	}
 
-	// Validate that at least one pricing model is used
-	if dc.DealPricePerDeal == 0 && dc.DealPricePerGb == 0 && dc.DealPricePerGbEpoch == 0 {
-		// This might be valid for free deals, so we don't error but could warn
-	}
+	// Note: All zero pricing values might be valid for free deals, so we don't error
+	// but this could be logged as a warning in the future if needed
 
 	// Validate provider format if specified
 	if dc.DealProvider != "" {
@@ -175,7 +173,7 @@ func (dc *DealConfig) ToMap() map[string]interface{} {
 
 	// Use reflection-like approach with json marshaling/unmarshaling
 	jsonData, _ := json.Marshal(dc)
-	json.Unmarshal(jsonData, &result)
+	_ = json.Unmarshal(jsonData, &result)
 
 	return result
 }

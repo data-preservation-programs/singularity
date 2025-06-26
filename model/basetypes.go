@@ -153,6 +153,12 @@ func (ss *StringSlice) Scan(src any) error {
 		return ErrInvalidStringSliceEntry
 	}
 
+	// Handle the case where the database contains the string "null" instead of JSON null
+	if string(source) == "null" || len(source) == 0 {
+		*ss = nil
+		return nil
+	}
+
 	return json.Unmarshal(source, ss)
 }
 
@@ -165,6 +171,12 @@ func (m *ConfigMap) Scan(src any) error {
 	source, ok := src.([]byte)
 	if !ok {
 		return ErrInvalidStringMapEntry
+	}
+
+	// Handle the case where the database contains the string "null" instead of JSON null
+	if string(source) == "null" || len(source) == 0 {
+		*m = nil
+		return nil
 	}
 
 	return json.Unmarshal(source, m)
@@ -271,6 +283,12 @@ func (c *ClientConfig) Scan(src any) error {
 	source, ok := src.([]byte)
 	if !ok {
 		return ErrInvalidHTTPConfigEntry
+	}
+
+	// Handle the case where the database contains the string "null" instead of JSON null
+	if string(source) == "null" || len(source) == 0 {
+		*c = ClientConfig{}
+		return nil
 	}
 
 	return json.Unmarshal(source, c)

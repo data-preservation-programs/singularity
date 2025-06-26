@@ -14,6 +14,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
@@ -166,6 +167,11 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 
 	err := model.GetMigrator(db).Migrate()
 	require.NoError(t, err)
+
+	// Disable workflow orchestrator during tests to prevent automatic job progression
+	originalOrchestratorState := workflow.DefaultOrchestrator.IsEnabled()
+	workflow.DefaultOrchestrator.SetEnabled(false)
+	defer workflow.DefaultOrchestrator.SetEnabled(originalOrchestratorState)
 
 	t.Run(backend, func(t *testing.T) {
 		testFunc(ctx, t, db)
