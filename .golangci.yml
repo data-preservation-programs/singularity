@@ -68,7 +68,7 @@ linters-settings:
         - "*.MarshalBinary"
         - "*.MarshalJSON"
 issues:
-  exclude-generated: true
+  exclude-generated: lax
   exclude-dirs:
     - third_party
     - builtin
