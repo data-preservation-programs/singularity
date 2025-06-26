@@ -13,6 +13,11 @@ import (
 )
 
 func TestInAccessibleFiles(t *testing.T) {
+	// Skip test if running as root (permissions don't work the same way)
+	if os.Getuid() == 0 {
+		t.Skip("Skipping file permission test when running as root")
+	}
+
 	tmp := t.TempDir()
 	// Inaccessible folder
 	err := os.MkdirAll(filepath.Join(tmp, "sub"), 0000)
@@ -27,6 +32,12 @@ func TestInAccessibleFiles(t *testing.T) {
 	require.NoError(t, err)
 	err = os.WriteFile(filepath.Join(tmp, "test2.txt"), []byte("test"), 0644)
 	require.NoError(t, err)
+
+	// Verify that permissions are actually working
+	_, err = os.Open(filepath.Join(tmp, "sub"))
+	if err == nil {
+		t.Skip("File permissions not enforced on this system - cannot test inaccessible file behavior")
+	}
 
 	ctx := context.Background()
 	handler, err := NewRCloneHandler(ctx, model.Storage{

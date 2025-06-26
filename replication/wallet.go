@@ -114,7 +114,7 @@ func (w DatacapWalletChooser) getPendingDeals(ctx context.Context, wallet model.
 	var totalPieceSize int64
 	err := w.db.WithContext(ctx).Model(&model.Deal{}).
 		Select("COALESCE(SUM(piece_size), 0)").
-		Where("client_id = ? AND verified AND state = ?", wallet.ID, model.DealProposed).
+		Where("client_id = ? AND verified = ? AND state = ?", wallet.ID, true, model.DealProposed).
 		Scan(&totalPieceSize).
 		Error
 	if err != nil {

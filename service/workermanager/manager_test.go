@@ -178,6 +178,14 @@ func TestWorkerManager_StartOptimalWorker(t *testing.T) {
 		// We expect this to fail in test environment due to missing dependencies
 		// but the function should not panic
 		_ = err // Ignore error as we're testing the logic, not full functionality
+
+		// Wait for worker to be registered, then clean up
+		// This prevents race conditions with database cleanup
+		for i := 0; i < 10 && manager.getWorkerCount() == 0; i++ {
+			time.Sleep(5 * time.Millisecond)
+		}
+		cleanupErr := manager.stopAllWorkers(ctx)
+		_ = cleanupErr // Ignore cleanup errors in test
 	})
 }
 
@@ -375,5 +383,14 @@ func TestWorkerManager_EnsureMinimumWorkers(t *testing.T) {
 		// but we test that it doesn't panic
 		err := manager.ensureMinimumWorkers(ctx)
 		_ = err // Ignore error as we're testing the logic, not full functionality
+
+		// Wait for workers to be registered, then clean up
+		// This prevents race conditions with database cleanup
+		expectedWorkers := config.MinWorkers
+		for i := 0; i < 20 && manager.getWorkerCount() < expectedWorkers; i++ {
+			time.Sleep(5 * time.Millisecond)
+		}
+		cleanupErr := manager.stopAllWorkers(ctx)
+		_ = cleanupErr // Ignore cleanup errors in test
 	})
 }

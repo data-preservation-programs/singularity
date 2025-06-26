@@ -93,10 +93,10 @@ func (c cronLogger) Error(err error, msg string, keysAndValues ...any) {
 // handles the outcome, updates the Schedule's state, and logs the results.
 func (d *DealPusher) runScheduleAndUpdateState(ctx context.Context, schedule *model.Schedule) {
 	db := d.dbNoContext.WithContext(ctx)
-	state, err := d.runSchedule(ctx, schedule)
+	state, scheduleErr := d.runSchedule(ctx, schedule)
 	updates := make(map[string]any)
-	if err != nil {
-		updates["error_message"] = err.Error()
+	if scheduleErr != nil {
+		updates["error_message"] = scheduleErr.Error()
 		if schedule.ScheduleCron == "" {
 			state = model.ScheduleError
 		}
@@ -106,7 +106,7 @@ func (d *DealPusher) runScheduleAndUpdateState(ctx context.Context, schedule *mo
 	}
 	if len(updates) > 0 {
 		Logger.Debugw("updating schedule", "schedule", schedule.ID, "updates", updates)
-		err = db.Model(schedule).Updates(updates).Error
+		err := db.Model(schedule).Updates(updates).Error
 		if err != nil {
 			Logger.Errorw("failed to update schedule", "schedule", schedule.ID, "error", err)
 		}
@@ -116,7 +116,7 @@ func (d *DealPusher) runScheduleAndUpdateState(ctx context.Context, schedule *mo
 		d.removeSchedule(*schedule)
 	}
 	if state == model.ScheduleError {
-		Logger.Errorw("schedule error", "schedule", schedule.ID, "error", err)
+		Logger.Errorw("schedule error", "schedule", schedule.ID, "error", scheduleErr)
 		d.removeSchedule(*schedule)
 	}
 }

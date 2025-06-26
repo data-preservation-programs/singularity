@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/replication"
@@ -34,7 +33,7 @@ func TestEndpointFetcher(t *testing.T) {
 		{
 			testName:             "unable to find miner on chain",
 			minerInfoNotFindable: true,
-			expectedErrString:    fmt.Errorf("no http endpoints found for providers [%%s]: looking up provider info: %w", errMinerNotFound).Error(),
+			expectedErrString:    "no http endpoints found for providers [%s]: looking up provider info: miner not found",
 		},
 		{
 			testName:          "unable to dial provider",
@@ -49,7 +48,7 @@ func TestEndpointFetcher(t *testing.T) {
 		{
 			testName:          "provider not serving http",
 			noHTTP:            true,
-			expectedErrString: fmt.Errorf("no http endpoints found for providers [%%s]: %w", endpointfinder.ErrHTTPNotSupported).Error(),
+			expectedErrString: "no http endpoints found for providers [%s]: provider does not support http",
 		},
 	}
 	for i, testCase := range testCases {
@@ -90,7 +89,7 @@ func TestEndpointFetcher(t *testing.T) {
 				other.SetStreamHandler(boostly.FilRetrievalTransportsProtocol_1_0_0, handler)
 			}
 
-			endpointFinder := endpointfinder.NewEndpointFinder(minerInfoFetcher, source, endpointfinder.WithErrorLruSize(3), endpointfinder.WithErrorLruSize(3))
+			endpointFinder := endpointfinder.NewEndpointFinder(minerInfoFetcher, source, endpointfinder.WithErrorLruSize(3))
 
 			addrInfos, err := endpointFinder.FindHTTPEndpoints(context.Background(), []string{testProvider})
 			if testCase.expectedErrString == "" {
@@ -110,8 +109,12 @@ func TestEndpointFetcher(t *testing.T) {
 				})
 				require.Equal(t, minerInfoFetcher.callCount, 1)
 			} else {
-				errMessage := fmt.Sprintf(testCase.expectedErrString, testProvider, source.ID(), other.ID())
-				errMessage = strings.Split(errMessage, "%!(EXTRA")[0]
+				var errMessage string
+				if testCase.testName == "unable to dial provider" {
+					errMessage = fmt.Sprintf(testCase.expectedErrString, testProvider, source.ID(), other.ID())
+				} else {
+					errMessage = fmt.Sprintf(testCase.expectedErrString, testProvider)
+				}
 				require.EqualError(t, err, errMessage)
 				require.Nil(t, addrInfos)
 				// second call should cache error
