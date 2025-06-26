@@ -207,7 +207,7 @@ func (w Worker) Name() string {
 }
 
 // triggerWorkflowProgression triggers workflow progression and auto-deal creation
-func (w *Thread) triggerWorkflowProgression(ctx context.Context, jobID model.JobID) {
+func (w *Thread) triggerWorkflowProgression(_ context.Context, jobID model.JobID) {
 	// Use a separate context with timeout to avoid blocking the main worker
 	triggerCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

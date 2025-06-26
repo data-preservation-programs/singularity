@@ -166,7 +166,7 @@ func (m *WorkerManager) evaluateScaling(ctx context.Context) error {
 
 	// Scale up if needed
 	if totalReadyJobs >= int64(m.config.ScaleUpThreshold) && currentWorkerCount < m.config.MaxWorkers {
-		workersToAdd := min(m.config.MaxWorkers-currentWorkerCount, int(totalReadyJobs/int64(m.config.ScaleUpThreshold)))
+		workersToAdd := workerMin(m.config.MaxWorkers-currentWorkerCount, int(totalReadyJobs/int64(m.config.ScaleUpThreshold)))
 		logger.Infof("Scaling up: adding %d workers (ready jobs: %d)", workersToAdd, totalReadyJobs)
 
 		for i := 0; i < workersToAdd; i++ {
@@ -180,7 +180,7 @@ func (m *WorkerManager) evaluateScaling(ctx context.Context) error {
 
 	// Scale down if needed (but keep minimum)
 	if totalReadyJobs <= int64(m.config.ScaleDownThreshold) && currentWorkerCount > m.config.MinWorkers {
-		workersToRemove := min(currentWorkerCount-m.config.MinWorkers, 1) // Remove one at a time
+		workersToRemove := workerMin(currentWorkerCount-m.config.MinWorkers, 1) // Remove one at a time
 		logger.Infof("Scaling down: removing %d workers (ready jobs: %d)", workersToRemove, totalReadyJobs)
 
 		for i := 0; i < workersToRemove; i++ {
@@ -374,6 +374,7 @@ func (m *WorkerManager) ensureMinimumWorkers(ctx context.Context) error {
 }
 
 // cleanupIdleWorkers removes workers that have been idle too long
+// Currently always returns nil, but error return is kept for future extensibility
 func (m *WorkerManager) cleanupIdleWorkers(ctx context.Context) error {
 	if m.config.WorkerIdleTimeout == 0 {
 		return nil // No cleanup if timeout is 0
@@ -494,7 +495,7 @@ func (m *WorkerManager) Name() string {
 }
 
 // Helper functions
-func min(a, b int) int {
+func workerMin(a, b int) int {
 	if a < b {
 		return a
 	}

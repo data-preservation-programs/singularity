@@ -163,7 +163,7 @@ func (o *WorkflowOrchestrator) HandleJobCompletion(
 func (o *WorkflowOrchestrator) handleScanCompletion(
 	ctx context.Context,
 	db *gorm.DB,
-	lotusClient jsonrpc.RPCClient,
+	_ jsonrpc.RPCClient,
 	preparation *model.Preparation,
 ) error {
 	// Check if all scan jobs for this preparation are complete

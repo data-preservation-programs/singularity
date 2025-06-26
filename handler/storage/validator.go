@@ -157,7 +157,7 @@ func (v *SPValidator) ValidateStorageProvider(
 		if !result.AcceptingDeals {
 			issues = append(issues, "not accepting deals")
 		}
-		result.Message = fmt.Sprintf("Storage provider validation failed: %s", strings.Join(issues, ", "))
+		result.Message = "Storage provider validation failed: " + strings.Join(issues, ", ")
 		v.logWarning(ctx, db, "Storage Provider Validation Failed", result.Message, result.Metadata)
 	}
 
@@ -224,7 +224,7 @@ func (v *SPValidator) ValidateAndGetDefault(
 }
 
 // getMinerInfo retrieves miner information from the Lotus API
-func (v *SPValidator) getMinerInfo(ctx context.Context, lotusClient jsonrpc.RPCClient, minerAddr address.Address) (*MinerInfo, error) {
+func (v *SPValidator) getMinerInfo(_ context.Context, lotusClient jsonrpc.RPCClient, minerAddr address.Address) (*MinerInfo, error) {
 	var minerInfo MinerInfo
 	err := lotusClient.CallFor(ctx, &minerInfo, "Filecoin.StateMinerInfo", minerAddr, nil)
 	if err != nil {
@@ -244,7 +244,7 @@ func (v *SPValidator) getMinerPower(ctx context.Context, lotusClient jsonrpc.RPC
 }
 
 // checkProviderConnectivity checks if the provider is reachable
-func (v *SPValidator) checkProviderConnectivity(ctx context.Context, lotusClient jsonrpc.RPCClient, peerID string, multiaddrs []string) (bool, []string) {
+func (v *SPValidator) checkProviderConnectivity(ctx context.Context, _ jsonrpc.RPCClient, peerID string, multiaddrs []string) (bool, []string) {
 	var warnings []string
 
 	if peerID == "" {

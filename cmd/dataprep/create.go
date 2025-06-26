@@ -302,7 +302,7 @@ func randomReadableString(length int) string {
 }
 
 // enableWorkflowOrchestration enables the workflow orchestrator for automatic job progression
-func enableWorkflowOrchestration(ctx context.Context) {
+func enableWorkflowOrchestration(_ context.Context) {
 	workflow.DefaultOrchestrator.SetEnabled(true)
 	fmt.Printf("✓ Workflow orchestration enabled (automatic scan → pack → daggen → deals)\n")
 }
