@@ -44,6 +44,9 @@ linters:
     - forcetypeassert
     - exhaustive
     - intrange
+    - staticcheck
+    - funcorder
+    - errchkjson
   settings:
     gosec:
       excludes:

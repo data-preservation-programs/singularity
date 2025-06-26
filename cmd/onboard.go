@@ -159,8 +159,9 @@ This is the simplest way to onboard data from source to storage deals.`,
 					Success: false,
 					Error:   fmt.Sprintf("%s: %v", msg, err),
 				}
-				data, _ := json.Marshal(result)
-				fmt.Println(string(data))
+				if data, err := json.Marshal(result); err == nil {
+					fmt.Println(string(data))
+				}
 			}
 			return errors.Wrap(err, msg)
 		}

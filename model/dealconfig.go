@@ -172,7 +172,10 @@ func (dc *DealConfig) ToMap() map[string]interface{} {
 	result := make(map[string]interface{})
 
 	// Use reflection-like approach with json marshaling/unmarshaling
-	jsonData, _ := json.Marshal(dc)
+	jsonData, err := json.Marshal(dc)
+	if err != nil {
+		return result
+	}
 	_ = json.Unmarshal(jsonData, &result)
 
 	return result
