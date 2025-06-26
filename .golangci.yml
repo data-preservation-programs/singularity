@@ -1,8 +1,8 @@
-version: "2"
+# Converted to v1 format for compatibility
 run:
   tests: false
 linters:
-  default: all
+  enable-all: true
   disable:
     - containedctx
     - cyclop
@@ -47,7 +47,7 @@ linters:
     - staticcheck
     - funcorder
     - errchkjson
-  settings:
+linters-settings:
     gosec:
       excludes:
         - G115 # we do a lot of uint64 conversions unfortunately
@@ -67,23 +67,9 @@ linters:
         - "*.String"
         - "*.MarshalBinary"
         - "*.MarshalJSON"
-  exclusions:
-    generated: lax
-    presets:
-      - comments
-      - common-false-positives
-      - legacy
-      - std-error-handling
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
-formatters:
-  enable:
-    - gofmt
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+issues:
+  exclude-generated: true
+  exclude-dirs:
+    - third_party
+    - builtin
+    - examples
