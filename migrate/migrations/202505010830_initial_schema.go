@@ -210,7 +210,7 @@ type CarBlock struct {
 }
 
 // Create migration for initial database schema
-func _202505010830_initial_schema() *gormigrate.Migration {
+func _202505010830InitialSchema() *gormigrate.Migration {
 	var InitTables = []any{
 		&Worker{},
 		&Global{},

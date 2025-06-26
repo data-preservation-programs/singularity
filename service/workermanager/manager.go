@@ -402,8 +402,6 @@ func (m *WorkerManager) cleanupIdleWorkers(ctx context.Context) {
 			}
 		}
 	}
-
-	return
 }
 
 // getJobCounts returns count of ready jobs by type

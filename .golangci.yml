@@ -66,3 +66,10 @@ issues:
     - third_party
     - builtin
     - examples
+  exclude-rules:
+    - path: model/basetypes.go
+      linters:
+        - recvcheck
+    - path: migrate/migrations/
+      linters:
+        - stylecheck
