@@ -190,7 +190,11 @@ func GetMetadata(
 	prefix := pieceMetadata.Storage.Type + "-"
 	provider := pieceMetadata.Storage.Config["provider"]
 	providerOptions, err := underscore.Find(backend.ProviderOptions, func(providerOption storagesystem.ProviderOptions) bool {
-		return providerOption.Provider == provider
+		// Handle special case for 'local' storage where provider can be empty or "local"
+		if pieceMetadata.Storage.Type == "local" && (provider == "" || strings.EqualFold(provider, "local")) && providerOption.Provider == "" {
+			return true
+		}
+		return strings.EqualFold(providerOption.Provider, provider)
 	})
 	if err != nil {
 		return nil, 0, errors.Newf("provider '%s' is not supported", provider)
