@@ -8,6 +8,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	logging "github.com/ipfs/go-log/v2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/ybbus/jsonrpc/v3"
@@ -43,6 +44,10 @@ func (m *MockRPCClient) CallBatchRaw(ctx context.Context, requests jsonrpc.RPCRe
 }
 
 func TestDatacapWalletChooser_Choose(t *testing.T) {
+	// Temporarily suppress error logs to avoid confusing test output
+	logging.SetLogLevel("replication", "FATAL")
+	defer logging.SetLogLevel("replication", "ERROR")
+
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		lotusClient := new(MockRPCClient)
 

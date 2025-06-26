@@ -9,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/retriever/endpointfinder"
 	"github.com/filecoin-shipyard/boostly"
+	"github.com/ipfs/go-log/v2"
 	"github.com/ipld/go-ipld-prime/codec/dagcbor"
 	"github.com/ipld/go-ipld-prime/node/bindnode"
 	"github.com/ipld/go-ipld-prime/node/bindnode/registry"
@@ -20,6 +21,15 @@ import (
 )
 
 func TestEndpointFetcher(t *testing.T) {
+	// Suppress error logs during testing to avoid confusing output.
+	// These tests intentionally trigger error conditions that generate error logs,
+	// but the errors are expected and tested for, so we suppress them to keep
+	// test output clean and avoid confusion in CI environments.
+	log.SetLogLevel("singularity/retriever/endpointfinder", "fatal")
+	defer func() {
+		log.SetLogLevel("singularity/retriever/endpointfinder", "info")
+	}()
+
 	testCases := []struct {
 		testName                 string
 		providers                int

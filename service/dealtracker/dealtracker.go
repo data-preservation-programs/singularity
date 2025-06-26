@@ -416,6 +416,12 @@ type UnknownDeal struct {
 //
 //   - error: An error that represents the failure of the operation, or nil if the operation was successful.
 func (d *DealTracker) runOnce(ctx context.Context) error {
+	// If no data sources are configured, skip processing
+	if d.dealZstURL == "" && d.lotusURL == "" {
+		Logger.Info("no data sources configured, skipping deal tracking")
+		return nil
+	}
+
 	headTime, err := util.GetLotusHeadTime(ctx, d.lotusURL, d.lotusToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get lotus head time from %s", d.lotusURL)
