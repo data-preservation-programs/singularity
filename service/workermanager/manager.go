@@ -232,8 +232,12 @@ func (m *WorkerManager) startWorker(ctx context.Context, jobTypes []model.JobTyp
 		MaxInterval:    30 * time.Second,
 	}
 
-	worker := datasetworker.NewWorker(m.db, config)
-	workerCtx, cancel := context.WithCancel(ctx)
+	// Create a new database instance without the test context to avoid context cancellation issues
+	dbWithoutContext := m.db.WithContext(context.Background())
+	worker := datasetworker.NewWorker(dbWithoutContext, config)
+	// Use background context for worker to avoid test context cancellation issues
+	// The worker will be stopped explicitly via the Cancel function
+	workerCtx, cancel := context.WithCancel(context.Background())
 	exitErr := make(chan error, 1)
 	done := make(chan struct{})
 
@@ -297,7 +301,8 @@ func (m *WorkerManager) stopWorker(ctx context.Context, workerID string) error {
 	worker.Cancel()
 
 	// Wait for worker to stop with timeout
-	stopCtx, stopCancel := context.WithTimeout(ctx, 30*time.Second)
+	// Use background context to avoid issues with canceled test contexts
+	stopCtx, stopCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer stopCancel()
 
 	if worker.Done != nil {

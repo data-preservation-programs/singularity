@@ -31,7 +31,7 @@ func TestImportHandler(t *testing.T) {
 
 		t.Run("invalid key", func(t *testing.T) {
 			_, err := Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
-				PrivateKey: "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a22696e76616c6964227d", // Valid hex but invalid private key
+				PrivateKey: "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a22414141414141414141414141414141414141414141414141414141414141414141414141414141414141413d227d", // Valid hex, valid base64, but all zeros private key
 			})
 			require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		})

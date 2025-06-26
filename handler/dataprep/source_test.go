@@ -39,13 +39,25 @@ func TestAddSourceStorageHandler_PreparationNotFound(t *testing.T) {
 
 func TestAddSourceStorageHandler_AlreadyAttached(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Preparation{
-			SourceStorages: []model.Storage{{
-				Name: "source",
-			}},
-		}).Error
+		// First create a storage
+		storage := model.Storage{
+			Name: "source",
+			Type: "local",
+			Path: "/tmp",
+		}
+		err := db.Create(&storage).Error
 		require.NoError(t, err)
 
+		// Then create a preparation and attach the storage
+		prep := model.Preparation{}
+		err = db.Create(&prep).Error
+		require.NoError(t, err)
+
+		// Manually create the source attachment
+		err = db.Exec("INSERT INTO source_attachments (preparation_id, storage_id) VALUES (?, ?)", prep.ID, storage.ID).Error
+		require.NoError(t, err)
+
+		// Try to attach the same storage again
 		_, err = Default.AddSourceStorageHandler(ctx, db, "1", "source")
 		require.ErrorIs(t, err, handlererror.ErrDuplicateRecord)
 		require.ErrorContains(t, err, "already")

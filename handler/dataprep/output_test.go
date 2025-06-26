@@ -39,13 +39,25 @@ func TestAddOutputStorageHandler_PreparationNotFound(t *testing.T) {
 
 func TestAddOutputStorageHandler_AlreadyAttached(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Preparation{
-			OutputStorages: []model.Storage{{
-				Name: "output",
-			}},
-		}).Error
+		// First create a storage
+		storage := model.Storage{
+			Name: "output",
+			Type: "local",
+			Path: "/tmp",
+		}
+		err := db.Create(&storage).Error
 		require.NoError(t, err)
 
+		// Then create a preparation and attach the storage
+		prep := model.Preparation{}
+		err = db.Create(&prep).Error
+		require.NoError(t, err)
+
+		// Manually create the output attachment
+		err = db.Exec("INSERT INTO output_attachments (preparation_id, storage_id) VALUES (?, ?)", prep.ID, storage.ID).Error
+		require.NoError(t, err)
+
+		// Try to attach the same storage again
 		_, err = Default.AddOutputStorageHandler(ctx, db, "1", "output")
 		require.ErrorIs(t, err, handlererror.ErrDuplicateRecord)
 		require.ErrorContains(t, err, "already")
