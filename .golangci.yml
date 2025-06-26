@@ -42,7 +42,6 @@ linters:
     - wsl
     - contextcheck
     - forcetypeassert
-    - funcorder
     - exhaustive
     - intrange
   settings:

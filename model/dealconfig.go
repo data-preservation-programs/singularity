@@ -2,14 +2,26 @@ package model
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-log/v2"
 )
 
 var dealConfigLogger = log.Logger("dealconfig")
+
+// Static errors for validation
+var (
+	ErrNegativePricePerDeal     = errors.New("dealPricePerDeal cannot be negative")
+	ErrNegativePricePerGb       = errors.New("dealPricePerGb cannot be negative")
+	ErrNegativePricePerGbEpoch  = errors.New("dealPricePerGbEpoch cannot be negative")
+	ErrNonPositiveDuration      = errors.New("dealDuration must be positive")
+	ErrNegativeStartDelay       = errors.New("dealStartDelay cannot be negative")
+	ErrInvalidProviderFormat    = errors.New("dealProvider must be a valid miner ID")
+	ErrInvalidDurationFormat    = errors.New("invalid duration format")
+	ErrInvalidDelayFormat       = errors.New("invalid delay format")
+)
 
 // DealConfig encapsulates all deal-related configuration parameters
 type DealConfig struct {
@@ -57,19 +69,19 @@ type DealConfig struct {
 func (dc *DealConfig) Validate() error {
 	// Validate numeric fields for negative values
 	if dc.DealPricePerDeal < 0 {
-		return fmt.Errorf("dealPricePerDeal cannot be negative: %f", dc.DealPricePerDeal)
+		return errors.Wrapf(ErrNegativePricePerDeal, "%f", dc.DealPricePerDeal)
 	}
 	if dc.DealPricePerGb < 0 {
-		return fmt.Errorf("dealPricePerGb cannot be negative: %f", dc.DealPricePerGb)
+		return errors.Wrapf(ErrNegativePricePerGb, "%f", dc.DealPricePerGb)
 	}
 	if dc.DealPricePerGbEpoch < 0 {
-		return fmt.Errorf("dealPricePerGbEpoch cannot be negative: %f", dc.DealPricePerGbEpoch)
+		return errors.Wrapf(ErrNegativePricePerGbEpoch, "%f", dc.DealPricePerGbEpoch)
 	}
 	if dc.DealDuration <= 0 {
-		return fmt.Errorf("dealDuration must be positive: %v", dc.DealDuration)
+		return errors.Wrapf(ErrNonPositiveDuration, "%v", dc.DealDuration)
 	}
 	if dc.DealStartDelay < 0 {
-		return fmt.Errorf("dealStartDelay cannot be negative: %v", dc.DealStartDelay)
+		return errors.Wrapf(ErrNegativeStartDelay, "%v", dc.DealStartDelay)
 	}
 
 	// Validate that at least one pricing model is used
@@ -80,11 +92,11 @@ func (dc *DealConfig) Validate() error {
 	// Validate provider format if specified
 	if dc.DealProvider != "" {
 		if len(dc.DealProvider) < 4 || dc.DealProvider[:1] != "f" {
-			return fmt.Errorf("dealProvider must be a valid miner ID starting with 'f': %s", dc.DealProvider)
+			return errors.Wrapf(ErrInvalidProviderFormat, "must start with 'f': %s", dc.DealProvider)
 		}
 		// Try to parse the number part
 		if _, err := strconv.Atoi(dc.DealProvider[1:]); err != nil {
-			return fmt.Errorf("dealProvider must be a valid miner ID (f<number>): %s", dc.DealProvider)
+			return errors.Wrapf(ErrInvalidProviderFormat, "must be f<number>: %s", dc.DealProvider)
 		}
 	}
 
@@ -108,7 +120,7 @@ func (dc *DealConfig) SetDurationFromString(durationStr string) error {
 	// First try to parse as a direct number (epochs)
 	if epochs, err := strconv.ParseInt(durationStr, 10, 64); err == nil {
 		if epochs <= 0 {
-			return fmt.Errorf("duration must be positive: %d", epochs)
+			return errors.Wrapf(ErrNonPositiveDuration, "%d", epochs)
 		}
 		// Convert epochs to time.Duration (assuming 30 second epoch time)
 		const epochDuration = 30 * time.Second
@@ -119,11 +131,11 @@ func (dc *DealConfig) SetDurationFromString(durationStr string) error {
 	// Try to parse as a Go duration
 	duration, err := time.ParseDuration(durationStr)
 	if err != nil {
-		return fmt.Errorf("invalid duration format: %s (use format like '180d', '24h', or epoch number)", durationStr)
+		return errors.Wrapf(ErrInvalidDurationFormat, "%s (use format like '180d', '24h', or epoch number)", durationStr)
 	}
 
 	if duration <= 0 {
-		return fmt.Errorf("duration must be positive: %s", durationStr)
+		return errors.Wrapf(ErrNonPositiveDuration, "%s", durationStr)
 	}
 
 	dc.DealDuration = duration
@@ -135,7 +147,7 @@ func (dc *DealConfig) SetStartDelayFromString(delayStr string) error {
 	// First try to parse as a direct number (epochs)
 	if epochs, err := strconv.ParseInt(delayStr, 10, 64); err == nil {
 		if epochs < 0 {
-			return fmt.Errorf("start delay cannot be negative: %d", epochs)
+			return errors.Wrapf(ErrNegativeStartDelay, "%d", epochs)
 		}
 		// Convert epochs to time.Duration (assuming 30 second epoch time)
 		const epochDuration = 30 * time.Second
@@ -146,11 +158,11 @@ func (dc *DealConfig) SetStartDelayFromString(delayStr string) error {
 	// Try to parse as a Go duration
 	duration, err := time.ParseDuration(delayStr)
 	if err != nil {
-		return fmt.Errorf("invalid delay format: %s (use format like '1d', '2h', or epoch number)", delayStr)
+		return errors.Wrapf(ErrInvalidDelayFormat, "%s (use format like '1d', '2h', or epoch number)", delayStr)
 	}
 
 	if duration < 0 {
-		return fmt.Errorf("start delay cannot be negative: %s", delayStr)
+		return errors.Wrapf(ErrNegativeStartDelay, "%s", delayStr)
 	}
 
 	dc.DealStartDelay = duration
