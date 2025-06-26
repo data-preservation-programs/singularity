@@ -45,8 +45,8 @@ linters:
     - exhaustive
     - intrange
     - staticcheck
-    - funcorder
     - errchkjson
+    - exportloopref
 linters-settings:
     gosec:
       excludes:
@@ -60,13 +60,6 @@ linters-settings:
       rules:
         - name: var-naming
           disabled: true
-    recvcheck:
-      disable-builtin: true
-      exclusions:
-        - "*.Value"
-        - "*.String"
-        - "*.MarshalBinary"
-        - "*.MarshalJSON"
 issues:
   exclude-generated: lax
   exclude-dirs:
