@@ -289,8 +289,7 @@ func TestWorkerManager_CleanupIdleWorkers(t *testing.T) {
 		manager.activeWorkers["idle-worker"] = idleWorker
 		manager.activeWorkers["active-worker"] = activeWorker
 
-		err := manager.cleanupIdleWorkers(ctx)
-		assert.NoError(t, err)
+		manager.cleanupIdleWorkers(ctx)
 
 		// idle-worker should be removed, active-worker should remain
 		// But since we have MinWorkers = 1, it might not remove if it would go below minimum
@@ -313,8 +312,7 @@ func TestWorkerManager_CleanupIdleWorkers_NoTimeout(t *testing.T) {
 		}
 		manager.activeWorkers["idle-worker"] = idleWorker
 
-		err := manager.cleanupIdleWorkers(ctx)
-		assert.NoError(t, err)
+		manager.cleanupIdleWorkers(ctx)
 
 		// Worker should not be cleaned up when timeout is 0
 		assert.Equal(t, 1, manager.getWorkerCount())

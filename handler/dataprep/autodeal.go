@@ -116,7 +116,7 @@ func (s *AutoDealService) CreateAutomaticDealSchedule(
 	dealRequest := s.buildDealScheduleRequest(&preparation)
 
 	s.logInfo(ctx, db, "Creating Deal Schedule",
-		fmt.Sprintf("Creating deal schedule with provider %s", dealRequest.Provider),
+		"Creating deal schedule with provider "+dealRequest.Provider,
 		model.ConfigMap{
 			"preparation_name": preparation.Name,
 			"provider":         dealRequest.Provider,
@@ -342,7 +342,7 @@ func (s *AutoDealService) validateProviderForDealCreation(
 		preparation.DealConfig.DealProvider = defaultSP.ProviderID
 
 		s.logInfo(ctx, db, "Using Default Provider",
-			fmt.Sprintf("No provider specified, using default %s", defaultSP.ProviderID),
+			"No provider specified, using default "+defaultSP.ProviderID,
 			model.ConfigMap{
 				"preparation_name": preparation.Name,
 				"provider_id":      defaultSP.ProviderID,

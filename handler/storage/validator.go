@@ -272,7 +272,7 @@ func (v *SPValidator) checkProviderConnectivity(ctx context.Context, _ jsonrpc.R
 // checkPeerConnectivity performs basic connectivity checks to multiaddrs
 func (v *SPValidator) checkPeerConnectivity(ctx context.Context, multiaddrs []string) bool {
 	for _, addr := range multiaddrs {
-		if v.testConnection(ctx, addr) {
+		if v.testConnection(addr) {
 			return true
 		}
 	}
@@ -280,7 +280,7 @@ func (v *SPValidator) checkPeerConnectivity(ctx context.Context, multiaddrs []st
 }
 
 // testConnection tests if we can connect to a multiaddr
-func (v *SPValidator) testConnection(ctx context.Context, multiaddr string) bool {
+func (v *SPValidator) testConnection(multiaddr string) bool {
 	// Parse multiaddr and extract IP and port
 	// This is a simplified implementation
 	parts := strings.Split(multiaddr, "/")

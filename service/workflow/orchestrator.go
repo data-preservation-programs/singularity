@@ -242,7 +242,7 @@ func (o *WorkflowOrchestrator) handleScanCompletion(
 	}
 
 	o.logWorkflowProgress(ctx, db, "Scan → Pack Transition",
-		fmt.Sprintf("Started pack jobs for preparation %s", preparation.Name),
+		"Started pack jobs for preparation "+preparation.Name,
 		model.ConfigMap{
 			"preparation_id":   fmt.Sprintf("%d", preparation.ID),
 			"preparation_name": preparation.Name,

@@ -142,10 +142,7 @@ func (m *WorkerManager) monitorLoop(ctx context.Context) {
 			}
 
 			// Clean up idle workers
-			err := m.cleanupIdleWorkers(ctx)
-			if err != nil {
-				logger.Errorf("Failed to cleanup idle workers: %v", err)
-			}
+			m.cleanupIdleWorkers(ctx)
 		}
 	}
 }
@@ -374,10 +371,9 @@ func (m *WorkerManager) ensureMinimumWorkers(ctx context.Context) error {
 }
 
 // cleanupIdleWorkers removes workers that have been idle too long
-// Currently always returns nil, but error return is kept for future extensibility
-func (m *WorkerManager) cleanupIdleWorkers(ctx context.Context) error {
+func (m *WorkerManager) cleanupIdleWorkers(ctx context.Context) {
 	if m.config.WorkerIdleTimeout == 0 {
-		return nil // No cleanup if timeout is 0
+		return // No cleanup if timeout is 0
 	}
 
 	m.mutex.RLock()
@@ -402,7 +398,7 @@ func (m *WorkerManager) cleanupIdleWorkers(ctx context.Context) error {
 		}
 	}
 
-	return nil
+	return
 }
 
 // getJobCounts returns count of ready jobs by type
