@@ -19,7 +19,6 @@ import (
 	"github.com/data-preservation-programs/singularity/client/swagger/http/preparation"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/storage"
 	"github.com/data-preservation-programs/singularity/client/swagger/models"
-	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/gotidy/ptr"
 	"github.com/parnurzeal/gorequest"
@@ -32,10 +31,6 @@ const apiBind = "127.0.0.1:9091"
 
 func runAPI(t *testing.T, ctx context.Context) func() {
 	t.Helper()
-
-	// Disable workflow orchestrator during API tests to prevent automatic job progression
-	originalOrchestratorState := workflow.DefaultOrchestrator.IsEnabled()
-	workflow.DefaultOrchestrator.SetEnabled(false)
 
 	done := make(chan struct{})
 	go func() {
@@ -56,8 +51,6 @@ func runAPI(t *testing.T, ctx context.Context) func() {
 	require.NotNil(t, resp)
 	require.Equal(t, http2.StatusOK, resp.StatusCode)
 	return func() {
-		// Restore original orchestrator state when done
-		workflow.DefaultOrchestrator.SetEnabled(originalOrchestratorState)
 		select {
 		case <-done:
 		case <-ctx.Done():

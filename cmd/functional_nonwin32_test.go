@@ -9,17 +9,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/require"
 )
 
 // SQLite is not supported on Windows 32-bit
 func TestEzPrep(t *testing.T) {
-	// Disable workflow orchestrator during EzPrep tests to prevent automatic job progression
-	originalOrchestratorState := workflow.DefaultOrchestrator.IsEnabled()
-	workflow.DefaultOrchestrator.SetEnabled(false)
-	defer workflow.DefaultOrchestrator.SetEnabled(originalOrchestratorState)
 
 	source := t.TempDir()
 	sizes := []int{0, 1, 1 << 20, 10 << 20, 30 << 20}
