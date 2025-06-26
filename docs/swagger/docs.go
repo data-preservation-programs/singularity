@@ -5612,6 +5612,106 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/wallet/{address}/init": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Initialize a newly created wallet",
+                "operationId": "InitWallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Wallet"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/wallet/{address}/update": {
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Update wallet details",
+                "operationId": "UpdateWallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/wallet.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Wallet"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -16496,8 +16596,25 @@ const docTemplate = `{
         "wallet.CreateRequest": {
             "type": "object",
             "properties": {
+                "actorId": {
+                    "type": "string"
+                },
+                "address": {
+                    "description": "For SPWallet creation",
+                    "type": "string"
+                },
+                "contact": {
+                    "type": "string"
+                },
                 "keyType": {
-                    "description": "This is either \"secp256k1\" or \"bls\"",
+                    "description": "For UserWallet creation (generates new keypair)",
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Optional fields for adding details to Wallet",
                     "type": "string"
                 }
             }
@@ -16507,6 +16624,23 @@ const docTemplate = `{
             "properties": {
                 "privateKey": {
                     "description": "This is the exported private key from lotus wallet export",
+                    "type": "string"
+                }
+            }
+        },
+        "wallet.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "actorName": {
+                    "description": "Name is readable label for the wallet",
+                    "type": "string"
+                },
+                "contactInfo": {
+                    "description": "Contact is optional email for SP wallets",
+                    "type": "string"
+                },
+                "location": {
+                    "description": "Location is optional region, country for SP wallets",
                     "type": "string"
                 }
             }
