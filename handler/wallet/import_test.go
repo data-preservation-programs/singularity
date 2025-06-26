@@ -31,15 +31,15 @@ func TestImportHandler(t *testing.T) {
 
 		t.Run("invalid key", func(t *testing.T) {
 			_, err := Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
-				PrivateKey: "xxxx",
+				PrivateKey: "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a22696e76616c6964227d", // Valid hex but invalid private key
 			})
 			require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		})
 
 		t.Run("invalid response", func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
 			defer cancel()
-			lotusClient := util.NewLotusClient("http://127.0.0.1", "")
+			lotusClient := util.NewLotusClient("http://invalid-url-that-does-not-exist.local", "")
 			_, err := Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
 				PrivateKey: testutil.TestPrivateKeyHex,
 			})
