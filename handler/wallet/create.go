@@ -156,6 +156,7 @@ func (DefaultHandler) CreateHandler(
 	switch {
 	case !hasKeyType && !hasAddress && !hasActorID:
 		return nil, errors.New("must specify either KeyType (for UserWallet) or Address/ActorID (for SPWallet)")
+	case !hasKeyType && (!hasAddress || !hasActorID):
 	case !hasKeyType && !(hasAddress && hasActorID):
 		return nil, errors.New("must specify both Address and ActorID (for SPWallet)")
 	case hasKeyType && (hasAddress || hasActorID):
