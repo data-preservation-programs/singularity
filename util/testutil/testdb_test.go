@@ -47,12 +47,10 @@ func TestOneWithoutReset(t *testing.T) {
 
 		// Test that database operations work
 		var count int64
-		err := db.Raw("SELECT COUNT(*) FROM information_schema.tables").Scan(&count).Error
-		if err != nil {
-			// Might fail on SQLite, try a different query
-			err = db.Raw("SELECT 1").Scan(&count).Error
-			require.NoError(t, err)
-		}
+		// Use a database-agnostic query that works on all supported databases
+		err := db.Raw("SELECT 1").Scan(&count).Error
+		require.NoError(t, err)
+		assert.Equal(t, int64(1), count)
 	})
 }
 

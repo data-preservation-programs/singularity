@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/rclone/rclone/fs"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,6 +18,15 @@ func TestInAccessibleFiles(t *testing.T) {
 	if os.Getuid() == 0 {
 		t.Skip("Skipping file permission test when running as root")
 	}
+
+	ctx := context.Background()
+	// Suppress RClone error logs during test - we expect these errors when accessing files without permission
+	config := fs.GetConfig(ctx)
+	originalLogLevel := config.LogLevel
+	config.LogLevel = fs.LogLevelEmergency // Set to highest level to suppress expected permission denied errors
+	defer func() {
+		config.LogLevel = originalLogLevel
+	}()
 
 	tmp := t.TempDir()
 	// Inaccessible folder
@@ -39,7 +49,6 @@ func TestInAccessibleFiles(t *testing.T) {
 		t.Skip("File permissions not enforced on this system - cannot test inaccessible file behavior")
 	}
 
-	ctx := context.Background()
 	handler, err := NewRCloneHandler(ctx, model.Storage{
 		Type: "local",
 		Path: tmp,

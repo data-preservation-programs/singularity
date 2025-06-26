@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ipfs/go-log/v2"
 	"github.com/rclone/rclone/backend/s3"
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/config/configmap"
@@ -19,7 +20,7 @@ func TestIsSameEntry(t *testing.T) {
 	ctx := context.Background()
 	mockObject := new(MockObject)
 	mockObject.On("Size").Return(int64(5))
-	s3fs, err := s3.NewFs(ctx, "s3", "commoncrawl", configmap.Simple{"chunk_size": "5Mi"})
+	s3fs, err := s3.NewFs(ctx, "s3", "commoncrawl", configmap.Simple{"chunk_size": "5Mi", "provider": "AWS"})
 	require.NoError(t, err)
 	mockObject.On("Fs").Return(s3fs)
 	mockObject.On("Hash", mock.Anything, mock.Anything).Return("hash", nil)
@@ -144,7 +145,7 @@ func TestGetRandomOutputWriter(t *testing.T) {
 		ID:     3,
 		Type:   "s3",
 		Path:   "commoncrawl",
-		Config: map[string]string{"chunk_size": "5Mi"},
+		Config: map[string]string{"chunk_size": "5Mi", "provider": "AWS"},
 	}
 	t.Run("no storages", func(t *testing.T) {
 		id, writer, err := GetRandomOutputWriter(ctx, []model.Storage{})
@@ -176,6 +177,12 @@ func TestGetRandomOutputWriter(t *testing.T) {
 			freeSpaceWarningThreshold = current
 		}()
 
+		// Suppress storage warning logs during test
+		log.SetLogLevel("storage", "error")
+		defer func() {
+			log.SetLogLevel("storage", "info") // restore to default level
+		}()
+
 		id, writer, err := GetRandomOutputWriter(ctx, []model.Storage{s1})
 		require.NoError(t, err)
 		require.EqualValues(t, 1, *id)
@@ -186,6 +193,12 @@ func TestGetRandomOutputWriter(t *testing.T) {
 		freeSpaceErrorThreshold = 1.0
 		defer func() {
 			freeSpaceErrorThreshold = current
+		}()
+
+		// Suppress storage error logs during test - we expect this error
+		log.SetLogLevel("storage", "fatal")
+		defer func() {
+			log.SetLogLevel("storage", "info") // restore to default level
 		}()
 
 		_, _, err := GetRandomOutputWriter(ctx, []model.Storage{s1})
