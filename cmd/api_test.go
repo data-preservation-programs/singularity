@@ -72,7 +72,7 @@ func TestMotionIntegration(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		// Disable workflow orchestrator to prevent automatic job progression in tests
 		workflow.DefaultOrchestrator.SetEnabled(false)
-		
+
 		ctx, cancel := context.WithCancel(ctx)
 		var testData = make([]byte, 1000)
 		_, err := rand.Read(testData)
@@ -245,7 +245,7 @@ func TestBasicDataPrep(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		// Disable workflow orchestrator to prevent automatic job progression in tests
 		workflow.DefaultOrchestrator.SetEnabled(false)
-		
+
 		ctx, cancel := context.WithCancel(ctx)
 		client, done := setupPreparation(t, ctx, "test.txt", bytes.NewReader([]byte("hello world")), false)
 		defer done()
