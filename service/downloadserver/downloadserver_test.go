@@ -305,10 +305,8 @@ func TestDownloadServer_Start_Health(t *testing.T) {
 
 	select {
 	case err := <-exitErr:
-		// Server should shutdown cleanly - "http: Server closed" is expected during graceful shutdown
-		if err != nil && err.Error() != "http: Server closed" {
-			t.Fatalf("Unexpected shutdown error: %v", err)
-		}
+		// Server should shutdown cleanly
+		assert.NoError(t, err)
 	case <-time.After(time.Second * 3):
 		t.Fatal("Server did not shut down within timeout")
 	}

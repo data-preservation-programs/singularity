@@ -248,6 +248,9 @@ func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error 
 
 	go func() {
 		runErr := e.Start(d.bind)
+		if errors.Is(runErr, http.ErrServerClosed) {
+			runErr = nil
+		}
 		close(forceShutdown)
 
 		err := <-shutdownErr
