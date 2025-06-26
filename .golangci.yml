@@ -4,7 +4,6 @@ linters:
     - govet
     - gofmt
     - unused
-    - deadcode
 
 run:
   timeout: 5m
