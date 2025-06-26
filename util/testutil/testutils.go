@@ -49,6 +49,11 @@ func RandomLetterString(length int) string {
 	return string(b)
 }
 
+// GenerateUniqueName creates a unique name for testing by combining a prefix with a random suffix
+func GenerateUniqueName(prefix string) string {
+	return prefix + "-" + RandomLetterString(8) + "-" + RandomLetterString(4)
+}
+
 func GetFileTimestamp(t *testing.T, path string) int64 {
 	t.Helper()
 	info, err := os.Stat(path)
