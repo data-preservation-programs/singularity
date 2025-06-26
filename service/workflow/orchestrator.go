@@ -341,7 +341,7 @@ func (o *WorkflowOrchestrator) handlePackCompletion(
 	}
 
 	o.logWorkflowProgress(ctx, db, "Pack → DagGen Transition",
-		fmt.Sprintf("Started daggen jobs for preparation %s", preparation.Name),
+		"Started daggen jobs for preparation "+preparation.Name,
 		model.ConfigMap{
 			"preparation_id":   fmt.Sprintf("%d", preparation.ID),
 			"preparation_name": preparation.Name,
@@ -390,7 +390,7 @@ func (o *WorkflowOrchestrator) handleDagGenCompletion(
 	}
 
 	o.logWorkflowProgress(ctx, db, "DagGen → Deals Transition",
-		fmt.Sprintf("Triggered auto-deal creation for preparation %s", preparation.Name),
+		"Triggered auto-deal creation for preparation "+preparation.Name,
 		model.ConfigMap{
 			"preparation_id":   fmt.Sprintf("%d", preparation.ID),
 			"preparation_name": preparation.Name,

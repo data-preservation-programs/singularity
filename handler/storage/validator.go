@@ -261,7 +261,7 @@ func (v *SPValidator) checkProviderConnectivity(ctx context.Context, _ jsonrpc.R
 
 	// Check if we can connect (this is a simplified check)
 	// In a real implementation, you might want to use libp2p to actually connect
-	connected := v.checkPeerConnectivity(ctx, multiaddrs)
+	connected := v.checkPeerConnectivity(multiaddrs)
 	if !connected {
 		warnings = append(warnings, "Could not establish connection to storage provider")
 	}
@@ -270,7 +270,7 @@ func (v *SPValidator) checkProviderConnectivity(ctx context.Context, _ jsonrpc.R
 }
 
 // checkPeerConnectivity performs basic connectivity checks to multiaddrs
-func (v *SPValidator) checkPeerConnectivity(ctx context.Context, multiaddrs []string) bool {
+func (v *SPValidator) checkPeerConnectivity(multiaddrs []string) bool {
 	for _, addr := range multiaddrs {
 		if v.testConnection(addr) {
 			return true

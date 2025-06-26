@@ -257,7 +257,7 @@ This is the simplest way to onboard data from source to storage deals.`,
 		if isJSON {
 			// Prepare next steps
 			nextSteps := []string{
-				fmt.Sprintf("Monitor progress: singularity prep status %s", prep.Name),
+				"Monitor progress: singularity prep status " + prep.Name,
 				"Check jobs: singularity job list",
 			}
 			if c.Bool("start-workers") {
