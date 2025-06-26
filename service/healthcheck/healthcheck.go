@@ -124,16 +124,21 @@ func Register(ctx context.Context, db *gorm.DB, workerID uuid.UUID, workerType m
 	logger.Debugw("registering worker", "worker", worker)
 	err = database.DoRetry(ctx, func() error {
 		if !allowDuplicate {
-			var activeWorkerCount int64
-			err := db.WithContext(ctx).Model(&model.Worker{}).Where("type = ? AND last_heartbeat > ?", workerType, time.Now().UTC().Add(-staleThreshold)).
-				Count(&activeWorkerCount).Error
-			if err != nil {
-				return errors.Wrap(err, "failed to count active workers")
-			}
-			if activeWorkerCount > 0 {
-				alreadyRunning = true
-				return nil
-			}
+			// Use a transaction to ensure atomicity
+			return db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+				var activeWorkerCount int64
+				err := tx.Model(&model.Worker{}).Where("type = ? AND last_heartbeat > ?", workerType, time.Now().UTC().Add(-staleThreshold)).
+					Count(&activeWorkerCount).Error
+				if err != nil {
+					return errors.Wrap(err, "failed to count active workers")
+				}
+				if activeWorkerCount > 0 {
+					alreadyRunning = true
+					return nil
+				}
+
+				return tx.Create(&worker).Error
+			})
 		}
 
 		return db.WithContext(ctx).Create(&worker).Error

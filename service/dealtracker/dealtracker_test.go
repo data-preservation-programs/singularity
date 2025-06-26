@@ -49,11 +49,19 @@ func TestDealTracker_Start(t *testing.T) {
 		tracker := NewDealTracker(db, time.Minute, "", "", "", true)
 		exitErr := make(chan error, 1)
 		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
 		err := tracker.Start(ctx, exitErr)
 		require.NoError(t, err)
-		time.Sleep(time.Second)
+		// Give the goroutines time to start
+		time.Sleep(100 * time.Millisecond)
+		// Cancel and wait for clean shutdown
 		cancel()
-		<-exitErr
+		select {
+		case <-exitErr:
+			// Successfully exited
+		case <-time.After(5 * time.Second):
+			t.Fatal("timeout waiting for tracker to exit")
+		}
 	})
 }
 
@@ -66,10 +74,17 @@ func TestDealTracker_MultipleRunning_Once(t *testing.T) {
 		defer cancel()
 		err := tracker1.Start(ctx, exitErr)
 		require.NoError(t, err)
+		// Give the first tracker time to register
+		time.Sleep(100 * time.Millisecond)
 		err2 := tracker2.Start(ctx, nil)
 		require.ErrorIs(t, err2, ErrAlreadyRunning)
 		cancel()
-		<-exitErr
+		select {
+		case <-exitErr:
+			// Successfully exited
+		case <-time.After(5 * time.Second):
+			t.Fatal("timeout waiting for tracker to exit")
+		}
 	})
 }
 
@@ -77,15 +92,28 @@ func TestDealTracker_MultipleRunning(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		tracker1 := NewDealTracker(db, time.Minute, "", "", "", false)
 		tracker2 := NewDealTracker(db, time.Minute, "", "", "", false)
-		ctx, cancel := context.WithTimeout(ctx, time.Second)
-		defer cancel()
+		// Use a shorter timeout for the second tracker
+		ctx1, cancel1 := context.WithCancel(ctx)
+		defer cancel1()
 		exitErr1 := make(chan error, 1)
-		err := tracker1.Start(ctx, exitErr1)
+		err := tracker1.Start(ctx1, exitErr1)
 		require.NoError(t, err)
-		exitErr2 := make(chan error, 2)
-		err2 := tracker2.Start(ctx, exitErr2)
+		// Give the first tracker time to register
+		time.Sleep(100 * time.Millisecond)
+		// Start second tracker with a timeout context
+		ctx2, cancel2 := context.WithTimeout(ctx, 2*time.Second)
+		defer cancel2()
+		exitErr2 := make(chan error, 1)
+		err2 := tracker2.Start(ctx2, exitErr2)
 		require.ErrorIs(t, err2, context.DeadlineExceeded)
-		<-exitErr1
+		// Clean shutdown of first tracker
+		cancel1()
+		select {
+		case <-exitErr1:
+			// Successfully exited
+		case <-time.After(5 * time.Second):
+			t.Fatal("timeout waiting for tracker1 to exit")
+		}
 	})
 }
 
