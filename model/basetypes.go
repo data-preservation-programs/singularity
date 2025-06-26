@@ -170,7 +170,12 @@ func (m *ConfigMap) Scan(src any) error {
 
 	source, ok := src.([]byte)
 	if !ok {
-		return ErrInvalidStringMapEntry
+		// Try string type, which PostgreSQL might return for TEXT columns
+		if str, isStr := src.(string); isStr {
+			source = []byte(str)
+		} else {
+			return errors.Wrapf(ErrInvalidStringMapEntry, "expected []byte or string, got %T: %v", src, src)
+		}
 	}
 
 	// Handle the case where the database contains the string "null" instead of JSON null
@@ -179,7 +184,26 @@ func (m *ConfigMap) Scan(src any) error {
 		return nil
 	}
 
-	return json.Unmarshal(source, m)
+	// Handle PostgreSQL edge case where an empty map might be stored as an empty string
+	// When PostgreSQL stores JSON data in a TEXT column, it might return empty string instead of valid JSON
+	sourceStr := string(source)
+	if sourceStr == "" || sourceStr == `""` {
+		*m = nil
+		return nil
+	}
+
+	err := json.Unmarshal(source, m)
+	if err != nil {
+		// If JSON unmarshal fails, try to handle common PostgreSQL edge cases
+		// Sometimes PostgreSQL might store malformed JSON data in TEXT columns
+		if sourceStr == "null" || sourceStr == "" || sourceStr == `""` {
+			*m = nil
+			return nil
+		}
+		// For debugging purposes, let's see what data we received
+		return errors.Wrapf(ErrInvalidStringMapEntry, "failed to unmarshal JSON: %q", sourceStr)
+	}
+	return nil
 }
 
 func IsSecretConfigName(key string) bool {
