@@ -12,6 +12,7 @@ import (
 	util2 "github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/pack/push"
 	"github.com/data-preservation-programs/singularity/util"
+	boxoutil "github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/urfave/cli/v2"
@@ -149,7 +150,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 				return errors.Wrap(err, "failed to decode output file list")
 			}
 			for _, generatedFile := range fileList.GeneratedFileList {
-				if generatedFile.CID == "unrecoverable" {
+				if generatedFile.CID == "unrecoverable" || generatedFile.CID == cid.NewCidV1(cid.Raw, boxoutil.Hash([]byte("unrecoverable"))).String() {
 					continue
 				}
 				if generatedFile.Dir {

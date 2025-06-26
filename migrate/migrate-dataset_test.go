@@ -173,7 +173,7 @@ func setupMongoDBDataset() error {
 		Index:                 1,
 		Status:                GenerationStatusCompleted,
 		ErrorMessage:          "error message",
-		DataCID:               "unrecoverable",
+		DataCID:               cid.NewCidV1(cid.Raw, util.Hash([]byte("unrecoverable"))).String(),
 		CarSize:               uint64(20 * 1024 * 1024 * 1024),
 		PieceCID:              pieceCID.String(),
 		PieceSize:             uint64(32 * 1024 * 1024 * 1024),
@@ -232,7 +232,7 @@ func setupMongoDBDataset() error {
 		}, {
 			Path:  "dir/4.txt",
 			Dir:   false,
-			CID:   "unrecoverable",
+			CID:   cid.NewCidV1(cid.Raw, util.Hash([]byte("unrecoverable"))).String(),
 			Size:  100,
 			Start: 0,
 			End:   0,
