@@ -99,11 +99,9 @@ func TestWorkerManager_GetJobCounts(t *testing.T) {
 		}
 		require.NoError(t, db.Create(preparation).Error)
 
-		sourceAttachment := &model.SourceAttachment{
-			PreparationID: preparation.ID,
-			StorageID:     preparation.SourceStorages[0].ID,
-		}
-		require.NoError(t, db.Create(sourceAttachment).Error)
+		// Source attachment is created automatically by GORM when creating preparation with SourceStorages
+		var sourceAttachment model.SourceAttachment
+		require.NoError(t, db.Where("preparation_id = ? AND storage_id = ?", preparation.ID, preparation.SourceStorages[0].ID).First(&sourceAttachment).Error)
 
 		// Create ready jobs of different types
 		jobs := []model.Job{
@@ -231,6 +229,7 @@ func TestWorkerManager_StopOldestWorker(t *testing.T) {
 			ID:        "worker-1",
 			StartTime: now.Add(-2 * time.Hour), // Older
 			Done:      make(chan struct{}),
+			Cancel:    func() {}, // Add mock cancel function
 		}
 		close(mockWorker1.Done) // Simulate already stopped
 
@@ -238,6 +237,7 @@ func TestWorkerManager_StopOldestWorker(t *testing.T) {
 			ID:        "worker-2",
 			StartTime: now.Add(-1 * time.Hour), // Newer
 			Done:      make(chan struct{}),
+			Cancel:    func() {}, // Add mock cancel function
 		}
 		close(mockWorker2.Done) // Simulate already stopped
 
@@ -273,6 +273,7 @@ func TestWorkerManager_CleanupIdleWorkers(t *testing.T) {
 			StartTime:    now,
 			LastActivity: now.Add(-time.Hour), // Very old activity
 			Done:         make(chan struct{}),
+			Cancel:       func() {}, // Add mock cancel function
 		}
 		close(idleWorker.Done)
 
@@ -281,6 +282,7 @@ func TestWorkerManager_CleanupIdleWorkers(t *testing.T) {
 			StartTime:    now,
 			LastActivity: now, // Recent activity
 			Done:         make(chan struct{}),
+			Cancel:       func() {}, // Add mock cancel function
 		}
 		close(activeWorker.Done)
 
@@ -307,6 +309,7 @@ func TestWorkerManager_CleanupIdleWorkers_NoTimeout(t *testing.T) {
 			ID:           "idle-worker",
 			StartTime:    time.Now(),
 			LastActivity: time.Now().Add(-time.Hour),
+			Cancel:       func() {}, // Add mock cancel function
 		}
 		manager.activeWorkers["idle-worker"] = idleWorker
 
@@ -340,14 +343,16 @@ func TestWorkerManager_StopAllWorkers(t *testing.T) {
 
 		// Add mock workers
 		worker1 := &ManagedWorker{
-			ID:   "worker-1",
-			Done: make(chan struct{}),
+			ID:     "worker-1",
+			Done:   make(chan struct{}),
+			Cancel: func() {}, // Add mock cancel function
 		}
 		close(worker1.Done)
 
 		worker2 := &ManagedWorker{
-			ID:   "worker-2",
-			Done: make(chan struct{}),
+			ID:     "worker-2",
+			Done:   make(chan struct{}),
+			Cancel: func() {}, // Add mock cancel function
 		}
 		close(worker2.Done)
 

@@ -286,25 +286,32 @@ func (m *WorkerManager) startWorker(ctx context.Context, jobTypes []model.JobTyp
 func (m *WorkerManager) stopWorker(ctx context.Context, workerID string) error {
 	m.mutex.Lock()
 	worker, exists := m.activeWorkers[workerID]
-	if !exists {
+	if !exists || worker == nil {
 		m.mutex.Unlock()
-		return errors.Errorf("worker %s not found", workerID)
+		return errors.Errorf("worker %s not found or is nil", workerID)
 	}
 	delete(m.activeWorkers, workerID)
 	m.mutex.Unlock()
 
 	logger.Infof("Stopping managed worker %s", workerID)
+	if worker.Cancel == nil {
+		return errors.Errorf("worker %s has nil Cancel function", workerID)
+	}
 	worker.Cancel()
 
 	// Wait for worker to stop with timeout
 	stopCtx, stopCancel := context.WithTimeout(ctx, 30*time.Second)
 	defer stopCancel()
 
-	select {
-	case <-worker.Done:
-		logger.Infof("Managed worker %s stopped successfully", workerID)
-	case <-stopCtx.Done():
-		logger.Warnf("Timeout waiting for worker %s to stop", workerID)
+	if worker.Done != nil {
+		select {
+		case <-worker.Done:
+			logger.Infof("Managed worker %s stopped successfully", workerID)
+		case <-stopCtx.Done():
+			logger.Warnf("Timeout waiting for worker %s to stop", workerID)
+		}
+	} else {
+		logger.Warnf("Worker %s has nil Done channel, cannot wait for stop confirmation", workerID)
 	}
 
 	return nil

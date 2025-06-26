@@ -18,9 +18,11 @@ var (
 	ErrNegativePricePerGbEpoch = errors.New("dealPricePerGbEpoch cannot be negative")
 	ErrNonPositiveDuration     = errors.New("dealDuration must be positive")
 	ErrNegativeStartDelay      = errors.New("dealStartDelay cannot be negative")
-	ErrInvalidProviderFormat   = errors.New("dealProvider must be a valid miner ID")
+	ErrInvalidProviderFormat   = errors.New("dealProvider must be a valid miner ID starting with 'f'")
 	ErrInvalidDurationFormat   = errors.New("invalid duration format")
 	ErrInvalidDelayFormat      = errors.New("invalid delay format")
+	ErrDurationMustBePositive  = errors.New("duration must be positive")
+	ErrStartDelayNegative      = errors.New("start delay cannot be negative")
 )
 
 // DealConfig encapsulates all deal-related configuration parameters
@@ -118,7 +120,7 @@ func (dc *DealConfig) SetDurationFromString(durationStr string) error {
 	// First try to parse as a direct number (epochs)
 	if epochs, err := strconv.ParseInt(durationStr, 10, 64); err == nil {
 		if epochs <= 0 {
-			return errors.Wrapf(ErrNonPositiveDuration, "%d", epochs)
+			return errors.Wrapf(ErrDurationMustBePositive, "%d", epochs)
 		}
 		// Convert epochs to time.Duration (assuming 30 second epoch time)
 		const epochDuration = 30 * time.Second
@@ -133,7 +135,7 @@ func (dc *DealConfig) SetDurationFromString(durationStr string) error {
 	}
 
 	if duration <= 0 {
-		return errors.Wrapf(ErrNonPositiveDuration, "%s", durationStr)
+		return errors.Wrapf(ErrDurationMustBePositive, "%s", durationStr)
 	}
 
 	dc.DealDuration = duration
@@ -145,7 +147,7 @@ func (dc *DealConfig) SetStartDelayFromString(delayStr string) error {
 	// First try to parse as a direct number (epochs)
 	if epochs, err := strconv.ParseInt(delayStr, 10, 64); err == nil {
 		if epochs < 0 {
-			return errors.Wrapf(ErrNegativeStartDelay, "%d", epochs)
+			return errors.Wrapf(ErrStartDelayNegative, "%d", epochs)
 		}
 		// Convert epochs to time.Duration (assuming 30 second epoch time)
 		const epochDuration = 30 * time.Second
@@ -160,7 +162,7 @@ func (dc *DealConfig) SetStartDelayFromString(delayStr string) error {
 	}
 
 	if duration < 0 {
-		return errors.Wrapf(ErrNegativeStartDelay, "%s", delayStr)
+		return errors.Wrapf(ErrStartDelayNegative, "%s", delayStr)
 	}
 
 	dc.DealStartDelay = duration

@@ -15,6 +15,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
+	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/urfave/cli/v2"
 )
 
@@ -89,6 +90,10 @@ var PrepCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
+
+		// Disable workflow orchestrator to prevent automatic job progression
+		// We manage job progression manually in ez-prep
+		workflow.DefaultOrchestrator.SetEnabled(false)
 
 		// Step 2, create a preparation
 		outputDir := c.String("output-dir")
