@@ -224,7 +224,7 @@ func (v *SPValidator) ValidateAndGetDefault(
 }
 
 // getMinerInfo retrieves miner information from the Lotus API
-func (v *SPValidator) getMinerInfo(_ context.Context, lotusClient jsonrpc.RPCClient, minerAddr address.Address) (*MinerInfo, error) {
+func (v *SPValidator) getMinerInfo(ctx context.Context, lotusClient jsonrpc.RPCClient, minerAddr address.Address) (*MinerInfo, error) {
 	var minerInfo MinerInfo
 	err := lotusClient.CallFor(ctx, &minerInfo, "Filecoin.StateMinerInfo", minerAddr, nil)
 	if err != nil {
