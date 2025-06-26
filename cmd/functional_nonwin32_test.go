@@ -20,7 +20,7 @@ func TestEzPrep(t *testing.T) {
 	originalOrchestratorState := workflow.DefaultOrchestrator.IsEnabled()
 	workflow.DefaultOrchestrator.SetEnabled(false)
 	defer workflow.DefaultOrchestrator.SetEnabled(originalOrchestratorState)
-	
+
 	source := t.TempDir()
 	sizes := []int{0, 1, 1 << 20, 10 << 20, 30 << 20}
 	for _, size := range sizes {

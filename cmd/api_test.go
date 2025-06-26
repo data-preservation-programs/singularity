@@ -32,11 +32,11 @@ const apiBind = "127.0.0.1:9091"
 
 func runAPI(t *testing.T, ctx context.Context) func() {
 	t.Helper()
-	
+
 	// Disable workflow orchestrator during API tests to prevent automatic job progression
 	originalOrchestratorState := workflow.DefaultOrchestrator.IsEnabled()
 	workflow.DefaultOrchestrator.SetEnabled(false)
-	
+
 	done := make(chan struct{})
 	go func() {
 		NewRunner().Run(ctx, fmt.Sprintf("singularity run api --bind %s", apiBind))
