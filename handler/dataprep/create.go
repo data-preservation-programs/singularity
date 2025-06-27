@@ -182,6 +182,14 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		SPValidation:     request.SPValidation,
 	}
 
+	// Validate that template and explicit deal config are not conflicting
+	if request.AutoCreateDeals && request.DealTemplate != "" {
+		err = validateTemplateConflicts(request)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+	}
+
 	// Apply deal template if specified and auto-deal creation is enabled
 	if request.AutoCreateDeals && request.DealTemplate != "" {
 		template, err := dealtemplate.Default.GetHandler(ctx, db, request.DealTemplate)
@@ -227,14 +235,6 @@ func (DefaultHandler) CreatePreparationHandler(
 		return nil, errors.WithStack(err)
 	}
 
-	// Perform validation if auto-deal creation is enabled
-	if preparation.DealConfig.AutoCreateDeals {
-		err = performValidation(ctx, db, preparation)
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-	}
-
 	err = database.DoRetry(ctx, func() error {
 		err := db.Create(preparation).Error
 		if err != nil {
@@ -260,6 +260,14 @@ func (DefaultHandler) CreatePreparationHandler(
 	})
 	if err != nil {
 		return nil, errors.WithStack(err)
+	}
+
+	// Perform validation if auto-deal creation is enabled (after DB persistence so preparation.ID is available)
+	if preparation.DealConfig.AutoCreateDeals {
+		err = performValidation(ctx, db, preparation)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
 	}
 
 	return preparation, nil
@@ -441,6 +449,60 @@ func performSPValidation(ctx context.Context, db *gorm.DB, preparation *model.Pr
 		})
 	if err != nil {
 		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+// validateTemplateConflicts validates that when a template is specified,
+// explicit deal configuration parameters are not also provided to avoid conflicts
+func validateTemplateConflicts(request CreateRequest) error {
+	if request.DealTemplate == "" {
+		return nil // No template, no conflicts possible
+	}
+
+	conflictingFields := []string{}
+
+	// Check if explicit deal configuration parameters are provided alongside template
+	if request.DealProvider != "" {
+		conflictingFields = append(conflictingFields, "dealProvider")
+	}
+	if request.DealPricePerGB != 0 {
+		conflictingFields = append(conflictingFields, "dealPricePerGb")
+	}
+	if request.DealPricePerGBEpoch != 0 {
+		conflictingFields = append(conflictingFields, "dealPricePerGbEpoch")
+	}
+	if request.DealPricePerDeal != 0 {
+		conflictingFields = append(conflictingFields, "dealPricePerDeal")
+	}
+	if request.DealDuration != 0 {
+		conflictingFields = append(conflictingFields, "dealDuration")
+	}
+	if request.DealStartDelay != 0 {
+		conflictingFields = append(conflictingFields, "dealStartDelay")
+	}
+	if request.DealVerified {
+		conflictingFields = append(conflictingFields, "dealVerified")
+	}
+	if request.DealKeepUnsealed {
+		conflictingFields = append(conflictingFields, "dealKeepUnsealed")
+	}
+	if request.DealAnnounceToIPNI {
+		conflictingFields = append(conflictingFields, "dealAnnounceToIpni")
+	}
+	if request.DealURLTemplate != "" {
+		conflictingFields = append(conflictingFields, "dealUrlTemplate")
+	}
+	if len(request.DealHTTPHeaders) > 0 {
+		conflictingFields = append(conflictingFields, "dealHttpHeaders")
+	}
+
+	if len(conflictingFields) > 0 {
+		return errors.Wrapf(handlererror.ErrInvalidParameter,
+			"cannot specify both deal template (%s) and explicit deal configuration fields: %s. "+
+				"Either use a template or specify individual parameters, not both",
+			request.DealTemplate, strings.Join(conflictingFields, ", "))
 	}
 
 	return nil

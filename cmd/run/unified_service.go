@@ -123,13 +123,16 @@ This is the recommended way to run fully automated data preparation.`,
 		orchestrator := workflow.NewWorkflowOrchestrator(orchestratorConfig)
 
 		// Start unified service
-		return runUnifiedService(c.Context, db, workerManager, orchestrator)
+		return runUnifiedService(c.Context, db, workerManager, orchestrator, orchestratorConfig)
 	},
 }
 
 // runUnifiedService runs the unified auto-preparation service
-func runUnifiedService(ctx context.Context, db *gorm.DB, workerManager *workermanager.WorkerManager, orchestrator *workflow.WorkflowOrchestrator) error {
+func runUnifiedService(ctx context.Context, db *gorm.DB, workerManager *workermanager.WorkerManager, orchestrator *workflow.WorkflowOrchestrator, config workflow.OrchestratorConfig) error {
 	logger.Info("Starting unified auto-preparation service")
+
+	// Log orchestration configuration at startup
+	logOrchestratorConfig(orchestrator, config)
 
 	// Start worker manager
 	err := workerManager.Start(ctx)
@@ -141,11 +144,11 @@ func runUnifiedService(ctx context.Context, db *gorm.DB, workerManager *workerma
 	workflowDone := make(chan struct{})
 	go func() {
 		defer close(workflowDone)
-		runWorkflowMonitor(ctx, db, orchestrator)
+		runWorkflowMonitor(ctx, db, orchestrator, config.CheckInterval)
 	}()
 
-	// Print status periodically
-	statusTicker := time.NewTicker(2 * time.Minute)
+	// Print status periodically using configured check interval
+	statusTicker := time.NewTicker(config.CheckInterval)
 	defer statusTicker.Stop()
 
 	statusDone := make(chan struct{})
@@ -180,7 +183,7 @@ func runUnifiedService(ctx context.Context, db *gorm.DB, workerManager *workerma
 }
 
 // runWorkflowMonitor runs periodic workflow progression checks
-func runWorkflowMonitor(ctx context.Context, db *gorm.DB, orchestrator *workflow.WorkflowOrchestrator) {
+func runWorkflowMonitor(ctx context.Context, db *gorm.DB, orchestrator *workflow.WorkflowOrchestrator, checkInterval time.Duration) {
 	logger.Info("Starting workflow monitor")
 
 	// Create a lotus client for workflow operations
@@ -188,7 +191,7 @@ func runWorkflowMonitor(ctx context.Context, db *gorm.DB, orchestrator *workflow
 	// or fail gracefully with appropriate error handling in workflow operations
 	lotusClient := util.NewLotusClient("", "")
 
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(checkInterval)
 	defer ticker.Stop()
 
 	for {
@@ -217,7 +220,7 @@ func printServiceStatus(db *gorm.DB, workerManager *workermanager.WorkerManager,
 		Count int64  `json:"count"`
 	}
 
-	db.Model(&struct {
+	err := db.Model(&struct {
 		Type  string `gorm:"column:type"`
 		State string `gorm:"column:state"`
 		Count int64  `gorm:"column:count"`
@@ -225,7 +228,11 @@ func printServiceStatus(db *gorm.DB, workerManager *workermanager.WorkerManager,
 		Table("jobs").
 		Select("type, state, count(*) as count").
 		Group("type, state").
-		Find(&jobCounts)
+		Find(&jobCounts).Error
+	if err != nil {
+		logger.Errorf("Failed to fetch job counts: %v", err)
+		return
+	}
 
 	// Log comprehensive status
 	logger.Infof("=== UNIFIED SERVICE STATUS ===")
@@ -256,4 +263,18 @@ func printServiceStatus(db *gorm.DB, workerManager *workermanager.WorkerManager,
 			worker.ID[:8], worker.JobTypes, worker.Uptime.Truncate(time.Second))
 	}
 	logger.Infof("===============================")
+}
+
+// logOrchestratorConfig logs the orchestrator configuration at startup
+func logOrchestratorConfig(orchestrator *workflow.WorkflowOrchestrator, config workflow.OrchestratorConfig) {
+	logger.Infof("=== ORCHESTRATOR CONFIGURATION ===")
+	logger.Infof("Job progression enabled: %t", config.EnableJobProgression)
+	logger.Infof("Auto-deal creation enabled: %t", config.EnableAutoDeal)
+	logger.Infof("Check interval: %v", config.CheckInterval)
+	logger.Infof("Workflow transitions:")
+	logger.Infof("  Scan → Pack: %t", config.ScanToPack)
+	logger.Infof("  Pack → DagGen: %t", config.PackToDagGen)
+	logger.Infof("  DagGen → Deals: %t", config.DagGenToDeals)
+	logger.Infof("Overall orchestrator enabled: %t", orchestrator.IsEnabled())
+	logger.Infof("===================================")
 }

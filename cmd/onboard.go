@@ -16,6 +16,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service/workermanager"
 	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/dustin/go-humanize"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
@@ -642,7 +643,7 @@ func validateOnboardInputs(c *cli.Context) error {
 
 	// Validate max-size format if provided
 	if maxSize := c.String("max-size"); maxSize != "" {
-		if _, err := util.ParseSize(maxSize); err != nil {
+		if _, err := humanize.ParseBytes(maxSize); err != nil {
 			return errors.Wrapf(err, "invalid max-size format")
 		}
 	}
