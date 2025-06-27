@@ -20,6 +20,7 @@ type Handler interface {
 	CreateHandler(
 		ctx context.Context,
 		db *gorm.DB,
+		lotusClient jsonrpc.RPCClient,
 		request CreateRequest,
 	) (*model.Wallet, error)
 	DetachHandler(
@@ -33,6 +34,12 @@ type Handler interface {
 		db *gorm.DB,
 		lotusClient jsonrpc.RPCClient,
 		request ImportRequest,
+	) (*model.Wallet, error)
+	InitHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		lotusClient jsonrpc.RPCClient,
+		address string,
 	) (*model.Wallet, error)
 	ListHandler(
 		ctx context.Context,
@@ -48,6 +55,12 @@ type Handler interface {
 		db *gorm.DB,
 		address string,
 	) error
+	UpdateHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		address string,
+		request UpdateRequest,
+	) (*model.Wallet, error)
 }
 
 type DefaultHandler struct{}
@@ -66,6 +79,7 @@ func (m *MockWallet) AttachHandler(ctx context.Context, db *gorm.DB, preparation
 }
 
 func (m *MockWallet) CreateHandler(ctx context.Context, db *gorm.DB, request CreateRequest) (*model.Wallet, error) {
+func (m *MockWallet) CreateHandler(ctx context.Context, db *gorm.DB, lotusClient jsonrpc.RPCClient, request CreateRequest) (*model.Wallet, error) {
 	args := m.Called(ctx, db, request)
 	return args.Get(0).(*model.Wallet), args.Error(1)
 }
@@ -77,6 +91,11 @@ func (m *MockWallet) DetachHandler(ctx context.Context, db *gorm.DB, preparation
 
 func (m *MockWallet) ImportHandler(ctx context.Context, db *gorm.DB, lotusClient jsonrpc.RPCClient, request ImportRequest) (*model.Wallet, error) {
 	args := m.Called(ctx, db, lotusClient, request)
+	return args.Get(0).(*model.Wallet), args.Error(1)
+}
+
+func (m *MockWallet) InitHandler(ctx context.Context, db *gorm.DB, lotusClient jsonrpc.RPCClient, wallet string) (*model.Wallet, error) {
+	args := m.Called(ctx, db, lotusClient, wallet)
 	return args.Get(0).(*model.Wallet), args.Error(1)
 }
 
@@ -93,4 +112,9 @@ func (m *MockWallet) ListAttachedHandler(ctx context.Context, db *gorm.DB, prepa
 func (m *MockWallet) RemoveHandler(ctx context.Context, db *gorm.DB, address string) error {
 	args := m.Called(ctx, db, address)
 	return args.Error(0)
+}
+
+func (m *MockWallet) UpdateHandler(ctx context.Context, db *gorm.DB, address string, request UpdateRequest) (*model.Wallet, error) {
+	args := m.Called(ctx, db, address, request)
+	return args.Get(0).(*model.Wallet), args.Error(1)
 }

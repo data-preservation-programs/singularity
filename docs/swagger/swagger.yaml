@@ -8214,12 +8214,38 @@ definitions:
     properties:
       keyType:
         description: This is either "secp256k1" or "bls"
+      actorId:
+        type: string
+      address:
+        description: For SPWallet creation
+        type: string
+      contact:
+        type: string
+      keyType:
+        description: For UserWallet creation (generates new keypair)
+        type: string
+      location:
+        type: string
+      name:
+        description: Optional fields for adding details to Wallet
         type: string
     type: object
   wallet.ImportRequest:
     properties:
       privateKey:
         description: This is the exported private key from lotus wallet export
+        type: string
+    type: object
+  wallet.UpdateRequest:
+    properties:
+      actorName:
+        description: Name is readable label for the wallet
+        type: string
+      contactInfo:
+        description: Contact is optional email for SP wallets
+        type: string
+      location:
+        description: Location is optional region, country for SP wallets
         type: string
     type: object
 externalDocs:
@@ -11884,6 +11910,72 @@ paths:
           schema:
             $ref: '#/definitions/api.HTTPError'
       summary: Remove a wallet
+      tags:
+      - Wallet
+  /wallet/{address}/init:
+    post:
+      operationId: InitWallet
+      parameters:
+      - description: Address
+        in: path
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Wallet'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Initialize a newly created wallet
+      tags:
+      - Wallet
+  /wallet/{address}/update:
+    patch:
+      consumes:
+      - application/json
+      operationId: UpdateWallet
+      parameters:
+      - description: Wallet address
+        in: path
+        name: address
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/wallet.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Wallet'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Update wallet details
       tags:
       - Wallet
   /wallet/create:

@@ -190,6 +190,8 @@ func setupMockWallet() wallet.Handler {
 		Return(&model.Preparation{}, nil)
 	m.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&model.Wallet{}, nil)
+	m.On("InitHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		Return(&model.Wallet{}, nil)
 	m.On("ListHandler", mock.Anything, mock.Anything).
 		Return([]model.Wallet{{}}, nil)
 	m.On("ListAttachedHandler", mock.Anything, mock.Anything, "id").
@@ -316,6 +318,15 @@ func TestAllAPIs(t *testing.T) {
 				resp, err := client.Wallet.ImportWallet(&wallet2.ImportWalletParams{
 					Request: &models.WalletImportRequest{},
 					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.NotNil(t, resp.Payload)
+			})
+			t.Run("InitWallet", func(t *testing.T) {
+				resp, err := client.Wallet.InitWallet(&wallet2.InitWalletParams{
+					Context: ctx,
+					Address: "wallet",
 				})
 				require.NoError(t, err)
 				require.True(t, resp.IsSuccess())
