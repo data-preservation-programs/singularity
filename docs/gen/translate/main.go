@@ -41,7 +41,7 @@ func main() {
 			client := openai.NewClient(token)
 			dir := language[0]
 			lang := language[1]
-			filepath.Walk("../../en", func(path string, info os.FileInfo, err error) error {
+			_ = filepath.Walk("../../en", func(path string, info os.FileInfo, err error) error {
 				if err != nil {
 					panic(err)
 				}

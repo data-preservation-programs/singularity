@@ -52,7 +52,7 @@ func main() {
 			tag := operation.Tags[0]
 			if contentMap[tag] == nil {
 				contentMap[tag] = &strings.Builder{}
-				contentMap[tag].WriteString("# " + tag + "\n\n")
+				_ = contentMap[tag].WriteString("# " + tag + "\n\n")
 			}
 			// G104: Handle potential error from fmt.Fprintf
 			_, _ = fmt.Fprintf(contentMap[tag], "{%% swagger src=\"https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml\" path=\"%s\" method=\"%s\" %%}\n", pathName, method)

@@ -294,10 +294,10 @@ func CompareDirectories(t *testing.T, dir1, dir2 string) {
 		require.Equal(t, info1.Size(), info2.Size(), "Size mismatch for %s", relPath)
 
 		// Compare file content
-		content1, err := os.ReadFile(path1)
+		content1, err := os.ReadFile(filepath.Clean(path1))
 		require.NoError(t, err)
 
-		content2, err := os.ReadFile(path2)
+		content2, err := os.ReadFile(filepath.Clean(path2))
 		require.NoError(t, err)
 
 		require.True(t, bytes.Equal(content1, content2), "Content mismatch for %s", relPath)

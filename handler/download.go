@@ -70,7 +70,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 		return errors.New("failed to seek to start of piece")
 	}
 
-	file, err := os.Create(outPath)
+	file, err := os.Create(filepath.Clean(outPath))
 	if err != nil {
 		return errors.WithStack(err)
 	}
