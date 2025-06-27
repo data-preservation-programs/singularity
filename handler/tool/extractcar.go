@@ -143,7 +143,7 @@ func ExtractCarHandler(ctx *cli.Context, inputDir string, output string, c cid.C
 			return errors.Wrapf(err, "failed to open CAR file %s", f)
 		}
 		bss = append(bss, bs)
-		defer bs.Close()
+		defer func() { _ = bs.Close() }()
 	}
 
 	bs := &multiBlockstore{bss: bss}
@@ -212,7 +212,7 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 			if err != nil {
 				return errors.Wrapf(err, "failed to create output file %s", outPath)
 			}
-			defer f.Close()
+			defer func() { _ = f.Close() }()
 			_, _ = fmt.Fprintf(ctx.App.Writer, "Writing to %s\n", outPath)
 			_, err = reader.WriteTo(f)
 			if err != nil {

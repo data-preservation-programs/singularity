@@ -188,7 +188,7 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 		return nil, nil, nil, errors.WithStack(err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		return nil, nil, nil, errors.Newf("failed to get deal state: %s", resp.Status)
 	}
 	var jsonDecoder *jstream.Decoder
@@ -197,7 +197,7 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 	if decompress {
 		decompressor, err := zstd.NewReader(countingReader)
 		if err != nil {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			return nil, nil, nil, errors.WithStack(err)
 		}
 		safeDecompressor := &ThreadSafeReadCloser{
@@ -617,7 +617,7 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 	countingCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go func() {

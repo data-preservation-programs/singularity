@@ -428,7 +428,7 @@ func TestDataPrep(t *testing.T) {
 						defer func() { <-downloadServerDone }()
 						defer cancel()
 						go func() {
-							_ = NewRunner().Run(contentProviderCtx, "singularity run content-provider --http-bind "+contentProviderBind)
+							_, _, _ = NewRunner().Run(contentProviderCtx, "singularity run content-provider --http-bind "+contentProviderBind)
 							close(contentProviderDone)
 						}()
 						// Wait for content provider to be ready
@@ -436,7 +436,7 @@ func TestDataPrep(t *testing.T) {
 						require.NoError(t, err)
 
 						go func() {
-							_ = NewRunner().Run(contentProviderCtx, "singularity run download-server --metadata-api http://"+contentProviderBind)
+							_, _, _ = NewRunner().Run(contentProviderCtx, "singularity run download-server --metadata-api http://"+contentProviderBind)
 							close(downloadServerDone)
 						}()
 						// Wait for download server to be ready

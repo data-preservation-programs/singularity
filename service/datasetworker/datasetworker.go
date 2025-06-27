@@ -178,7 +178,7 @@ func (w Worker) Run(ctx context.Context) error {
 		defer close(eventsFlushed)
 		analytics.Default.Start(ctx)
 		//nolint:contextcheck
-		analytics.Default.Flush()
+		_ = analytics.Default.Flush()
 	}()
 
 	threads := make([]service.Server, w.config.Concurrency)

@@ -303,12 +303,12 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 		}
 		fileInfo, err := file.Stat()
 		if err != nil {
-			file.Close()
+			_ = file.Close()
 			errs = append(errs, errors.Wrapf(err, "failed to stat file %s", car.StoragePath))
 			continue
 		}
 		if fileInfo.Size() != car.FileSize {
-			file.Close()
+			_ = file.Close()
 			errs = append(errs, errors.Wrapf(err, "CAR file size mismatch for %s. expected %d, actual %d.", car.StoragePath, car.FileSize, fileInfo.Size()))
 			continue
 		}

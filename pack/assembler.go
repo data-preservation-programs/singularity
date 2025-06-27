@@ -206,7 +206,7 @@ func (a *Assembler) prefetch() error {
 	if err == io.EOF && !firstChunk {
 		a.assembleLinkFor = ptr.Of(a.index)
 		a.fileReadCloser = nil
-		a.Close()
+		_ = a.Close()
 		if a.fileRanges[a.index].Length < 0 {
 			a.fileLengthCorrection[a.fileRanges[a.index].FileID] = a.fileOffset
 		}
@@ -265,7 +265,7 @@ func (a *Assembler) prefetch() error {
 		}
 
 		a.assembleLinkFor = ptr.Of(a.index)
-		a.Close()
+		_ = a.Close()
 		if a.fileRanges[a.index].Length < 0 {
 			a.fileLengthCorrection[a.fileRanges[a.index].FileID] = a.fileOffset + int64(n)
 		}

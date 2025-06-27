@@ -229,7 +229,7 @@ func TestRetrieveFileHandler(t *testing.T) {
 				// remaining data. This also tests the seeker's WriteTo
 				// function.
 				const seekBack = int64(16384)
-				seeker.Seek(-seekBack, io.SeekEnd)
+				_, _ = seeker.Seek(-seekBack, io.SeekEnd)
 				buf := bytes.NewBuffer(nil)
 				copied, err := io.Copy(buf, seeker)
 				require.NoError(t, err)
@@ -307,13 +307,13 @@ func (fr *fakeRetriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int
 		// Simulate deserialize goroutine.
 		_, err := io.Copy(out, reader)
 		errChan <- err
-		reader.Close()
+		_ = reader.Close()
 	}()
 	go func() {
 		// Simulate getContent goroutine.
 		_, err := io.Copy(writer, io.LimitReader(nlr, rangeEnd-rangeStart))
 		errChan <- err
-		writer.Close()
+		_ = writer.Close()
 	}()
 
 	// collect errors
@@ -364,7 +364,7 @@ func (fr *fakeRetriever) RetrieveReader(ctx context.Context, c cid.Cid, rangeSta
 	go func() {
 		// Simulate deserialize goroutine.
 		_, err := io.Copy(outWriter, reader)
-		reader.Close()
+		_ = reader.Close()
 		outWriter.CloseWithError(err)
 		fr.wg.Done()
 	}()
@@ -408,7 +408,7 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 	connStr := "sqlite:" + b.TempDir() + "/singularity.db"
 	db, closer, err := database.OpenWithLogger(connStr)
 	require.NoError(b, err)
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 	b.Setenv("DATABASE_CONNECTION_STRING", connStr)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
@@ -541,7 +541,7 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 			}
 		}
 
-		seeker.Close()
+		_ = seeker.Close()
 	}
 
 	b.StopTimer()

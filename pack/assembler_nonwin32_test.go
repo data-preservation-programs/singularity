@@ -40,7 +40,7 @@ func TestAssembler_InaccessibleFile(t *testing.T) {
 			},
 		},
 	}, false, false)
-	defer assembler.Close()
+	defer func() { _ = assembler.Close() }()
 
 	_, err = io.ReadAll(assembler)
 	require.Error(t, err)
@@ -56,7 +56,7 @@ func TestAssembler_InaccessibleFile(t *testing.T) {
 			},
 		},
 	}, false, true)
-	defer assembler2.Close()
+	defer func() { _ = assembler2.Close() }()
 
 	_, err = io.ReadAll(assembler2)
 	require.NoError(t, err)

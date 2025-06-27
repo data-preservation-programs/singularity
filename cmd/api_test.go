@@ -35,7 +35,7 @@ func runAPI(t *testing.T, ctx context.Context) func() {
 
 	done := make(chan struct{})
 	go func() {
-		_ = NewRunner().Run(ctx, fmt.Sprintf("singularity run api --bind %s", apiBind))
+		_, _, _ = NewRunner().Run(ctx, fmt.Sprintf("singularity run api --bind %s", apiBind))
 		close(done)
 	}()
 

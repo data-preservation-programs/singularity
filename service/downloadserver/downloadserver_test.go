@@ -202,7 +202,7 @@ func TestGetMetadata_404(t *testing.T) {
 func TestGetMetadata_InvalidResponse(t *testing.T) {
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/cbor")
-		w.Write([]byte("invalid cbor data"))
+		_, _ = w.Write([]byte("invalid cbor data"))
 	}))
 	defer mockServer.Close()
 
@@ -234,7 +234,7 @@ func TestGetMetadata_ConfigProcessing(t *testing.T) {
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/cbor")
 		encoder := cbor.NewEncoder(w)
-		encoder.Encode(mockMetadata)
+		_ = encoder.Encode(mockMetadata)
 	}))
 	defer mockServer.Close()
 
@@ -260,7 +260,7 @@ func TestDownloadServer_Start_Health(t *testing.T) {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 	port := listener.Addr().(*net.TCPAddr).Port
-	listener.Close()
+	_ = listener.Close()
 
 	bindAddr := fmt.Sprintf("127.0.0.1:%d", port)
 	server := NewDownloadServer(bindAddr, "http://api.example.com", nil, model.ClientConfig{})
@@ -289,7 +289,7 @@ func TestDownloadServer_Start_Health(t *testing.T) {
 	// Server should be ready now
 	require.NoError(t, err, "Server failed to start within timeout")
 	require.NotNil(t, healthResp)
-	defer healthResp.Body.Close()
+	defer func() { _ = healthResp.Body.Close() }()
 
 	// Test the health endpoint
 	assert.Equal(t, http.StatusOK, healthResp.StatusCode)
@@ -297,7 +297,7 @@ func TestDownloadServer_Start_Health(t *testing.T) {
 	// Make another health check to ensure server is stable
 	resp2, err := client.Get(serverURL + "/health")
 	require.NoError(t, err)
-	defer resp2.Body.Close()
+	defer func() { _ = resp2.Body.Close() }()
 	assert.Equal(t, http.StatusOK, resp2.StatusCode)
 
 	// Now shutdown the server

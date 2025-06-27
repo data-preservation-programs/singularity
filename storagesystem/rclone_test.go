@@ -181,7 +181,7 @@ func TestRCloneHandler_ReadS3Files(t *testing.T) {
 	// Verify empty file.
 	stream, obj, err := handler.Read(ctx, path.Join(subDir, emptyFile), 0, 0)
 	require.NoError(t, err)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 	require.NotNil(t, stream)
 	require.NotNil(t, obj)
 	require.EqualValues(t, 0, obj.Size())
@@ -192,7 +192,7 @@ func TestRCloneHandler_ReadS3Files(t *testing.T) {
 	// Verify non-empty file.
 	stream, obj, err = handler.Read(ctx, path.Join(subDir, helloFile), 0, helloSize)
 	require.NoError(t, err)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 	require.NotNil(t, stream)
 	require.NotNil(t, obj)
 	require.EqualValues(t, helloSize, obj.Size())

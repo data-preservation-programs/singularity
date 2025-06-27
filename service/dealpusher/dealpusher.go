@@ -561,7 +561,7 @@ func (d *DealPusher) Start(ctx context.Context, exitErr chan<- error) error {
 		defer close(eventsFlushed)
 		analytics.Default.Start(ctx)
 		//nolint:contextcheck
-		analytics.Default.Flush()
+		_ = analytics.Default.Flush()
 	}()
 
 	healthcheckDone := make(chan struct{})

@@ -630,6 +630,6 @@ func calculateCommp(t *testing.T, content []byte, targetPieceSize uint64) cid.Ci
 
 func generateRandomBytes(n int) []byte {
 	b := make([]byte, n)
-	rand.Read(b)
+	_, _ = rand.Read(b)
 	return b
 }

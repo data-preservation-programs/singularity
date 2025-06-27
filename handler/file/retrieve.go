@@ -174,7 +174,7 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 	// Read from each range until readLen bytes read.
 	for _, fileRange := range fileRanges {
 		if rr != nil {
-			rr.close()
+			_ = rr.close()
 			rr = nil
 		}
 		if readLen == 0 {
@@ -221,7 +221,7 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 		// Reading readLen of the remaining bytes in this range.
 		n, err := rr.writeToN(w, readLen)
 		if err != nil && !errors.Is(err, io.EOF) {
-			rr.close()
+			_ = rr.close()
 			return 0, err
 		}
 		r.offset += n
@@ -232,7 +232,7 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 	// check for missing file ranges at the end
 	if readLen > 0 {
 		if rr != nil {
-			rr.close()
+			_ = rr.close()
 		}
 		return read, UnableToServeRangeError{Start: r.offset, End: r.offset + readLen, Err: ErrNoFileRangeRecord}
 	}
@@ -244,7 +244,7 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 			r.rangeReader = rr
 		} else {
 			// Leftover rangeReader has 0 bytes remaining.
-			rr.close()
+			_ = rr.close()
 		}
 	}
 
@@ -277,7 +277,7 @@ func (r *filecoinReader) Seek(offset int64, whence int) (int64, error) {
 func (r *filecoinReader) Close() error {
 	var err error
 	if r.rangeReader != nil {
-		err = _ = r.rangeReader.close()
+		err = r.rangeReader.close()
 		r.rangeReader = nil
 	}
 	return err

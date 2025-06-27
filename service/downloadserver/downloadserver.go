@@ -139,7 +139,7 @@ func (d *DownloadServer) handleGetPiece(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to create piece reader: "+err.Error())
 	}
-	defer pieceReader.Close()
+	defer func() { _ = pieceReader.Close() }()
 	contentprovider.SetCommonHeaders(c, pieceCid.String())
 	http.ServeContent(
 		c.Response(),
@@ -170,7 +170,7 @@ func GetMetadata(
 	if err != nil {
 		return nil, 0, errors.WithStack(err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return nil, resp.StatusCode, errors.Errorf("failed to get metadata: %s", resp.Status)
 	}

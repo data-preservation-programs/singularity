@@ -77,7 +77,7 @@ func TestAssembler(t *testing.T) {
 		require.NoError(t, err)
 		t.Run(fmt.Sprintf("single size=%d", size), func(t *testing.T) {
 			assembler := NewAssembler(context.Background(), reader, []model.FileRange{fileRange}, false, false)
-			defer assembler.Close()
+			defer func() { _ = assembler.Close() }()
 			content, err := io.ReadAll(assembler)
 			require.NoError(t, err)
 			require.Equal(t, expected.size, len(content))
@@ -97,7 +97,7 @@ func TestAssembler(t *testing.T) {
 	})
 	t.Run("all", func(t *testing.T) {
 		assembler := NewAssembler(context.Background(), reader, allFileRanges, false, false)
-		defer assembler.Close()
+		defer func() { _ = assembler.Close() }()
 		content, err := io.ReadAll(assembler)
 		require.NoError(t, err)
 		require.Equal(t, 38804284, len(content))
@@ -107,7 +107,7 @@ func TestAssembler(t *testing.T) {
 	})
 	t.Run("noinline", func(t *testing.T) {
 		assembler := NewAssembler(context.Background(), reader, allFileRanges, true, false)
-		defer assembler.Close()
+		defer func() { _ = assembler.Close() }()
 		content, err := io.ReadAll(assembler)
 		require.NoError(t, err)
 		require.Equal(t, 38804284, len(content))

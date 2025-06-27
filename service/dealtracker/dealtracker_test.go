@@ -33,9 +33,9 @@ func setupTestServerWithBody(t *testing.T, b string) (string, Closer) {
 	compressed := encoder.EncodeAll(body, make([]byte, 0, len(body)))
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write(compressed)
+		_, _ = w.Write(compressed)
 	}))
-	encoder.Close()
+	_ = encoder.Close()
 	return server.URL, server
 }
 
@@ -125,7 +125,7 @@ func TestDealStateStreamFromHttpRequest_Compressed(t *testing.T) {
 	depth := 1
 	stream, _, closer, err := DealStateStreamFromHTTPRequest(req, depth, true)
 	require.NoError(t, err)
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 	var kvs []jstream.KV
 	for s := range stream {
 		pair, ok := s.Value.(jstream.KV)
@@ -142,7 +142,7 @@ func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
 	body := []byte(`{"jsonrpc":"2.0","result":{"0":{"Proposal":{"PieceCID":{"/":"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq"},"PieceSize":34359738368,"VerifiedDeal":true,"Client":"t0100","Provider":"t01000","Label":"bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz","StartEpoch":0,"EndEpoch":1552977,"StoragePricePerEpoch":"0","ProviderCollateral":"0","ClientCollateral":"0"},"State":{"SectorStartEpoch":0,"LastUpdatedEpoch":691200,"SlashEpoch":-1,"VerifiedClaim":0}}}}`)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write(body)
+		_, _ = w.Write(body)
 	}))
 	defer server.Close()
 	req, err := http.NewRequest("GET", server.URL, nil)
@@ -150,7 +150,7 @@ func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
 	depth := 2
 	stream, _, closer, err := DealStateStreamFromHTTPRequest(req, depth, false)
 	require.NoError(t, err)
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 	var kvs []jstream.KV
 	for s := range stream {
 		pair, ok := s.Value.(jstream.KV)
