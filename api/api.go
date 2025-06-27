@@ -60,24 +60,6 @@ type Server struct {
 	scheduleHandler schedule.Handler
 }
 
-func (s *Server) Name() string {
-	return "api"
-}
-
-// @Summary Get metadata for a piece
-// @Description Get metadata for a piece for how it may be reassembled from the data source
-// @Tags Piece
-// @Produce json
-// @Param id path string true "Piece CID"
-// @Success 200 {object} store.PieceReader
-// @Failure 400 {string} string "Bad Request"
-// @Failure 404 {string} string "Not Found"
-// @Failure 500 {string} string "Internal Server Error"
-// @Router /piece/{id}/metadata [get]
-func (s *Server) getMetadataHandler(c echo.Context) error {
-	return contentprovider.GetMetadataHandler(c, s.db)
-}
-
 func Run(c *cli.Context) error {
 	connString := c.String("database-connection-string")
 
@@ -157,6 +139,52 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 		jobHandler:      &job.DefaultHandler{},
 		scheduleHandler: &schedule.DefaultHandler{},
 	}, nil
+}
+
+func (s *Server) Name() string {
+	return "api"
+}
+
+// @Summary Get metadata for a piece
+// @Description Get metadata for a piece for how it may be reassembled from the data source
+// @Tags Piece
+// @Produce json
+// @Param id path string true "Piece CID"
+// @Success 200 {object} store.PieceReader
+// @Failure 400 {string} string "Bad Request"
+// @Failure 404 {string} string "Not Found"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /piece/{id}/metadata [get]
+func (s *Server) getMetadataHandler(c echo.Context) error {
+	return contentprovider.GetMetadataHandler(c, s.db)
+}
+
+// @ID RetrieveFile
+// @Summary Get content of a file
+// @Tags File
+// @Accept json
+// @Produce octet-stream
+// @Param id path int true "File ID"
+// @Param Range header string false "HTTP Range Header"
+// @Success 200 {file} file
+// @Success 206 {file} file
+// @Failure 500 {object} api.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 404 {object} api.HTTPError
+// @Router /file/{id}/retrieve [get]
+func (s *Server) retrieveFile(c echo.Context) error {
+	ctx := c.Request().Context()
+	id, err := strconv.ParseUint(c.ParamValues()[0], 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, HTTPError{Err: "failed to parse path parameter as number"})
+	}
+	data, name, modTime, err := s.fileHandler.RetrieveFileHandler(ctx, s.db.WithContext(ctx), s.retriever, id)
+	if err != nil {
+		return httpResponseFromError(c, err)
+	}
+	c.Response().Header().Add("Content-Type", "application/octet-stream")
+	http.ServeContent(c.Response(), c.Request(), name, modTime, data)
+	return data.Close()
 }
 
 // toEchoHandler is a utility method to convert a generic handler function into an echo.HandlerFunc.

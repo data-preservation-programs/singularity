@@ -3,6 +3,7 @@ package schedule
 import (
 	"bufio"
 	"os"
+	"path/filepath"
 	"regexp"
 
 	"github.com/cockroachdb/errors"
@@ -253,7 +254,9 @@ var CreateCmd = &cli.Command{
 
 func readCIDsFromFile(f string) ([]string, error) {
 	var result []string
-	file, err := os.Open(f)
+	// G304: Clean the file path to prevent directory traversal
+	cleanPath := filepath.Clean(f)
+	file, err := os.Open(cleanPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open file")
 	}

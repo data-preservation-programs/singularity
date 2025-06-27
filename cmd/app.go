@@ -325,7 +325,8 @@ func SetupHelpPager() {
 			_, _ = w.Write(helpText.Bytes())
 			return
 		}
-		cmd := exec.Command(pagerPath)
+		// G204: Using exec.LookPath to validate pager path before execution
+		cmd := exec.Command(pagerPath) // #nosec G204
 		pagerIn, err := cmd.StdinPipe()
 		cmd.Stdout = w
 		if err != nil {

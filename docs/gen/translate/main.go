@@ -54,7 +54,9 @@ func main() {
 				if !strings.HasSuffix(path, ".md") {
 					return nil
 				}
-				content, err := os.ReadFile(path)
+				// G304: Clean the file path to prevent directory traversal
+				cleanPath := filepath.Clean(path)
+				content, err := os.ReadFile(cleanPath)
 				if err != nil {
 					panic(err)
 				}
@@ -116,7 +118,8 @@ func main() {
 					results[i] = response.Choices[0].Message.Content
 				}
 				fmt.Printf("Writing to %s\n", outPath)
-				err = os.MkdirAll(filepath.Dir(outPath), 0755)
+				// G301: Use more restrictive permissions (0750) for directory creation
+				err = os.MkdirAll(filepath.Dir(outPath), 0750)
 				if err != nil {
 					panic(err)
 				}
