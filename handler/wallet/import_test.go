@@ -6,7 +6,6 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
-	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -14,23 +13,26 @@ import (
 
 func TestImportHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		lotusClient := util.NewLotusClient("https://api.node.glif.io/rpc/v0", "")
-
 		t.Run("success", func(t *testing.T) {
-			w, err := Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
+			mockClient := testutil.NewMockLotusClient()
+			mockClient.SetResponse("Filecoin.StateLookupID", testutil.TestWalletActorID)
+			
+			w, err := Default.ImportHandler(ctx, db, mockClient, ImportRequest{
 				PrivateKey: testutil.TestPrivateKeyHex,
 			})
 			require.NoError(t, err)
 			require.Equal(t, testutil.TestWalletAddr, w.Address)
 
-			_, err = Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
+			_, err = Default.ImportHandler(ctx, db, mockClient, ImportRequest{
 				PrivateKey: testutil.TestPrivateKeyHex,
 			})
 			require.ErrorIs(t, err, handlererror.ErrDuplicateRecord)
 		})
 
 		t.Run("invalid key", func(t *testing.T) {
-			_, err := Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
+			mockClient := testutil.NewMockLotusClient()
+			// This test should fail before the RPC call due to invalid private key
+			_, err := Default.ImportHandler(ctx, db, mockClient, ImportRequest{
 				PrivateKey: "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a22414141414141414141414141414141414141414141414141414141414141414141414141414141414141413d227d", // Valid hex, valid base64, but all zeros private key
 			})
 			require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
