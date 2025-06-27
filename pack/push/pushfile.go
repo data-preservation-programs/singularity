@@ -17,7 +17,6 @@ import (
 
 var logger = logging.Logger("pushfile")
 
-
 func MaxSizeToSplitSize(m int64) int64 {
 	r := util.NextPowerOfTwo(util.SafeInt64ToUint64(m)) / 4
 	if r > 1<<30 {

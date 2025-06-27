@@ -20,7 +20,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 //nolint:lll
 type CreateRequest struct {
 	Preparation           string   `json:"preparation"           validation:"required"`  // Preparation ID or name
