@@ -3,8 +3,8 @@ package wallet
 import (
 	"context"
 	"testing"
-	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/testutil"
@@ -37,10 +37,9 @@ func TestImportHandler(t *testing.T) {
 		})
 
 		t.Run("invalid response", func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
-			defer cancel()
-			lotusClient := util.NewLotusClient("http://invalid-url-that-does-not-exist.local", "")
-			_, err := Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
+			mockClient := testutil.NewMockLotusClient()
+			mockClient.SetError("Filecoin.StateLookupID", errors.New("rpc call failed"))
+			_, err := Default.ImportHandler(ctx, db, mockClient, ImportRequest{
 				PrivateKey: testutil.TestPrivateKeyHex,
 			})
 			require.ErrorIs(t, err, handlererror.ErrInvalidParameter)

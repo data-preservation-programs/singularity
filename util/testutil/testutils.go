@@ -17,6 +17,7 @@ import (
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
@@ -190,4 +191,72 @@ type CloserFunc func() error
 
 func (f CloserFunc) Close() error {
 	return f()
+}
+
+// MockLotusClient provides a mock implementation of jsonrpc.RPCClient for testing
+type MockLotusClient struct {
+	responses map[string]interface{}
+	errors    map[string]error
+}
+
+// NewMockLotusClient creates a new mock Lotus client for testing
+func NewMockLotusClient() *MockLotusClient {
+	return &MockLotusClient{
+		responses: make(map[string]interface{}),
+		errors:    make(map[string]error),
+	}
+}
+
+// SetResponse sets a mock response for a specific method
+func (m *MockLotusClient) SetResponse(method string, response interface{}) {
+	m.responses[method] = response
+}
+
+// SetError sets a mock error for a specific method
+func (m *MockLotusClient) SetError(method string, err error) {
+	m.errors[method] = err
+}
+
+// CallFor implements jsonrpc.RPCClient interface
+func (m *MockLotusClient) CallFor(ctx context.Context, out interface{}, method string, params ...interface{}) error {
+	if err, exists := m.errors[method]; exists {
+		return err
+	}
+	if response, exists := m.responses[method]; exists {
+		// Simple type assertion for common response types
+		switch v := out.(type) {
+		case *string:
+			if str, ok := response.(string); ok {
+				*v = str
+			}
+		}
+		return nil
+	}
+	return errors.New("mock method not configured: " + method)
+}
+
+// Call implements jsonrpc.RPCClient interface
+func (m *MockLotusClient) Call(ctx context.Context, method string, params ...interface{}) (*jsonrpc.RPCResponse, error) {
+	if err, exists := m.errors[method]; exists {
+		return nil, err
+	}
+	if response, exists := m.responses[method]; exists {
+		return &jsonrpc.RPCResponse{Result: response}, nil
+	}
+	return nil, errors.New("mock method not configured: " + method)
+}
+
+// CallBatch implements jsonrpc.RPCClient interface
+func (m *MockLotusClient) CallBatch(ctx context.Context, requests jsonrpc.RPCRequests) (jsonrpc.RPCResponses, error) {
+	return nil, errors.New("CallBatch not implemented in mock")
+}
+
+// CallRaw implements jsonrpc.RPCClient interface
+func (m *MockLotusClient) CallRaw(ctx context.Context, request *jsonrpc.RPCRequest) (*jsonrpc.RPCResponse, error) {
+	return m.Call(ctx, request.Method, request.Params)
+}
+
+// CallBatchRaw implements jsonrpc.RPCClient interface
+func (m *MockLotusClient) CallBatchRaw(ctx context.Context, requests jsonrpc.RPCRequests) (jsonrpc.RPCResponses, error) {
+	return nil, errors.New("CallBatchRaw not implemented in mock")
 }
