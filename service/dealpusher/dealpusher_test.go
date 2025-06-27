@@ -108,14 +108,14 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		defer cancel()
 		provider := "f0miner"
 		client := "f0client"
-		
+
 		// Create preparation first
 		prep := model.Preparation{
 			Name: "test-prep",
 		}
 		err = db.Create(&prep).Error
 		require.NoError(t, err)
-		
+
 		// Create storage
 		storage := model.Storage{
 			Name: "test-storage",
@@ -124,7 +124,7 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		}
 		err = db.Create(&storage).Error
 		require.NoError(t, err)
-		
+
 		// Create source attachment
 		attachment := model.SourceAttachment{
 			PreparationID: prep.ID,
@@ -132,7 +132,7 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		}
 		err = db.Create(&attachment).Error
 		require.NoError(t, err)
-		
+
 		// Add the wallet to the preparation
 		wallet := model.Wallet{
 			ActorID: client,
@@ -140,11 +140,11 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		}
 		err = db.Create(&wallet).Error
 		require.NoError(t, err)
-		
+
 		// Associate wallet with preparation
 		err = db.Model(&prep).Association("Wallets").Append(&wallet)
 		require.NoError(t, err)
-		
+
 		schedule := model.Schedule{
 			PreparationID:        prep.ID,
 			State:                model.ScheduleActive,

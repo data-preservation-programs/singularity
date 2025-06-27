@@ -79,7 +79,7 @@ func TestDatasetWorker_ExitOnError(t *testing.T) {
 			Concurrency:    1, // Use single worker to avoid race conditions
 			ExitOnComplete: true,
 			EnableScan:     false, // Disable scan to focus on DagGen
-			EnablePack:     false, // Disable pack to focus on DagGen  
+			EnablePack:     false, // Disable pack to focus on DagGen
 			EnableDag:      true,
 			ExitOnError:    true,
 		})
