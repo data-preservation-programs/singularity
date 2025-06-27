@@ -392,7 +392,7 @@ func (s *AutoDealService) buildDealScheduleRequest(preparation *model.Preparatio
 	// Convert epoch durations to time-based strings
 	if preparation.DealConfig.DealStartDelay > 0 {
 		// Convert epochs to duration (1 epoch = 30 seconds)
-		epochDuration := preparation.DealConfig.DealStartDelay * 30 * time.Second
+		epochDuration := preparation.DealConfig.DealStartDelay * 30
 		request.StartDelay = epochDuration.String()
 	} else {
 		request.StartDelay = "72h" // Default
@@ -400,7 +400,7 @@ func (s *AutoDealService) buildDealScheduleRequest(preparation *model.Preparatio
 
 	if preparation.DealConfig.DealDuration > 0 {
 		// Convert epochs to duration (1 epoch = 30 seconds)
-		epochDuration := preparation.DealConfig.DealDuration * 30 * time.Second
+		epochDuration := preparation.DealConfig.DealDuration * 30
 		request.Duration = epochDuration.String()
 	} else {
 		request.Duration = "12840h" // Default (~535 days)

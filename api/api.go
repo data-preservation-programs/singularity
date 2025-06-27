@@ -482,14 +482,14 @@ func (s *Server) Start(ctx context.Context, exitErr chan<- error) error {
 			logger.Errorw("failed to close database connection", "err", err)
 		}
 
-		s.host.Close()
+		defer func() { _ = s.host.Close() }()
 	}()
 
 	go func() {
 		defer close(eventsFlushed)
 		analytics.Default.Start(ctx)
 		//nolint:contextcheck
-		analytics.Default.Flush()
+		_ = analytics.Default.Flush()
 	}()
 
 	return nil

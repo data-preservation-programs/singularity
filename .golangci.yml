@@ -46,7 +46,7 @@ linters:
     - intrange
     - staticcheck
     - errchkjson
-linters-settings:
+  settings:
     gosec:
       excludes:
         - G115 # we do a lot of uint64 conversions unfortunately
@@ -59,16 +59,16 @@ linters-settings:
       rules:
         - name: var-naming
           disabled: true
-issues:
-  exclude-generated: lax
-  exclude-dirs:
-    - third_party
-    - builtin
-    - examples
-  exclude-rules:
-    - path: model/basetypes.go
-      linters:
-        - recvcheck
-    - path: migrate/migrations/
-      linters:
-        - stylecheck
+  exclusions:
+    generated: lax
+    paths:
+      - third_party
+      - builtin
+      - examples
+    rules:
+      - path: model/basetypes.go
+        linters:
+          - recvcheck
+      - path: migrate/migrations/
+        linters:
+          - stylecheck
