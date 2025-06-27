@@ -11,6 +11,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-cid"
 	"github.com/rjNemo/underscore"
@@ -18,6 +19,7 @@ import (
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
+
 
 //nolint:lll
 type CreateRequest struct {
@@ -174,7 +176,7 @@ func (DefaultHandler) CreateHandler(
 		HTTPHeaders:           headers,
 		Provider:              request.Provider,
 		TotalDealNumber:       request.TotalDealNumber,
-		TotalDealSize:         int64(totalDealSize),
+		TotalDealSize:         util.SafeUint64ToInt64(totalDealSize),
 		Verified:              request.Verified,
 		KeepUnsealed:          request.KeepUnsealed,
 		AnnounceToIPNI:        request.IPNI,
@@ -182,9 +184,9 @@ func (DefaultHandler) CreateHandler(
 		Duration:              duration,
 		State:                 model.ScheduleActive,
 		ScheduleDealNumber:    request.ScheduleDealNumber,
-		ScheduleDealSize:      int64(scheduleDealSize),
+		ScheduleDealSize:      util.SafeUint64ToInt64(scheduleDealSize),
 		MaxPendingDealNumber:  request.MaxPendingDealNumber,
-		MaxPendingDealSize:    int64(pendingDealSize),
+		MaxPendingDealSize:    util.SafeUint64ToInt64(pendingDealSize),
 		Notes:                 request.Notes,
 		AllowedPieceCIDs:      underscore.Unique(request.AllowedPieceCIDs),
 		ScheduleCron:          scheduleCron,

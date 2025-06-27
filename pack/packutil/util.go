@@ -3,6 +3,7 @@ package packutil
 import (
 	"bytes"
 	"io"
+	"math"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/util"
@@ -17,6 +18,17 @@ import (
 )
 
 var EmptyFileCid = cid.NewCidV1(cid.Raw, util2.Hash([]byte("")))
+
+// safeIntToUint64 safely converts int to uint64, handling negative values
+func safeIntToUint64(val int) uint64 {
+	if val < 0 {
+		return 0
+	}
+	if val > math.MaxInt64 {
+		return math.MaxUint64
+	}
+	return uint64(val)
+}
 
 var EmptyFileVarint = varint.ToUvarint(uint64(len(EmptyFileCid.Bytes())))
 
@@ -119,7 +131,7 @@ func WriteCarHeader(writer io.Writer, root cid.Cid) ([]byte, error) {
 //   - error: An error that can occur during the write process, or nil if the write was successful.
 func WriteCarBlock(writer io.Writer, block blocks.Block) (int64, error) {
 	written := int64(0)
-	varintBytes := varint.ToUvarint(uint64(len(block.RawData()) + block.Cid().ByteLen()))
+	varintBytes := varint.ToUvarint(safeIntToUint64(len(block.RawData()) + block.Cid().ByteLen()))
 	n, err := io.Copy(writer, bytes.NewReader(varintBytes))
 	if err != nil {
 		return written, errors.WithStack(err)
