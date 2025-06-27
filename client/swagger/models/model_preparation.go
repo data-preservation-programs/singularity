@@ -7,7 +7,10 @@ package models
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -86,15 +89,139 @@ func (m *ModelPreparation) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateSPAndWalletFlags(); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePreparationConsistency(); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
 	return nil
 }
 
+// validateURLTemplate validates that the URL template is properly formatted
+func (m *ModelPreparation) validateURLTemplate(template string) error {
+	// Check if template contains required placeholders
+	if !strings.Contains(template, "{PIECE_CID}") {
+		return errors.New(400, "validation failed", "dealURLTemplate must contain {PIECE_CID} placeholder")
+	}
+
+	// Try to parse the URL with a sample piece CID
+	sampleURL := strings.ReplaceAll(template, "{PIECE_CID}", "baga6ea4seaqbase32cid")
+	if _, err := url.Parse(sampleURL); err != nil {
+		return errors.New(400, "validation failed", fmt.Sprintf("dealURLTemplate is not a valid URL template: %v", err))
+	}
+
+	return nil
+}
+
+// validateSPAndWalletFlags validates the SP and wallet validation flags
+func (m *ModelPreparation) validateSPAndWalletFlags() error {
+	// If auto-create deals is enabled, validate that validation flags make sense
+	if m.DealConfig.AutoCreateDeals {
+		// SP validation is recommended when auto-creating deals
+		if !m.SpValidation {
+			// This is a warning, not an error - just log or handle as needed
+			// Could return a warning or just continue
+		}
+
+		// Wallet validation is recommended for verified deals
+		if m.DealConfig.DealVerified && !m.WalletValidation {
+			// This is a warning, not an error - just log or handle as needed
+			// Could return a warning or just continue
+		}
+	}
+
+	return nil
+}
+
+// validatePreparationConsistency validates overall preparation consistency
+func (m *ModelPreparation) validatePreparationConsistency() error {
+	// Validate piece size constraints
+	if m.MinPieceSize > 0 && m.PieceSize > 0 {
+		if m.MinPieceSize > m.PieceSize {
+			return errors.New(400, "validation failed", "minPieceSize cannot be greater than pieceSize")
+		}
+	}
+
+	// Validate max size constraint
+	if m.MaxSize > 0 && m.PieceSize > 0 {
+		if m.MaxSize < m.PieceSize {
+			return errors.New(400, "validation failed", "maxSize cannot be less than pieceSize")
+		}
+	}
+
+	// Validate storage requirements
+	if len(m.SourceStorages) == 0 {
+		return errors.New(400, "validation failed", "at least one source storage must be specified")
+	}
+
+	if len(m.OutputStorages) == 0 {
+		return errors.New(400, "validation failed", "at least one output storage must be specified")
+	}
+
+	return nil
+}
+
 func (m *ModelPreparation) validateDealConfig(formats strfmt.Registry) error {
-	if swag.IsZero(m.DealConfig) { // not required
-		return nil
+	// Check if both DealTemplateID and DealConfig are provided
+	if m.DealTemplateID > 0 && !swag.IsZero(m.DealConfig) {
+		// Check if any deal config fields are set when using a template
+		if m.DealConfig.AutoCreateDeals ||
+			m.DealConfig.DealDuration > 0 ||
+			m.DealConfig.DealStartDelay > 0 ||
+			m.DealConfig.DealProvider != "" ||
+			m.DealConfig.DealPricePerDeal > 0 ||
+			m.DealConfig.DealPricePerGb > 0 ||
+			m.DealConfig.DealPricePerGbEpoch > 0 ||
+			m.DealConfig.DealURLTemplate != "" ||
+			m.DealConfig.DealHTTPHeaders != nil {
+			return errors.New(400, "validation failed", "cannot specify both deal template and deal configuration fields")
+		}
+	}
+
+	// If no deal template is specified and auto-create deals is enabled, validate required fields
+	if m.DealTemplateID == 0 && m.DealConfig.AutoCreateDeals {
+		// Validate required fields for auto deal creation
+		if m.DealConfig.DealProvider == "" {
+			return errors.Required("dealConfig.dealProvider", "body", nil)
+		}
+
+		// Validate storage provider format (should start with 'f0' or 't0')
+		if !strings.HasPrefix(m.DealConfig.DealProvider, "f0") && !strings.HasPrefix(m.DealConfig.DealProvider, "t0") {
+			return errors.New(400, "validation failed", "dealProvider must be a valid storage provider ID (e.g., f01234 or t01234)")
+		}
+
+		// Validate deal duration
+		if m.DealConfig.DealDuration <= 0 {
+			return errors.New(400, "validation failed", "dealDuration must be positive when auto-creating deals")
+		}
+
+		// Validate deal start delay
+		if m.DealConfig.DealStartDelay < 0 {
+			return errors.New(400, "validation failed", "dealStartDelay cannot be negative")
+		}
+
+		// Validate pricing - at least one pricing method should be specified
+		if m.DealConfig.DealPricePerDeal == 0 && m.DealConfig.DealPricePerGb == 0 && m.DealConfig.DealPricePerGbEpoch == 0 {
+			return errors.New(400, "validation failed", "at least one pricing method must be specified (dealPricePerDeal, dealPricePerGb, or dealPricePerGbEpoch)")
+		}
+
+		// Validate URL template if provided
+		if m.DealConfig.DealURLTemplate != "" {
+			if err := m.validateURLTemplate(m.DealConfig.DealURLTemplate); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Call the embedded DealConfig validation if it exists
+	if err := m.DealConfig.ModelDealConfig.Validate(formats); err != nil {
+		return err
 	}
 
 	return nil
