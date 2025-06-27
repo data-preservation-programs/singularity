@@ -221,7 +221,7 @@ func (pr *PieceReader) Clone() *PieceReader {
 		blockIndex: pr.blockIndex,
 	}
 	//nolint:errcheck
-	reader.Seek(0, io.SeekStart)
+	_, _ = reader.Seek(0, io.SeekStart)
 	return reader
 }
 

@@ -34,7 +34,7 @@ func GenerateFixedBytes(length int) []byte {
 func GenerateRandomBytes(n int) []byte {
 	b := make([]byte, n)
 	//nolint:errcheck
-	_ = rand.Read(b)
+	_, _ = rand.Read(b)
 	return b
 }
 
