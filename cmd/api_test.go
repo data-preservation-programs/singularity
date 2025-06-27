@@ -173,7 +173,7 @@ func setupPreparation(t *testing.T, ctx context.Context, testFileName string, te
 		read, err := testData.Read(buffer)
 		if read > 0 {
 			writeBuf := buffer[:read]
-				_, _ = f.Write(writeBuf)
+			_, _ = f.Write(writeBuf)
 		}
 		if err != nil {
 			require.EqualError(t, err, io.EOF.Error())
