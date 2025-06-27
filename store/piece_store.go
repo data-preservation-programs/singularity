@@ -90,7 +90,7 @@ func (pr *PieceReader) Seek(offset int64, whence int) (int64, error) {
 		return 0, ErrOffsetOutOfRange
 	}
 	if pr.reader != nil {
-		pr.reader.Close()
+		_ = pr.reader.Close()
 		pr.reader = nil
 		pr.readerFor = 0
 	}
@@ -278,7 +278,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 	}
 
 	if pr.reader != nil && pr.readerFor != *carBlock.FileID {
-		pr.reader.Close()
+		_ = pr.reader.Close()
 		pr.reader = nil
 	}
 
@@ -309,7 +309,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 	pr.pos += int64(n)
 	if errors.Is(err, io.EOF) {
 		err = nil
-		pr.reader.Close()
+		_ = pr.reader.Close()
 		pr.reader = nil
 		if pr.pos != carBlock.CarOffset+int64(carBlock.CarBlockLength) {
 			err = ErrTruncated

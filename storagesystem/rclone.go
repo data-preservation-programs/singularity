@@ -195,7 +195,7 @@ func (r *readerWithRetry) Read(p []byte) (int, error) {
 	r.retryCount += 1
 	r.retryDelay = time.Duration(float64(r.retryDelay) * r.retryBackoffExponential)
 	r.retryDelay += r.retryBackoff
-	r.reader.Close()
+	_ = r.reader.Close()
 	var err2 error
 	r.reader, err2 = r.object.Open(r.ctx, &fs.SeekOption{Offset: r.offset})
 	if err2 != nil {

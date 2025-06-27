@@ -92,11 +92,11 @@ func (r *Retriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, r
 	errChan := make(chan error, 2)
 	go func() {
 		errChan <- r.deserialize(ctx, c, rangeStart, rangeEnd, reader, out)
-		reader.Close()
+		_ = reader.Close()
 	}()
 	go func() {
 		errChan <- r.getContent(ctx, c, rangeStart, rangeEnd, sps, writer)
-		writer.Close()
+		_ = writer.Close()
 	}()
 
 	// collect errors
@@ -122,7 +122,7 @@ func (r *Retriever) RetrieveReader(ctx context.Context, c cid.Cid, rangeStart in
 	outReader, outWriter := io.Pipe()
 	go func() {
 		err := r.deserialize(ctx, c, rangeStart, rangeEnd, reader, outWriter)
-		reader.Close()
+		_ = reader.Close()
 		outWriter.CloseWithError(err)
 	}()
 

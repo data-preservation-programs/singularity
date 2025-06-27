@@ -106,7 +106,7 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 	err = db1.Exec("CREATE DATABASE " + dbName + "").Error
 	if err != nil {
 		t.Logf("Failed to create test database %s: %v", dbName, err)
-		closer1.Close()
+		_ = closer1.Close()
 		return nil, nil, ""
 	}
 	connStr = strings.ReplaceAll(connStr, "singularity?", dbName+"?")
@@ -115,12 +115,12 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 	if err != nil {
 		t.Logf("Failed to connect to test database %s: %v", dbName, err)
 		db1.Exec("DROP DATABASE " + dbName + "")
-		closer1.Close()
+		_ = closer1.Close()
 		return nil, nil, ""
 	}
 	closer = CloserFunc(func() error {
 		if closer2 != nil {
-			closer2.Close()
+			_ = closer2.Close()
 		}
 		if db1 != nil {
 			db1.Exec("DROP DATABASE " + dbName + "")
