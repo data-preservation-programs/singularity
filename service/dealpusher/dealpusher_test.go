@@ -108,14 +108,45 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		defer cancel()
 		provider := "f0miner"
 		client := "f0client"
+		
+		// Create preparation first
+		prep := model.Preparation{
+			Name: "test-prep",
+		}
+		err = db.Create(&prep).Error
+		require.NoError(t, err)
+		
+		// Create storage
+		storage := model.Storage{
+			Name: "test-storage",
+			Type: "local",
+			Path: t.TempDir(),
+		}
+		err = db.Create(&storage).Error
+		require.NoError(t, err)
+		
+		// Create source attachment
+		attachment := model.SourceAttachment{
+			PreparationID: prep.ID,
+			StorageID:     storage.ID,
+		}
+		err = db.Create(&attachment).Error
+		require.NoError(t, err)
+		
+		// Add the wallet to the preparation
+		wallet := model.Wallet{
+			ActorID: client,
+			Address: "f0xx",
+		}
+		err = db.Create(&wallet).Error
+		require.NoError(t, err)
+		
+		// Associate wallet with preparation
+		err = db.Model(&prep).Association("Wallets").Append(&wallet)
+		require.NoError(t, err)
+		
 		schedule := model.Schedule{
-			Preparation: &model.Preparation{
-				SourceStorages: []model.Storage{{}},
-				Wallets: []model.Wallet{
-					{
-						ActorID: client, Address: "f0xx",
-					},
-				}},
+			PreparationID:        prep.ID,
 			State:                model.ScheduleActive,
 			Provider:             provider,
 			MaxPendingDealNumber: 2,
@@ -130,8 +161,8 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		}
 		err = db.Create([]model.Car{
 			{
-				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				AttachmentID:  &attachment.ID,
+				PreparationID: prep.ID,
 				PieceCID:      pieceCIDs[0],
 				PieceSize:     1024,
 				StoragePath:   "0",

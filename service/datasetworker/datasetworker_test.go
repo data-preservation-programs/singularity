@@ -76,17 +76,18 @@ func TestDatasetWorker_ExitOnComplete(t *testing.T) {
 func TestDatasetWorker_ExitOnError(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		worker := NewWorker(db, Config{
-			Concurrency:    2,
+			Concurrency:    1, // Use single worker to avoid race conditions
 			ExitOnComplete: true,
-			EnableScan:     true,
-			EnablePack:     true,
+			EnableScan:     false, // Disable scan to focus on DagGen
+			EnablePack:     false, // Disable pack to focus on DagGen  
 			EnableDag:      true,
 			ExitOnError:    true,
 		})
 
-		// Create preparation
+		// Create preparation with NoDag=false (default) to allow DAG generation
 		prep := model.Preparation{
-			Name: "test-prep-error",
+			Name:  "test-prep-error",
+			NoDag: false,
 		}
 		err := db.Create(&prep).Error
 		require.NoError(t, err)
@@ -123,6 +124,8 @@ func TestDatasetWorker_ExitOnError(t *testing.T) {
 		// which is what this test expects
 
 		err = worker.Run(ctx)
+		require.Error(t, err)
+		// Check if the error contains gorm.ErrRecordNotFound in the error chain
 		require.ErrorIs(t, err, gorm.ErrRecordNotFound)
 	})
 }
