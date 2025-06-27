@@ -117,7 +117,7 @@ func TestCreateHandler(t *testing.T) {
 			// Create a mock client that returns a different valid actor ID
 			mismatchMockClient := testutil.NewMockLotusClient()
 			mismatchMockClient.SetResponse("Filecoin.StateLookupID", "f0123456")
-			
+
 			_, err := Default.CreateHandler(ctx, db, mismatchMockClient, CreateRequest{
 				Address: testutil.TestWalletAddr,
 				ActorID: "f0999999",

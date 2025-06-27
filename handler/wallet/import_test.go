@@ -16,7 +16,7 @@ func TestImportHandler(t *testing.T) {
 		t.Run("success", func(t *testing.T) {
 			mockClient := testutil.NewMockLotusClient()
 			mockClient.SetResponse("Filecoin.StateLookupID", testutil.TestWalletActorID)
-			
+
 			w, err := Default.ImportHandler(ctx, db, mockClient, ImportRequest{
 				PrivateKey: testutil.TestPrivateKeyHex,
 			})

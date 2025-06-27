@@ -39,7 +39,7 @@ func TestInitHandler(t *testing.T) {
 			// Create mock client that returns an error for uninitialized address
 			errorMockClient := testutil.NewMockLotusClient()
 			errorMockClient.SetError("Filecoin.StateLookupID", errors.New("actor not found"))
-			
+
 			err := db.Create(&model.Wallet{
 				Address: "f100",
 			}).Error
