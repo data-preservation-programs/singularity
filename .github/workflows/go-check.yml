@@ -15,12 +15,10 @@ concurrency:
 
 jobs:
   go-check:
-    steps:
-      - name: Install staticcheck
-        run: go install honnef.co/go/tools/cmd/staticcheck@latest
-
-      - name: Run go check
-        uses: ipdxco/unified-github-workflows/.github/workflows/go-check.yml@v1.0.22
+    uses: ipdxco/unified-github-workflows/.github/workflows/go-check.yml@v1.0.22
+    with:
+      pre-run: |
+        go install honnef.co/go/tools/cmd/staticcheck@latest
 
   staticcheck:
     runs-on: ubuntu-latest
