@@ -1,6 +1,8 @@
 package dealtemplate
 
 import (
+	"fmt"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -23,6 +25,19 @@ var ListCmd = &cli.Command{
 		templates, err := dealtemplate.Default.ListHandler(c.Context, db)
 		if err != nil {
 			return errors.WithStack(err)
+		}
+
+		// Handle empty results
+		if len(templates) == 0 {
+			if !c.Bool("json") {
+				fmt.Println("No deal templates found.")
+				return nil
+			}
+		} else {
+			// Print summary for non-JSON output
+			if !c.Bool("json") {
+				fmt.Printf("✓ %d deal template(s) found.\n\n", len(templates))
+			}
 		}
 
 		cliutil.Print(c, templates)

@@ -12,10 +12,18 @@ var DeleteCmd = &cli.Command{
 	Usage:     "Delete a deal template by ID or name",
 	Category:  "Deal Template Management",
 	ArgsUsage: "<template_id_or_name>",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:  "force",
+			Usage: "Force deletion without confirmation",
+		},
+	},
 	Action: func(c *cli.Context) error {
 		if c.NArg() != 1 {
 			return errors.New("template ID or name is required")
 		}
+
+		templateIdentifier := c.Args().First()
 
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
@@ -24,11 +32,13 @@ var DeleteCmd = &cli.Command{
 		defer closer.Close()
 		db = db.WithContext(c.Context)
 
-		err = dealtemplate.Default.DeleteHandler(c.Context, db, c.Args().First())
+		err = dealtemplate.Default.DeleteHandler(c.Context, db, templateIdentifier)
 		if err != nil {
 			return errors.WithStack(err)
 		}
 
+		// Print success confirmation
+		println("✓ Deal template \"" + templateIdentifier + "\" deleted successfully")
 		return nil
 	},
 }

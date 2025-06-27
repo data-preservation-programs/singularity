@@ -94,6 +94,7 @@ var PrepCmd = &cli.Command{
 		// Disable workflow orchestrator to prevent automatic job progression
 		// We manage job progression manually in ez-prep
 		workflow.DefaultOrchestrator.SetEnabled(false)
+		fmt.Println("⚠️  Workflow orchestrator disabled: manual job progression enabled for ez-prep.")
 
 		// Step 2, create a preparation
 		outputDir := c.String("output-dir")

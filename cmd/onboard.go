@@ -166,6 +166,11 @@ This is the simplest way to onboard data from source to storage deals.`,
 			return errors.Wrap(err, msg)
 		}
 
+		// Validate CLI inputs before proceeding
+		if err := validateOnboardInputs(c); err != nil {
+			return outputJSONError("input validation failed", err)
+		}
+
 		if !isJSON {
 			fmt.Println("🚀 Starting unified data onboarding...")
 		}
@@ -198,6 +203,13 @@ This is the simplest way to onboard data from source to storage deals.`,
 		workflow.DefaultOrchestrator.SetEnabled(true)
 		if !isJSON {
 			fmt.Println("✓ Automatic job progression enabled (scan → pack → daggen → deals)")
+		} else {
+			// Include orchestration state in JSON output
+			result := OnboardResult{
+				Success: true,
+				// WorkflowOrchestrationEnabled will be set to true in final output
+			}
+			_ = result // Use later in final output
 		}
 
 		// Step 3: Start workers if requested
@@ -563,4 +575,82 @@ func createLocalStorageIfNotExist(ctx context.Context, db *gorm.DB, path, prefix
 	}
 
 	return storage, nil
+}
+
+// validateOnboardInputs validates CLI inputs for onboard command
+func validateOnboardInputs(c *cli.Context) error {
+	// Required fields validation
+	if c.String("name") == "" {
+		return errors.New("preparation name is required (--name)")
+	}
+
+	// Source and output validation
+	sourcePaths := c.StringSlice("source")
+	outputPaths := c.StringSlice("output")
+
+	if len(sourcePaths) == 0 {
+		return errors.New("at least one source path is required (--source)")
+	}
+
+	if len(outputPaths) == 0 {
+		return errors.New("at least one output path is required (--output)")
+	}
+
+	// Auto-deal validation
+	if c.Bool("auto-create-deals") {
+		// Deal provider is required when auto-create-deals is enabled
+		if c.String("deal-provider") == "" {
+			return errors.New("deal provider is required when auto-create-deals is enabled (--deal-provider)")
+		}
+
+		// Validate deal duration
+		if c.Duration("deal-duration") <= 0 {
+			return errors.New("deal duration must be positive when auto-create-deals is enabled (--deal-duration)")
+		}
+
+		// Validate deal start delay is non-negative
+		if c.Duration("deal-start-delay") < 0 {
+			return errors.New("deal start delay cannot be negative (--deal-start-delay)")
+		}
+
+		// Validate at least one pricing method is specified
+		pricePerGB := c.Float64("deal-price-per-gb")
+		pricePerDeal := c.Float64("deal-price-per-deal")
+		pricePerGBEpoch := c.Float64("deal-price-per-gb-epoch")
+
+		if pricePerGB == 0 && pricePerDeal == 0 && pricePerGBEpoch == 0 {
+			return errors.New("at least one pricing method must be specified when auto-create-deals is enabled (--deal-price-per-gb, --deal-price-per-deal, or --deal-price-per-gb-epoch)")
+		}
+
+		// Validate prices are non-negative
+		if pricePerGB < 0 {
+			return errors.New("deal price per GB must be non-negative (--deal-price-per-gb)")
+		}
+		if pricePerDeal < 0 {
+			return errors.New("deal price per deal must be non-negative (--deal-price-per-deal)")
+		}
+		if pricePerGBEpoch < 0 {
+			return errors.New("deal price per GB epoch must be non-negative (--deal-price-per-gb-epoch)")
+		}
+
+		// Validate deal provider format (should start with 'f0' or 't0')
+		dealProvider := c.String("deal-provider")
+		if len(dealProvider) < 3 || (dealProvider[:2] != "f0" && dealProvider[:2] != "t0") {
+			return errors.New("deal provider must be a valid storage provider ID (e.g., f01234 or t01234)")
+		}
+	}
+
+	// Validate max-size format if provided
+	if maxSize := c.String("max-size"); maxSize != "" {
+		if _, err := util.ParseSize(maxSize); err != nil {
+			return errors.Wrapf(err, "invalid max-size format")
+		}
+	}
+
+	// Validate worker count
+	if maxWorkers := c.Int("max-workers"); maxWorkers < 1 {
+		return errors.New("max workers must be at least 1")
+	}
+
+	return nil
 }

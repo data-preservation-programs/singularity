@@ -107,13 +107,13 @@ func (m *ModelPreparation) Validate(formats strfmt.Registry) error {
 func (m *ModelPreparation) validateURLTemplate(template string) error {
 	// Check if template contains required placeholders
 	if !strings.Contains(template, "{PIECE_CID}") {
-		return errors.New(400, "validation failed", "dealURLTemplate must contain {PIECE_CID} placeholder")
+		return errors.New(400, "dealURLTemplate must contain {PIECE_CID} placeholder")
 	}
 
 	// Try to parse the URL with a sample piece CID
 	sampleURL := strings.ReplaceAll(template, "{PIECE_CID}", "baga6ea4seaqbase32cid")
 	if _, err := url.Parse(sampleURL); err != nil {
-		return errors.New(400, "validation failed", fmt.Sprintf("dealURLTemplate is not a valid URL template: %v", err))
+		return errors.New(400, fmt.Sprintf("dealURLTemplate is not a valid URL template: %v", err))
 	}
 
 	return nil
@@ -144,24 +144,24 @@ func (m *ModelPreparation) validatePreparationConsistency() error {
 	// Validate piece size constraints
 	if m.MinPieceSize > 0 && m.PieceSize > 0 {
 		if m.MinPieceSize > m.PieceSize {
-			return errors.New(400, "validation failed", "minPieceSize cannot be greater than pieceSize")
+			return errors.New(400, "minPieceSize cannot be greater than pieceSize")
 		}
 	}
 
 	// Validate max size constraint
 	if m.MaxSize > 0 && m.PieceSize > 0 {
 		if m.MaxSize < m.PieceSize {
-			return errors.New(400, "validation failed", "maxSize cannot be less than pieceSize")
+			return errors.New(400, "maxSize cannot be less than pieceSize")
 		}
 	}
 
 	// Validate storage requirements
 	if len(m.SourceStorages) == 0 {
-		return errors.New(400, "validation failed", "at least one source storage must be specified")
+		return errors.New(400, "at least one source storage must be specified")
 	}
 
 	if len(m.OutputStorages) == 0 {
-		return errors.New(400, "validation failed", "at least one output storage must be specified")
+		return errors.New(400, "at least one output storage must be specified")
 	}
 
 	return nil
@@ -180,7 +180,7 @@ func (m *ModelPreparation) validateDealConfig(formats strfmt.Registry) error {
 			m.DealConfig.DealPricePerGbEpoch > 0 ||
 			m.DealConfig.DealURLTemplate != "" ||
 			m.DealConfig.DealHTTPHeaders != nil {
-			return errors.New(400, "validation failed", "cannot specify both deal template and deal configuration fields")
+			return errors.New(400, "cannot specify both deal template and deal configuration fields")
 		}
 	}
 
@@ -193,22 +193,22 @@ func (m *ModelPreparation) validateDealConfig(formats strfmt.Registry) error {
 
 		// Validate storage provider format (should start with 'f0' or 't0')
 		if !strings.HasPrefix(m.DealConfig.DealProvider, "f0") && !strings.HasPrefix(m.DealConfig.DealProvider, "t0") {
-			return errors.New(400, "validation failed", "dealProvider must be a valid storage provider ID (e.g., f01234 or t01234)")
+			return errors.New(400, "dealProvider must be a valid storage provider ID (e.g., f01234 or t01234)")
 		}
 
 		// Validate deal duration
 		if m.DealConfig.DealDuration <= 0 {
-			return errors.New(400, "validation failed", "dealDuration must be positive when auto-creating deals")
+			return errors.New(400, "dealDuration must be positive when auto-creating deals")
 		}
 
 		// Validate deal start delay
 		if m.DealConfig.DealStartDelay < 0 {
-			return errors.New(400, "validation failed", "dealStartDelay cannot be negative")
+			return errors.New(400, "dealStartDelay cannot be negative")
 		}
 
 		// Validate pricing - at least one pricing method should be specified
 		if m.DealConfig.DealPricePerDeal == 0 && m.DealConfig.DealPricePerGb == 0 && m.DealConfig.DealPricePerGbEpoch == 0 {
-			return errors.New(400, "validation failed", "at least one pricing method must be specified (dealPricePerDeal, dealPricePerGb, or dealPricePerGbEpoch)")
+			return errors.New(400, "at least one pricing method must be specified (dealPricePerDeal, dealPricePerGb, or dealPricePerGbEpoch)")
 		}
 
 		// Validate URL template if provided

@@ -83,6 +83,11 @@ var CreateCmd = &cli.Command{
 		defer closer.Close()
 		db = db.WithContext(c.Context)
 
+		// Validate inputs
+		if err := validateCreateTemplateInputs(c); err != nil {
+			return errors.Wrap(err, "validation failed")
+		}
+
 		// Parse deal HTTP headers if provided
 		var dealHTTPHeaders model.ConfigMap
 		if headersStr := c.String("deal-http-headers"); headersStr != "" {
@@ -112,7 +117,66 @@ var CreateCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
+		// Print success confirmation
+		if !c.Bool("json") {
+			println("✓ Deal template \"" + template.Name + "\" created successfully")
+		}
+
 		cliutil.Print(c, *template)
 		return nil
 	},
+}
+
+// validateCreateTemplateInputs validates the inputs for creating a deal template
+func validateCreateTemplateInputs(c *cli.Context) error {
+	// Name is already required by CLI framework, but let's be explicit
+	if c.String("name") == "" {
+		return errors.New("template name is required")
+	}
+
+	// Validate pricing fields are non-negative
+	if c.Float64("deal-price-per-gb") < 0 {
+		return errors.New("deal price per GB must be non-negative")
+	}
+	if c.Float64("deal-price-per-gb-epoch") < 0 {
+		return errors.New("deal price per GB epoch must be non-negative")
+	}
+	if c.Float64("deal-price-per-deal") < 0 {
+		return errors.New("deal price per deal must be non-negative")
+	}
+
+	// Validate durations are non-negative
+	if c.Duration("deal-duration") < 0 {
+		return errors.New("deal duration cannot be negative")
+	}
+	if c.Duration("deal-start-delay") < 0 {
+		return errors.New("deal start delay cannot be negative")
+	}
+
+	// Validate deal provider format if provided
+	if provider := c.String("deal-provider"); provider != "" {
+		if len(provider) < 3 || (provider[:2] != "f0" && provider[:2] != "t0") {
+			return errors.New("deal provider must be a valid storage provider ID (e.g., f01234 or t01234)")
+		}
+	}
+
+	// Validate HTTP headers if provided
+	if headersStr := c.String("deal-http-headers"); headersStr != "" {
+		var tempMap map[string]string
+		if err := json.Unmarshal([]byte(headersStr), &tempMap); err != nil {
+			return errors.Wrapf(err, "invalid JSON format for deal-http-headers")
+		}
+
+		// Validate header keys and values
+		for key, value := range tempMap {
+			if key == "" {
+				return errors.New("HTTP header keys cannot be empty")
+			}
+			if value == "" {
+				return errors.New("HTTP header values cannot be empty")
+			}
+		}
+	}
+
+	return nil
 }
