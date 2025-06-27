@@ -35,6 +35,17 @@ type DagGenerator struct {
 	noInline     bool
 }
 
+func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID model.SourceAttachmentID, root cid.Cid, noInline bool) *DagGenerator {
+	return &DagGenerator{
+		ctx:          ctx,
+		db:           db,
+		attachmentID: attachmentID,
+		root:         root,
+		dirCIDs:      make(map[model.DirectoryID]model.CID),
+		noInline:     noInline,
+	}
+}
+
 // Read implements the io.Reader interface for the DagGenerator. It generates
 // a CAR (Content Addressable Archive) representation of directories from a database,
 // which can be read in chunks using the provided byte slice.
@@ -134,17 +145,6 @@ func (d *DagGenerator) Close() error {
 		return errors.WithStack(d.rows.Close())
 	}
 	return nil
-}
-
-func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID model.SourceAttachmentID, root cid.Cid, noInline bool) *DagGenerator {
-	return &DagGenerator{
-		ctx:          ctx,
-		db:           db,
-		attachmentID: attachmentID,
-		root:         root,
-		dirCIDs:      make(map[model.DirectoryID]model.CID),
-		noInline:     noInline,
-	}
 }
 
 var ErrDagNotReady = errors.New("dag is not ready to be generated")

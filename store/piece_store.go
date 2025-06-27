@@ -57,6 +57,102 @@ type PieceReader struct {
 	blockIndex int
 }
 
+// NewPieceReader creates a new instance of PieceReader for reading piece content.
+//
+// The NewPieceReader function performs several validation checks:
+//   - Ensures that the list of carBlocks is not empty.
+//   - Validates that the first block starts at the correct position (after the CAR header).
+//   - Validates that the last block ends at the expected position (end of the CAR file).
+//   - Validates that all blocks are contiguous.
+//   - Validates that the varint lengths are consistent.
+//   - Validates that the block lengths match the varints.
+//   - Validates that any blocks that reference files have those files provided in the files slice.
+//
+// After these validations, it creates and initializes a storagesystem.Handler and
+// returns a new PieceReader instance configured with the provided data.
+//
+// Parameters:
+//   - ctx: The context for the PieceReader.
+//   - car: The Car model that contains metadata about the CAR file.
+//   - storage: The Storage model that contains information about the storage backend.
+//   - carBlocks: A slice of CarBlocks that define the structure of the CAR file.
+//   - files: A slice of Files that are referenced by the carBlocks.
+//
+// Returns:
+//   - A new PieceReader that has been initialized with the provided data, and an error if the initialization failed.
+func NewPieceReader(
+	ctx context.Context,
+	car model.Car,
+	storage model.Storage,
+	carBlocks []model.CarBlock,
+	files []model.File,
+) (
+	*PieceReader,
+	error,
+) {
+	// Sanitize carBlocks
+	if len(carBlocks) == 0 {
+		return nil, ErrNoCarBlocks
+	}
+
+	filesMap := make(map[model.FileID]model.File)
+	for _, file := range files {
+		filesMap[file.ID] = file
+	}
+
+	header, err := util.GenerateCarHeader(cid.Cid(car.RootCID))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to generate car header")
+	}
+
+	if carBlocks[0].CarOffset != int64(len(header)) {
+		return nil, errors.Wrapf(ErrInvalidStartOffset, "expected %d, got %d", len(header), carBlocks[0].CarOffset)
+	}
+
+	lastBlock := carBlocks[len(carBlocks)-1]
+	if lastBlock.CarOffset+int64(lastBlock.CarBlockLength) != car.FileSize {
+		return nil, errors.Wrapf(ErrInvalidEndOffset, "expected %d, got %d", car.FileSize, lastBlock.CarOffset+int64(lastBlock.CarBlockLength))
+	}
+
+	for i := range carBlocks {
+		if i != len(carBlocks)-1 {
+			if carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength) != carBlocks[i+1].CarOffset {
+				return nil, errors.Wrapf(ErrIncontiguousBlocks, "previous offset %d, next offset %d", carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength), carBlocks[i+1].CarOffset)
+			}
+		}
+		vint, read, err := varint.FromUvarint(carBlocks[i].Varint)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to parse varint")
+		}
+		if read != len(carBlocks[i].Varint) {
+			return nil, errors.Wrapf(ErrInvalidVarintLength, "expected %d, got %d", len(carBlocks[i].Varint), read)
+		}
+		if uint64(carBlocks[i].BlockLength()) != vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()) {
+			return nil, errors.Wrapf(ErrVarintDoesNotMatchBlockLength, "expected %d, got %d", carBlocks[i].BlockLength(), vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()))
+		}
+		if carBlocks[i].FileID != nil {
+			if _, ok := filesMap[*carBlocks[i].FileID]; !ok {
+				return nil, ErrFileNotProvided
+			}
+		}
+	}
+
+	handler, err := storagesystem.NewRCloneHandler(ctx, storage)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return &PieceReader{
+		ctx:        ctx,
+		header:     header,
+		fileSize:   car.FileSize,
+		handler:    handler,
+		carBlocks:  carBlocks,
+		files:      filesMap,
+		blockIndex: -1,
+	}, nil
+}
+
 // Seek is a method on the PieceReader struct that changes the position of the reader.
 // It takes an offset and a 'whence' value as input, similar to the standard io.Seeker interface.
 // The offset is added to the position determined by 'whence'.
@@ -127,95 +223,6 @@ func (pr *PieceReader) Clone() *PieceReader {
 	//nolint:errcheck
 	reader.Seek(0, io.SeekStart)
 	return reader
-}
-
-// NewPieceReader is a function that creates a new PieceReader.
-// It takes a context, a Car model, a Source model, a slice of CarBlock models, a slice of File models, and a HandlerResolver as input.
-// It validates the input data and returns an error if any of it is invalid.
-// The returned PieceReader starts at the beginning of the data (position 0).
-//
-// Parameters:
-//   - ctx: The context for the new PieceReader. This can be used to cancel operations or set deadlines.
-//   - car: A Car model that represents the CAR (Content Addressable Archive) file being read.
-//   - source: A Source model that represents the source of the data.
-//   - carBlocks: A slice of CarBlock models that represent the blocks of data in the CAR file.
-//   - files: A slice of File models that represent the files of data being read.
-//   - resolver: A HandlerResolver that is used to resolve the handler for the source of the data.
-//
-// Returns:
-//   - A new PieceReader that has been initialized with the provided data, and an error if the initialization failed.
-func NewPieceReader(
-	ctx context.Context,
-	car model.Car,
-	storage model.Storage,
-	carBlocks []model.CarBlock,
-	files []model.File,
-) (
-	*PieceReader,
-	error,
-) {
-	// Sanitize carBlocks
-	if len(carBlocks) == 0 {
-		return nil, ErrNoCarBlocks
-	}
-
-	filesMap := make(map[model.FileID]model.File)
-	for _, file := range files {
-		filesMap[file.ID] = file
-	}
-
-	header, err := util.GenerateCarHeader(cid.Cid(car.RootCID))
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to generate car header")
-	}
-
-	if carBlocks[0].CarOffset != int64(len(header)) {
-		return nil, errors.Wrapf(ErrInvalidStartOffset, "expected %d, got %d", len(header), carBlocks[0].CarOffset)
-	}
-
-	lastBlock := carBlocks[len(carBlocks)-1]
-	if lastBlock.CarOffset+int64(lastBlock.CarBlockLength) != car.FileSize {
-		return nil, errors.Wrapf(ErrInvalidEndOffset, "expected %d, got %d", car.FileSize, lastBlock.CarOffset+int64(lastBlock.CarBlockLength))
-	}
-
-	for i := range carBlocks {
-		if i != len(carBlocks)-1 {
-			if carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength) != carBlocks[i+1].CarOffset {
-				return nil, errors.Wrapf(ErrIncontiguousBlocks, "previous offset %d, next offset %d", carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength), carBlocks[i+1].CarOffset)
-			}
-		}
-		vint, read, err := varint.FromUvarint(carBlocks[i].Varint)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to parse varint")
-		}
-		if read != len(carBlocks[i].Varint) {
-			return nil, errors.Wrapf(ErrInvalidVarintLength, "expected %d, got %d", len(carBlocks[i].Varint), read)
-		}
-		if uint64(carBlocks[i].BlockLength()) != vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()) {
-			return nil, errors.Wrapf(ErrVarintDoesNotMatchBlockLength, "expected %d, got %d", carBlocks[i].BlockLength(), vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()))
-		}
-		if carBlocks[i].RawBlock == nil {
-			_, ok := filesMap[*carBlocks[i].FileID]
-			if !ok {
-				return nil, ErrFileNotProvided
-			}
-		}
-	}
-
-	handler, err := storagesystem.NewRCloneHandler(ctx, storage)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	return &PieceReader{
-		ctx:        ctx,
-		header:     header,
-		fileSize:   car.FileSize,
-		handler:    handler,
-		carBlocks:  carBlocks,
-		files:      filesMap,
-		blockIndex: -1,
-	}, nil
 }
 
 // Read is a method on the PieceReader struct that reads data into the provided byte slice.

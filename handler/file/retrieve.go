@@ -283,16 +283,6 @@ func (r *filecoinReader) Close() error {
 	return err
 }
 
-func findFileRanges(db *gorm.DB, id uint64, startRange int64, endRange int64) ([]model.FileRange, error) {
-	var fileRanges []model.FileRange
-	err := db.Model(&model.FileRange{}).Where("file_ranges.file_id = ? AND file_ranges.offset < ? AND (file_ranges.offset+file_ranges.length) > ?", id, endRange, startRange).
-		Order("file_ranges.offset ASC").Find(&fileRanges).Error
-	if err != nil {
-		return nil, err
-	}
-	return fileRanges, nil
-}
-
 type deal struct {
 	Provider string
 }
@@ -313,4 +303,14 @@ func findProviders(db *gorm.DB, jobID model.JobID) ([]string, error) {
 		providers = append(providers, deal.Provider)
 	}
 	return providers, nil
+}
+
+func findFileRanges(db *gorm.DB, id uint64, startRange int64, endRange int64) ([]model.FileRange, error) {
+	var fileRanges []model.FileRange
+	err := db.Model(&model.FileRange{}).Where("file_ranges.file_id = ? AND file_ranges.offset < ? AND (file_ranges.offset+file_ranges.length) > ?", id, endRange, startRange).
+		Order("file_ranges.offset ASC").Find(&fileRanges).Error
+	if err != nil {
+		return nil, err
+	}
+	return fileRanges, nil
 }

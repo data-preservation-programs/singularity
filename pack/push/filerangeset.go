@@ -13,20 +13,20 @@ type FileRangeSet struct {
 
 var carHeaderSize = len(packutil.EmptyCarHeader)
 
-func (r *FileRangeSet) CarSize() int64 {
-	return r.carSize
-}
-
-func (r *FileRangeSet) FileRanges() []model.FileRange {
-	return r.fileRanges
-}
-
 func NewFileRangeSet() *FileRangeSet {
 	return &FileRangeSet{
 		fileRanges: make([]model.FileRange, 0),
 		// Some buffer for header
 		carSize: int64(carHeaderSize),
 	}
+}
+
+func (r *FileRangeSet) CarSize() int64 {
+	return r.carSize
+}
+
+func (r *FileRangeSet) FileRanges() []model.FileRange {
+	return r.fileRanges
 }
 
 func (r *FileRangeSet) Add(fileRanges ...model.FileRange) {

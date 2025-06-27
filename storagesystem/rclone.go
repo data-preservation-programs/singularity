@@ -39,6 +39,68 @@ type RCloneHandler struct {
 	scanConcurrency         int
 }
 
+func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, error) {
+	_, ok := BackendMap[s.Type]
+	registry, err := fs.Find(s.Type)
+	if !ok || err != nil {
+		return nil, errors.Wrapf(ErrBackendNotSupported, "type: %s", s.Type)
+	}
+
+	ctx, _ = fs.AddConfig(ctx)
+	config := fs.GetConfig(ctx)
+	overrideConfig(config, s)
+
+	noHeadObjectConfig := make(map[string]string)
+	headObjectConfig := make(map[string]string)
+	for k, v := range s.Config {
+		noHeadObjectConfig[k] = v
+		headObjectConfig[k] = v
+	}
+	noHeadObjectConfig["no_head_object"] = "true"
+	headObjectConfig["no_head_object"] = "false"
+
+	noHeadFS, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(noHeadObjectConfig))
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
+	}
+
+	headFS, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(headObjectConfig))
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
+	}
+
+	scanConcurrency := 1
+	if s.ClientConfig.ScanConcurrency != nil {
+		scanConcurrency = *s.ClientConfig.ScanConcurrency
+	}
+
+	handler := &RCloneHandler{
+		name:                    s.Name,
+		fs:                      headFS,
+		fsNoHead:                noHeadFS,
+		retryMaxCount:           10,
+		retryDelay:              time.Second,
+		retryBackoff:            time.Second,
+		retryBackoffExponential: 1.0,
+		scanConcurrency:         scanConcurrency,
+	}
+
+	if s.ClientConfig.RetryMaxCount != nil {
+		handler.retryMaxCount = *s.ClientConfig.RetryMaxCount
+	}
+	if s.ClientConfig.RetryDelay != nil {
+		handler.retryDelay = *s.ClientConfig.RetryDelay
+	}
+	if s.ClientConfig.RetryBackoff != nil {
+		handler.retryBackoff = *s.ClientConfig.RetryBackoff
+	}
+	if s.ClientConfig.RetryBackoffExponential != nil {
+		handler.retryBackoffExponential = *s.ClientConfig.RetryBackoffExponential
+	}
+
+	return handler, nil
+}
+
 func (h RCloneHandler) Name() string {
 	return h.name
 }
@@ -236,68 +298,6 @@ func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, leng
 		Reader: io.LimitReader(readerWithRetry, length),
 		Closer: readerWithRetry,
 	}, object, errors.WithStack(err)
-}
-
-func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, error) {
-	_, ok := BackendMap[s.Type]
-	registry, err := fs.Find(s.Type)
-	if !ok || err != nil {
-		return nil, errors.Wrapf(ErrBackendNotSupported, "type: %s", s.Type)
-	}
-
-	ctx, _ = fs.AddConfig(ctx)
-	config := fs.GetConfig(ctx)
-	overrideConfig(config, s)
-
-	noHeadObjectConfig := make(map[string]string)
-	headObjectConfig := make(map[string]string)
-	for k, v := range s.Config {
-		noHeadObjectConfig[k] = v
-		headObjectConfig[k] = v
-	}
-	noHeadObjectConfig["no_head_object"] = "true"
-	headObjectConfig["no_head_object"] = "false"
-
-	noHeadFS, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(noHeadObjectConfig))
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
-	}
-
-	headFS, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(headObjectConfig))
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
-	}
-
-	scanConcurrency := 1
-	if s.ClientConfig.ScanConcurrency != nil {
-		scanConcurrency = *s.ClientConfig.ScanConcurrency
-	}
-
-	handler := &RCloneHandler{
-		name:                    s.Name,
-		fs:                      headFS,
-		fsNoHead:                noHeadFS,
-		retryMaxCount:           10,
-		retryDelay:              time.Second,
-		retryBackoff:            time.Second,
-		retryBackoffExponential: 1.0,
-		scanConcurrency:         scanConcurrency,
-	}
-
-	if s.ClientConfig.RetryMaxCount != nil {
-		handler.retryMaxCount = *s.ClientConfig.RetryMaxCount
-	}
-	if s.ClientConfig.RetryDelay != nil {
-		handler.retryDelay = *s.ClientConfig.RetryDelay
-	}
-	if s.ClientConfig.RetryBackoff != nil {
-		handler.retryBackoff = *s.ClientConfig.RetryBackoff
-	}
-	if s.ClientConfig.RetryBackoffExponential != nil {
-		handler.retryBackoffExponential = *s.ClientConfig.RetryBackoffExponential
-	}
-
-	return handler, nil
 }
 
 func overrideConfig(config *fs.ConfigInfo, s model.Storage) {

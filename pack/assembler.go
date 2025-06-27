@@ -56,18 +56,6 @@ type Assembler struct {
 	fileLengthCorrection  map[model.FileID]int64
 }
 
-// Close closes the assembler and all of its underlying readers
-func (a *Assembler) Close() error {
-	if a.fileReadCloser != nil {
-		err := a.fileReadCloser.Close()
-		if err != nil {
-			return errors.WithStack(err)
-		}
-		a.fileReadCloser = nil
-	}
-	return nil
-}
-
 // NewAssembler initializes a new Assembler instance with the given parameters.
 func NewAssembler(ctx context.Context, reader storagesystem.Reader,
 	fileRanges []model.FileRange, noInline bool, skipInaccessibleFiles bool,
@@ -82,6 +70,18 @@ func NewAssembler(ctx context.Context, reader storagesystem.Reader,
 		skipInaccessibleFiles: skipInaccessibleFiles,
 		fileLengthCorrection:  make(map[model.FileID]int64),
 	}
+}
+
+// Close closes the assembler and all of its underlying readers
+func (a *Assembler) Close() error {
+	if a.fileReadCloser != nil {
+		err := a.fileReadCloser.Close()
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		a.fileReadCloser = nil
+	}
+	return nil
 }
 
 // readBuffer reads data from the internal buffer, handling buffer-related flags and states.

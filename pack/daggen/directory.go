@@ -38,6 +38,28 @@ func NewDirectoryTree() DirectoryTree {
 	}
 }
 
+// NewDirectoryData creates and initializes a new DirectoryData instance.
+// This function:
+//  1. Creates a new in-memory map datastore.
+//  2. Initializes a new blockstore with the created datastore.
+//  3. Initializes a new DAG service with the blockstore.
+//  4. Creates a new directory with the DAG service and sets its CID (Content Identifier) builder.
+//
+// Returns:
+//
+//   - DirectoryData : A new DirectoryData instance with the initialized directory, blockstore, and a dirty node flag set to true.
+func NewDirectoryData() DirectoryData {
+	dagServ := NewRecordedDagService()
+	dir := uio.NewDirectory(dagServ)
+	dir.SetCidBuilder(merkledag.V1CidPrefix())
+	return DirectoryData{
+		dir:        dir,
+		nodeDirty:  true,
+		dagServ:    dagServ,
+		additional: make(map[cid.Cid][]byte),
+	}
+}
+
 func (t DirectoryTree) Cache() map[model.DirectoryID]*DirectoryDetail {
 	return t.cache
 }
@@ -158,28 +180,6 @@ func (d *DirectoryData) Node() (format.Node, error) {
 		d.nodeDirty = false
 	}
 	return d.node, nil
-}
-
-// NewDirectoryData creates and initializes a new DirectoryData instance.
-// This function:
-//  1. Creates a new in-memory map datastore.
-//  2. Initializes a new blockstore with the created datastore.
-//  3. Initializes a new DAG service with the blockstore.
-//  4. Creates a new directory with the DAG service and sets its CID (Content Identifier) builder.
-//
-// Returns:
-//
-//   - DirectoryData : A new DirectoryData instance with the initialized directory, blockstore, and a dirty node flag set to true.
-func NewDirectoryData() DirectoryData {
-	dagServ := NewRecordedDagService()
-	dir := uio.NewDirectory(dagServ)
-	dir.SetCidBuilder(merkledag.V1CidPrefix())
-	return DirectoryData{
-		dir:        dir,
-		nodeDirty:  true,
-		dagServ:    dagServ,
-		additional: make(map[cid.Cid][]byte),
-	}
 }
 
 // AddFile adds a new file to the directory with the specified name, content identifier (CID), and length.

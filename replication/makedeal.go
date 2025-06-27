@@ -84,14 +84,6 @@ type DealMakerImpl struct {
 	collateralCache *ttlcache.Cache[string, big.Int]
 }
 
-func (d DealMakerImpl) Close() error {
-	if d.host != nil {
-		return d.host.Close()
-	}
-
-	return nil
-}
-
 func NewDealMaker(
 	lotusClient jsonrpc.RPCClient,
 	libp2p host.Host,
@@ -116,6 +108,14 @@ func NewDealMaker(
 		protocolsCache:  protocolsCache,
 		collateralCache: collateralCache,
 	}
+}
+
+func (d DealMakerImpl) Close() error {
+	if d.host != nil {
+		return d.host.Close()
+	}
+
+	return nil
 }
 
 // GetProviderInfo retrieves information about a given Filecoin provider (miner).
