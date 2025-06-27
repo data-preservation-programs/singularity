@@ -224,8 +224,7 @@ func (m *MockLotusClient) CallFor(ctx context.Context, out interface{}, method s
 	}
 	if response, exists := m.responses[method]; exists {
 		// Simple type assertion for common response types
-		switch v := out.(type) {
-		case *string:
+		if v, ok := out.(*string); ok {
 			if str, ok := response.(string); ok {
 				*v = str
 			}
