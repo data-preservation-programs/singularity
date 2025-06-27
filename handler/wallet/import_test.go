@@ -31,7 +31,8 @@ func TestImportHandler(t *testing.T) {
 
 		t.Run("invalid key", func(t *testing.T) {
 			mockClient := testutil.NewMockLotusClient()
-			// This test should fail before the RPC call due to invalid private key
+			// Mock the RPC call to return "actor not found" for the invalid key
+			mockClient.SetError("Filecoin.StateLookupID", errors.New("3: actor not found"))
 			_, err := Default.ImportHandler(ctx, db, mockClient, ImportRequest{
 				PrivateKey: "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a22414141414141414141414141414141414141414141414141414141414141414141414141414141414141413d227d", // Valid hex, valid base64, but all zeros private key
 			})
