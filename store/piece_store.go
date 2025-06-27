@@ -57,90 +57,26 @@ type PieceReader struct {
 	blockIndex int
 }
 
-// Seek is a method on the PieceReader struct that changes the position of the reader.
-// It takes an offset and a 'whence' value as input, similar to the standard io.Seeker interface.
-// The offset is added to the position determined by 'whence'.
-//   - If 'whence' is io.SeekStart, the offset is from the start of the file.
-//   - If 'whence' is io.SeekCurrent, the offset is from the current position.
-//   - If 'whence' is io.SeekEnd, the offset is from the end of the file.
-//   - If the resulting position is negative or beyond the end of the file, an error is returned.
-//   - If a reader is currently open, it is closed before the position is changed.
+// NewPieceReader creates a new instance of PieceReader for reading piece content.
+//
+// The NewPieceReader function performs several validation checks:
+//   - Ensures that the list of carBlocks is not empty.
+//   - Validates that the first block starts at the correct position (after the CAR header).
+//   - Validates that the last block ends at the expected position (end of the CAR file).
+//   - Validates that all blocks are contiguous.
+//   - Validates that the varint lengths are consistent.
+//   - Validates that the block lengths match the varints.
+//   - Validates that any blocks that reference files have those files provided in the files slice.
+//
+// After these validations, it creates and initializes a storagesystem.Handler and
+// returns a new PieceReader instance configured with the provided data.
 //
 // Parameters:
-//   - offset: The offset to move the position by. Can be negative.
-//   - whence: The position to move the offset from. Must be one of io.SeekStart, io.SeekCurrent, or io.SeekEnd.
-//
-// Returns:
-//   - The new position after seeking, and an error if the seek operation failed.
-func (pr *PieceReader) Seek(offset int64, whence int) (int64, error) {
-	switch whence {
-	case io.SeekStart:
-		pr.pos = offset
-	case io.SeekCurrent:
-		pr.pos += offset
-	case io.SeekEnd:
-		pr.pos = pr.fileSize + offset
-	default:
-		return 0, ErrInvalidWhence
-	}
-	if pr.pos < 0 {
-		return 0, ErrNegativeOffset
-	}
-	if pr.pos > pr.fileSize {
-		return 0, ErrOffsetOutOfRange
-	}
-	if pr.reader != nil {
-		pr.reader.Close()
-		pr.reader = nil
-		pr.readerFor = 0
-	}
-
-	if pr.pos < int64(len(pr.header)) {
-		pr.blockIndex = -1
-	} else {
-		pr.blockIndex = sort.Search(len(pr.carBlocks), func(i int) bool {
-			return pr.carBlocks[i].CarOffset > pr.pos
-		}) - 1
-	}
-
-	return pr.pos, nil
-}
-
-// Clone is a method on the PieceReader struct that creates a new PieceReader with the same state as the original.
-// The new PieceReader starts at the beginning of the data (position 0).
-//
-// Returns:
-//   - A new PieceReader that has the same state as the original, but starting at position 0.
-func (pr *PieceReader) Clone() *PieceReader {
-	reader := &PieceReader{
-		ctx:        pr.ctx,
-		fileSize:   pr.fileSize,
-		header:     pr.header,
-		handler:    pr.handler,
-		carBlocks:  pr.carBlocks,
-		files:      pr.files,
-		reader:     pr.reader,
-		readerFor:  pr.readerFor,
-		pos:        pr.pos,
-		blockIndex: pr.blockIndex,
-	}
-	//nolint:errcheck
-	reader.Seek(0, io.SeekStart)
-	return reader
-}
-
-// NewPieceReader is a function that creates a new PieceReader.
-// It takes a context, a Car model, a Source model, a slice of CarBlock models, a slice of File models, and a HandlerResolver as input.
-// It validates the input data and returns an error if any of it is invalid.
-// The returned PieceReader starts at the beginning of the data (position 0).
-//
-// Parameters:
-//   - ctx: The context for the new PieceReader. This can be used to cancel operations or set deadlines.
-//   - car: A Car model that represents the CAR (Content Addressable Archive) file being read.
-//   - source: A Source model that represents the source of the data.
-//   - carBlocks: A slice of CarBlock models that represent the blocks of data in the CAR file.
-//   - files: A slice of File models that represent the files of data being read.
-//   - resolver: A HandlerResolver that is used to resolve the handler for the source of the data.
+//   - ctx: The context for the PieceReader.
+//   - car: The Car model that contains metadata about the CAR file.
+//   - storage: The Storage model that contains information about the storage backend.
+//   - carBlocks: A slice of CarBlocks that define the structure of the CAR file.
+//   - files: A slice of Files that are referenced by the carBlocks.
 //
 // Returns:
 //   - A new PieceReader that has been initialized with the provided data, and an error if the initialization failed.
@@ -194,9 +130,8 @@ func NewPieceReader(
 		if uint64(carBlocks[i].BlockLength()) != vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()) {
 			return nil, errors.Wrapf(ErrVarintDoesNotMatchBlockLength, "expected %d, got %d", carBlocks[i].BlockLength(), vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()))
 		}
-		if carBlocks[i].RawBlock == nil {
-			_, ok := filesMap[*carBlocks[i].FileID]
-			if !ok {
+		if carBlocks[i].FileID != nil {
+			if _, ok := filesMap[*carBlocks[i].FileID]; !ok {
 				return nil, ErrFileNotProvided
 			}
 		}
@@ -216,6 +151,78 @@ func NewPieceReader(
 		files:      filesMap,
 		blockIndex: -1,
 	}, nil
+}
+
+// Seek is a method on the PieceReader struct that changes the position of the reader.
+// It takes an offset and a 'whence' value as input, similar to the standard io.Seeker interface.
+// The offset is added to the position determined by 'whence'.
+//   - If 'whence' is io.SeekStart, the offset is from the start of the file.
+//   - If 'whence' is io.SeekCurrent, the offset is from the current position.
+//   - If 'whence' is io.SeekEnd, the offset is from the end of the file.
+//   - If the resulting position is negative or beyond the end of the file, an error is returned.
+//   - If a reader is currently open, it is closed before the position is changed.
+//
+// Parameters:
+//   - offset: The offset to move the position by. Can be negative.
+//   - whence: The position to move the offset from. Must be one of io.SeekStart, io.SeekCurrent, or io.SeekEnd.
+//
+// Returns:
+//   - The new position after seeking, and an error if the seek operation failed.
+func (pr *PieceReader) Seek(offset int64, whence int) (int64, error) {
+	switch whence {
+	case io.SeekStart:
+		pr.pos = offset
+	case io.SeekCurrent:
+		pr.pos += offset
+	case io.SeekEnd:
+		pr.pos = pr.fileSize + offset
+	default:
+		return 0, ErrInvalidWhence
+	}
+	if pr.pos < 0 {
+		return 0, ErrNegativeOffset
+	}
+	if pr.pos > pr.fileSize {
+		return 0, ErrOffsetOutOfRange
+	}
+	if pr.reader != nil {
+		_ = pr.reader.Close()
+		pr.reader = nil
+		pr.readerFor = 0
+	}
+
+	if pr.pos < int64(len(pr.header)) {
+		pr.blockIndex = -1
+	} else {
+		pr.blockIndex = sort.Search(len(pr.carBlocks), func(i int) bool {
+			return pr.carBlocks[i].CarOffset > pr.pos
+		}) - 1
+	}
+
+	return pr.pos, nil
+}
+
+// Clone is a method on the PieceReader struct that creates a new PieceReader with the same state as the original.
+// The new PieceReader starts at the beginning of the data (position 0).
+//
+// Returns:
+//   - A new PieceReader that has the same state as the original, but starting at position 0.
+func (pr *PieceReader) Clone() *PieceReader {
+	reader := &PieceReader{
+		ctx:        pr.ctx,
+		fileSize:   pr.fileSize,
+		header:     pr.header,
+		handler:    pr.handler,
+		carBlocks:  pr.carBlocks,
+		files:      pr.files,
+		reader:     pr.reader,
+		readerFor:  pr.readerFor,
+		pos:        pr.pos,
+		blockIndex: pr.blockIndex,
+	}
+	//nolint:errcheck
+	_, _ = reader.Seek(0, io.SeekStart)
+	return reader
 }
 
 // Read is a method on the PieceReader struct that reads data into the provided byte slice.
@@ -278,7 +285,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 	}
 
 	if pr.reader != nil && pr.readerFor != *carBlock.FileID {
-		pr.reader.Close()
+		_ = pr.reader.Close()
 		pr.reader = nil
 	}
 
@@ -309,7 +316,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 	pr.pos += int64(n)
 	if errors.Is(err, io.EOF) {
 		err = nil
-		pr.reader.Close()
+		_ = pr.reader.Close()
 		pr.reader = nil
 		if pr.pos != carBlock.CarOffset+int64(carBlock.CarBlockLength) {
 			err = ErrTruncated

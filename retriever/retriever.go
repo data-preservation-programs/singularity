@@ -40,6 +40,50 @@ func NewRetriever(lassie lassietypes.Fetcher, endpointFinder EndpointFinder) *Re
 	}
 }
 
+// Retrieve retrieves a byte range from a cid representing a unixfstree from a given list of SPs, writing the output to a car file
+func (r *Retriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string, out io.Writer) error {
+	logger.Infow("retrieving from filecoin", "cid", c, "rangeStart", rangeStart, "rangeEnd", rangeEnd, "sps", sps)
+	reader, writer := io.Pipe()
+	errChan := make(chan error, 2)
+	go func() {
+		errChan <- r.deserialize(ctx, c, rangeStart, rangeEnd, reader, out)
+		_ = reader.Close()
+	}()
+	go func() {
+		errChan <- r.getContent(ctx, c, rangeStart, rangeEnd, sps, writer)
+		_ = writer.Close()
+	}()
+
+	// collect errors
+	var err error
+	for range 2 {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case nextErr := <-errChan:
+			err = multierr.Append(err, nextErr)
+		}
+	}
+	return err
+}
+
+func (r *Retriever) RetrieveReader(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string) (io.ReadCloser, error) {
+	reader, writer := io.Pipe()
+	go func() {
+		err := r.getContent(ctx, c, rangeStart, rangeEnd, sps, writer)
+		writer.CloseWithError(err)
+	}()
+
+	outReader, outWriter := io.Pipe()
+	go func() {
+		err := r.deserialize(ctx, c, rangeStart, rangeEnd, reader, outWriter)
+		_ = reader.Close()
+		outWriter.CloseWithError(err)
+	}()
+
+	return outReader, nil
+}
+
 // deserialize takes an reader of a carFile and writes the deserialized output
 func (r *Retriever) deserialize(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, carInput io.Reader, carOutput io.Writer) error {
 	cr, err := car.NewBlockReader(carInput)
@@ -83,48 +127,4 @@ func (r *Retriever) getContent(ctx context.Context, c cid.Cid, rangeStart int64,
 		return err
 	}
 	return writable.Finalize()
-}
-
-// Retrieve retrieves a byte range from a cid representing a unixfstree from a given list of SPs, writing the output to a car file
-func (r *Retriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string, out io.Writer) error {
-	logger.Infow("retrieving from filecoin", "cid", c, "rangeStart", rangeStart, "rangeEnd", rangeEnd, "sps", sps)
-	reader, writer := io.Pipe()
-	errChan := make(chan error, 2)
-	go func() {
-		errChan <- r.deserialize(ctx, c, rangeStart, rangeEnd, reader, out)
-		reader.Close()
-	}()
-	go func() {
-		errChan <- r.getContent(ctx, c, rangeStart, rangeEnd, sps, writer)
-		writer.Close()
-	}()
-
-	// collect errors
-	var err error
-	for range 2 {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case nextErr := <-errChan:
-			err = multierr.Append(err, nextErr)
-		}
-	}
-	return err
-}
-
-func (r *Retriever) RetrieveReader(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string) (io.ReadCloser, error) {
-	reader, writer := io.Pipe()
-	go func() {
-		err := r.getContent(ctx, c, rangeStart, rangeEnd, sps, writer)
-		writer.CloseWithError(err)
-	}()
-
-	outReader, outWriter := io.Pipe()
-	go func() {
-		err := r.deserialize(ctx, c, rangeStart, rangeEnd, reader, outWriter)
-		reader.Close()
-		outWriter.CloseWithError(err)
-	}()
-
-	return outReader, nil
 }

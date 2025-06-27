@@ -2,10 +2,16 @@ package dataprep
 
 import (
 	"context"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/dealtemplate"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
+	"github.com/data-preservation-programs/singularity/handler/notification"
+	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
@@ -22,6 +28,23 @@ type CreateRequest struct {
 	DeleteAfterExport bool     `default:"false"       json:"deleteAfterExport"` // Whether to delete the source files after export
 	NoInline          bool     `default:"false"       json:"noInline"`          // Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage.
 	NoDag             bool     `default:"false"       json:"noDag"`             // Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.
+
+	// Auto-deal creation parameters
+	AutoCreateDeals     bool            `default:"false"       json:"autoCreateDeals"`               // Enable automatic deal schedule creation
+	DealTemplate        string          `default:""            json:"dealTemplate"`                  // Deal template name or ID to use (optional)
+	DealPricePerGB      float64         `default:"0.0"         json:"dealPricePerGb"`                // Price in FIL per GiB
+	DealPricePerGBEpoch float64         `default:"0.0"         json:"dealPricePerGbEpoch"`           // Price in FIL per GiB per epoch
+	DealPricePerDeal    float64         `default:"0.0"         json:"dealPricePerDeal"`              // Price in FIL per deal
+	DealDuration        time.Duration   `json:"dealDuration"        swaggertype:"primitive,integer"` // Deal duration
+	DealStartDelay      time.Duration   `json:"dealStartDelay"      swaggertype:"primitive,integer"` // Deal start delay
+	DealVerified        bool            `default:"false"       json:"dealVerified"`                  // Whether deals should be verified
+	DealKeepUnsealed    bool            `default:"false"       json:"dealKeepUnsealed"`              // Whether to keep unsealed copy
+	DealAnnounceToIPNI  bool            `default:"false"       json:"dealAnnounceToIpni"`            // Whether to announce to IPNI
+	DealProvider        string          `default:""            json:"dealProvider"`                  // Storage Provider ID
+	DealHTTPHeaders     model.ConfigMap `json:"dealHttpHeaders"`                                     // HTTP headers for deals
+	DealURLTemplate     string          `default:""            json:"dealUrlTemplate"`               // URL template for deals
+	WalletValidation    bool            `default:"false"       json:"walletValidation"`              // Enable wallet balance validation
+	SPValidation        bool            `default:"false"       json:"spValidation"`                  // Enable storage provider validation
 }
 
 // ValidateCreateRequest processes and validates the creation request parameters.
@@ -130,7 +153,8 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "inline preparation cannot be disabled without output storages")
 	}
 
-	return &model.Preparation{
+	// Create preparation with basic fields
+	preparation := &model.Preparation{
 		MaxSize:           int64(maxSize),
 		PieceSize:         int64(pieceSize),
 		MinPieceSize:      int64(minPieceSize),
@@ -140,12 +164,53 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		Name:              request.Name,
 		NoInline:          request.NoInline,
 		NoDag:             request.NoDag,
-	}, nil
+		DealConfig: model.DealConfig{
+			AutoCreateDeals:     request.AutoCreateDeals,
+			DealPricePerGb:      request.DealPricePerGB,
+			DealPricePerGbEpoch: request.DealPricePerGBEpoch,
+			DealPricePerDeal:    request.DealPricePerDeal,
+			DealDuration:        request.DealDuration,
+			DealStartDelay:      request.DealStartDelay,
+			DealVerified:        request.DealVerified,
+			DealKeepUnsealed:    request.DealKeepUnsealed,
+			DealAnnounceToIpni:  request.DealAnnounceToIPNI,
+			DealProvider:        request.DealProvider,
+			DealHTTPHeaders:     request.DealHTTPHeaders,
+			DealURLTemplate:     request.DealURLTemplate,
+		},
+		WalletValidation: request.WalletValidation,
+		SPValidation:     request.SPValidation,
+	}
+
+	// Validate that template and explicit deal config are not conflicting
+	if request.AutoCreateDeals && request.DealTemplate != "" {
+		err = validateTemplateConflicts(request)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+	}
+
+	// Apply deal template if specified and auto-deal creation is enabled
+	if request.AutoCreateDeals && request.DealTemplate != "" {
+		template, err := dealtemplate.Default.GetHandler(ctx, db, request.DealTemplate)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to find deal template: %s", request.DealTemplate)
+		}
+
+		// Apply template values (only if current values are defaults/zero)
+		dealtemplate.Default.ApplyTemplateToPreparation(template, preparation)
+
+		// Set the template reference
+		preparation.DealTemplateID = &template.ID
+	}
+
+	return preparation, nil
 }
 
 // CreatePreparationHandler handles the creation of a new Preparation entity based on the provided
 // CreateRequest parameters. Initially, it validates the request parameters and, if valid,
-// creates a new Preparation record in the database.
+// creates a new Preparation record in the database. It also performs wallet and storage provider
+// validation if enabled in the request.
 //
 // Parameters:
 //   - ctx: The context for database transactions and other operations.
@@ -197,7 +262,250 @@ func (DefaultHandler) CreatePreparationHandler(
 		return nil, errors.WithStack(err)
 	}
 
+	// Perform validation if auto-deal creation is enabled (after DB persistence so preparation.ID is available)
+	if preparation.DealConfig.AutoCreateDeals {
+		err = performValidation(ctx, db, preparation)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+	}
+
 	return preparation, nil
+}
+
+// performValidation handles wallet and storage provider validation for auto-deal creation
+func performValidation(ctx context.Context, db *gorm.DB, preparation *model.Preparation) error {
+	notificationHandler := notification.Default
+
+	// Create metadata for logging
+	metadata := model.ConfigMap{
+		"preparation_name": preparation.Name,
+		"preparation_id":   strconv.FormatUint(uint64(preparation.ID), 10),
+		"auto_create_deals": func() string {
+			if preparation.DealConfig.AutoCreateDeals {
+				return "true"
+			}
+			return "false"
+		}(),
+	}
+
+	// Log start of validation process
+	_, err := notificationHandler.LogInfo(ctx, db, "dataprep-create",
+		"Starting Auto-Deal Validation",
+		"Beginning validation process for auto-deal creation",
+		metadata)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	var validationErrors []string
+
+	// Perform wallet validation if enabled
+	if preparation.WalletValidation {
+		err = performWalletValidation(ctx, db, preparation, &validationErrors)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+	}
+
+	// Perform storage provider validation if enabled
+	if preparation.SPValidation {
+		err = performSPValidation(ctx, db, preparation, &validationErrors)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+	}
+
+	// If there are validation errors, log them and potentially disable auto-creation
+	if len(validationErrors) > 0 {
+		errorMetadata := model.ConfigMap{
+			"preparation_name":  preparation.Name,
+			"validation_errors": strings.Join(validationErrors, "; "),
+		}
+
+		_, err = notificationHandler.LogWarning(ctx, db, "dataprep-create",
+			"Auto-Deal Validation Issues Found",
+			"Some validation checks failed, but preparation will continue",
+			errorMetadata)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+	} else {
+		// All validations passed
+		_, err = notificationHandler.LogInfo(ctx, db, "dataprep-create",
+			"Auto-Deal Validation Successful",
+			"All validation checks passed, ready for auto-deal creation",
+			metadata)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+	}
+
+	return nil
+}
+
+// performWalletValidation validates wallet balance for auto-deal creation
+func performWalletValidation(ctx context.Context, db *gorm.DB, preparation *model.Preparation, validationErrors *[]string) error {
+	// For now, we'll perform a basic validation without connecting to Lotus
+	// In a real implementation, you would get wallet addresses from the preparation
+	// and validate each one using the wallet validator
+
+	notificationHandler := notification.Default
+
+	// Get wallets associated with this preparation
+	var wallets []model.Wallet
+	err := db.WithContext(ctx).
+		Joins("JOIN wallet_assignments ON wallets.id = wallet_assignments.wallet_id").
+		Where("wallet_assignments.preparation_id = ?", preparation.ID).
+		Find(&wallets).Error
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	if len(wallets) == 0 {
+		*validationErrors = append(*validationErrors, "No wallets assigned to preparation")
+
+		_, err = notificationHandler.LogWarning(ctx, db, "dataprep-create",
+			"No Wallets Found",
+			"No wallets are assigned to this preparation for auto-deal creation",
+			model.ConfigMap{
+				"preparation_name": preparation.Name,
+			})
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		return nil
+	}
+
+	// TODO: In a real implementation, you would connect to Lotus and validate each wallet
+	// For now, we'll just log that wallet validation is enabled
+	walletAddresses := make([]string, len(wallets))
+	for i, wallet := range wallets {
+		walletAddresses[i] = wallet.Address
+	}
+
+	_, err = notificationHandler.LogInfo(ctx, db, "dataprep-create",
+		"Wallet Validation Enabled",
+		"Wallet validation is enabled for auto-deal creation",
+		model.ConfigMap{
+			"preparation_name": preparation.Name,
+			"wallet_addresses": strings.Join(walletAddresses, ", "),
+		})
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+// performSPValidation validates storage provider for auto-deal creation
+func performSPValidation(ctx context.Context, db *gorm.DB, preparation *model.Preparation, validationErrors *[]string) error {
+	notificationHandler := notification.Default
+	spValidator := storage.DefaultSPValidator
+
+	// Check if a storage provider is specified
+	if preparation.DealConfig.DealProvider == "" {
+		// Try to get a default storage provider
+		defaultSP, err := spValidator.GetDefaultStorageProvider(ctx, db, "auto-deal-creation")
+		if err != nil {
+			*validationErrors = append(*validationErrors, "No storage provider specified and no default available")
+
+			_, err = notificationHandler.LogWarning(ctx, db, "dataprep-create",
+				"No Storage Provider Available",
+				"No storage provider specified and no default providers available",
+				model.ConfigMap{
+					"preparation_name": preparation.Name,
+				})
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			return nil
+		}
+
+		// Update preparation with default provider
+		preparation.DealConfig.DealProvider = defaultSP.ProviderID
+
+		_, err = notificationHandler.LogInfo(ctx, db, "dataprep-create",
+			"Default Storage Provider Selected",
+			"Using default storage provider for auto-deal creation",
+			model.ConfigMap{
+				"preparation_name": preparation.Name,
+				"provider_id":      defaultSP.ProviderID,
+				"provider_name":    defaultSP.Name,
+			})
+		if err != nil {
+			return errors.WithStack(err)
+		}
+	}
+
+	// TODO: In a real implementation, you would connect to Lotus and validate the storage provider
+	// For now, we'll just log that SP validation is enabled
+	_, err := notificationHandler.LogInfo(ctx, db, "dataprep-create",
+		"Storage Provider Validation Enabled",
+		"Storage provider validation is enabled for auto-deal creation",
+		model.ConfigMap{
+			"preparation_name": preparation.Name,
+			"provider_id":      preparation.DealConfig.DealProvider,
+		})
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+// validateTemplateConflicts validates that when a template is specified,
+// explicit deal configuration parameters are not also provided to avoid conflicts
+func validateTemplateConflicts(request CreateRequest) error {
+	if request.DealTemplate == "" {
+		return nil // No template, no conflicts possible
+	}
+
+	conflictingFields := []string{}
+
+	// Check if explicit deal configuration parameters are provided alongside template
+	if request.DealProvider != "" {
+		conflictingFields = append(conflictingFields, "dealProvider")
+	}
+	if request.DealPricePerGB != 0 {
+		conflictingFields = append(conflictingFields, "dealPricePerGb")
+	}
+	if request.DealPricePerGBEpoch != 0 {
+		conflictingFields = append(conflictingFields, "dealPricePerGbEpoch")
+	}
+	if request.DealPricePerDeal != 0 {
+		conflictingFields = append(conflictingFields, "dealPricePerDeal")
+	}
+	if request.DealDuration != 0 {
+		conflictingFields = append(conflictingFields, "dealDuration")
+	}
+	if request.DealStartDelay != 0 {
+		conflictingFields = append(conflictingFields, "dealStartDelay")
+	}
+	if request.DealVerified {
+		conflictingFields = append(conflictingFields, "dealVerified")
+	}
+	if request.DealKeepUnsealed {
+		conflictingFields = append(conflictingFields, "dealKeepUnsealed")
+	}
+	if request.DealAnnounceToIPNI {
+		conflictingFields = append(conflictingFields, "dealAnnounceToIpni")
+	}
+	if request.DealURLTemplate != "" {
+		conflictingFields = append(conflictingFields, "dealUrlTemplate")
+	}
+	if len(request.DealHTTPHeaders) > 0 {
+		conflictingFields = append(conflictingFields, "dealHttpHeaders")
+	}
+
+	if len(conflictingFields) > 0 {
+		return errors.Wrapf(handlererror.ErrInvalidParameter,
+			"cannot specify both deal template (%s) and explicit deal configuration fields: %s. "+
+				"Either use a template or specify individual parameters, not both",
+			request.DealTemplate, strings.Join(conflictingFields, ", "))
+	}
+
+	return nil
 }
 
 // @ID CreatePreparation

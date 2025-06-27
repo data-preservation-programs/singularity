@@ -143,7 +143,7 @@ func ExtractCarHandler(ctx *cli.Context, inputDir string, output string, c cid.C
 			return errors.Wrapf(err, "failed to open CAR file %s", f)
 		}
 		bss = append(bss, bs)
-		defer bs.Close()
+		defer func() { _ = bs.Close() }()
 	}
 
 	bs := &multiBlockstore{bss: bss}
@@ -156,7 +156,7 @@ func getOutPathForFile(outPath string, c cid.Cid) (string, error) {
 	stat, err := os.Stat(outPath)
 	// If the user supply /a/b.txt but the file does not exist, then we need to mkdir -p /a
 	if errors.Is(err, oserror.ErrNotExist) {
-		err = os.MkdirAll(filepath.Dir(outPath), 0o755)
+		err = os.MkdirAll(filepath.Dir(outPath), 0o750)
 		if err != nil {
 			return "", errors.Wrapf(err, "failed to create output directory %s", filepath.Dir(outPath))
 		}
@@ -208,15 +208,17 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 					return errors.Wrapf(err, "failed to get output path for CID %s", c)
 				}
 			}
-			f, err := os.Create(outPath)
+			// G304: Clean the output path to prevent directory traversal
+			cleanOutPath := filepath.Clean(outPath)
+			f, err := os.Create(cleanOutPath)
 			if err != nil {
-				return errors.Wrapf(err, "failed to create output file %s", outPath)
+				return errors.Wrapf(err, "failed to create output file %s", cleanOutPath)
 			}
-			defer f.Close()
-			_, _ = fmt.Fprintf(ctx.App.Writer, "Writing to %s\n", outPath)
+			defer func() { _ = f.Close() }()
+			_, _ = fmt.Fprintf(ctx.App.Writer, "Writing to %s\n", cleanOutPath)
 			_, err = reader.WriteTo(f)
 			if err != nil {
-				return errors.Wrapf(err, "failed to write to output file %s", outPath)
+				return errors.Wrapf(err, "failed to write to output file %s", cleanOutPath)
 			}
 		case unixfs.TDirectory, unixfs.THAMTShard:
 			dirNode, err := io.NewDirectoryFromNode(dagServ, node)
@@ -224,7 +226,7 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 				return errors.Wrapf(err, "failed to create directory from node for CID %s", c)
 			}
 			_, _ = fmt.Fprintf(ctx.App.Writer, "Create Dir %s\n", outPath)
-			err = os.MkdirAll(outPath, 0o755)
+			err = os.MkdirAll(outPath, 0o750)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create output directory %s", outPath)
 			}

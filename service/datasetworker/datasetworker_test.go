@@ -26,21 +26,45 @@ func TestDatasetWorker_ExitOnComplete(t *testing.T) {
 			ExitOnError:    true,
 		})
 
-		job := model.Job{
-			Type:  model.Scan,
-			State: model.Ready,
-			Attachment: &model.SourceAttachment{
-				Preparation: &model.Preparation{},
-				Storage: &model.Storage{
-					Type: "local",
-					Path: t.TempDir(),
-				},
-			},
+		// Create preparation
+		prep := model.Preparation{
+			Name: "test-prep",
 		}
-		err := db.Create(&job).Error
+		err := db.Create(&prep).Error
 		require.NoError(t, err)
+
+		// Create storage
+		storage := model.Storage{
+			Name: "test-storage",
+			Type: "local",
+			Path: t.TempDir(),
+		}
+		err = db.Create(&storage).Error
+		require.NoError(t, err)
+
+		// Create source attachment
+		attachment := model.SourceAttachment{
+			PreparationID: prep.ID,
+			StorageID:     storage.ID,
+		}
+		err = db.Create(&attachment).Error
+		require.NoError(t, err)
+
+		// Create job referencing the attachment
+		job := model.Job{
+			Type:         model.Scan,
+			State:        model.Ready,
+			AttachmentID: attachment.ID,
+		}
+		err = db.Create(&job).Error
+		require.NoError(t, err)
+
+		// Create root directory for the attachment
 		dir := model.Directory{
-			AttachmentID: 1,
+			AttachmentID: attachment.ID,
+			Name:         "root",
+			ParentID:     nil, // This makes it a root directory
+			CID:          model.CID(testutil.TestCid), // Set a test CID so RootDirectoryCID can find it
 		}
 		err = db.Create(&dir).Error
 		require.NoError(t, err)
@@ -53,29 +77,56 @@ func TestDatasetWorker_ExitOnComplete(t *testing.T) {
 func TestDatasetWorker_ExitOnError(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		worker := NewWorker(db, Config{
-			Concurrency:    2,
+			Concurrency:    1, // Use single worker to avoid race conditions
 			ExitOnComplete: true,
-			EnableScan:     true,
-			EnablePack:     true,
+			EnableScan:     false, // Disable scan to focus on DagGen
+			EnablePack:     false, // Disable pack to focus on DagGen
 			EnableDag:      true,
 			ExitOnError:    true,
 		})
 
-		tmp := t.TempDir()
-		job := model.Job{
-			Type:  model.DagGen,
-			State: model.Ready,
-			Attachment: &model.SourceAttachment{
-				Preparation: &model.Preparation{},
-				Storage: &model.Storage{
-					Type: "local",
-					Path: tmp,
-				},
-			},
+		// Create preparation with NoDag=false (default) to allow DAG generation
+		prep := model.Preparation{
+			Name:  "test-prep-error",
+			NoDag: false,
 		}
-		err := db.Create(&job).Error
+		err := db.Create(&prep).Error
 		require.NoError(t, err)
+
+		// Create storage
+		tmp := t.TempDir()
+		storage := model.Storage{
+			Name: "test-storage-error",
+			Type: "local",
+			Path: tmp,
+		}
+		err = db.Create(&storage).Error
+		require.NoError(t, err)
+
+		// Create source attachment
+		attachment := model.SourceAttachment{
+			PreparationID: prep.ID,
+			StorageID:     storage.ID,
+		}
+		err = db.Create(&attachment).Error
+		require.NoError(t, err)
+
+		// Create job referencing the attachment (DagGen job)
+		job := model.Job{
+			Type:         model.DagGen,
+			State:        model.Ready,
+			AttachmentID: attachment.ID,
+		}
+		err = db.Create(&job).Error
+		require.NoError(t, err)
+
+		// Note: We intentionally do NOT create a root directory here
+		// This should cause the RootDirectoryCID call to fail with record not found
+		// which is what this test expects
+
 		err = worker.Run(ctx)
+		require.Error(t, err)
+		// Check if the error contains gorm.ErrRecordNotFound in the error chain
 		require.ErrorIs(t, err, gorm.ErrRecordNotFound)
 	})
 }

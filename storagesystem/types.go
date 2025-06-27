@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"slices"
+
 	_ "github.com/rclone/rclone/backend/amazonclouddrive"
 	_ "github.com/rclone/rclone/backend/azureblob"
 	_ "github.com/rclone/rclone/backend/b2"
@@ -54,7 +56,6 @@ import (
 	"github.com/rclone/rclone/lib/encoder"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
-	"slices"
 )
 
 // Entry is a struct that represents a single file or directory during a data source scan.

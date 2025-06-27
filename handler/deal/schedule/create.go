@@ -11,6 +11,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-cid"
 	"github.com/rjNemo/underscore"
@@ -45,18 +46,6 @@ type CreateRequest struct {
 	//nolint:tagliatelle
 	AllowedPieceCIDs []string `json:"allowedPieceCids"` // Allowed piece CIDs in this schedule
 	Force            bool     `json:"force"`            // Force to send out deals regardless of replication restriction
-}
-
-func argToDuration(s string) (time.Duration, error) {
-	duration, err := time.ParseDuration(s)
-	if err == nil {
-		return duration, nil
-	}
-	epochs, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		return 0, errors.WithStack(err)
-	}
-	return time.Duration(epochs) * 30 * time.Second, nil
 }
 
 // CreateHandler creates a new schedule based on the provided CreateRequest.
@@ -186,7 +175,7 @@ func (DefaultHandler) CreateHandler(
 		HTTPHeaders:           headers,
 		Provider:              request.Provider,
 		TotalDealNumber:       request.TotalDealNumber,
-		TotalDealSize:         int64(totalDealSize),
+		TotalDealSize:         util.SafeUint64ToInt64(totalDealSize),
 		Verified:              request.Verified,
 		KeepUnsealed:          request.KeepUnsealed,
 		AnnounceToIPNI:        request.IPNI,
@@ -194,9 +183,9 @@ func (DefaultHandler) CreateHandler(
 		Duration:              duration,
 		State:                 model.ScheduleActive,
 		ScheduleDealNumber:    request.ScheduleDealNumber,
-		ScheduleDealSize:      int64(scheduleDealSize),
+		ScheduleDealSize:      util.SafeUint64ToInt64(scheduleDealSize),
 		MaxPendingDealNumber:  request.MaxPendingDealNumber,
-		MaxPendingDealSize:    int64(pendingDealSize),
+		MaxPendingDealSize:    util.SafeUint64ToInt64(pendingDealSize),
 		Notes:                 request.Notes,
 		AllowedPieceCIDs:      underscore.Unique(request.AllowedPieceCIDs),
 		ScheduleCron:          scheduleCron,
@@ -213,6 +202,18 @@ func (DefaultHandler) CreateHandler(
 		return nil, errors.WithStack(err)
 	}
 	return &schedule, nil
+}
+
+func argToDuration(s string) (time.Duration, error) {
+	duration, err := time.ParseDuration(s)
+	if err == nil {
+		return duration, nil
+	}
+	epochs, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	return time.Duration(epochs) * 30 * time.Second, nil
 }
 
 // @ID CreateSchedule

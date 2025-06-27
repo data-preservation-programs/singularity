@@ -44,7 +44,7 @@ func TestExploreHandler(t *testing.T) {
 				tmp := t.TempDir()
 				err := os.WriteFile(filepath.Join(tmp, "test.txt"), []byte("test"), 0644)
 				require.NoError(t, err)
-				err = os.MkdirAll(filepath.Join(tmp, "test"), 0755)
+				err = os.MkdirAll(filepath.Join(tmp, "test"), 0750)
 				require.NoError(t, err)
 				err = db.Create(&model.Storage{
 					Name: "test",

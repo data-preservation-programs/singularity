@@ -190,7 +190,7 @@ func createAction(c *cli.Context, storageType string, provider string) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 	name := c.String("name")
 	if name == "" {
 		name = util.RandomName()

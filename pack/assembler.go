@@ -56,18 +56,6 @@ type Assembler struct {
 	fileLengthCorrection  map[model.FileID]int64
 }
 
-// Close closes the assembler and all of its underlying readers
-func (a *Assembler) Close() error {
-	if a.fileReadCloser != nil {
-		err := a.fileReadCloser.Close()
-		if err != nil {
-			return errors.WithStack(err)
-		}
-		a.fileReadCloser = nil
-	}
-	return nil
-}
-
 // NewAssembler initializes a new Assembler instance with the given parameters.
 func NewAssembler(ctx context.Context, reader storagesystem.Reader,
 	fileRanges []model.FileRange, noInline bool, skipInaccessibleFiles bool,
@@ -84,8 +72,42 @@ func NewAssembler(ctx context.Context, reader storagesystem.Reader,
 	}
 }
 
+// Close closes the assembler and all of its underlying readers
+func (a *Assembler) Close() error {
+	if a.fileReadCloser != nil {
+		err := a.fileReadCloser.Close()
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		a.fileReadCloser = nil
+	}
+	return nil
+}
+
 // readBuffer reads data from the internal buffer, handling buffer-related flags and states.
 // It returns the number of bytes read and any errors encountered.
+// Read reads data from the buffer, or fetches the next chunk from fileRanges if the buffer is empty.
+// It will assemble links if needed and respect the context's cancellation or deadline.
+func (a *Assembler) Read(p []byte) (int, error) {
+	if a.ctx.Err() != nil {
+		return 0, a.ctx.Err()
+	}
+
+	if a.buffer != nil {
+		return a.readBuffer(p)
+	}
+
+	if a.assembleLinkFor != nil {
+		return 0, errors.WithStack(a.assembleLinks())
+	}
+
+	if a.index == len(a.fileRanges) {
+		return 0, io.EOF
+	}
+
+	return 0, a.prefetch()
+}
+
 func (a *Assembler) readBuffer(p []byte) (int, error) {
 	n, err := a.buffer.Read(p)
 
@@ -206,7 +228,7 @@ func (a *Assembler) prefetch() error {
 	if err == io.EOF && !firstChunk {
 		a.assembleLinkFor = ptr.Of(a.index)
 		a.fileReadCloser = nil
-		a.Close()
+		_ = a.Close()
 		if a.fileRanges[a.index].Length < 0 {
 			a.fileLengthCorrection[a.fileRanges[a.index].FileID] = a.fileOffset
 		}
@@ -265,7 +287,7 @@ func (a *Assembler) prefetch() error {
 		}
 
 		a.assembleLinkFor = ptr.Of(a.index)
-		a.Close()
+		_ = a.Close()
 		if a.fileRanges[a.index].Length < 0 {
 			a.fileLengthCorrection[a.fileRanges[a.index].FileID] = a.fileOffset + int64(n)
 		}
@@ -276,26 +298,4 @@ func (a *Assembler) prefetch() error {
 	}
 
 	return errors.WithStack(err)
-}
-
-// Read reads data from the buffer, or fetches the next chunk from fileRanges if the buffer is empty.
-// It will assemble links if needed and respect the context's cancellation or deadline.
-func (a *Assembler) Read(p []byte) (int, error) {
-	if a.ctx.Err() != nil {
-		return 0, a.ctx.Err()
-	}
-
-	if a.buffer != nil {
-		return a.readBuffer(p)
-	}
-
-	if a.assembleLinkFor != nil {
-		return 0, errors.WithStack(a.assembleLinks())
-	}
-
-	if a.index == len(a.fileRanges) {
-		return 0, io.EOF
-	}
-
-	return 0, a.prefetch()
 }

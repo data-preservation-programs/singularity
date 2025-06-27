@@ -44,7 +44,7 @@ func DownloadHandler(ctx *cli.Context,
 	if err != nil {
 		return errors.Wrap(err, "failed to create piece reader")
 	}
-	defer pieceReader.Close()
+	defer func() { _ = pieceReader.Close() }()
 
 	return download(ctx, pieceReader, filepath.Join(outDir, piece+".car"), concurrency)
 }
@@ -70,7 +70,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 		return errors.New("failed to seek to start of piece")
 	}
 
-	file, err := os.Create(outPath)
+	file, err := os.Create(filepath.Clean(outPath))
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -98,7 +98,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 
 			// Clone the reader
 			clonedReader := reader.Clone()
-			defer clonedReader.Close()
+			defer func() { _ = clonedReader.Close() }()
 
 			// Seek to the start position
 			_, err := clonedReader.Seek(start, io.SeekStart)
@@ -162,7 +162,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 		}
 		return file.Close()
 	case err := <-errChan:
-		file.Close()
+		_ = file.Close()
 		return errors.WithStack(err)
 	}
 }

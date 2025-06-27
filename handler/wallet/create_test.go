@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -12,10 +11,12 @@ import (
 
 func TestCreateHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		lotusClient := util.NewLotusClient("https://api.node.glif.io/rpc/v0", "")
+		// Create mock client for all tests
+		mockClient := testutil.NewMockLotusClient()
+		mockClient.SetResponse("Filecoin.StateLookupID", testutil.TestWalletActorID)
 
 		t.Run("success-secp256k1", func(t *testing.T) {
-			w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+			w, err := Default.CreateHandler(ctx, db, mockClient, CreateRequest{
 				KeyType: KTSecp256k1.String(),
 			})
 			require.NoError(t, err)
@@ -23,7 +24,7 @@ func TestCreateHandler(t *testing.T) {
 		})
 
 		t.Run("success-user-wallet-secp256k1", func(t *testing.T) {
-			w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+			w, err := Default.CreateHandler(ctx, db, mockClient, CreateRequest{
 				KeyType: KTSecp256k1.String(),
 			})
 			require.NoError(t, err)
@@ -33,7 +34,7 @@ func TestCreateHandler(t *testing.T) {
 		})
 
 		t.Run("success-bls", func(t *testing.T) {
-			w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+			w, err := Default.CreateHandler(ctx, db, mockClient, CreateRequest{
 				KeyType: KTBLS.String(),
 			})
 			require.NoError(t, err)
@@ -41,7 +42,7 @@ func TestCreateHandler(t *testing.T) {
 		})
 
 		t.Run("success-user-wallet-bls", func(t *testing.T) {
-			w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+			w, err := Default.CreateHandler(ctx, db, mockClient, CreateRequest{
 				KeyType: KTBLS.String(),
 			})
 			require.NoError(t, err)
@@ -51,14 +52,14 @@ func TestCreateHandler(t *testing.T) {
 		})
 
 		t.Run("invalid-key-type", func(t *testing.T) {
-			_, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+			_, err := Default.CreateHandler(ctx, db, mockClient, CreateRequest{
 				KeyType: "invalid-type",
 			})
 			require.Error(t, err)
 		})
 
 		t.Run("success-user-wallet-with-details", func(t *testing.T) {
-			w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+			w, err := Default.CreateHandler(ctx, db, mockClient, CreateRequest{
 				KeyType: KTSecp256k1.String(),
 				Name:    "my wallet",
 			})
@@ -71,7 +72,7 @@ func TestCreateHandler(t *testing.T) {
 		})
 
 		t.Run("success-sp-wallet", func(t *testing.T) {
-			w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+			w, err := Default.CreateHandler(ctx, db, mockClient, CreateRequest{
 				Address:  testutil.TestWalletAddr,
 				ActorID:  testutil.TestWalletActorID,
 				Name:     "Test SP",
@@ -89,13 +90,13 @@ func TestCreateHandler(t *testing.T) {
 		})
 
 		t.Run("error-no-parameters", func(t *testing.T) {
-			_, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{})
+			_, err := Default.CreateHandler(ctx, db, mockClient, CreateRequest{})
 			require.Error(t, err)
 			require.Contains(t, err.Error(), "must specify either KeyType (for UserWallet) or Address/ActorID (for SPWallet)")
 		})
 
 		t.Run("error-sp-wallet-missing-actorid", func(t *testing.T) {
-			_, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+			_, err := Default.CreateHandler(ctx, db, mockClient, CreateRequest{
 				Address: "f123456789",
 				Name:    "Test SP",
 			})
@@ -104,7 +105,7 @@ func TestCreateHandler(t *testing.T) {
 		})
 
 		t.Run("error-sp-wallet-missing-address", func(t *testing.T) {
-			_, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+			_, err := Default.CreateHandler(ctx, db, mockClient, CreateRequest{
 				ActorID: "f1234",
 				Name:    "Test SP",
 			})
@@ -113,16 +114,20 @@ func TestCreateHandler(t *testing.T) {
 		})
 
 		t.Run("error-sp-wallet-mismatched-id", func(t *testing.T) {
-			_, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+			// Create a mock client that returns a different valid actor ID
+			mismatchMockClient := testutil.NewMockLotusClient()
+			mismatchMockClient.SetResponse("Filecoin.StateLookupID", "f0123456")
+
+			_, err := Default.CreateHandler(ctx, db, mismatchMockClient, CreateRequest{
 				Address: testutil.TestWalletAddr,
-				ActorID: "wrong-actor-id",
+				ActorID: "f0999999",
 			})
 			require.Error(t, err)
 			require.Contains(t, err.Error(), "provided actor ID is not associated with address")
 		})
 
 		t.Run("error-mixed-parameters", func(t *testing.T) {
-			_, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+			_, err := Default.CreateHandler(ctx, db, mockClient, CreateRequest{
 				KeyType: KTSecp256k1.String(),
 				Address: "f3abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
 			})

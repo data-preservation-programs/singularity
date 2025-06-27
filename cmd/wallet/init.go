@@ -19,7 +19,7 @@ var InitCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
 		w, err := wallet.Default.InitHandler(c.Context, db, lotusClient, c.Args().Get(0))

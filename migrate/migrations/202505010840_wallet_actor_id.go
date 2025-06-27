@@ -9,7 +9,7 @@ import (
 )
 
 // Create migration for initial database schema
-func _202505010840_wallet_actor_id() *gormigrate.Migration {
+func _202505010840WalletActorID() *gormigrate.Migration {
 	// Table names
 	const WALLET_TABLE = "wallets"
 	const DEAL_TABLE = "deals"

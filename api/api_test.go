@@ -238,7 +238,7 @@ func TestAllAPIs(t *testing.T) {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 		go func() {
-			service.StartServers(ctx, log.Logger("test"), &s)
+			_ = service.StartServers(ctx, log.Logger("test"), &s)
 		}()
 
 		var resp *http2.Response

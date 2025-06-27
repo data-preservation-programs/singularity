@@ -20,7 +20,7 @@ var PauseCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		scheduleID, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
 		if err != nil {

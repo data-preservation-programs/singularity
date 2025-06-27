@@ -2,6 +2,7 @@ package dataprep
 
 import (
 	"context"
+	"strconv"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
@@ -39,14 +40,22 @@ func TestAddSourceStorageHandler_PreparationNotFound(t *testing.T) {
 
 func TestAddSourceStorageHandler_AlreadyAttached(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Preparation{
-			SourceStorages: []model.Storage{{
-				Name: "source",
-			}},
-		}).Error
+		// Create preparation with source storage already attached
+		prep := model.Preparation{
+			SourceStorages: []model.Storage{
+				{
+					Name: "source-already-attached",
+					Type: "local",
+					Path: "/tmp",
+				},
+			},
+		}
+		err := db.Create(&prep).Error
 		require.NoError(t, err)
 
-		_, err = Default.AddSourceStorageHandler(ctx, db, "1", "source")
+		// Try to attach the same storage again - this should fail
+		prepIDStr := strconv.Itoa(int(prep.ID))
+		_, err = Default.AddSourceStorageHandler(ctx, db, prepIDStr, "source-already-attached")
 		require.ErrorIs(t, err, handlererror.ErrDuplicateRecord)
 		require.ErrorContains(t, err, "already")
 	})

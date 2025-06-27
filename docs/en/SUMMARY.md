@@ -25,6 +25,7 @@
 ## Deal Making <a href="#deal-making" id="deal-making"></a>
 
 * [Create a deal schedule](deal-making/create-a-deal-schedule.md)
+* [Deal Templates](deal-templates.md)
 
 ## Topics <a href="#topics" id="topics"></a>
 
@@ -35,6 +36,7 @@
 <!-- cli begin -->
 
 * [Menu](cli-reference/README.md)
+* [Onboard](cli-reference/onboard.md)
 * [Ez Prep](cli-reference/ez-prep.md)
 * [Version](cli-reference/version.md)
 * [Admin](cli-reference/admin/README.md)
@@ -59,6 +61,11 @@
     * [Remove](cli-reference/deal/schedule/remove.md)
   * [Send Manual](cli-reference/deal/send-manual.md)
   * [List](cli-reference/deal/list.md)
+* [Deal Template](cli-reference/deal-template/README.md)
+  * [Create](cli-reference/deal-template/create.md)
+  * [List](cli-reference/deal-template/list.md)
+  * [Get](cli-reference/deal-template/get.md)
+  * [Delete](cli-reference/deal-template/delete.md)
 * [Run](cli-reference/run/README.md)
   * [Api](cli-reference/run/api.md)
   * [Dataset Worker](cli-reference/run/dataset-worker.md)
@@ -66,6 +73,7 @@
   * [Deal Tracker](cli-reference/run/deal-tracker.md)
   * [Deal Pusher](cli-reference/run/deal-pusher.md)
   * [Download Server](cli-reference/run/download-server.md)
+  * [Unified](cli-reference/run/unified.md)
 * [Wallet](cli-reference/wallet/README.md)
   * [Create](cli-reference/wallet/create.md)
   * [Import](cli-reference/wallet/import.md)

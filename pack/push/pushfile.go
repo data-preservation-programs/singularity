@@ -18,12 +18,12 @@ import (
 var logger = logging.Logger("pushfile")
 
 func MaxSizeToSplitSize(m int64) int64 {
-	r := util.NextPowerOfTwo(uint64(m)) / 4
+	r := util.NextPowerOfTwo(util.SafeInt64ToUint64(m)) / 4
 	if r > 1<<30 {
 		r = 1 << 30
 	}
 
-	return int64(r)
+	return util.SafeUint64ToInt64(r)
 }
 
 func ExtractFromFsObject(ctx context.Context, info fs.ObjectInfo) (size int64, hashValue string, lastModified time.Time) {

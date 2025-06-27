@@ -31,7 +31,7 @@ func MigrateSchedule(c *cli.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 	ctx := c.Context
 	db = db.WithContext(ctx)
 	mg, err := mongo.Connect(ctx, options.Client().ApplyURI(c.String("mongo-connection-string")))

@@ -111,39 +111,6 @@ func (r *Runner) Save(t *testing.T, tempDirs ...string) {
 	require.NoError(t, err)
 }
 
-func runWithCapture(ctx context.Context, args string) (string, string, error) {
-	// Create a clone of the app so that we can runWithCapture from different tests concurrently
-	app := *App
-	for i, flag := range app.Flags {
-		if flag.Names()[0] == "database-connection-string" {
-			app.Flags[i] = &cli.StringFlag{
-				Name:        "database-connection-string",
-				Usage:       "Connection string to the database",
-				DefaultText: "sqlite:" + "./singularity.db",
-				Value:       "sqlite:" + "./singularity.db",
-				EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
-			}
-		}
-	}
-	app.ExitErrHandler = func(c *cli.Context, err error) {}
-	parser := shellwords.NewParser()
-	parser.ParseEnv = true // Enable environment variable parsing
-	parsedArgs, err := parser.Parse(args)
-	if err != nil {
-		return "", "", errors.WithStack(err)
-	}
-
-	outWriter := bytes.NewBuffer(nil)
-	errWriter := bytes.NewBuffer(nil)
-
-	// Overwrite the stdout and stderr
-	app.Writer = outWriter
-	app.ErrWriter = errWriter
-
-	err = app.RunContext(ctx, parsedArgs)
-	return outWriter.String(), errWriter.String(), err
-}
-
 var pieceCIDRegex = regexp.MustCompile("baga6ea[0-9a-z]+")
 
 func GetAllPieceCIDs(content string) []string {
@@ -210,7 +177,7 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Get the Content-Length header
 	contentLength := resp.ContentLength
@@ -253,7 +220,7 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 				errChan <- errors.WithStack(err)
 				return
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 				errChan <- errors.Newf("unexpected status code %d", resp.StatusCode)
@@ -327,10 +294,10 @@ func CompareDirectories(t *testing.T, dir1, dir2 string) {
 		require.Equal(t, info1.Size(), info2.Size(), "Size mismatch for %s", relPath)
 
 		// Compare file content
-		content1, err := os.ReadFile(path1)
+		content1, err := os.ReadFile(filepath.Clean(path1))
 		require.NoError(t, err)
 
-		content2, err := os.ReadFile(path2)
+		content2, err := os.ReadFile(filepath.Clean(path2))
 		require.NoError(t, err)
 
 		require.True(t, bytes.Equal(content1, content2), "Content mismatch for %s", relPath)
@@ -357,4 +324,37 @@ func CompareDirectories(t *testing.T, dir1, dir2 string) {
 	})
 
 	require.NoError(t, err)
+}
+
+func runWithCapture(ctx context.Context, args string) (string, string, error) {
+	// Create a clone of the app so that we can runWithCapture from different tests concurrently
+	app := *App
+	for i, flag := range app.Flags {
+		if flag.Names()[0] == "database-connection-string" {
+			app.Flags[i] = &cli.StringFlag{
+				Name:        "database-connection-string",
+				Usage:       "Connection string to the database",
+				DefaultText: "sqlite:" + "./singularity.db",
+				Value:       "sqlite:" + "./singularity.db",
+				EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
+			}
+		}
+	}
+	app.ExitErrHandler = func(c *cli.Context, err error) {}
+	parser := shellwords.NewParser()
+	parser.ParseEnv = true // Enable environment variable parsing
+	parsedArgs, err := parser.Parse(args)
+	if err != nil {
+		return "", "", errors.WithStack(err)
+	}
+
+	outWriter := bytes.NewBuffer(nil)
+	errWriter := bytes.NewBuffer(nil)
+
+	// Overwrite the stdout and stderr
+	app.Writer = outWriter
+	app.ErrWriter = errWriter
+
+	err = app.RunContext(ctx, parsedArgs)
+	return outWriter.String(), errWriter.String(), err
 }

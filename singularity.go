@@ -23,7 +23,7 @@ var versionJSON []byte
 
 func init() {
 	if os.Getenv("GOLOG_LOG_LEVEL") == "" {
-		os.Setenv("GOLOG_LOG_LEVEL", "info")
+		_ = os.Setenv("GOLOG_LOG_LEVEL", "info")
 	}
 }
 

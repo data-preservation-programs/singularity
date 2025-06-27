@@ -11,19 +11,19 @@ import (
 
 const jobCheckInterval = 5 * time.Second
 
+type StateMonitor struct {
+	db   *gorm.DB
+	jobs map[model.JobID]context.CancelFunc
+	mu   sync.Mutex
+	done chan struct{}
+}
+
 func NewStateMonitor(db *gorm.DB) *StateMonitor {
 	return &StateMonitor{
 		db:   db,
 		jobs: make(map[model.JobID]context.CancelFunc),
 		done: make(chan struct{}),
 	}
-}
-
-type StateMonitor struct {
-	db   *gorm.DB
-	jobs map[model.JobID]context.CancelFunc
-	mu   sync.Mutex
-	done chan struct{}
 }
 
 func (s *StateMonitor) AddJob(jobID model.JobID, cancel context.CancelFunc) {

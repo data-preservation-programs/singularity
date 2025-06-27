@@ -70,6 +70,10 @@ func (DefaultHandler) CreateStorageHandler(
 
 	rcloneConfig := make(map[string]string)
 	providerOptions, err := underscore.Find(backend.ProviderOptions, func(providerOption storagesystem.ProviderOptions) bool {
+		// Handle special case for 'local' storage where provider can be empty or "local"
+		if storageType == "local" && (provider == "" || strings.EqualFold(provider, "local")) && providerOption.Provider == "" {
+			return true
+		}
 		return strings.EqualFold(providerOption.Provider, provider)
 	})
 	if err != nil {

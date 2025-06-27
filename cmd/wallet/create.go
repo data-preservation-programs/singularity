@@ -65,7 +65,7 @@ The newly created wallet address and other details will be displayed upon succes
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		request := wallet.CreateRequest{
 			Name:     c.String("name"),

@@ -188,7 +188,7 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 		return nil, nil, nil, errors.WithStack(err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		return nil, nil, nil, errors.Newf("failed to get deal state: %s", resp.Status)
 	}
 	var jsonDecoder *jstream.Decoder
@@ -197,7 +197,7 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 	if decompress {
 		decompressor, err := zstd.NewReader(countingReader)
 		if err != nil {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			return nil, nil, nil, errors.WithStack(err)
 		}
 		safeDecompressor := &ThreadSafeReadCloser{
@@ -215,29 +215,6 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 	}
 
 	return jsonDecoder.Stream(), countingReader, closer, nil
-}
-
-func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaValue, Counter, io.Closer, error) {
-	if d.dealZstURL != "" {
-		Logger.Infof("getting deal state from %s", d.dealZstURL)
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.dealZstURL, nil)
-		if err != nil {
-			return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state zst file %s", d.dealZstURL)
-		}
-		return DealStateStreamFromHTTPRequest(req, 1, true)
-	}
-
-	Logger.Infof("getting deal state from %s", d.lotusURL)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
-	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state from lotus API %s", d.lotusURL)
-	}
-	if d.lotusToken != "" {
-		req.Header.Set("Authorization", "Bearer "+d.lotusToken)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
-	return DealStateStreamFromHTTPRequest(req, 2, false)
 }
 
 func (*DealTracker) Name() string {
@@ -416,6 +393,12 @@ type UnknownDeal struct {
 //
 //   - error: An error that represents the failure of the operation, or nil if the operation was successful.
 func (d *DealTracker) runOnce(ctx context.Context) error {
+	// If no data sources are configured, skip processing
+	if d.dealZstURL == "" && d.lotusURL == "" {
+		Logger.Info("no data sources configured, skipping deal tracking")
+		return nil
+	}
+
 	headTime, err := util.GetLotusHeadTime(ctx, d.lotusURL, d.lotusToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get lotus head time from %s", d.lotusURL)
@@ -611,7 +594,7 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 	countingCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go func() {
@@ -654,4 +637,27 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 	}
 
 	return ctx.Err()
+}
+
+func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaValue, Counter, io.Closer, error) {
+	if d.dealZstURL != "" {
+		Logger.Infof("getting deal state from %s", d.dealZstURL)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.dealZstURL, nil)
+		if err != nil {
+			return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state zst file %s", d.dealZstURL)
+		}
+		return DealStateStreamFromHTTPRequest(req, 1, true)
+	}
+
+	Logger.Infof("getting deal state from %s", d.lotusURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state from lotus API %s", d.lotusURL)
+	}
+	if d.lotusToken != "" {
+		req.Header.Set("Authorization", "Bearer "+d.lotusToken)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
+	return DealStateStreamFromHTTPRequest(req, 2, false)
 }

@@ -5762,6 +5762,69 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "autoCreateDeals": {
+                    "description": "Auto-deal creation parameters",
+                    "type": "boolean",
+                    "default": false
+                },
+                "dealAnnounceToIpni": {
+                    "description": "Whether to announce to IPNI",
+                    "type": "boolean",
+                    "default": false
+                },
+                "dealDuration": {
+                    "description": "Deal duration",
+                    "type": "integer"
+                },
+                "dealHttpHeaders": {
+                    "description": "HTTP headers for deals",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ConfigMap"
+                        }
+                    ]
+                },
+                "dealKeepUnsealed": {
+                    "description": "Whether to keep unsealed copy",
+                    "type": "boolean",
+                    "default": false
+                },
+                "dealPricePerDeal": {
+                    "description": "Price in FIL per deal",
+                    "type": "number",
+                    "default": 0
+                },
+                "dealPricePerGb": {
+                    "description": "Price in FIL per GiB",
+                    "type": "number",
+                    "default": 0
+                },
+                "dealPricePerGbEpoch": {
+                    "description": "Price in FIL per GiB per epoch",
+                    "type": "number",
+                    "default": 0
+                },
+                "dealProvider": {
+                    "description": "Storage Provider ID",
+                    "type": "string"
+                },
+                "dealStartDelay": {
+                    "description": "Deal start delay",
+                    "type": "integer"
+                },
+                "dealTemplate": {
+                    "description": "Deal template name or ID to use (optional)",
+                    "type": "string"
+                },
+                "dealUrlTemplate": {
+                    "description": "URL template for deals",
+                    "type": "string"
+                },
+                "dealVerified": {
+                    "description": "Whether deals should be verified",
+                    "type": "boolean",
+                    "default": false
+                },
                 "deleteAfterExport": {
                     "description": "Whether to delete the source files after export",
                     "type": "boolean",
@@ -5808,6 +5871,16 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "spValidation": {
+                    "description": "Enable storage provider validation",
+                    "type": "boolean",
+                    "default": false
+                },
+                "walletValidation": {
+                    "description": "Enable wallet balance validation",
+                    "type": "boolean",
+                    "default": false
                 }
             }
         },
@@ -6288,6 +6361,63 @@ const docTemplate = `{
                 }
             }
         },
+        "model.DealConfig": {
+            "type": "object",
+            "properties": {
+                "autoCreateDeals": {
+                    "description": "AutoCreateDeals enables automatic deal creation after preparation completes",
+                    "type": "boolean"
+                },
+                "dealAnnounceToIpni": {
+                    "description": "DealAnnounceToIpni indicates whether to announce to IPNI",
+                    "type": "boolean"
+                },
+                "dealDuration": {
+                    "description": "DealDuration specifies the deal duration (time.Duration for backward compatibility)",
+                    "type": "integer"
+                },
+                "dealHttpHeaders": {
+                    "description": "DealHTTPHeaders contains HTTP headers for deals",
+                    "type": "object"
+                },
+                "dealKeepUnsealed": {
+                    "description": "DealKeepUnsealed indicates whether to keep unsealed copy",
+                    "type": "boolean"
+                },
+                "dealPricePerDeal": {
+                    "description": "DealPricePerDeal specifies the price in FIL per deal",
+                    "type": "number"
+                },
+                "dealPricePerGb": {
+                    "description": "DealPricePerGb specifies the price in FIL per GiB",
+                    "type": "number"
+                },
+                "dealPricePerGbEpoch": {
+                    "description": "DealPricePerGbEpoch specifies the price in FIL per GiB per epoch",
+                    "type": "number"
+                },
+                "dealProvider": {
+                    "description": "DealProvider specifies the Storage Provider ID for deals",
+                    "type": "string"
+                },
+                "dealStartDelay": {
+                    "description": "DealStartDelay specifies the deal start delay (time.Duration for backward compatibility)",
+                    "type": "integer"
+                },
+                "dealTemplate": {
+                    "description": "DealTemplate specifies the deal template name or ID to use (optional)",
+                    "type": "string"
+                },
+                "dealUrlTemplate": {
+                    "description": "DealURLTemplate specifies the URL template for deals",
+                    "type": "string"
+                },
+                "dealVerified": {
+                    "description": "DealVerified indicates whether deals should be verified",
+                    "type": "boolean"
+                }
+            }
+        },
         "model.DealState": {
             "type": "string",
             "enum": [
@@ -6443,6 +6573,18 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "dealConfig": {
+                    "description": "Deal configuration (encapsulated in DealConfig struct)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.DealConfig"
+                        }
+                    ]
+                },
+                "dealTemplateId": {
+                    "description": "Optional deal template to use",
+                    "type": "integer"
+                },
                 "deleteAfterExport": {
                     "description": "DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.",
                     "type": "boolean"
@@ -6481,8 +6623,16 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.Storage"
                     }
                 },
+                "spValidation": {
+                    "description": "Enable storage provider validation",
+                    "type": "boolean"
+                },
                 "updatedAt": {
                     "type": "string"
+                },
+                "walletValidation": {
+                    "description": "Enable wallet balance validation",
+                    "type": "boolean"
                 }
             }
         },

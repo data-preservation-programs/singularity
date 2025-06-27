@@ -15,6 +15,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
+	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/urfave/cli/v2"
 )
 
@@ -82,7 +83,7 @@ var PrepCmd = &cli.Command{
 			return errors.Wrapf(err, "failed to open database %s", databaseFile)
 		}
 
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		// Step 1, initialize the database
 		err = admin.Default.InitHandler(c.Context, db)
@@ -90,11 +91,16 @@ var PrepCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
+		// Disable workflow orchestrator to prevent automatic job progression
+		// We manage job progression manually in ez-prep
+		workflow.DefaultOrchestrator.SetEnabled(false)
+		fmt.Println("⚠️  Workflow orchestrator disabled: manual job progression enabled for ez-prep.")
+
 		// Step 2, create a preparation
 		outputDir := c.String("output-dir")
 		var outputStorages []string
 		if outputDir != "" {
-			err = os.MkdirAll(outputDir, 0o755)
+			err = os.MkdirAll(outputDir, 0o750)
 			if err != nil {
 				return errors.Wrap(err, "failed to create output directory")
 			}

@@ -3,12 +3,14 @@ package schedule
 import (
 	"context"
 
+	"slices"
+
 	"github.com/cockroachdb/errors"
+	"gorm.io/gorm"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
-	"gorm.io/gorm"
-	"slices"
 )
 
 var resumableStates = []model.ScheduleState{

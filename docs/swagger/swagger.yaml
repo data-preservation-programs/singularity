@@ -34,6 +34,53 @@ definitions:
     type: object
   dataprep.CreateRequest:
     properties:
+      autoCreateDeals:
+        default: false
+        description: Auto-deal creation parameters
+        type: boolean
+      dealAnnounceToIpni:
+        default: false
+        description: Whether to announce to IPNI
+        type: boolean
+      dealDuration:
+        description: Deal duration
+        type: integer
+      dealHttpHeaders:
+        allOf:
+        - $ref: '#/definitions/model.ConfigMap'
+        description: HTTP headers for deals
+      dealKeepUnsealed:
+        default: false
+        description: Whether to keep unsealed copy
+        type: boolean
+      dealPricePerDeal:
+        default: 0
+        description: Price in FIL per deal
+        type: number
+      dealPricePerGb:
+        default: 0
+        description: Price in FIL per GiB
+        type: number
+      dealPricePerGbEpoch:
+        default: 0
+        description: Price in FIL per GiB per epoch
+        type: number
+      dealProvider:
+        description: Storage Provider ID
+        type: string
+      dealStartDelay:
+        description: Deal start delay
+        type: integer
+      dealTemplate:
+        description: Deal template name or ID to use (optional)
+        type: string
+      dealUrlTemplate:
+        description: URL template for deals
+        type: string
+      dealVerified:
+        default: false
+        description: Whether deals should be verified
+        type: boolean
       deleteAfterExport:
         default: false
         description: Whether to delete the source files after export
@@ -75,6 +122,14 @@ definitions:
         items:
           type: string
         type: array
+      spValidation:
+        default: false
+        description: Enable storage provider validation
+        type: boolean
+      walletValidation:
+        default: false
+        description: Enable wallet balance validation
+        type: boolean
     required:
     - name
     type: object
@@ -416,6 +471,51 @@ definitions:
       verified:
         type: boolean
     type: object
+  model.DealConfig:
+    properties:
+      autoCreateDeals:
+        description: AutoCreateDeals enables automatic deal creation after preparation
+          completes
+        type: boolean
+      dealAnnounceToIpni:
+        description: DealAnnounceToIpni indicates whether to announce to IPNI
+        type: boolean
+      dealDuration:
+        description: DealDuration specifies the deal duration (time.Duration for backward
+          compatibility)
+        type: integer
+      dealHttpHeaders:
+        description: DealHTTPHeaders contains HTTP headers for deals
+        type: object
+      dealKeepUnsealed:
+        description: DealKeepUnsealed indicates whether to keep unsealed copy
+        type: boolean
+      dealPricePerDeal:
+        description: DealPricePerDeal specifies the price in FIL per deal
+        type: number
+      dealPricePerGb:
+        description: DealPricePerGb specifies the price in FIL per GiB
+        type: number
+      dealPricePerGbEpoch:
+        description: DealPricePerGbEpoch specifies the price in FIL per GiB per epoch
+        type: number
+      dealProvider:
+        description: DealProvider specifies the Storage Provider ID for deals
+        type: string
+      dealStartDelay:
+        description: DealStartDelay specifies the deal start delay (time.Duration
+          for backward compatibility)
+        type: integer
+      dealTemplate:
+        description: DealTemplate specifies the deal template name or ID to use (optional)
+        type: string
+      dealUrlTemplate:
+        description: DealURLTemplate specifies the URL template for deals
+        type: string
+      dealVerified:
+        description: DealVerified indicates whether deals should be verified
+        type: boolean
+    type: object
   model.DealState:
     enum:
     - proposed
@@ -531,6 +631,13 @@ definitions:
     properties:
       createdAt:
         type: string
+      dealConfig:
+        allOf:
+        - $ref: '#/definitions/model.DealConfig'
+        description: Deal configuration (encapsulated in DealConfig struct)
+      dealTemplateId:
+        description: Optional deal template to use
+        type: integer
       deleteAfterExport:
         description: DeleteAfterExport is a flag that indicates whether the source
           files should be deleted after export.
@@ -559,8 +666,14 @@ definitions:
         items:
           $ref: '#/definitions/model.Storage'
         type: array
+      spValidation:
+        description: Enable storage provider validation
+        type: boolean
       updatedAt:
         type: string
+      walletValidation:
+        description: Enable wallet balance validation
+        type: boolean
     type: object
   model.Schedule:
     properties:

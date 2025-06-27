@@ -10,9 +10,13 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/service/autodeal"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
+	"github.com/data-preservation-programs/singularity/service/workflow"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log/v2"
+	"github.com/ybbus/jsonrpc/v3"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -65,6 +69,7 @@ type Thread struct {
 	logger       *zap.SugaredLogger
 	config       Config
 	stateMonitor *StateMonitor
+	lotusClient  jsonrpc.RPCClient
 }
 
 // Start initializes and starts the execution of a worker thread.
@@ -173,7 +178,7 @@ func (w Worker) Run(ctx context.Context) error {
 		defer close(eventsFlushed)
 		analytics.Default.Start(ctx)
 		//nolint:contextcheck
-		analytics.Default.Flush()
+		_ = analytics.Default.Flush()
 	}()
 
 	threads := make([]service.Server, w.config.Concurrency)
@@ -185,6 +190,7 @@ func (w Worker) Run(ctx context.Context) error {
 			logger:       logger.With("workerID", id.String()),
 			config:       w.config,
 			stateMonitor: w.stateMonitor,
+			lotusClient:  util.NewLotusClient("", ""), // TODO: Get from config
 		}
 		threads[i] = thread
 	}
@@ -200,8 +206,39 @@ func (w Worker) Name() string {
 	return "Preparation Worker Main"
 }
 
+// triggerWorkflowProgression triggers workflow progression and auto-deal creation
+func (w *Thread) triggerWorkflowProgression(_ context.Context, jobID model.JobID) {
+	// Use a separate context with timeout to avoid blocking the main worker
+	triggerCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Trigger workflow orchestration (handles scan → pack → daggen → deals)
+	err := workflow.DefaultOrchestrator.HandleJobCompletion(
+		triggerCtx,
+		w.dbNoContext,
+		w.lotusClient,
+		jobID,
+	)
+	if err != nil {
+		w.logger.Warnw("failed to trigger workflow progression",
+			"jobID", jobID, "error", err)
+	}
+
+	// Also trigger legacy auto-deal system for backwards compatibility
+	err = autodeal.DefaultTriggerService.TriggerForJobCompletion(
+		triggerCtx,
+		w.dbNoContext,
+		w.lotusClient,
+		jobID,
+	)
+	if err != nil {
+		w.logger.Warnw("failed to trigger auto-deal creation",
+			"jobID", jobID, "error", err)
+	}
+}
+
 func (w *Thread) handleWorkComplete(ctx context.Context, jobID model.JobID) error {
-	return database.DoRetry(ctx, func() error {
+	err := database.DoRetry(ctx, func() error {
 		return w.dbNoContext.WithContext(ctx).Model(&model.Job{}).Where("id = ?", jobID).Updates(map[string]any{
 			"worker_id":         nil,
 			"error_message":     "",
@@ -209,6 +246,14 @@ func (w *Thread) handleWorkComplete(ctx context.Context, jobID model.JobID) erro
 			"state":             model.Complete,
 		}).Error
 	})
+	if err != nil {
+		return err
+	}
+
+	// Trigger workflow progression and auto-deal creation
+	w.triggerWorkflowProgression(ctx, jobID)
+
+	return nil
 }
 
 func (w *Thread) handleWorkError(ctx context.Context, jobID model.JobID, err error) error {

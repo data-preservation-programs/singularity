@@ -17,7 +17,7 @@ var ListCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 		preps, err := dataprep.Default.ListHandler(c.Context, db)
 		if err != nil {
 			return errors.WithStack(err)

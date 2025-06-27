@@ -19,6 +19,7 @@ import (
 	"github.com/data-preservation-programs/singularity/client/swagger/http/preparation"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/storage"
 	"github.com/data-preservation-programs/singularity/client/swagger/models"
+	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/gotidy/ptr"
 	"github.com/parnurzeal/gorequest"
@@ -31,9 +32,10 @@ const apiBind = "127.0.0.1:9091"
 
 func runAPI(t *testing.T, ctx context.Context) func() {
 	t.Helper()
+
 	done := make(chan struct{})
 	go func() {
-		NewRunner().Run(ctx, fmt.Sprintf("singularity run api --bind %s", apiBind))
+		_, _, _ = NewRunner().Run(ctx, fmt.Sprintf("singularity run api --bind %s", apiBind))
 		close(done)
 	}()
 
@@ -68,6 +70,9 @@ func runAPI(t *testing.T, ctx context.Context) func() {
 // 8. Pack each job
 func TestMotionIntegration(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		// Disable workflow orchestrator to prevent automatic job progression in tests
+		workflow.DefaultOrchestrator.SetEnabled(false)
+
 		ctx, cancel := context.WithCancel(ctx)
 		var testData = make([]byte, 1000)
 		_, err := rand.Read(testData)
@@ -168,7 +173,7 @@ func setupPreparation(t *testing.T, ctx context.Context, testFileName string, te
 		read, err := testData.Read(buffer)
 		if read > 0 {
 			writeBuf := buffer[:read]
-			f.Write(writeBuf)
+			_, _ = f.Write(writeBuf)
 		}
 		if err != nil {
 			require.EqualError(t, err, io.EOF.Error())
@@ -238,6 +243,9 @@ func setupPreparation(t *testing.T, ctx context.Context, testFileName string, te
 // 9. List the pieces
 func TestBasicDataPrep(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		// Disable workflow orchestrator to prevent automatic job progression in tests
+		workflow.DefaultOrchestrator.SetEnabled(false)
+
 		ctx, cancel := context.WithCancel(ctx)
 		client, done := setupPreparation(t, ctx, "test.txt", bytes.NewReader([]byte("hello world")), false)
 		defer done()

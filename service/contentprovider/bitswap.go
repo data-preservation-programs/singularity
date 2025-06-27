@@ -64,8 +64,8 @@ func (s BitswapServer) Start(ctx context.Context, exitErr chan<- error) error {
 	go func() {
 		<-ctx.Done()
 		net.Stop()
-		bsserver.Close()
-		s.host.Close()
+		_ = bsserver.Close()
+		_ = s.host.Close()
 		if exitErr != nil {
 			exitErr <- nil
 		}

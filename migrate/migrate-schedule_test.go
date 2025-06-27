@@ -24,6 +24,7 @@ func TestMigrateSchedule_DatasetNotExist(t *testing.T) {
 		t.Log(err)
 		t.Skip("Skipping test because MongoDB is not available")
 	}
+	defer os.Remove("1.txt") // Clean up the test file
 
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		flagSet := flag.NewFlagSet("", 0)
@@ -84,6 +85,13 @@ func setupMongoDBSchedule() error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
+
+	// Create the file list file that the replication request references
+	err = os.WriteFile("1.txt", []byte("baga6ea4seaqexample1234567890abcdef\nbaga6ea4seaqexample0987654321fedcba\n"), 0644)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	insertedDatasetResult, err := db.Database("singularity").Collection("scanningrequests").InsertOne(ctx, ScanningRequest{
 		Name: "test",
 	})

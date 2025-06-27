@@ -15,7 +15,7 @@ func TestBitswapServer(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		h, err := util.InitHost(nil)
 		require.NoError(t, err)
-		defer h.Close()
+		defer func() { _ = h.Close() }()
 		s := BitswapServer{
 			dbNoContext: db,
 			host:        h,

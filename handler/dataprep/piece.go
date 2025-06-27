@@ -184,7 +184,7 @@ func (DefaultHandler) AddPieceHandler(
 		if err != nil {
 			return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "failed to open file %s", request.FilePath))
 		}
-		defer file.Close()
+		defer func() { _ = file.Close() }()
 		header, err := car.ReadHeader(bufio.NewReader(file))
 		if err != nil {
 			return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "failed to read CAR header from file %s", request.FilePath))

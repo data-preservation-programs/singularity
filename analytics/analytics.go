@@ -175,7 +175,7 @@ func (c *Collector) Flush() error {
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != http.StatusOK {
 			responseBody, err := io.ReadAll(resp.Body)
@@ -198,7 +198,7 @@ func (c *Collector) Start(ctx context.Context) {
 			timer.Reset(flushInterval)
 		}
 		//nolint:contextcheck
-		c.Flush()
+		_ = c.Flush()
 	}
 }
 

@@ -19,7 +19,7 @@ var ExploreCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		entries, err := dataprep.Default.ExploreHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1), c.Args().Get(2))
 		if err != nil {

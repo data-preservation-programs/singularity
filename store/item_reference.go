@@ -64,7 +64,7 @@ func (i *FileReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 	same, explanation := storagesystem.IsSameEntry(ctx, *carBlock.File, obj)
 	if !same {
 		return nil, errors.Wrap(ErrFileHasChanged, explanation)

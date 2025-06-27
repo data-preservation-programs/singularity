@@ -33,9 +33,9 @@ func setupTestServerWithBody(t *testing.T, b string) (string, Closer) {
 	compressed := encoder.EncodeAll(body, make([]byte, 0, len(body)))
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write(compressed)
+		_, _ = w.Write(compressed)
 	}))
-	encoder.Close()
+	_ = encoder.Close()
 	return server.URL, server
 }
 
@@ -49,11 +49,19 @@ func TestDealTracker_Start(t *testing.T) {
 		tracker := NewDealTracker(db, time.Minute, "", "", "", true)
 		exitErr := make(chan error, 1)
 		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
 		err := tracker.Start(ctx, exitErr)
 		require.NoError(t, err)
-		time.Sleep(time.Second)
+		// Give the goroutines time to start
+		time.Sleep(100 * time.Millisecond)
+		// Cancel and wait for clean shutdown
 		cancel()
-		<-exitErr
+		select {
+		case <-exitErr:
+			// Successfully exited
+		case <-time.After(5 * time.Second):
+			t.Fatal("timeout waiting for tracker to exit")
+		}
 	})
 }
 
@@ -66,10 +74,17 @@ func TestDealTracker_MultipleRunning_Once(t *testing.T) {
 		defer cancel()
 		err := tracker1.Start(ctx, exitErr)
 		require.NoError(t, err)
+		// Give the first tracker time to register
+		time.Sleep(100 * time.Millisecond)
 		err2 := tracker2.Start(ctx, nil)
 		require.ErrorIs(t, err2, ErrAlreadyRunning)
 		cancel()
-		<-exitErr
+		select {
+		case <-exitErr:
+			// Successfully exited
+		case <-time.After(5 * time.Second):
+			t.Fatal("timeout waiting for tracker to exit")
+		}
 	})
 }
 
@@ -77,27 +92,40 @@ func TestDealTracker_MultipleRunning(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		tracker1 := NewDealTracker(db, time.Minute, "", "", "", false)
 		tracker2 := NewDealTracker(db, time.Minute, "", "", "", false)
-		ctx, cancel := context.WithTimeout(ctx, time.Second)
-		defer cancel()
+		// Use a shorter timeout for the second tracker
+		ctx1, cancel1 := context.WithCancel(ctx)
+		defer cancel1()
 		exitErr1 := make(chan error, 1)
-		err := tracker1.Start(ctx, exitErr1)
+		err := tracker1.Start(ctx1, exitErr1)
 		require.NoError(t, err)
-		exitErr2 := make(chan error, 2)
-		err2 := tracker2.Start(ctx, exitErr2)
+		// Give the first tracker time to register
+		time.Sleep(100 * time.Millisecond)
+		// Start second tracker with a timeout context
+		ctx2, cancel2 := context.WithTimeout(ctx, 2*time.Second)
+		defer cancel2()
+		exitErr2 := make(chan error, 1)
+		err2 := tracker2.Start(ctx2, exitErr2)
 		require.ErrorIs(t, err2, context.DeadlineExceeded)
-		<-exitErr1
+		// Clean shutdown of first tracker
+		cancel1()
+		select {
+		case <-exitErr1:
+			// Successfully exited
+		case <-time.After(5 * time.Second):
+			t.Fatal("timeout waiting for tracker1 to exit")
+		}
 	})
 }
 
 func TestDealStateStreamFromHttpRequest_Compressed(t *testing.T) {
 	url, server := setupTestServer(t)
-	defer server.Close()
+	defer func() { server.Close() }()
 	req, err := http.NewRequest("GET", url, nil)
 	require.NoError(t, err)
 	depth := 1
 	stream, _, closer, err := DealStateStreamFromHTTPRequest(req, depth, true)
 	require.NoError(t, err)
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 	var kvs []jstream.KV
 	for s := range stream {
 		pair, ok := s.Value.(jstream.KV)
@@ -114,15 +142,15 @@ func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
 	body := []byte(`{"jsonrpc":"2.0","result":{"0":{"Proposal":{"PieceCID":{"/":"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq"},"PieceSize":34359738368,"VerifiedDeal":true,"Client":"t0100","Provider":"t01000","Label":"bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz","StartEpoch":0,"EndEpoch":1552977,"StoragePricePerEpoch":"0","ProviderCollateral":"0","ClientCollateral":"0"},"State":{"SectorStartEpoch":0,"LastUpdatedEpoch":691200,"SlashEpoch":-1,"VerifiedClaim":0}}}}`)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write(body)
+		_, _ = w.Write(body)
 	}))
-	defer server.Close()
+	defer func() { server.Close() }()
 	req, err := http.NewRequest("GET", server.URL, nil)
 	require.NoError(t, err)
 	depth := 2
 	stream, _, closer, err := DealStateStreamFromHTTPRequest(req, depth, false)
 	require.NoError(t, err)
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 	var kvs []jstream.KV
 	for s := range stream {
 		pair, ok := s.Value.(jstream.KV)
@@ -137,7 +165,7 @@ func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
 
 func TestTrackDeal(t *testing.T) {
 	url, server := setupTestServer(t)
-	defer server.Close()
+	defer func() { server.Close() }()
 	tracker := NewDealTracker(nil, 0, url, "", "", true)
 	var deals []Deal
 	callback := func(dealID uint64, deal Deal) error {
@@ -342,7 +370,7 @@ func TestRunOnce(t *testing.T) {
 		}
 		body, err := json.Marshal(deals)
 		url, server := setupTestServerWithBody(t, string(body))
-		defer server.Close()
+		defer func() { server.Close() }()
 		require.NoError(t, err)
 		tracker := NewDealTracker(db, time.Minute, url, "https://api.node.glif.io/", "", true)
 		err = tracker.runOnce(context.Background())
