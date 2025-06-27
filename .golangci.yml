@@ -1,24 +1,9 @@
-version: v1
+version: "2"
 run:
   tests: false
-  skip-files:
-    - ".*_test.go"
-  skip-dirs:
-    - third_party
-    - builtin
-    - examples
 linters:
-  enable-all: false
-  enable:
-    - govet
-    - errcheck
-    - gosimple
-    - ineffassign
-    - unused
-    - gosec
-    - revive
+  default: all
   disable:
-    - typecheck
     - containedctx
     - cyclop
     - depguard
@@ -61,7 +46,6 @@ linters:
     - intrange
     - staticcheck
     - errchkjson
-    - exportloopref
 linters-settings:
     gosec:
       excludes:
