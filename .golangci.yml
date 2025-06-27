@@ -1,4 +1,4 @@
-# Converted to v1 format for compatibility
+version: v1
 run:
   tests: false
 linters:
