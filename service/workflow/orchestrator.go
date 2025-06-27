@@ -138,6 +138,123 @@ func (o *WorkflowOrchestrator) HandleJobCompletion(
 }
 
 // handleScanCompletion triggers pack jobs after all scan jobs complete
+
+// ProcessPendingWorkflows processes preparations that need workflow progression
+func (o *WorkflowOrchestrator) ProcessPendingWorkflows(
+	ctx context.Context,
+	db *gorm.DB,
+	lotusClient jsonrpc.RPCClient,
+) error {
+	if !o.IsEnabled() {
+		return nil
+	}
+
+	logger.Debug("Checking for preparations needing workflow progression")
+
+	// Find preparations that might need progression
+	var preparations []model.Preparation
+	err := db.WithContext(ctx).Find(&preparations).Error
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	for _, prep := range preparations {
+		err = o.checkPreparationWorkflow(ctx, db, lotusClient, &prep)
+		if err != nil {
+			logger.Errorf("Failed to check workflow for preparation %s: %v", prep.Name, err)
+			continue
+		}
+	}
+
+	return nil
+}
+
+// checkPreparationWorkflow checks if a preparation needs workflow progression
+func (o *WorkflowOrchestrator) checkPreparationWorkflow(
+	ctx context.Context,
+	db *gorm.DB,
+	lotusClient jsonrpc.RPCClient,
+	preparation *model.Preparation,
+) error {
+	// Acquire preparation-specific lock to prevent concurrent workflow transitions
+	o.lockPreparation(uint(preparation.ID))
+	defer o.unlockPreparation(uint(preparation.ID))
+	// Get job counts by type and state
+	type JobCount struct {
+		Type  model.JobType  `json:"type"`
+		State model.JobState `json:"state"`
+		Count int64          `json:"count"`
+	}
+
+	var jobCounts []JobCount
+	err := db.WithContext(ctx).Model(&model.Job{}).
+		Select("type, state, count(*) as count").
+		Joins("JOIN source_attachments ON jobs.attachment_id = source_attachments.id").
+		Where("source_attachments.preparation_id = ?", preparation.ID).
+		Group("type, state").
+		Find(&jobCounts).Error
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Analyze job state to determine if progression is needed
+	scanComplete := true
+	packComplete := true
+	hasPackJobs := false
+	hasDagGenJobs := false
+
+	for _, jc := range jobCounts {
+		switch jc.Type {
+		case model.Scan:
+			if jc.State != model.Complete {
+				scanComplete = false
+			}
+		case model.Pack:
+			hasPackJobs = true
+			if jc.State != model.Complete {
+				packComplete = false
+			}
+		case model.DagGen:
+			hasDagGenJobs = true
+		}
+	}
+
+	// Trigger appropriate progression
+	if scanComplete && !hasPackJobs && o.config.ScanToPack {
+		logger.Debugf("Triggering pack jobs for preparation %s", preparation.Name)
+		return o.handleScanCompletion(ctx, db, lotusClient, preparation)
+	}
+
+	if packComplete && hasPackJobs && !hasDagGenJobs && o.config.PackToDagGen {
+		logger.Debugf("Triggering daggen jobs for preparation %s", preparation.Name)
+		return o.handlePackCompletion(ctx, db, lotusClient, preparation)
+	}
+
+	return nil
+}
+
+func (o *WorkflowOrchestrator) lockPreparation(preparationID uint) {
+	o.locksMutex.Lock()
+	if _, exists := o.preparationLocks[preparationID]; !exists {
+		o.preparationLocks[preparationID] = &sync.Mutex{}
+	}
+	mutex := o.preparationLocks[preparationID]
+	o.locksMutex.Unlock()
+
+	mutex.Lock()
+}
+
+// unlockPreparation releases the lock for a specific preparation
+func (o *WorkflowOrchestrator) unlockPreparation(preparationID uint) {
+	o.locksMutex.RLock()
+	mutex := o.preparationLocks[preparationID]
+	o.locksMutex.RUnlock()
+
+	if mutex != nil {
+		mutex.Unlock()
+	}
+}
+
 func (o *WorkflowOrchestrator) handleScanCompletion(
 	ctx context.Context,
 	db *gorm.DB,
@@ -423,121 +540,5 @@ func (o *WorkflowOrchestrator) logWorkflowProgress(ctx context.Context, db *gorm
 	_, err := o.notificationHandler.LogInfo(ctx, db, "workflow-orchestrator", title, message, metadata)
 	if err != nil {
 		logger.Errorf("Failed to log workflow progress: %v", err)
-	}
-}
-
-// ProcessPendingWorkflows processes preparations that need workflow progression
-func (o *WorkflowOrchestrator) ProcessPendingWorkflows(
-	ctx context.Context,
-	db *gorm.DB,
-	lotusClient jsonrpc.RPCClient,
-) error {
-	if !o.IsEnabled() {
-		return nil
-	}
-
-	logger.Debug("Checking for preparations needing workflow progression")
-
-	// Find preparations that might need progression
-	var preparations []model.Preparation
-	err := db.WithContext(ctx).Find(&preparations).Error
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	for _, prep := range preparations {
-		err = o.checkPreparationWorkflow(ctx, db, lotusClient, &prep)
-		if err != nil {
-			logger.Errorf("Failed to check workflow for preparation %s: %v", prep.Name, err)
-			continue
-		}
-	}
-
-	return nil
-}
-
-// checkPreparationWorkflow checks if a preparation needs workflow progression
-func (o *WorkflowOrchestrator) checkPreparationWorkflow(
-	ctx context.Context,
-	db *gorm.DB,
-	lotusClient jsonrpc.RPCClient,
-	preparation *model.Preparation,
-) error {
-	// Acquire preparation-specific lock to prevent concurrent workflow transitions
-	o.lockPreparation(uint(preparation.ID))
-	defer o.unlockPreparation(uint(preparation.ID))
-	// Get job counts by type and state
-	type JobCount struct {
-		Type  model.JobType  `json:"type"`
-		State model.JobState `json:"state"`
-		Count int64          `json:"count"`
-	}
-
-	var jobCounts []JobCount
-	err := db.WithContext(ctx).Model(&model.Job{}).
-		Select("type, state, count(*) as count").
-		Joins("JOIN source_attachments ON jobs.attachment_id = source_attachments.id").
-		Where("source_attachments.preparation_id = ?", preparation.ID).
-		Group("type, state").
-		Find(&jobCounts).Error
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	// Analyze job state to determine if progression is needed
-	scanComplete := true
-	packComplete := true
-	hasPackJobs := false
-	hasDagGenJobs := false
-
-	for _, jc := range jobCounts {
-		switch jc.Type {
-		case model.Scan:
-			if jc.State != model.Complete {
-				scanComplete = false
-			}
-		case model.Pack:
-			hasPackJobs = true
-			if jc.State != model.Complete {
-				packComplete = false
-			}
-		case model.DagGen:
-			hasDagGenJobs = true
-		}
-	}
-
-	// Trigger appropriate progression
-	if scanComplete && !hasPackJobs && o.config.ScanToPack {
-		logger.Debugf("Triggering pack jobs for preparation %s", preparation.Name)
-		return o.handleScanCompletion(ctx, db, lotusClient, preparation)
-	}
-
-	if packComplete && hasPackJobs && !hasDagGenJobs && o.config.PackToDagGen {
-		logger.Debugf("Triggering daggen jobs for preparation %s", preparation.Name)
-		return o.handlePackCompletion(ctx, db, lotusClient, preparation)
-	}
-
-	return nil
-}
-
-func (o *WorkflowOrchestrator) lockPreparation(preparationID uint) {
-	o.locksMutex.Lock()
-	if _, exists := o.preparationLocks[preparationID]; !exists {
-		o.preparationLocks[preparationID] = &sync.Mutex{}
-	}
-	mutex := o.preparationLocks[preparationID]
-	o.locksMutex.Unlock()
-
-	mutex.Lock()
-}
-
-// unlockPreparation releases the lock for a specific preparation
-func (o *WorkflowOrchestrator) unlockPreparation(preparationID uint) {
-	o.locksMutex.RLock()
-	mutex := o.preparationLocks[preparationID]
-	o.locksMutex.RUnlock()
-
-	if mutex != nil {
-		mutex.Unlock()
 	}
 }

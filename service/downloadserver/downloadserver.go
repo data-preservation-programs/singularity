@@ -180,6 +180,20 @@ func GetMetadata(
 	return &pieceMetadata, 0, nil
 }
 
+var Logger = log.Logger("downloadserver")
+
+var _ service.Server = &DownloadServer{}
+
+func NewDownloadServer(bind string, api string, config map[string]string, clientConfig model.ClientConfig) *DownloadServer {
+	return &DownloadServer{
+		bind:         bind,
+		api:          api,
+		config:       config,
+		clientConfig: clientConfig,
+		usageCache:   NewUsageCache[contentprovider.PieceMetadata](time.Minute),
+	}
+}
+
 func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error {
 	e := echo.New()
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{}))
@@ -237,20 +251,6 @@ func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error 
 
 func (d *DownloadServer) Name() string {
 	return "DownloadServer"
-}
-
-var Logger = log.Logger("downloadserver")
-
-var _ service.Server = &DownloadServer{}
-
-func NewDownloadServer(bind string, api string, config map[string]string, clientConfig model.ClientConfig) *DownloadServer {
-	return &DownloadServer{
-		bind:         bind,
-		api:          api,
-		config:       config,
-		clientConfig: clientConfig,
-		usageCache:   NewUsageCache[contentprovider.PieceMetadata](time.Minute),
-	}
 }
 
 func (d *DownloadServer) handleGetPiece(c echo.Context) error {

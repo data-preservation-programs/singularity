@@ -277,7 +277,7 @@ func (m *WorkerManager) startOptimalWorker(ctx context.Context, jobCounts map[mo
 }
 
 // startWorker starts a new worker with specified configuration
-func (m *WorkerManager) startWorker(ctx context.Context, jobTypes []model.JobType, concurrency int) error {
+func (m *WorkerManager) startWorker(_ context.Context, jobTypes []model.JobType, concurrency int) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -346,7 +346,7 @@ func (m *WorkerManager) startWorker(ctx context.Context, jobTypes []model.JobTyp
 }
 
 // stopWorker stops a specific worker
-func (m *WorkerManager) stopWorker(ctx context.Context, workerID string) error {
+func (m *WorkerManager) stopWorker(_ context.Context, workerID string) error {
 	m.mutex.Lock()
 	worker, exists := m.activeWorkers[workerID]
 	if !exists || worker == nil {
