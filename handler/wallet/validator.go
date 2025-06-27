@@ -17,20 +17,6 @@ import (
 
 var validatorLogger = log.Logger("wallet-validator")
 
-// formatFIL converts attoFIL (big.Int) to human-readable FIL string
-func formatFIL(attoFIL *big.Int) string {
-	if attoFIL == nil {
-		return "0 FIL"
-	}
-
-	// Convert attoFIL to FIL (divide by 10^18)
-	filValue := new(big.Float).SetInt(attoFIL)
-	filValue.Quo(filValue, big.NewFloat(1e18))
-
-	// Format with appropriate precision
-	return fmt.Sprintf("%.9g FIL", filValue)
-}
-
 type ValidationResult struct {
 	IsValid          bool            `json:"isValid"`
 	WalletAddress    string          `json:"walletAddress"`
@@ -207,6 +193,20 @@ func (v *BalanceValidator) CalculateRequiredBalance(
 	// Convert to big.Int
 	result, _ := totalAttoFIL.Int(nil)
 	return result
+}
+
+// formatFIL converts attoFIL (big.Int) to human-readable FIL string
+func formatFIL(attoFIL *big.Int) string {
+	if attoFIL == nil {
+		return "0 FIL"
+	}
+
+	// Convert attoFIL to FIL (divide by 10^18)
+	filValue := new(big.Float).SetInt(attoFIL)
+	filValue.Quo(filValue, big.NewFloat(1e18))
+
+	// Format with appropriate precision
+	return fmt.Sprintf("%.9g FIL", filValue)
 }
 
 // getWalletBalance retrieves the current balance of a wallet

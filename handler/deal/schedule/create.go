@@ -47,18 +47,6 @@ type CreateRequest struct {
 	Force            bool     `json:"force"`            // Force to send out deals regardless of replication restriction
 }
 
-func argToDuration(s string) (time.Duration, error) {
-	duration, err := time.ParseDuration(s)
-	if err == nil {
-		return duration, nil
-	}
-	epochs, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		return 0, errors.WithStack(err)
-	}
-	return time.Duration(epochs) * 30 * time.Second, nil
-}
-
 // CreateHandler creates a new schedule based on the provided CreateRequest.
 //
 // The function performs the following steps:
@@ -213,6 +201,18 @@ func (DefaultHandler) CreateHandler(
 		return nil, errors.WithStack(err)
 	}
 	return &schedule, nil
+}
+
+func argToDuration(s string) (time.Duration, error) {
+	duration, err := time.ParseDuration(s)
+	if err == nil {
+		return duration, nil
+	}
+	epochs, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	return time.Duration(epochs) * 30 * time.Second, nil
 }
 
 // @ID CreateSchedule

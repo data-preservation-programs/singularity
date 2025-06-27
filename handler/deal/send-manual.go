@@ -36,18 +36,6 @@ type Proposal struct {
 	FileSize        uint64   `json:"fileSize"`                             // File size in bytes for boost to fetch the CAR file
 }
 
-func argToDuration(s string) (time.Duration, error) {
-	duration, err := time.ParseDuration(s)
-	if err == nil {
-		return duration, nil
-	}
-	epochs, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		return 0, errors.WithStack(err)
-	}
-	return time.Duration(epochs) * 30 * time.Second, nil
-}
-
 // SendManualHandler creates a deal proposal manually based on the information provided in the Proposal.
 //
 // The function searches for the client's wallet using the provided address, validates various input fields such as the
@@ -141,6 +129,18 @@ func (DefaultHandler) SendManualHandler(
 		return nil, errors.WithStack(err)
 	}
 	return dealModel, nil
+}
+
+func argToDuration(s string) (time.Duration, error) {
+	duration, err := time.ParseDuration(s)
+	if err == nil {
+		return duration, nil
+	}
+	epochs, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	return time.Duration(epochs) * 30 * time.Second, nil
 }
 
 // @ID SendManual

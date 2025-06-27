@@ -15,19 +15,6 @@ var pausableStatesForScan = []model.JobState{model.Processing, model.Ready}
 
 var startableStatesForScan = []model.JobState{model.Paused, model.Created, model.Error, model.Complete}
 
-func validateSourceStorage(ctx context.Context, db *gorm.DB, id string, name string) (*model.SourceAttachment, error) {
-	db = db.WithContext(ctx)
-	var sourceAttachment model.SourceAttachment
-	err := sourceAttachment.FindByPreparationAndSource(db, id, name)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "sourceAttachment '%s' is not attached to preparation %s", name, id)
-	}
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	return &sourceAttachment, nil
-}
-
 // StartJobHandler initializes or restarts a job for a given source storage.
 //
 // The function checks if there's an existing job of the given type for the source. If the job
@@ -183,3 +170,16 @@ func (DefaultHandler) PauseScanHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/source/{name}/pause-scan [post]
 func _() {}
+
+func validateSourceStorage(ctx context.Context, db *gorm.DB, id string, name string) (*model.SourceAttachment, error) {
+	db = db.WithContext(ctx)
+	var sourceAttachment model.SourceAttachment
+	err := sourceAttachment.FindByPreparationAndSource(db, id, name)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "sourceAttachment '%s' is not attached to preparation %s", name, id)
+	}
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &sourceAttachment, nil
+}

@@ -27,47 +27,6 @@ const (
 	NumLinkPerNode       = 1024
 )
 
-// createParentNode creates a new parent ProtoNode for a given set of links.
-// It constructs a UnixFS node with the type Data_File and adds the sizes of
-// the links as block sizes to this UnixFS node. It then creates a new ProtoNode
-// with the UnixFS node's data and adds the links to this ProtoNode.
-//
-// Parameters:
-//   - links: An array of format.Link objects. These links will be added as child
-//     links to the new ProtoNode.
-//
-// Returns:
-//   - *merkledag.ProtoNode: A pointer to the new parent ProtoNode that has been
-//     created. This node contains the data of the UnixFS node and the child links.
-//   - uint64: The total size of the data that the new parent node represents. This
-//     is the sum of the sizes of all the links.
-//   - error: An error that can occur during the creation of the new parent node, or
-//     nil if the operation was successful.
-func createParentNode(links []format.Link) (*merkledag.ProtoNode, uint64, error) {
-	node := unixfs.NewFSNode(unixfs_pb.Data_File)
-	total := uint64(0)
-	for _, link := range links {
-		node.AddBlockSize(link.Size)
-		total += link.Size
-	}
-	nodeBytes, err := node.GetBytes()
-	if err != nil {
-		return nil, 0, errors.WithStack(err)
-	}
-	pbNode := merkledag.NodeWithData(nodeBytes)
-	err = pbNode.SetCidBuilder(merkledag.V1CidPrefix())
-	if err != nil {
-		return nil, 0, errors.WithStack(err)
-	}
-	for i := range links {
-		err = pbNode.AddRawLink("", &links[i])
-		if err != nil {
-			return nil, 0, errors.WithStack(err)
-		}
-	}
-	return pbNode, total, nil
-}
-
 func Min(i int, i2 int) int {
 	if i < i2 {
 		return i
@@ -179,4 +138,45 @@ func WriteCarBlock(writer io.Writer, block blocks.Block) (int64, error) {
 	}
 	written += n
 	return written, nil
+}
+
+// createParentNode creates a new parent ProtoNode for a given set of links.
+// It constructs a UnixFS node with the type Data_File and adds the sizes of
+// the links as block sizes to this UnixFS node. It then creates a new ProtoNode
+// with the UnixFS node's data and adds the links to this ProtoNode.
+//
+// Parameters:
+//   - links: An array of format.Link objects. These links will be added as child
+//     links to the new ProtoNode.
+//
+// Returns:
+//   - *merkledag.ProtoNode: A pointer to the new parent ProtoNode that has been
+//     created. This node contains the data of the UnixFS node and the child links.
+//   - uint64: The total size of the data that the new parent node represents. This
+//     is the sum of the sizes of all the links.
+//   - error: An error that can occur during the creation of the new parent node, or
+//     nil if the operation was successful.
+func createParentNode(links []format.Link) (*merkledag.ProtoNode, uint64, error) {
+	node := unixfs.NewFSNode(unixfs_pb.Data_File)
+	total := uint64(0)
+	for _, link := range links {
+		node.AddBlockSize(link.Size)
+		total += link.Size
+	}
+	nodeBytes, err := node.GetBytes()
+	if err != nil {
+		return nil, 0, errors.WithStack(err)
+	}
+	pbNode := merkledag.NodeWithData(nodeBytes)
+	err = pbNode.SetCidBuilder(merkledag.V1CidPrefix())
+	if err != nil {
+		return nil, 0, errors.WithStack(err)
+	}
+	for i := range links {
+		err = pbNode.AddRawLink("", &links[i])
+		if err != nil {
+			return nil, 0, errors.WithStack(err)
+		}
+	}
+	return pbNode, total, nil
 }
