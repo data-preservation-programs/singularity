@@ -312,7 +312,7 @@ func SetupHelpPager() {
 		numLines := strings.Count(helpText.String(), "\n")
 		_, maxLinesWithoutPager := terminal.GetSize()
 		if numLines < maxLinesWithoutPager-1 {
-			w.Write(helpText.Bytes())
+			_, _ = w.Write(helpText.Bytes())
 			return
 		}
 		pager := os.Getenv("PAGER")
@@ -322,27 +322,27 @@ func SetupHelpPager() {
 
 		pagerPath, err := exec.LookPath(pager)
 		if err != nil {
-			w.Write(helpText.Bytes())
+			_, _ = w.Write(helpText.Bytes())
 			return
 		}
 		cmd := exec.Command(pagerPath)
 		pagerIn, err := cmd.StdinPipe()
 		cmd.Stdout = w
 		if err != nil {
-			w.Write(helpText.Bytes())
+			_, _ = w.Write(helpText.Bytes())
 			return
 		}
 
 		if err := cmd.Start(); err != nil {
-			w.Write(helpText.Bytes())
+			_, _ = w.Write(helpText.Bytes())
 			return
 		}
 
 		if _, err := io.Copy(pagerIn, &helpText); err != nil {
-			w.Write(helpText.Bytes())
+			_, _ = w.Write(helpText.Bytes())
 			return
 		}
-		pagerIn.Close()
-		cmd.Wait()
+		_ = pagerIn.Close()
+		_ = cmd.Wait()
 	}
 }

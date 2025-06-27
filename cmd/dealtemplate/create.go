@@ -80,7 +80,7 @@ var CreateCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 		db = db.WithContext(c.Context)
 
 		// Validate inputs

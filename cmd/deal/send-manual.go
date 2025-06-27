@@ -167,7 +167,7 @@ Notes:
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		ctx, cancel := context.WithTimeout(c.Context, timeout)
 		defer cancel()
@@ -175,7 +175,7 @@ Notes:
 		if err != nil {
 			return errors.Wrap(err, "failed to init host")
 		}
-		defer h.Close()
+		defer func() { _ = h.Close() }()
 		dealMaker := replication.NewDealMaker(
 			util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token")),
 			h,

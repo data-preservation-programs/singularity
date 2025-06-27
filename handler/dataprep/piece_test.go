@@ -146,7 +146,7 @@ func TestAddPieceHandler(t *testing.T) {
 					require.NoError(t, err)
 					_, err = packutil.WriteCarHeader(f, packutil.EmptyFileCid)
 					require.NoError(t, err)
-					f.Close()
+					_ = f.Close()
 					c, err := Default.AddPieceHandler(ctx, db, name, AddPieceRequest{
 						PieceCID:  "baga6ea4seaqchxeb6cwpiephnus27kplk7lku225rdhrsgb3ej4smaqwgop6wkq",
 						PieceSize: "65536",

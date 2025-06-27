@@ -18,7 +18,7 @@ var RenameCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		preparation, err := dataprep.Default.RenamePreparationHandler(c.Context, db, c.Args().Get(0), dataprep.RenameRequest{Name: c.Args().Get(1)})
 		if err != nil {

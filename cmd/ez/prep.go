@@ -83,7 +83,7 @@ var PrepCmd = &cli.Command{
 			return errors.Wrapf(err, "failed to open database %s", databaseFile)
 		}
 
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		// Step 1, initialize the database
 		err = admin.Default.InitHandler(c.Context, db)

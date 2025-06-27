@@ -157,7 +157,7 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 			// still needed. Will read more data from next range(s).
 		}
 		// No more leftover data in rangeReader, or seek since last read.
-		r.rangeReader.close()
+		_ = r.rangeReader.close()
 		r.rangeReader = nil
 	}
 
@@ -277,7 +277,7 @@ func (r *filecoinReader) Seek(offset int64, whence int) (int64, error) {
 func (r *filecoinReader) Close() error {
 	var err error
 	if r.rangeReader != nil {
-		err = r.rangeReader.close()
+		err = _ = r.rangeReader.close()
 		r.rangeReader = nil
 	}
 	return err

@@ -40,7 +40,7 @@ var ListCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 		deals, err := deal.Default.ListHandler(c.Context, db, deal.ListDealRequest{
 			Preparations: c.StringSlice("preparation"),
 			Sources:      c.StringSlice("source"),

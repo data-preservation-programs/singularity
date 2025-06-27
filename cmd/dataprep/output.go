@@ -19,7 +19,7 @@ var AttachOutputCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 		prep, err := dataprep.Default.AddOutputStorageHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
@@ -40,7 +40,7 @@ var DetachOutputCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 		prep, err := dataprep.Default.RemoveOutputStorageHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)

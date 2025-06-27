@@ -54,7 +54,7 @@ var ContentProviderCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		config := contentprovider.Config{
 			HTTP: contentprovider.HTTPConfig{

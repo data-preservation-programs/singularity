@@ -24,7 +24,7 @@ var RemoveCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 		return wallet.Default.RemoveHandler(c.Context, db, c.Args().Get(0))
 	},
 }

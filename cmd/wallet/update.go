@@ -50,7 +50,7 @@ EXAMPLES:
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		// Build the update request
 		request := wallet.UpdateRequest{}

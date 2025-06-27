@@ -181,7 +181,7 @@ This is the simplest way to onboard data from source to storage deals.`,
 		if err != nil {
 			return outputJSONError("failed to initialize database", err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		ctx := c.Context
 

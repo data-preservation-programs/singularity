@@ -19,7 +19,7 @@ var MigrateCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		// Check if migrations table exists (indicates versioned migration strategy is in place)
 		if !db.Migrator().HasTable("migrations") {
@@ -37,7 +37,7 @@ var MigrateCmd = &cli.Command{
 				if err != nil {
 					return errors.WithStack(err)
 				}
-				defer closer.Close()
+				defer func() { _ = closer.Close() }()
 				return model.GetMigrator(db).Migrate()
 			},
 		},
@@ -49,7 +49,7 @@ var MigrateCmd = &cli.Command{
 				if err != nil {
 					return errors.WithStack(err)
 				}
-				defer closer.Close()
+				defer func() { _ = closer.Close() }()
 				return model.GetMigrator(db).RollbackLast()
 			},
 		},
@@ -63,7 +63,7 @@ var MigrateCmd = &cli.Command{
 				if err != nil {
 					return errors.WithStack(err)
 				}
-				defer closer.Close()
+				defer func() { _ = closer.Close() }()
 
 				id := c.Args().Get(0)
 
@@ -95,7 +95,7 @@ var MigrateCmd = &cli.Command{
 				if err != nil {
 					return errors.WithStack(err)
 				}
-				defer closer.Close()
+				defer func() { _ = closer.Close() }()
 
 				last, err := model.GetMigrator(db).GetLastMigration()
 				if err != nil {

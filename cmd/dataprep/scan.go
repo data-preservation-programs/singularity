@@ -19,7 +19,7 @@ var StartScanCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 		job, err := job.Default.StartScanHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
@@ -40,7 +40,7 @@ var PauseScanCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 		job, err := job.Default.PauseScanHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)

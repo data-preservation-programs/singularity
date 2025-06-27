@@ -210,7 +210,7 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Get the Content-Length header
 	contentLength := resp.ContentLength
@@ -253,7 +253,7 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 				errChan <- errors.WithStack(err)
 				return
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 				errChan <- errors.Newf("unexpected status code %d", resp.StatusCode)

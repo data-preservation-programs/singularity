@@ -29,7 +29,7 @@ var DeleteCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 		db = db.WithContext(c.Context)
 
 		err = dealtemplate.Default.DeleteHandler(c.Context, db, templateIdentifier)

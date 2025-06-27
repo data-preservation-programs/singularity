@@ -92,7 +92,7 @@ This is the recommended way to run fully automated data preparation.`,
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 
 		// Create worker manager
 		workerConfig := workermanager.ManagerConfig{

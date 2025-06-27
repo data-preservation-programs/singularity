@@ -35,7 +35,7 @@ func runAPI(t *testing.T, ctx context.Context) func() {
 
 	done := make(chan struct{})
 	go func() {
-		NewRunner().Run(ctx, fmt.Sprintf("singularity run api --bind %s", apiBind))
+		_ = NewRunner().Run(ctx, fmt.Sprintf("singularity run api --bind %s", apiBind))
 		close(done)
 	}()
 
@@ -173,7 +173,7 @@ func setupPreparation(t *testing.T, ctx context.Context, testFileName string, te
 		read, err := testData.Read(buffer)
 		if read > 0 {
 			writeBuf := buffer[:read]
-			f.Write(writeBuf)
+				_, _ = f.Write(writeBuf)
 		}
 		if err != nil {
 			require.EqualError(t, err, io.EOF.Error())
