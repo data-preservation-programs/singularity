@@ -64,6 +64,7 @@ func TestDatasetWorker_ExitOnComplete(t *testing.T) {
 			AttachmentID: attachment.ID,
 			Name:         "root",
 			ParentID:     nil, // This makes it a root directory
+			CID:          model.CID(testutil.TestCid), // Set a test CID so RootDirectoryCID can find it
 		}
 		err = db.Create(&dir).Error
 		require.NoError(t, err)
