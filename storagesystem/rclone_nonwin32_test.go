@@ -38,7 +38,7 @@ func TestInAccessibleFiles(t *testing.T) {
 	require.NoError(t, err)
 
 	// Accessible folder and file
-	err = os.MkdirAll(filepath.Join(tmp, "sub2"), 0755)
+	err = os.MkdirAll(filepath.Join(tmp, "sub2"), 0750)
 	require.NoError(t, err)
 	err = os.WriteFile(filepath.Join(tmp, "test2.txt"), []byte("test"), 0644)
 	require.NoError(t, err)

@@ -226,7 +226,7 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 				return errors.Wrapf(err, "failed to create directory from node for CID %s", c)
 			}
 			_, _ = fmt.Fprintf(ctx.App.Writer, "Create Dir %s\n", outPath)
-			err = os.MkdirAll(outPath, 0o755)
+			err = os.MkdirAll(outPath, 0o750)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create output directory %s", outPath)
 			}

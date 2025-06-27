@@ -184,7 +184,7 @@ type transportsListener struct {
 
 // Called when the client opens a libp2p stream
 func (l transportsListener) HandleQueries(s network.Stream) {
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	// Write the response to the client
 	err := reg.TypeToWriter(&l.response, s, dagcbor.Encode)

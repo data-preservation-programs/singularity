@@ -119,7 +119,7 @@ func TestDealTracker_MultipleRunning(t *testing.T) {
 
 func TestDealStateStreamFromHttpRequest_Compressed(t *testing.T) {
 	url, server := setupTestServer(t)
-	defer server.Close()
+	defer func() { _ = server.Close() }()
 	req, err := http.NewRequest("GET", url, nil)
 	require.NoError(t, err)
 	depth := 1
@@ -144,7 +144,7 @@ func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(body)
 	}))
-	defer server.Close()
+	defer func() { _ = server.Close() }()
 	req, err := http.NewRequest("GET", server.URL, nil)
 	require.NoError(t, err)
 	depth := 2
@@ -165,7 +165,7 @@ func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
 
 func TestTrackDeal(t *testing.T) {
 	url, server := setupTestServer(t)
-	defer server.Close()
+	defer func() { _ = server.Close() }()
 	tracker := NewDealTracker(nil, 0, url, "", "", true)
 	var deals []Deal
 	callback := func(dealID uint64, deal Deal) error {
@@ -370,7 +370,7 @@ func TestRunOnce(t *testing.T) {
 		}
 		body, err := json.Marshal(deals)
 		url, server := setupTestServerWithBody(t, string(body))
-		defer server.Close()
+		defer func() { _ = server.Close() }()
 		require.NoError(t, err)
 		tracker := NewDealTracker(db, time.Minute, url, "https://api.node.glif.io/", "", true)
 		err = tracker.runOnce(context.Background())

@@ -20,7 +20,7 @@ import (
 
 func TestNewUsageCache(t *testing.T) {
 	cache := NewUsageCache[string](time.Millisecond * 100)
-	defer cache.Close()
+	defer func() { _ = cache.Close() }()
 
 	assert.NotNil(t, cache)
 	assert.NotNil(t, cache.data)
@@ -29,7 +29,7 @@ func TestNewUsageCache(t *testing.T) {
 
 func TestUsageCache_SetAndGet(t *testing.T) {
 	cache := NewUsageCache[string](time.Second)
-	defer cache.Close()
+	defer func() { _ = cache.Close() }()
 
 	// Test setting and getting
 	cache.Set("key1", "value1")
@@ -45,7 +45,7 @@ func TestUsageCache_SetAndGet(t *testing.T) {
 
 func TestUsageCache_Done(t *testing.T) {
 	cache := NewUsageCache[string](time.Second)
-	defer cache.Close()
+	defer func() { _ = cache.Close() }()
 
 	// Set a value and increment usage
 	cache.Set("key1", "value1")
@@ -60,7 +60,7 @@ func TestUsageCache_Done(t *testing.T) {
 
 func TestUsageCache_TTL_Cleanup(t *testing.T) {
 	cache := NewUsageCache[string](time.Millisecond * 50)
-	defer cache.Close()
+	defer func() { _ = cache.Close() }()
 
 	// Set a value
 	cache.Set("key1", "value1")
@@ -169,7 +169,7 @@ func TestGetMetadata_Success(t *testing.T) {
 		err := encoder.Encode(mockMetadata)
 		require.NoError(t, err)
 	}))
-	defer mockServer.Close()
+	defer func() { _ = mockServer.Close() }()
 
 	ctx := context.Background()
 	config := map[string]string{}
@@ -187,7 +187,7 @@ func TestGetMetadata_404(t *testing.T) {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(w, "not found")
 	}))
-	defer mockServer.Close()
+	defer func() { _ = mockServer.Close() }()
 
 	ctx := context.Background()
 	config := map[string]string{}
@@ -204,7 +204,7 @@ func TestGetMetadata_InvalidResponse(t *testing.T) {
 		w.Header().Set("Content-Type", "application/cbor")
 		_, _ = w.Write([]byte("invalid cbor data"))
 	}))
-	defer mockServer.Close()
+	defer func() { _ = mockServer.Close() }()
 
 	ctx := context.Background()
 	config := map[string]string{}
@@ -236,7 +236,7 @@ func TestGetMetadata_ConfigProcessing(t *testing.T) {
 		encoder := cbor.NewEncoder(w)
 		_ = encoder.Encode(mockMetadata)
 	}))
-	defer mockServer.Close()
+	defer func() { _ = mockServer.Close() }()
 
 	ctx := context.Background()
 	config := map[string]string{
