@@ -24,7 +24,7 @@ func safeIntToUint64(val int) uint64 {
 	if val < 0 {
 		return 0
 	}
-	if val > math.MaxInt64 {
+	if val > math.MaxInt {
 		return math.MaxUint64
 	}
 	return uint64(val)
