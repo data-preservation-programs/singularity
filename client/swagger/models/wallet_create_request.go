@@ -17,9 +17,6 @@ import (
 // swagger:model wallet.CreateRequest
 type WalletCreateRequest struct {
 
-	// This is either "secp256k1" or "bls"
-	KeyType string `json:"keyType,omitempty"`
-
 	// actor Id
 	ActorID string `json:"actorId,omitempty"`
 

@@ -13,11 +13,6 @@ var CreateCmd = &cli.Command{
 	Name:      "create",
 	Usage:     "Create a new wallet",
 	ArgsUsage: "[type]",
-	Description: `Create a new Filecoin wallet using offline keypair generation.
-
-The wallet will be stored locally in the Singularity database and can be used for making deals and other operations. The private key is generated securely and stored encrypted.
-
-SUPPORTED KEY TYPES:
 	Description: `Create a new Filecoin wallet or storage provider contact entry.
 
 The command automatically detects the wallet type based on provided arguments:
@@ -29,30 +24,20 @@ SUPPORTED KEY TYPES (for UserWallet):
   bls          BLS signature scheme (Boneh-Lynn-Shacham)
 
 EXAMPLES:
-  # Create a secp256k1 wallet (default)
-  singularity wallet create
+  Create a secp256k1 wallet (default)
+    singularity wallet create
 
-  # Create a secp256k1 wallet explicitly
-  singularity wallet create secp256k1
+  Create a secp256k1 wallet explicitly
+    singularity wallet create secp256k1
 
-  # Create a BLS wallet
-  singularity wallet create bls
+  Create a BLS wallet
+    singularity wallet create bls
+
+  Create an SPWallet contact entry
+    singularity wallet create --address f3abc123... --actor-id f01234 --name "Example SP"
 
 The newly created wallet address and other details will be displayed upon successful creation.`,
 	Before: cliutil.CheckNArgs,
-  # Create a secp256k1 UserWallet (default)
-  singularity wallet create
-
-  # Create a secp256k1 UserWallet explicitly
-  singularity wallet create secp256k1
-
-  # Create a BLS UserWallet
-  singularity wallet create bls
-
-  # Create an SPWallet contact entry
-  singularity wallet create --address f3abc123... --actor-id f01234 --name "Example SP"
-
-The newly created wallet address and other details will be displayed upon successful creation.`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:  "address",
@@ -82,18 +67,6 @@ The newly created wallet address and other details will be displayed upon succes
 		}
 		defer closer.Close()
 
-		// Default to secp256k1 if no type is provided
-		keyType := c.Args().Get(0)
-		if keyType == "" {
-			keyType = wallet.KTSecp256k1.String()
-		}
-
-		w, err := wallet.Default.CreateHandler(
-			c.Context,
-			db,
-			wallet.CreateRequest{
-				KeyType: keyType,
-			})
 		request := wallet.CreateRequest{
 			Name:     c.String("name"),
 			Contact:  c.String("contact"),
@@ -105,11 +78,9 @@ The newly created wallet address and other details will be displayed upon succes
 		actorID := c.String("actor-id")
 
 		if address != "" || actorID != "" {
-			// Create SPWallet contact entry
 			request.Address = address
 			request.ActorID = actorID
 		} else {
-			// Create UserWallet with keypair generation
 			keyType := c.Args().Get(0)
 			if keyType == "" {
 				keyType = wallet.KTSecp256k1.String()

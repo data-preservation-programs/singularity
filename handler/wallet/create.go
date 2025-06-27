@@ -100,14 +100,11 @@ func GenerateKey(keyType string) (string, string, error) {
 }
 
 type CreateRequest struct {
-	KeyType string `json:"keyType"` // This is either "secp256k1" or "bls"
 	// For UserWallet creation (generates new keypair)
 	KeyType string `json:"keyType,omitempty"` // This is either "secp256k1" or "bls"
-
 	// For SPWallet creation
 	Address string `json:"address,omitempty"`
 	ActorID string `json:"actorId,omitempty"`
-
 	// Optional fields for adding details to Wallet
 	Name     string `json:"name,omitempty"`
 	Contact  string `json:"contact,omitempty"`
@@ -139,15 +136,14 @@ func _() {}
 // Returns:
 //   - A pointer to the created Wallet model if successful.
 //   - An error, if any occurred during the database insert operation.
-func (DefaultHandler) CreateHandler(
-	ctx context.Context,
-	db *gorm.DB,
 //   - lotusClient: The RPC client used to interact with a Lotus node for actor lookup (only used for SP wallets).
 //   - request: CreateRequest with either KeyType (for UserWallet) or Address (for SPWallet)
 //
 // Returns:
 //   - A pointer to the created Wallet model if successful.
 //   - An error, if any occurred during validation or database operations.
+// Replace the existing function with this:
+
 func (DefaultHandler) CreateHandler(
 	ctx context.Context,
 	db *gorm.DB,
@@ -156,17 +152,6 @@ func (DefaultHandler) CreateHandler(
 ) (*model.Wallet, error) {
 	db = db.WithContext(ctx)
 
-	// Generate a new keypair
-	privateKey, address, err := GenerateKey(request.KeyType)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	wallet := model.Wallet{
-		Address:    address,
-		PrivateKey: privateKey,
-	}
-	err = database.DoRetry(ctx, func() error {
 	// Infer wallet type from provided parameters
 	hasKeyType := request.KeyType != ""
 	hasAddress := request.Address != ""
@@ -195,7 +180,6 @@ func (DefaultHandler) CreateHandler(
 			Address:    address,
 			PrivateKey: privateKey,
 			WalletType: model.UserWallet,
-			// ActorID is empty for UserWallets until initialized
 		}
 	} else {
 		// Validate the address and actor ID with Lotus
@@ -222,7 +206,6 @@ func (DefaultHandler) CreateHandler(
 			ActorID:    result,
 			Address:    result[:1] + addr.String()[1:],
 			WalletType: model.SPWallet,
-			// PrivateKey is empty for SP wallets
 		}
 	}
 

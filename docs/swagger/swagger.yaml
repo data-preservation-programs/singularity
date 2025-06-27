@@ -8212,8 +8212,6 @@ definitions:
     type: object
   wallet.CreateRequest:
     properties:
-      keyType:
-        description: This is either "secp256k1" or "bls"
       actorId:
         type: string
       address:

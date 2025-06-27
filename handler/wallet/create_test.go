@@ -12,43 +12,49 @@ import (
 
 func TestCreateHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		lotusClient := util.NewLotusClient("https://api.node.glif.io/rpc/v0", "")
 
 		t.Run("success-secp256k1", func(t *testing.T) {
-			w, err := Default.CreateHandler(ctx, db, CreateRequest{KeyType: KTSecp256k1.String()})
-			lotusClient := util.NewLotusClient("https://api.node.glif.io/rpc/v0", "")
-
-			t.Run("success-user-wallet-secp256k1", func(t *testing.T) {
-				w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
-					KeyType: KTSecp256k1.String(),
-				})
-				require.NoError(t, err)
-				require.NotEmpty(t, w.Address)
-				require.Equal(t, "f1", w.Address[:2])
-				require.NotEmpty(t, w.PrivateKey)
-
+			w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+				KeyType: KTSecp256k1.String(),
 			})
-
-			t.Run("success-bls", func(t *testing.T) {
-				w, err := Default.CreateHandler(ctx, db, CreateRequest{KeyType: KTBLS.String()})
-
-				require.Equal(t, "UserWallet", string(w.WalletType))
-			})
-
-			t.Run("success-user-wallet-bls", func(t *testing.T) {
-				w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
-					KeyType: KTBLS.String(),
-				})
-				require.NoError(t, err)
-				require.NotEmpty(t, w.Address)
-				require.Equal(t, "f3", w.Address[:2])
-				require.NotEmpty(t, w.PrivateKey)
-			})
-
-			t.Run("invalid-key-type", func(t *testing.T) {
-				_, err := Default.CreateHandler(ctx, db, CreateRequest{KeyType: "invalid-type"})
-				require.Error(t, err)
-			})
+			require.NoError(t, err)
 			require.Equal(t, "UserWallet", string(w.WalletType))
+		})
+
+		t.Run("success-user-wallet-secp256k1", func(t *testing.T) {
+			w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+				KeyType: KTSecp256k1.String(),
+			})
+			require.NoError(t, err)
+			require.NotEmpty(t, w.Address)
+			require.Equal(t, "f1", w.Address[:2])
+			require.NotEmpty(t, w.PrivateKey)
+		})
+
+		t.Run("success-bls", func(t *testing.T) {
+			w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+				KeyType: KTBLS.String(),
+			})
+			require.NoError(t, err)
+			require.Equal(t, "UserWallet", string(w.WalletType))
+		})
+
+		t.Run("success-user-wallet-bls", func(t *testing.T) {
+			w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+				KeyType: KTBLS.String(),
+			})
+			require.NoError(t, err)
+			require.NotEmpty(t, w.Address)
+			require.Equal(t, "f3", w.Address[:2])
+			require.NotEmpty(t, w.PrivateKey)
+		})
+
+		t.Run("invalid-key-type", func(t *testing.T) {
+			_, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
+				KeyType: "invalid-type",
+			})
+			require.Error(t, err)
 		})
 
 		t.Run("success-user-wallet-with-details", func(t *testing.T) {
@@ -63,6 +69,7 @@ func TestCreateHandler(t *testing.T) {
 			require.Equal(t, "UserWallet", string(w.WalletType))
 			require.Equal(t, "my wallet", w.ActorName)
 		})
+
 		t.Run("success-sp-wallet", func(t *testing.T) {
 			w, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
 				Address:  testutil.TestWalletAddr,
@@ -112,13 +119,6 @@ func TestCreateHandler(t *testing.T) {
 			})
 			require.Error(t, err)
 			require.Contains(t, err.Error(), "provided actor ID is not associated with address")
-		})
-
-		t.Run("invalid-key-type", func(t *testing.T) {
-			_, err := Default.CreateHandler(ctx, db, lotusClient, CreateRequest{
-				KeyType: "invalid-type",
-			})
-			require.Error(t, err)
 		})
 
 		t.Run("error-mixed-parameters", func(t *testing.T) {

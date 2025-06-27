@@ -78,7 +78,6 @@ func (m *MockWallet) AttachHandler(ctx context.Context, db *gorm.DB, preparation
 	return args.Get(0).(*model.Preparation), args.Error(1)
 }
 
-func (m *MockWallet) CreateHandler(ctx context.Context, db *gorm.DB, request CreateRequest) (*model.Wallet, error) {
 func (m *MockWallet) CreateHandler(ctx context.Context, db *gorm.DB, lotusClient jsonrpc.RPCClient, request CreateRequest) (*model.Wallet, error) {
 	args := m.Called(ctx, db, request)
 	return args.Get(0).(*model.Wallet), args.Error(1)

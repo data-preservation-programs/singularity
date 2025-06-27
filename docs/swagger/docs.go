@@ -16596,9 +16596,6 @@ const docTemplate = `{
         "wallet.CreateRequest": {
             "type": "object",
             "properties": {
-
-                "keyType": {
-                    "description": "This is either \"secp256k1\" or \"bls\"",
                 "actorId": {
                     "type": "string"
                 },
