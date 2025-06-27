@@ -364,6 +364,74 @@ func (s *AutoDealService) ProcessReadyPreparations(
 	return nil
 }
 
+// GetAutoDealStatus returns the status of auto-deal creation for a preparation
+func (s *AutoDealService) GetAutoDealStatus(
+	ctx context.Context,
+	db *gorm.DB,
+	preparationID string,
+) (map[string]interface{}, error) {
+	autoDealLogger.Debugf("Getting auto-deal status for preparation ID: %s", preparationID)
+
+	var preparation model.Preparation
+	err := preparation.FindByIDOrName(db.WithContext(ctx), preparationID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find preparation")
+	}
+
+	// Check if preparation is ready
+	isReady, err := s.CheckPreparationReadiness(ctx, db, preparationID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to check preparation readiness")
+	}
+
+	// Check if schedule exists
+	var scheduleCount int64
+	err = db.WithContext(ctx).Model(&model.Schedule{}).
+		Where("preparation_id = ?", preparation.ID).
+		Count(&scheduleCount).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to count schedules")
+	}
+
+	status := map[string]interface{}{
+		"preparation_id":    preparation.ID,
+		"preparation_name":  preparation.Name,
+		"auto_deal_enabled": preparation.DealConfig.AutoCreateDeals,
+		"is_ready":          isReady,
+		"has_schedule":      scheduleCount > 0,
+		"schedule_count":    scheduleCount,
+		"wallet_validation": preparation.WalletValidation,
+		"sp_validation":     preparation.SPValidation,
+	}
+
+	autoDealLogger.Infof("Auto-deal status for %s: enabled=%t, ready=%t, has_schedule=%t",
+		preparation.Name, preparation.DealConfig.AutoCreateDeals, isReady, scheduleCount > 0)
+
+	return status, nil
+}
+
+// Helper methods for logging
+func (s *AutoDealService) logError(ctx context.Context, db *gorm.DB, title, message string, metadata model.ConfigMap) {
+	_, err := s.notificationHandler.LogError(ctx, db, "auto-deal-service", title, message, metadata)
+	if err != nil {
+		autoDealLogger.Errorf("Failed to log error notification: %v", err)
+	}
+}
+
+func (s *AutoDealService) logWarning(ctx context.Context, db *gorm.DB, title, message string, metadata model.ConfigMap) {
+	_, err := s.notificationHandler.LogWarning(ctx, db, "auto-deal-service", title, message, metadata)
+	if err != nil {
+		autoDealLogger.Errorf("Failed to log warning notification: %v", err)
+	}
+}
+
+func (s *AutoDealService) logInfo(ctx context.Context, db *gorm.DB, title, message string, metadata model.ConfigMap) {
+	_, err := s.notificationHandler.LogInfo(ctx, db, "auto-deal-service", title, message, metadata)
+	if err != nil {
+		autoDealLogger.Errorf("Failed to log info notification: %v", err)
+	}
+}
+
 // buildDealScheduleRequest constructs a deal schedule create request from preparation parameters
 func (s *AutoDealService) buildDealScheduleRequest(preparation *model.Preparation) *schedule.CreateRequest {
 	request := &schedule.CreateRequest{
@@ -512,72 +580,4 @@ func (s *AutoDealService) validateProviderForDealCreation(
 
 	autoDealLogger.Infof("Provider %s validated successfully for preparation %s", preparation.DealConfig.DealProvider, preparation.Name)
 	return nil
-}
-
-// GetAutoDealStatus returns the status of auto-deal creation for a preparation
-func (s *AutoDealService) GetAutoDealStatus(
-	ctx context.Context,
-	db *gorm.DB,
-	preparationID string,
-) (map[string]interface{}, error) {
-	autoDealLogger.Debugf("Getting auto-deal status for preparation ID: %s", preparationID)
-
-	var preparation model.Preparation
-	err := preparation.FindByIDOrName(db.WithContext(ctx), preparationID)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find preparation")
-	}
-
-	// Check if preparation is ready
-	isReady, err := s.CheckPreparationReadiness(ctx, db, preparationID)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to check preparation readiness")
-	}
-
-	// Check if schedule exists
-	var scheduleCount int64
-	err = db.WithContext(ctx).Model(&model.Schedule{}).
-		Where("preparation_id = ?", preparation.ID).
-		Count(&scheduleCount).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to count schedules")
-	}
-
-	status := map[string]interface{}{
-		"preparation_id":    preparation.ID,
-		"preparation_name":  preparation.Name,
-		"auto_deal_enabled": preparation.DealConfig.AutoCreateDeals,
-		"is_ready":          isReady,
-		"has_schedule":      scheduleCount > 0,
-		"schedule_count":    scheduleCount,
-		"wallet_validation": preparation.WalletValidation,
-		"sp_validation":     preparation.SPValidation,
-	}
-
-	autoDealLogger.Infof("Auto-deal status for %s: enabled=%t, ready=%t, has_schedule=%t",
-		preparation.Name, preparation.DealConfig.AutoCreateDeals, isReady, scheduleCount > 0)
-
-	return status, nil
-}
-
-// Helper methods for logging
-func (s *AutoDealService) logError(ctx context.Context, db *gorm.DB, title, message string, metadata model.ConfigMap) {
-	_, err := s.notificationHandler.LogError(ctx, db, "auto-deal-service", title, message, metadata)
-	if err != nil {
-		autoDealLogger.Errorf("Failed to log error notification: %v", err)
-	}
-}
-
-func (s *AutoDealService) logWarning(ctx context.Context, db *gorm.DB, title, message string, metadata model.ConfigMap) {
-	_, err := s.notificationHandler.LogWarning(ctx, db, "auto-deal-service", title, message, metadata)
-	if err != nil {
-		autoDealLogger.Errorf("Failed to log warning notification: %v", err)
-	}
-}
-
-func (s *AutoDealService) logInfo(ctx context.Context, db *gorm.DB, title, message string, metadata model.ConfigMap) {
-	_, err := s.notificationHandler.LogInfo(ctx, db, "auto-deal-service", title, message, metadata)
-	if err != nil {
-		autoDealLogger.Errorf("Failed to log info notification: %v", err)
-	}
 }

@@ -52,35 +52,6 @@ func NewEndpointFinder(minerInfoFetcher MinerInfoFetcher, h host.Host, opts ...O
 	}
 }
 
-func (ef *EndpointFinder) findHTTPEndpointsForProvider(ctx context.Context, provider string) ([]peer.AddrInfo, error) {
-	// lookup the provider on chain
-	minerInfo, err := ef.minerInfoFetcher.GetProviderInfo(ctx, provider)
-	if err != nil {
-		return nil, fmt.Errorf("looking up provider info: %w", err)
-	}
-	// query provider for supported transports
-	ef.h.Peerstore().AddAddrs(minerInfo.PeerID, minerInfo.Multiaddrs, peerstore.TempAddrTTL)
-	response, err := boostly.QueryTransports(ctx, ef.h, minerInfo.PeerID)
-	if err != nil {
-		return nil, fmt.Errorf("querying transports: %w", err)
-	}
-	// filter supported transports to get http endpoints
-	for _, protocol := range response.Protocols {
-		if protocol.Name == "http" {
-			addrs, err := peer.AddrInfosFromP2pAddrs(protocol.Addresses...)
-			// if no peer id is present, use provider's id
-			if err != nil {
-				addrs = []peer.AddrInfo{{
-					ID:    minerInfo.PeerID,
-					Addrs: protocol.Addresses,
-				}}
-			}
-			return addrs, nil
-		}
-	}
-	return nil, ErrHTTPNotSupported
-}
-
 // FindHTTPEndpoints finds http endpoints for a given set of providers
 func (ef *EndpointFinder) FindHTTPEndpoints(ctx context.Context, sps []string) ([]peer.AddrInfo, error) {
 	addrInfos := make([]peer.AddrInfo, 0, len(sps))
@@ -135,4 +106,33 @@ func (ef *EndpointFinder) FindHTTPEndpoints(ctx context.Context, sps []string) (
 		return nil, fmt.Errorf("no http endpoints found for providers %v: %w", sps, errsum)
 	}
 	return addrInfos, nil
+}
+
+func (ef *EndpointFinder) findHTTPEndpointsForProvider(ctx context.Context, provider string) ([]peer.AddrInfo, error) {
+	// lookup the provider on chain
+	minerInfo, err := ef.minerInfoFetcher.GetProviderInfo(ctx, provider)
+	if err != nil {
+		return nil, fmt.Errorf("looking up provider info: %w", err)
+	}
+	// query provider for supported transports
+	ef.h.Peerstore().AddAddrs(minerInfo.PeerID, minerInfo.Multiaddrs, peerstore.TempAddrTTL)
+	response, err := boostly.QueryTransports(ctx, ef.h, minerInfo.PeerID)
+	if err != nil {
+		return nil, fmt.Errorf("querying transports: %w", err)
+	}
+	// filter supported transports to get http endpoints
+	for _, protocol := range response.Protocols {
+		if protocol.Name == "http" {
+			addrs, err := peer.AddrInfosFromP2pAddrs(protocol.Addresses...)
+			// if no peer id is present, use provider's id
+			if err != nil {
+				addrs = []peer.AddrInfo{{
+					ID:    minerInfo.PeerID,
+					Addrs: protocol.Addresses,
+				}}
+			}
+			return addrs, nil
+		}
+	}
+	return nil, ErrHTTPNotSupported
 }

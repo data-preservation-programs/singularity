@@ -217,29 +217,6 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 	return jsonDecoder.Stream(), countingReader, closer, nil
 }
 
-func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaValue, Counter, io.Closer, error) {
-	if d.dealZstURL != "" {
-		Logger.Infof("getting deal state from %s", d.dealZstURL)
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.dealZstURL, nil)
-		if err != nil {
-			return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state zst file %s", d.dealZstURL)
-		}
-		return DealStateStreamFromHTTPRequest(req, 1, true)
-	}
-
-	Logger.Infof("getting deal state from %s", d.lotusURL)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
-	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state from lotus API %s", d.lotusURL)
-	}
-	if d.lotusToken != "" {
-		req.Header.Set("Authorization", "Bearer "+d.lotusToken)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
-	return DealStateStreamFromHTTPRequest(req, 2, false)
-}
-
 func (*DealTracker) Name() string {
 	return "DealTracker"
 }
@@ -660,4 +637,27 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 	}
 
 	return ctx.Err()
+}
+
+func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaValue, Counter, io.Closer, error) {
+	if d.dealZstURL != "" {
+		Logger.Infof("getting deal state from %s", d.dealZstURL)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.dealZstURL, nil)
+		if err != nil {
+			return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state zst file %s", d.dealZstURL)
+		}
+		return DealStateStreamFromHTTPRequest(req, 1, true)
+	}
+
+	Logger.Infof("getting deal state from %s", d.lotusURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state from lotus API %s", d.lotusURL)
+	}
+	if d.lotusToken != "" {
+		req.Header.Set("Authorization", "Bearer "+d.lotusToken)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
+	return DealStateStreamFromHTTPRequest(req, 2, false)
 }

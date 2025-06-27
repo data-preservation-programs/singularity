@@ -145,6 +145,155 @@ func (s *Server) Name() string {
 	return "api"
 }
 
+var logger = logging.Logger("api")
+
+// Start initializes the server, sets up routes and middlewares, and starts listening for incoming requests.
+//
+// This method:
+//   - Initializes analytics.
+//   - Configures the echo server with recovery, logging, and CORS middleware.
+//   - Sets up various routes, including serving static files for the dashboard and a swagger UI.
+//   - Starts the echo server and manages its lifecycle with background goroutines.
+//   - Gracefully shuts down the server on context cancellation.
+//   - Closes database connections and other resources.
+//
+// Parameters:
+//   - ctx: A context.Context used to control the server's lifecycle and propagate cancellation.
+//
+// Returns:
+//   - A slice of channels (service.Done) that signal when different parts of the service
+//     have completed their work. This includes:
+//     1. The main echo server's completion.
+//     2. The host's completion.
+//     3. Completion of analytics event flushing.
+//   - A channel (service.Fail) that reports errors that occur while the server is running.
+//   - An error if there is an issue during the initialization phase, otherwise nil.
+func (s *Server) Start(ctx context.Context, exitErr chan<- error) error {
+	err := analytics.Init(ctx, s.db)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	e := echo.New()
+	e.Debug = true
+	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
+		Skipper:           middleware.DefaultSkipper,
+		StackSize:         4 << 10, // 4 KiB
+		DisableStackAll:   false,
+		DisablePrintStack: false,
+		LogLevel:          0,
+		LogErrorFunc: func(c echo.Context, err error, stack []byte) error {
+			logger.Errorw("panic", "err", err, "stack", string(stack))
+			return nil
+		},
+	}))
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogStatus: true,
+		LogURI:    true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			uri := v.URI
+			status := v.Status
+			latency := time.Since(v.StartTime)
+			err := v.Error
+			method := c.Request().Method
+			if err != nil {
+				logger.With("status", status, "latency_ms", latency.Milliseconds(), "err", err).Error(method + " " + uri)
+			} else {
+				logger.With("status", status, "latency_ms", latency.Milliseconds()).Info(method + " " + uri)
+			}
+			return nil
+		},
+	}))
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
+
+	//nolint:contextcheck
+	s.setupRoutes(e)
+
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	e.GET("/health", func(c echo.Context) error {
+		return c.String(http.StatusOK, "OK")
+	})
+	e.Listener = s.listener
+
+	done := make(chan struct{})
+	eventsFlushed := make(chan struct{})
+
+	go func() {
+		err := e.Start("")
+		<-eventsFlushed
+		<-done
+
+		if exitErr != nil {
+			exitErr <- err
+		}
+	}()
+
+	go func() {
+		defer close(done)
+		<-ctx.Done()
+		ctx2, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+		//nolint:contextcheck
+		err := e.Shutdown(ctx2)
+		if err != nil {
+			logger.Errorw("failed to shutdown api server", "err", err)
+		}
+		err = s.closer.Close()
+		if err != nil {
+			logger.Errorw("failed to close database connection", "err", err)
+		}
+
+		defer func() { _ = s.host.Close() }()
+	}()
+
+	go func() {
+		defer close(eventsFlushed)
+		analytics.Default.Start(ctx)
+		//nolint:contextcheck
+		_ = analytics.Default.Flush()
+	}()
+
+	return nil
+}
+
+func isIntKind(kind reflect.Kind) bool {
+	return kind == reflect.Int || kind == reflect.Int8 || kind == reflect.Int16 || kind == reflect.Int32 || kind == reflect.Int64
+}
+
+func isUIntKind(kind reflect.Kind) bool {
+	return kind == reflect.Uint || kind == reflect.Uint8 || kind == reflect.Uint16 || kind == reflect.Uint32 || kind == reflect.Uint64
+}
+
+type HTTPError struct {
+	Err string `json:"err"`
+}
+
+func httpResponseFromError(c echo.Context, e error) error {
+	if e == nil {
+		return c.String(http.StatusOK, "OK")
+	}
+
+	httpStatusCode := http.StatusInternalServerError
+
+	if errors.Is(e, handlererror.ErrNotFound) {
+		httpStatusCode = http.StatusNotFound
+	}
+
+	if errors.Is(e, handlererror.ErrInvalidParameter) {
+		httpStatusCode = http.StatusBadRequest
+	}
+
+	if errors.Is(e, handlererror.ErrDuplicateRecord) {
+		httpStatusCode = http.StatusConflict
+	}
+
+	logger.Errorf("%+v", e)
+	return c.JSON(httpStatusCode, HTTPError{Err: e.Error()})
+}
+
 // @Summary Get metadata for a piece
 // @Description Get metadata for a piece for how it may be reassembled from the data source
 // @Tags Piece
@@ -407,153 +556,4 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/file/:id/prepare_to_pack", s.toEchoHandler(s.fileHandler.PrepareToPackFileHandler))
 	e.GET("/api/file/:id/retrieve", s.retrieveFile)
 	e.POST("/api/preparation/:id/source/:name/file", s.toEchoHandler(s.fileHandler.PushFileHandler))
-}
-
-var logger = logging.Logger("api")
-
-// Start initializes the server, sets up routes and middlewares, and starts listening for incoming requests.
-//
-// This method:
-//   - Initializes analytics.
-//   - Configures the echo server with recovery, logging, and CORS middleware.
-//   - Sets up various routes, including serving static files for the dashboard and a swagger UI.
-//   - Starts the echo server and manages its lifecycle with background goroutines.
-//   - Gracefully shuts down the server on context cancellation.
-//   - Closes database connections and other resources.
-//
-// Parameters:
-//   - ctx: A context.Context used to control the server's lifecycle and propagate cancellation.
-//
-// Returns:
-//   - A slice of channels (service.Done) that signal when different parts of the service
-//     have completed their work. This includes:
-//     1. The main echo server's completion.
-//     2. The host's completion.
-//     3. Completion of analytics event flushing.
-//   - A channel (service.Fail) that reports errors that occur while the server is running.
-//   - An error if there is an issue during the initialization phase, otherwise nil.
-func (s *Server) Start(ctx context.Context, exitErr chan<- error) error {
-	err := analytics.Init(ctx, s.db)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	e := echo.New()
-	e.Debug = true
-	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
-		Skipper:           middleware.DefaultSkipper,
-		StackSize:         4 << 10, // 4 KiB
-		DisableStackAll:   false,
-		DisablePrintStack: false,
-		LogLevel:          0,
-		LogErrorFunc: func(c echo.Context, err error, stack []byte) error {
-			logger.Errorw("panic", "err", err, "stack", string(stack))
-			return nil
-		},
-	}))
-	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogStatus: true,
-		LogURI:    true,
-		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			uri := v.URI
-			status := v.Status
-			latency := time.Since(v.StartTime)
-			err := v.Error
-			method := c.Request().Method
-			if err != nil {
-				logger.With("status", status, "latency_ms", latency.Milliseconds(), "err", err).Error(method + " " + uri)
-			} else {
-				logger.With("status", status, "latency_ms", latency.Milliseconds()).Info(method + " " + uri)
-			}
-			return nil
-		},
-	}))
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-	}))
-
-	//nolint:contextcheck
-	s.setupRoutes(e)
-
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
-	e.GET("/health", func(c echo.Context) error {
-		return c.String(http.StatusOK, "OK")
-	})
-	e.Listener = s.listener
-
-	done := make(chan struct{})
-	eventsFlushed := make(chan struct{})
-
-	go func() {
-		err := e.Start("")
-		<-eventsFlushed
-		<-done
-
-		if exitErr != nil {
-			exitErr <- err
-		}
-	}()
-
-	go func() {
-		defer close(done)
-		<-ctx.Done()
-		ctx2, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-		//nolint:contextcheck
-		err := e.Shutdown(ctx2)
-		if err != nil {
-			logger.Errorw("failed to shutdown api server", "err", err)
-		}
-		err = s.closer.Close()
-		if err != nil {
-			logger.Errorw("failed to close database connection", "err", err)
-		}
-
-		defer func() { _ = s.host.Close() }()
-	}()
-
-	go func() {
-		defer close(eventsFlushed)
-		analytics.Default.Start(ctx)
-		//nolint:contextcheck
-		_ = analytics.Default.Flush()
-	}()
-
-	return nil
-}
-
-func isIntKind(kind reflect.Kind) bool {
-	return kind == reflect.Int || kind == reflect.Int8 || kind == reflect.Int16 || kind == reflect.Int32 || kind == reflect.Int64
-}
-
-func isUIntKind(kind reflect.Kind) bool {
-	return kind == reflect.Uint || kind == reflect.Uint8 || kind == reflect.Uint16 || kind == reflect.Uint32 || kind == reflect.Uint64
-}
-
-type HTTPError struct {
-	Err string `json:"err"`
-}
-
-func httpResponseFromError(c echo.Context, e error) error {
-	if e == nil {
-		return c.String(http.StatusOK, "OK")
-	}
-
-	httpStatusCode := http.StatusInternalServerError
-
-	if errors.Is(e, handlererror.ErrNotFound) {
-		httpStatusCode = http.StatusNotFound
-	}
-
-	if errors.Is(e, handlererror.ErrInvalidParameter) {
-		httpStatusCode = http.StatusBadRequest
-	}
-
-	if errors.Is(e, handlererror.ErrDuplicateRecord) {
-		httpStatusCode = http.StatusConflict
-	}
-
-	logger.Errorf("%+v", e)
-	return c.JSON(httpStatusCode, HTTPError{Err: e.Error()})
 }

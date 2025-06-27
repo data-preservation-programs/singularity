@@ -121,6 +121,68 @@ func (m *WorkerManager) Stop(ctx context.Context) error {
 }
 
 // monitorLoop continuously monitors job availability and manages workers
+// GetStatus returns the current status of the worker manager
+func (m *WorkerManager) GetStatus() ManagerStatus {
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
+
+	status := ManagerStatus{
+		Enabled:      m.enabled,
+		TotalWorkers: len(m.activeWorkers),
+		Workers:      make([]WorkerStatus, 0, len(m.activeWorkers)),
+	}
+
+	for _, worker := range m.activeWorkers {
+		status.Workers = append(status.Workers, WorkerStatus{
+			ID:           worker.ID,
+			JobTypes:     worker.JobTypes,
+			StartTime:    worker.StartTime,
+			LastActivity: worker.LastActivity,
+			Uptime:       time.Since(worker.StartTime),
+		})
+	}
+
+	return status
+}
+
+// ManagerStatus represents the current status of the worker manager
+type ManagerStatus struct {
+	Enabled      bool           `json:"enabled"`
+	TotalWorkers int            `json:"totalWorkers"`
+	Workers      []WorkerStatus `json:"workers"`
+}
+
+// WorkerStatus represents the status of a single managed worker
+type WorkerStatus struct {
+	ID           string          `json:"id"`
+	JobTypes     []model.JobType `json:"jobTypes"`
+	StartTime    time.Time       `json:"startTime"`
+	LastActivity time.Time       `json:"lastActivity"`
+	Uptime       time.Duration   `json:"uptime"`
+}
+
+// Name returns the service name
+func (m *WorkerManager) Name() string {
+	return "Worker Manager"
+}
+
+// Helper functions
+func workerMin(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func contains(slice []model.JobType, item model.JobType) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}
+
 func (m *WorkerManager) monitorLoop(ctx context.Context) {
 	defer close(m.monitoringStopped)
 
@@ -446,66 +508,4 @@ func (m *WorkerManager) isEnabled() bool {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 	return m.enabled
-}
-
-// GetStatus returns the current status of the worker manager
-func (m *WorkerManager) GetStatus() ManagerStatus {
-	m.mutex.RLock()
-	defer m.mutex.RUnlock()
-
-	status := ManagerStatus{
-		Enabled:      m.enabled,
-		TotalWorkers: len(m.activeWorkers),
-		Workers:      make([]WorkerStatus, 0, len(m.activeWorkers)),
-	}
-
-	for _, worker := range m.activeWorkers {
-		status.Workers = append(status.Workers, WorkerStatus{
-			ID:           worker.ID,
-			JobTypes:     worker.JobTypes,
-			StartTime:    worker.StartTime,
-			LastActivity: worker.LastActivity,
-			Uptime:       time.Since(worker.StartTime),
-		})
-	}
-
-	return status
-}
-
-// ManagerStatus represents the current status of the worker manager
-type ManagerStatus struct {
-	Enabled      bool           `json:"enabled"`
-	TotalWorkers int            `json:"totalWorkers"`
-	Workers      []WorkerStatus `json:"workers"`
-}
-
-// WorkerStatus represents the status of a single managed worker
-type WorkerStatus struct {
-	ID           string          `json:"id"`
-	JobTypes     []model.JobType `json:"jobTypes"`
-	StartTime    time.Time       `json:"startTime"`
-	LastActivity time.Time       `json:"lastActivity"`
-	Uptime       time.Duration   `json:"uptime"`
-}
-
-// Name returns the service name
-func (m *WorkerManager) Name() string {
-	return "Worker Manager"
-}
-
-// Helper functions
-func workerMin(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func contains(slice []model.JobType, item model.JobType) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
 }

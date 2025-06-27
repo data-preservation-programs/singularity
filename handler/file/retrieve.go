@@ -133,6 +133,70 @@ func (r *filecoinReader) WriteTo(w io.Writer) (int64, error) {
 	return r.writeToN(w, r.size-r.offset)
 }
 
+func (r *filecoinReader) Seek(offset int64, whence int) (int64, error) {
+	var newOffset int64
+
+	switch whence {
+	case io.SeekStart:
+		newOffset = offset
+	case io.SeekCurrent:
+		newOffset = r.offset + offset
+	case io.SeekEnd:
+		newOffset = r.size + offset
+	default:
+		return 0, errors.New("unknown seek mode")
+	}
+
+	if newOffset > r.size {
+		return 0, ErrByteOffsetBeyondFile
+	}
+
+	r.offset = newOffset
+
+	return r.offset, nil
+}
+
+func (r *filecoinReader) Close() error {
+	var err error
+	if r.rangeReader != nil {
+		err = r.rangeReader.close()
+		r.rangeReader = nil
+	}
+	return err
+}
+
+type deal struct {
+	Provider string
+}
+
+func findProviders(db *gorm.DB, jobID model.JobID) ([]string, error) {
+	var deals []deal
+	err := db.Table("deals").Select("distinct provider").
+		Joins("JOIN cars ON deals.piece_cid = cars.piece_cid").
+		Where("cars.job_id = ? and deals.state IN (?)", jobID, []model.DealState{
+			model.DealPublished,
+			model.DealActive,
+		}).Find(&deals).Error
+	if err != nil {
+		return nil, err
+	}
+	providers := make([]string, 0, len(deals))
+	for _, deal := range deals {
+		providers = append(providers, deal.Provider)
+	}
+	return providers, nil
+}
+
+func findFileRanges(db *gorm.DB, id uint64, startRange int64, endRange int64) ([]model.FileRange, error) {
+	var fileRanges []model.FileRange
+	err := db.Model(&model.FileRange{}).Where("file_ranges.file_id = ? AND file_ranges.offset < ? AND (file_ranges.offset+file_ranges.length) > ?", id, endRange, startRange).
+		Order("file_ranges.offset ASC").Find(&fileRanges).Error
+	if err != nil {
+		return nil, err
+	}
+	return fileRanges, nil
+}
+
 func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 	var read int64
 	// If there is a rangeReader from the previous read that can be used to
@@ -249,68 +313,4 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 	}
 
 	return read, nil
-}
-
-func (r *filecoinReader) Seek(offset int64, whence int) (int64, error) {
-	var newOffset int64
-
-	switch whence {
-	case io.SeekStart:
-		newOffset = offset
-	case io.SeekCurrent:
-		newOffset = r.offset + offset
-	case io.SeekEnd:
-		newOffset = r.size + offset
-	default:
-		return 0, errors.New("unknown seek mode")
-	}
-
-	if newOffset > r.size {
-		return 0, ErrByteOffsetBeyondFile
-	}
-
-	r.offset = newOffset
-
-	return r.offset, nil
-}
-
-func (r *filecoinReader) Close() error {
-	var err error
-	if r.rangeReader != nil {
-		err = r.rangeReader.close()
-		r.rangeReader = nil
-	}
-	return err
-}
-
-type deal struct {
-	Provider string
-}
-
-func findProviders(db *gorm.DB, jobID model.JobID) ([]string, error) {
-	var deals []deal
-	err := db.Table("deals").Select("distinct provider").
-		Joins("JOIN cars ON deals.piece_cid = cars.piece_cid").
-		Where("cars.job_id = ? and deals.state IN (?)", jobID, []model.DealState{
-			model.DealPublished,
-			model.DealActive,
-		}).Find(&deals).Error
-	if err != nil {
-		return nil, err
-	}
-	providers := make([]string, 0, len(deals))
-	for _, deal := range deals {
-		providers = append(providers, deal.Provider)
-	}
-	return providers, nil
-}
-
-func findFileRanges(db *gorm.DB, id uint64, startRange int64, endRange int64) ([]model.FileRange, error) {
-	var fileRanges []model.FileRange
-	err := db.Model(&model.FileRange{}).Where("file_ranges.file_id = ? AND file_ranges.offset < ? AND (file_ranges.offset+file_ranges.length) > ?", id, endRange, startRange).
-		Order("file_ranges.offset ASC").Find(&fileRanges).Error
-	if err != nil {
-		return nil, err
-	}
-	return fileRanges, nil
 }

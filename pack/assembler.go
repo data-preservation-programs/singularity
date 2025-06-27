@@ -86,6 +86,28 @@ func (a *Assembler) Close() error {
 
 // readBuffer reads data from the internal buffer, handling buffer-related flags and states.
 // It returns the number of bytes read and any errors encountered.
+// Read reads data from the buffer, or fetches the next chunk from fileRanges if the buffer is empty.
+// It will assemble links if needed and respect the context's cancellation or deadline.
+func (a *Assembler) Read(p []byte) (int, error) {
+	if a.ctx.Err() != nil {
+		return 0, a.ctx.Err()
+	}
+
+	if a.buffer != nil {
+		return a.readBuffer(p)
+	}
+
+	if a.assembleLinkFor != nil {
+		return 0, errors.WithStack(a.assembleLinks())
+	}
+
+	if a.index == len(a.fileRanges) {
+		return 0, io.EOF
+	}
+
+	return 0, a.prefetch()
+}
+
 func (a *Assembler) readBuffer(p []byte) (int, error) {
 	n, err := a.buffer.Read(p)
 
@@ -276,26 +298,4 @@ func (a *Assembler) prefetch() error {
 	}
 
 	return errors.WithStack(err)
-}
-
-// Read reads data from the buffer, or fetches the next chunk from fileRanges if the buffer is empty.
-// It will assemble links if needed and respect the context's cancellation or deadline.
-func (a *Assembler) Read(p []byte) (int, error) {
-	if a.ctx.Err() != nil {
-		return 0, a.ctx.Err()
-	}
-
-	if a.buffer != nil {
-		return a.readBuffer(p)
-	}
-
-	if a.assembleLinkFor != nil {
-		return 0, errors.WithStack(a.assembleLinks())
-	}
-
-	if a.index == len(a.fileRanges) {
-		return 0, io.EOF
-	}
-
-	return 0, a.prefetch()
 }

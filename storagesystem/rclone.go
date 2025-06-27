@@ -138,54 +138,6 @@ func (h RCloneHandler) List(ctx context.Context, path string) ([]fs.DirEntry, er
 	return h.fs.List(ctx, path)
 }
 
-func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, wp *workerpool.WorkerPool, wg *sync.WaitGroup) {
-	if ctx.Err() != nil {
-		return
-	}
-	logger.Infow("Scan: listing path", "type", h.fs.String(), "path", path)
-	entries, err := h.fs.List(ctx, path)
-	if err != nil {
-		err = errors.Wrapf(err, "list path: %s", path)
-		select {
-		case <-ctx.Done():
-			return
-		case ch <- Entry{Error: err}:
-		}
-	}
-
-	slices.SortFunc(entries, func(i, j fs.DirEntry) int {
-		return strings.Compare(i.Remote(), j.Remote())
-	})
-
-	var subCount int
-	for _, entry := range entries {
-		switch v := entry.(type) {
-		case fs.Directory:
-			select {
-			case <-ctx.Done():
-				return
-			case ch <- Entry{Dir: v}:
-			}
-
-			subPath := v.Remote()
-			wg.Add(1)
-			wp.Submit(func() {
-				h.scan(ctx, subPath, ch, wp, wg)
-				wg.Done()
-			})
-			subCount++
-		case fs.Object:
-			select {
-			case <-ctx.Done():
-				return
-			case ch <- Entry{Info: v}:
-			}
-		}
-	}
-
-	logger.Debugf("Scan: finished listing path, remaining %d paths to list", subCount)
-}
-
 func (h RCloneHandler) Scan(ctx context.Context, path string) <-chan Entry {
 	ch := make(chan Entry, h.scanConcurrency)
 	go func() {
@@ -349,4 +301,52 @@ func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
 	if s.ClientConfig.LowLevelRetries != nil {
 		config.LowLevelRetries = *s.ClientConfig.LowLevelRetries
 	}
+}
+
+func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, wp *workerpool.WorkerPool, wg *sync.WaitGroup) {
+	if ctx.Err() != nil {
+		return
+	}
+	logger.Infow("Scan: listing path", "type", h.fs.String(), "path", path)
+	entries, err := h.fs.List(ctx, path)
+	if err != nil {
+		err = errors.Wrapf(err, "list path: %s", path)
+		select {
+		case <-ctx.Done():
+			return
+		case ch <- Entry{Error: err}:
+		}
+	}
+
+	slices.SortFunc(entries, func(i, j fs.DirEntry) int {
+		return strings.Compare(i.Remote(), j.Remote())
+	})
+
+	var subCount int
+	for _, entry := range entries {
+		switch v := entry.(type) {
+		case fs.Directory:
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- Entry{Dir: v}:
+			}
+
+			subPath := v.Remote()
+			wg.Add(1)
+			wp.Submit(func() {
+				h.scan(ctx, subPath, ch, wp, wg)
+				wg.Done()
+			})
+			subCount++
+		case fs.Object:
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- Entry{Info: v}:
+			}
+		}
+	}
+
+	logger.Debugf("Scan: finished listing path, remaining %d paths to list", subCount)
 }

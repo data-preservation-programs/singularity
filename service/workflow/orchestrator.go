@@ -85,28 +85,6 @@ func (o *WorkflowOrchestrator) IsEnabled() bool {
 }
 
 // lockPreparation acquires a lock for a specific preparation to prevent concurrent workflow transitions
-func (o *WorkflowOrchestrator) lockPreparation(preparationID uint) {
-	o.locksMutex.Lock()
-	if _, exists := o.preparationLocks[preparationID]; !exists {
-		o.preparationLocks[preparationID] = &sync.Mutex{}
-	}
-	mutex := o.preparationLocks[preparationID]
-	o.locksMutex.Unlock()
-
-	mutex.Lock()
-}
-
-// unlockPreparation releases the lock for a specific preparation
-func (o *WorkflowOrchestrator) unlockPreparation(preparationID uint) {
-	o.locksMutex.RLock()
-	mutex := o.preparationLocks[preparationID]
-	o.locksMutex.RUnlock()
-
-	if mutex != nil {
-		mutex.Unlock()
-	}
-}
-
 // HandleJobCompletion processes job completion and triggers next stage if appropriate
 func (o *WorkflowOrchestrator) HandleJobCompletion(
 	ctx context.Context,
@@ -540,4 +518,26 @@ func (o *WorkflowOrchestrator) checkPreparationWorkflow(
 	}
 
 	return nil
+}
+
+func (o *WorkflowOrchestrator) lockPreparation(preparationID uint) {
+	o.locksMutex.Lock()
+	if _, exists := o.preparationLocks[preparationID]; !exists {
+		o.preparationLocks[preparationID] = &sync.Mutex{}
+	}
+	mutex := o.preparationLocks[preparationID]
+	o.locksMutex.Unlock()
+
+	mutex.Lock()
+}
+
+// unlockPreparation releases the lock for a specific preparation
+func (o *WorkflowOrchestrator) unlockPreparation(preparationID uint) {
+	o.locksMutex.RLock()
+	mutex := o.preparationLocks[preparationID]
+	o.locksMutex.RUnlock()
+
+	if mutex != nil {
+		mutex.Unlock()
+	}
 }

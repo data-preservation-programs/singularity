@@ -38,6 +38,25 @@ func NewDirectoryTree() DirectoryTree {
 	}
 }
 
+// DirectoryData represents a structured directory in a content-addressed file system.
+// It manages the underlying data and provides methods for interacting with this data
+// as a hierarchical directory structure.
+//
+// Fields:
+//
+//   - dir: The current representation of the directory, implementing the uio.Directory interface.
+//   - bstore: The blockstore used to store and retrieve blocks of data associated with the directory.
+//   - node: The cached format.Node representation of the current directory.
+//   - nodeDirty : A flag indicating whether the cached node representation is potentially outdated
+//     and needs to be refreshed from the internal directory representation.
+type DirectoryData struct {
+	dir        uio.Directory
+	dagServ    *RecordedDagService
+	node       format.Node
+	nodeDirty  bool
+	additional map[cid.Cid][]byte
+}
+
 // NewDirectoryData creates and initializes a new DirectoryData instance.
 // This function:
 //  1. Creates a new in-memory map datastore.
@@ -137,25 +156,6 @@ func (t DirectoryTree) Resolve(ctx context.Context, dirID model.DirectoryID) (*f
 		Size: size,
 		Cid:  node.Cid(),
 	}, nil
-}
-
-// DirectoryData represents a structured directory in a content-addressed file system.
-// It manages the underlying data and provides methods for interacting with this data
-// as a hierarchical directory structure.
-//
-// Fields:
-//
-//   - dir: The current representation of the directory, implementing the uio.Directory interface.
-//   - bstore: The blockstore used to store and retrieve blocks of data associated with the directory.
-//   - node: The cached format.Node representation of the current directory.
-//   - nodeDirty : A flag indicating whether the cached node representation is potentially outdated
-//     and needs to be refreshed from the internal directory representation.
-type DirectoryData struct {
-	dir        uio.Directory
-	dagServ    *RecordedDagService
-	node       format.Node
-	nodeDirty  bool
-	additional map[cid.Cid][]byte
 }
 
 // Node retrieves the format.Node representation of the current DirectoryData.

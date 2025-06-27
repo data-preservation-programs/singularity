@@ -121,6 +121,216 @@ func (d *DealPusher) runScheduleAndUpdateState(ctx context.Context, schedule *mo
 	}
 }
 
+func NewDealPusher(db *gorm.DB, lotusURL string,
+	lotusToken string, numAttempts uint, maxReplicas uint,
+) (*DealPusher, error) {
+	if numAttempts <= 1 {
+		numAttempts = 1
+	}
+	h, err := util.InitHost(nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to init host")
+	}
+	lotusClient := util.NewLotusClient(lotusURL, lotusToken)
+	dealMaker := replication.NewDealMaker(lotusClient, h, time.Hour, time.Minute)
+	return &DealPusher{
+		dbNoContext:              db,
+		activeScheduleCancelFunc: make(map[model.ScheduleID]context.CancelFunc),
+		activeSchedule:           make(map[model.ScheduleID]*model.Schedule),
+		cronEntries:              make(map[model.ScheduleID]cron.EntryID),
+		walletChooser:            &replication.RandomWalletChooser{},
+		dealMaker:                dealMaker,
+		workerID:                 uuid.New(),
+		cron: cron.New(cron.WithLogger(&cronLogger{}), cron.WithLocation(time.UTC),
+			cron.WithParser(cron.NewParser(cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor))),
+		sendDealAttempts: numAttempts,
+		host:             h,
+		maxReplicas:      maxReplicas,
+	}, nil
+}
+
+// runOnce is a method of the DealPusher type that runs a single iteration of the deal pushing logic.
+//
+// In each iteration, the method performs the following actions:
+//  1. Fetches all the active schedules from the database.
+//  2. Constructs a map of these schedules for quick lookup.
+//  3. Cancels all the jobs in the DealPusher that are no longer active (based on the latest fetched schedules).
+//  4. For each schedule in the fetched active schedules:
+//     a. If the schedule is already being processed, it updates that schedule's processing logic.
+//     b. If the schedule is new, it starts processing that schedule.
+//
+// Parameters:
+//
+//   - ctx : The context for managing the lifecycle of this iteration. If Done, the function exits cleanly.
+//
+// This function is designed to be idempotent, meaning it can be run multiple times with the same effect.
+// It is called repeatedly by the main deal processing loop in DealPusher.Start.
+//
+// Note: Errors encountered during this process are logged but do not stop the function's execution.
+func (d *DealPusher) runOnce(ctx context.Context) {
+	var schedules []model.Schedule
+	scheduleMap := map[model.ScheduleID]model.Schedule{}
+	Logger.Debugw("getting schedules")
+	db := d.dbNoContext.WithContext(ctx)
+	err := db.Preload("Preparation.Wallets").Where("state = ?",
+		model.ScheduleActive).Find(&schedules).Error
+	if err != nil {
+		Logger.Errorw("failed to get schedules", "error", err)
+		return
+	}
+	for _, schedule := range schedules {
+		scheduleMap[schedule.ID] = schedule
+	}
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+	for id, active := range d.activeSchedule {
+		if _, ok := scheduleMap[id]; !ok {
+			Logger.Infow("removing inactive schedule", "schedule_id", id)
+			d.removeScheduleUnsafe(*active)
+		}
+	}
+
+	for _, schedule := range schedules {
+		_, ok := d.activeSchedule[schedule.ID]
+		if ok {
+			err = d.updateScheduleUnsafe(ctx, schedule)
+			if err != nil {
+				Logger.Errorw("failed to update schedule", "error", err)
+			}
+		} else {
+			Logger.Infow("adding new schedule", "schedule_id", schedule.ID)
+			err = d.addScheduleUnsafe(ctx, schedule)
+			if err != nil {
+				Logger.Errorw("failed to add schedule", "error", err)
+			}
+		}
+	}
+}
+
+// Start initializes and starts the DealPusher service.
+//
+// It first attempts to register the worker with the health check system.
+// If another worker is already running, it waits and retries until it can register or the context is cancelled.
+// Once registered, it launches three main activities in separate goroutines:
+//  1. Reporting its health status.
+//  2. Running the deal processing loop.
+//  3. Handling cleanup when the service is stopped.
+//
+// Parameters:
+//
+//   - ctx : The context for managing the lifecycle of the Start function. If Done, the function exits cleanly.
+//   - exitErr : A channel for an error or nil when the service exits
+//
+// Returns:
+//   - An error if there was a problem starting the service.
+//
+// This function is intended to be called once at the start of the service lifecycle.
+func (d *DealPusher) Start(ctx context.Context, exitErr chan<- error) error {
+	var regTimer *time.Timer
+	for {
+		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, model.DealPusher, false)
+		if err != nil {
+			return errors.Wrap(err, "failed to register worker")
+		}
+		if !alreadyRunning {
+			break
+		}
+		Logger.Warnw("another worker already running")
+		Logger.Warn("retrying in 1 minute")
+		if regTimer == nil {
+			regTimer = time.NewTimer(healthRegisterRetryInterval)
+			defer regTimer.Stop()
+		} else {
+			regTimer.Reset(healthRegisterRetryInterval)
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-regTimer.C:
+		}
+	}
+
+	err := analytics.Init(ctx, d.dbNoContext)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	eventsFlushed := make(chan struct{})
+	go func() {
+		defer close(eventsFlushed)
+		analytics.Default.Start(ctx)
+		//nolint:contextcheck
+		_ = analytics.Default.Flush()
+	}()
+
+	healthcheckDone := make(chan struct{})
+	go func() {
+		defer close(healthcheckDone)
+		healthcheck.StartReportHealth(ctx, d.dbNoContext, d.workerID, model.DealPusher)
+		Logger.Info("healthcheck stopped")
+	}()
+
+	go func() {
+		d.cron.Start()
+
+		var timer *time.Timer
+		for {
+			d.runOnce(ctx)
+			Logger.Debug("waiting for deal schedule check in 15 secs")
+
+			if timer == nil {
+				timer = time.NewTimer(schedCheckPeriod)
+				defer timer.Stop()
+			} else {
+				timer.Reset(schedCheckPeriod)
+			}
+
+			var stopped bool
+			select {
+			case <-ctx.Done():
+				Logger.Info("cron stopped")
+				stopped = true
+			case <-timer.C:
+			}
+			if stopped {
+				break
+			}
+		}
+
+		ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		//nolint:contextcheck
+		err := d.cleanup(ctx2)
+		if err != nil {
+			Logger.Errorw("failed to cleanup", "error", err)
+		} else {
+			Logger.Info("cleanup done")
+		}
+		cancel()
+
+		err = d.host.Close()
+		if err != nil {
+			Logger.Errorw("failed to close host", "error", err)
+		} else {
+			Logger.Info("host closed")
+		}
+
+		<-eventsFlushed
+		<-healthcheckDone
+
+		if exitErr != nil {
+			exitErr <- nil
+		}
+	}()
+
+	return nil
+}
+
+func (d *DealPusher) cleanup(ctx context.Context) error {
+	d.cron.Stop()
+	return database.DoRetry(ctx, func() error {
+		return d.dbNoContext.WithContext(ctx).Where("id = ?", d.workerID).Delete(&model.Worker{}).Error
+	})
+}
+
 func (d *DealPusher) addScheduleUnsafe(ctx context.Context, schedule model.Schedule) error {
 	scheduleCtx, cancel := context.WithCancel(ctx)
 	if schedule.ScheduleCron == "" {
@@ -421,214 +631,4 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 		case <-timer.C:
 		}
 	}
-}
-
-func NewDealPusher(db *gorm.DB, lotusURL string,
-	lotusToken string, numAttempts uint, maxReplicas uint,
-) (*DealPusher, error) {
-	if numAttempts <= 1 {
-		numAttempts = 1
-	}
-	h, err := util.InitHost(nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to init host")
-	}
-	lotusClient := util.NewLotusClient(lotusURL, lotusToken)
-	dealMaker := replication.NewDealMaker(lotusClient, h, time.Hour, time.Minute)
-	return &DealPusher{
-		dbNoContext:              db,
-		activeScheduleCancelFunc: make(map[model.ScheduleID]context.CancelFunc),
-		activeSchedule:           make(map[model.ScheduleID]*model.Schedule),
-		cronEntries:              make(map[model.ScheduleID]cron.EntryID),
-		walletChooser:            &replication.RandomWalletChooser{},
-		dealMaker:                dealMaker,
-		workerID:                 uuid.New(),
-		cron: cron.New(cron.WithLogger(&cronLogger{}), cron.WithLocation(time.UTC),
-			cron.WithParser(cron.NewParser(cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor))),
-		sendDealAttempts: numAttempts,
-		host:             h,
-		maxReplicas:      maxReplicas,
-	}, nil
-}
-
-// runOnce is a method of the DealPusher type that runs a single iteration of the deal pushing logic.
-//
-// In each iteration, the method performs the following actions:
-//  1. Fetches all the active schedules from the database.
-//  2. Constructs a map of these schedules for quick lookup.
-//  3. Cancels all the jobs in the DealPusher that are no longer active (based on the latest fetched schedules).
-//  4. For each schedule in the fetched active schedules:
-//     a. If the schedule is already being processed, it updates that schedule's processing logic.
-//     b. If the schedule is new, it starts processing that schedule.
-//
-// Parameters:
-//
-//   - ctx : The context for managing the lifecycle of this iteration. If Done, the function exits cleanly.
-//
-// This function is designed to be idempotent, meaning it can be run multiple times with the same effect.
-// It is called repeatedly by the main deal processing loop in DealPusher.Start.
-//
-// Note: Errors encountered during this process are logged but do not stop the function's execution.
-func (d *DealPusher) runOnce(ctx context.Context) {
-	var schedules []model.Schedule
-	scheduleMap := map[model.ScheduleID]model.Schedule{}
-	Logger.Debugw("getting schedules")
-	db := d.dbNoContext.WithContext(ctx)
-	err := db.Preload("Preparation.Wallets").Where("state = ?",
-		model.ScheduleActive).Find(&schedules).Error
-	if err != nil {
-		Logger.Errorw("failed to get schedules", "error", err)
-		return
-	}
-	for _, schedule := range schedules {
-		scheduleMap[schedule.ID] = schedule
-	}
-	d.mutex.Lock()
-	defer d.mutex.Unlock()
-	for id, active := range d.activeSchedule {
-		if _, ok := scheduleMap[id]; !ok {
-			Logger.Infow("removing inactive schedule", "schedule_id", id)
-			d.removeScheduleUnsafe(*active)
-		}
-	}
-
-	for _, schedule := range schedules {
-		_, ok := d.activeSchedule[schedule.ID]
-		if ok {
-			err = d.updateScheduleUnsafe(ctx, schedule)
-			if err != nil {
-				Logger.Errorw("failed to update schedule", "error", err)
-			}
-		} else {
-			Logger.Infow("adding new schedule", "schedule_id", schedule.ID)
-			err = d.addScheduleUnsafe(ctx, schedule)
-			if err != nil {
-				Logger.Errorw("failed to add schedule", "error", err)
-			}
-		}
-	}
-}
-
-// Start initializes and starts the DealPusher service.
-//
-// It first attempts to register the worker with the health check system.
-// If another worker is already running, it waits and retries until it can register or the context is cancelled.
-// Once registered, it launches three main activities in separate goroutines:
-//  1. Reporting its health status.
-//  2. Running the deal processing loop.
-//  3. Handling cleanup when the service is stopped.
-//
-// Parameters:
-//
-//   - ctx : The context for managing the lifecycle of the Start function. If Done, the function exits cleanly.
-//   - exitErr : A channel for an error or nil when the service exits
-//
-// Returns:
-//   - An error if there was a problem starting the service.
-//
-// This function is intended to be called once at the start of the service lifecycle.
-func (d *DealPusher) Start(ctx context.Context, exitErr chan<- error) error {
-	var regTimer *time.Timer
-	for {
-		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, model.DealPusher, false)
-		if err != nil {
-			return errors.Wrap(err, "failed to register worker")
-		}
-		if !alreadyRunning {
-			break
-		}
-		Logger.Warnw("another worker already running")
-		Logger.Warn("retrying in 1 minute")
-		if regTimer == nil {
-			regTimer = time.NewTimer(healthRegisterRetryInterval)
-			defer regTimer.Stop()
-		} else {
-			regTimer.Reset(healthRegisterRetryInterval)
-		}
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-regTimer.C:
-		}
-	}
-
-	err := analytics.Init(ctx, d.dbNoContext)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	eventsFlushed := make(chan struct{})
-	go func() {
-		defer close(eventsFlushed)
-		analytics.Default.Start(ctx)
-		//nolint:contextcheck
-		_ = analytics.Default.Flush()
-	}()
-
-	healthcheckDone := make(chan struct{})
-	go func() {
-		defer close(healthcheckDone)
-		healthcheck.StartReportHealth(ctx, d.dbNoContext, d.workerID, model.DealPusher)
-		Logger.Info("healthcheck stopped")
-	}()
-
-	go func() {
-		d.cron.Start()
-
-		var timer *time.Timer
-		for {
-			d.runOnce(ctx)
-			Logger.Debug("waiting for deal schedule check in 15 secs")
-
-			if timer == nil {
-				timer = time.NewTimer(schedCheckPeriod)
-				defer timer.Stop()
-			} else {
-				timer.Reset(schedCheckPeriod)
-			}
-
-			var stopped bool
-			select {
-			case <-ctx.Done():
-				Logger.Info("cron stopped")
-				stopped = true
-			case <-timer.C:
-			}
-			if stopped {
-				break
-			}
-		}
-
-		ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		//nolint:contextcheck
-		err := d.cleanup(ctx2)
-		if err != nil {
-			Logger.Errorw("failed to cleanup", "error", err)
-		} else {
-			Logger.Info("cleanup done")
-		}
-		cancel()
-
-		err = d.host.Close()
-		if err != nil {
-			Logger.Errorw("failed to close host", "error", err)
-		} else {
-			Logger.Info("host closed")
-		}
-
-		<-eventsFlushed
-		<-healthcheckDone
-
-		if exitErr != nil {
-			exitErr <- nil
-		}
-	}()
-
-	return nil
-}
-
-func (d *DealPusher) cleanup(ctx context.Context) error {
-	d.cron.Stop()
-	return database.DoRetry(ctx, func() error {
-		return d.dbNoContext.WithContext(ctx).Where("id = ?", d.workerID).Delete(&model.Worker{}).Error
-	})
 }
