@@ -324,7 +324,7 @@ func (d DealMakerImpl) MakeDeal120(
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to open stream with %s using %s", dealConfig.Provider, StorageProposalV120)
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 	if deadline, ok := ctx.Deadline(); ok {
 		err := stream.SetDeadline(deadline)
 		if err != nil {
@@ -401,7 +401,7 @@ func (d DealMakerImpl) MakeDeal111(
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to open stream with %s using %s", dealConfig.Provider, StorageProposalV111)
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 	if deadline, ok := ctx.Deadline(); ok {
 		err = stream.SetDeadline(deadline)
 		if err != nil {

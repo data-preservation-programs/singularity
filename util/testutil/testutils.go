@@ -147,7 +147,7 @@ func OneWithoutReset(t *testing.T, testFunc func(ctx context.Context, t *testing
 		t.Skip("Skip " + backend + " - database not available")
 		return
 	}
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 	t.Setenv("DATABASE_CONNECTION_STRING", connStr)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
@@ -165,7 +165,7 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 		t.Skip("Skip " + backend + " - database not available")
 		return
 	}
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 	t.Setenv("DATABASE_CONNECTION_STRING", connStr)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()

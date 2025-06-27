@@ -197,7 +197,7 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 	}
 
 	dagGenerator := NewDagGenerator(ctx, db, job.Attachment.ID, rootCID, job.Attachment.Preparation.NoInline)
-	defer dagGenerator.Close()
+	defer func() { _ = dagGenerator.Close() }()
 
 	var filename string
 	calc := &commp.Calc{}

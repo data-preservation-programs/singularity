@@ -375,7 +375,7 @@ func (s *HTTPServer) handleGetPiece(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "failed to find piece: "+err.Error())
 	}
 
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 	SetCommonHeaders(c, pieceCid.String())
 	http.ServeContent(
 		c.Response(),
