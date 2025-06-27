@@ -17,8 +17,23 @@ import (
 // swagger:model wallet.CreateRequest
 type WalletCreateRequest struct {
 
-	// This is either "secp256k1" or "bls"
+	// actor Id
+	ActorID string `json:"actorId,omitempty"`
+
+	// For SPWallet creation
+	Address string `json:"address,omitempty"`
+
+	// contact
+	Contact string `json:"contact,omitempty"`
+
+	// For UserWallet creation (generates new keypair)
 	KeyType string `json:"keyType,omitempty"`
+
+	// location
+	Location string `json:"location,omitempty"`
+
+	// Optional fields for adding details to Wallet
+	Name string `json:"name,omitempty"`
 }
 
 // Validate validates this wallet create request
