@@ -109,6 +109,49 @@ func (c *UsageCache[C]) Done(key string) {
 	item.usageCount--
 }
 
+func (d *DownloadServer) handleGetPiece(c echo.Context) error {
+	id := c.Param("id")
+	pieceCid, err := cid.Parse(id)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
+	}
+	if pieceCid.Type() != cid.FilCommitmentUnsealed {
+		return c.String(http.StatusBadRequest, "CID is not a commp")
+	}
+	var pieceMetadata *contentprovider.PieceMetadata
+	var ok bool
+	pieceMetadata, ok = d.usageCache.Get(pieceCid.String())
+	if !ok {
+		var statusCode int
+		pieceMetadata, statusCode, err = GetMetadata(c.Request().Context(), d.api, d.config, d.clientConfig, pieceCid.String())
+		if err != nil && statusCode >= 400 {
+			return c.String(statusCode, "failed to query metadata API: "+err.Error())
+		}
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "failed to query metadata API: "+err.Error())
+		}
+		d.usageCache.Set(pieceCid.String(), *pieceMetadata)
+	}
+	defer func() {
+		d.usageCache.Done(pieceCid.String())
+	}()
+	pieceReader, err := store.NewPieceReader(c.Request().Context(), pieceMetadata.Car, pieceMetadata.Storage, pieceMetadata.CarBlocks, pieceMetadata.Files)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to create piece reader: "+err.Error())
+	}
+	defer pieceReader.Close()
+	contentprovider.SetCommonHeaders(c, pieceCid.String())
+	http.ServeContent(
+		c.Response(),
+		c.Request(),
+		pieceCid.String()+".car",
+		pieceMetadata.Car.CreatedAt,
+		pieceReader,
+	)
+
+	return nil
+}
+
 func GetMetadata(
 	ctx context.Context,
 	api string,
@@ -127,7 +170,7 @@ func GetMetadata(
 	if err != nil {
 		return nil, 0, errors.WithStack(err)
 	}
-	defer func() { _ = resp.Body.Close() }()
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return nil, resp.StatusCode, errors.Errorf("failed to get metadata: %s", resp.Status)
 	}
@@ -147,11 +190,7 @@ func GetMetadata(
 	prefix := pieceMetadata.Storage.Type + "-"
 	provider := pieceMetadata.Storage.Config["provider"]
 	providerOptions, err := underscore.Find(backend.ProviderOptions, func(providerOption storagesystem.ProviderOptions) bool {
-		// Handle special case for 'local' storage where provider can be empty or "local"
-		if pieceMetadata.Storage.Type == "local" && (provider == "" || strings.EqualFold(provider, "local")) && providerOption.Provider == "" {
-			return true
-		}
-		return strings.EqualFold(providerOption.Provider, provider)
+		return providerOption.Provider == provider
 	})
 	if err != nil {
 		return nil, 0, errors.Newf("provider '%s' is not supported", provider)
@@ -180,20 +219,6 @@ func GetMetadata(
 	return &pieceMetadata, 0, nil
 }
 
-var Logger = log.Logger("downloadserver")
-
-var _ service.Server = &DownloadServer{}
-
-func NewDownloadServer(bind string, api string, config map[string]string, clientConfig model.ClientConfig) *DownloadServer {
-	return &DownloadServer{
-		bind:         bind,
-		api:          api,
-		config:       config,
-		clientConfig: clientConfig,
-		usageCache:   NewUsageCache[contentprovider.PieceMetadata](time.Minute),
-	}
-}
-
 func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error {
 	e := echo.New()
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{}))
@@ -219,9 +244,6 @@ func (d *DownloadServer) Start(ctx context.Context, exitErr chan<- error) error 
 
 	go func() {
 		runErr := e.Start(d.bind)
-		if errors.Is(runErr, http.ErrServerClosed) {
-			runErr = nil
-		}
 		close(forceShutdown)
 
 		err := <-shutdownErr
@@ -253,45 +275,16 @@ func (d *DownloadServer) Name() string {
 	return "DownloadServer"
 }
 
-func (d *DownloadServer) handleGetPiece(c echo.Context) error {
-	id := c.Param("id")
-	pieceCid, err := cid.Parse(id)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
-	}
-	if pieceCid.Type() != cid.FilCommitmentUnsealed {
-		return c.String(http.StatusBadRequest, "CID is not a commp")
-	}
-	var pieceMetadata *contentprovider.PieceMetadata
-	var ok bool
-	pieceMetadata, ok = d.usageCache.Get(pieceCid.String())
-	if !ok {
-		var statusCode int
-		pieceMetadata, statusCode, err = GetMetadata(c.Request().Context(), d.api, d.config, d.clientConfig, pieceCid.String())
-		if err != nil && statusCode >= 400 {
-			return c.String(statusCode, "failed to query metadata API: "+err.Error())
-		}
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "failed to query metadata API: "+err.Error())
-		}
-		d.usageCache.Set(pieceCid.String(), *pieceMetadata)
-	}
-	defer func() {
-		d.usageCache.Done(pieceCid.String())
-	}()
-	pieceReader, err := store.NewPieceReader(c.Request().Context(), pieceMetadata.Car, pieceMetadata.Storage, pieceMetadata.CarBlocks, pieceMetadata.Files)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to create piece reader: "+err.Error())
-	}
-	defer func() { _ = pieceReader.Close() }()
-	contentprovider.SetCommonHeaders(c, pieceCid.String())
-	http.ServeContent(
-		c.Response(),
-		c.Request(),
-		pieceCid.String()+".car",
-		pieceMetadata.Car.CreatedAt,
-		pieceReader,
-	)
+var Logger = log.Logger("downloadserver")
 
-	return nil
+var _ service.Server = &DownloadServer{}
+
+func NewDownloadServer(bind string, api string, config map[string]string, clientConfig model.ClientConfig) *DownloadServer {
+	return &DownloadServer{
+		bind:         bind,
+		api:          api,
+		config:       config,
+		clientConfig: clientConfig,
+		usageCache:   NewUsageCache[contentprovider.PieceMetadata](time.Minute),
+	}
 }

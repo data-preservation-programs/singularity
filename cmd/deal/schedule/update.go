@@ -179,7 +179,7 @@ var UpdateCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 		allowedPieceCIDs := c.StringSlice("allowed-piece-cid")
 		for _, f := range c.StringSlice("allowed-piece-cid-file") {
 			cidsFromFile, err := readCIDsFromFile(f)

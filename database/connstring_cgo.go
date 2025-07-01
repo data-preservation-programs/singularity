@@ -14,27 +14,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func AddPragmaToSQLite(connString string) (string, error) {
-	u, err := url.Parse(connString)
-	if err != nil {
-		return "", errors.WithStack(err)
-	}
-
-	qs := u.Query()
-	qs.Set("_timeout", "50000")
-	qs.Set("_fk", "1")
-	if strings.HasPrefix(connString, "file::memory:") {
-		qs.Set("_journal", "MEMORY")
-		qs.Set("mode", "memory")
-		qs.Set("cache", "shared")
-	} else {
-		qs.Set("_journal", "WAL")
-	}
-
-	u.RawQuery = qs.Encode()
-	return u.String(), nil
-}
-
 func open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
 	var db *gorm.DB
 	var closer io.Closer
@@ -73,4 +52,25 @@ func open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
 	}
 
 	return nil, nil, ErrDatabaseNotSupported
+}
+
+func AddPragmaToSQLite(connString string) (string, error) {
+	u, err := url.Parse(connString)
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+
+	qs := u.Query()
+	qs.Set("_timeout", "50000")
+	qs.Set("_fk", "1")
+	if strings.HasPrefix(connString, "file::memory:") {
+		qs.Set("_journal", "MEMORY")
+		qs.Set("mode", "memory")
+		qs.Set("cache", "shared")
+	} else {
+		qs.Set("_journal", "WAL")
+	}
+
+	u.RawQuery = qs.Encode()
+	return u.String(), nil
 }

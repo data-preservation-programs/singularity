@@ -122,7 +122,7 @@ func updateAction(c *cli.Context, storageType string, provider string) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer func() { _ = closer.Close() }()
+	defer closer.Close()
 	name := c.Args().Get(0)
 
 	var s model.Storage

@@ -303,12 +303,12 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 		}
 		fileInfo, err := file.Stat()
 		if err != nil {
-			_ = file.Close()
+			file.Close()
 			errs = append(errs, errors.Wrapf(err, "failed to stat file %s", car.StoragePath))
 			continue
 		}
 		if fileInfo.Size() != car.FileSize {
-			_ = file.Close()
+			file.Close()
 			errs = append(errs, errors.Wrapf(err, "CAR file size mismatch for %s. expected %d, actual %d.", car.StoragePath, car.FileSize, fileInfo.Size()))
 			continue
 		}
@@ -375,7 +375,7 @@ func (s *HTTPServer) handleGetPiece(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "failed to find piece: "+err.Error())
 	}
 
-	defer func() { _ = reader.Close() }()
+	defer reader.Close()
 	SetCommonHeaders(c, pieceCid.String())
 	http.ServeContent(
 		c.Response(),

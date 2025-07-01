@@ -52,19 +52,15 @@ func main() {
 			tag := operation.Tags[0]
 			if contentMap[tag] == nil {
 				contentMap[tag] = &strings.Builder{}
-				_, _ = contentMap[tag].WriteString("# " + tag + "\n\n")
+				contentMap[tag].WriteString("# " + tag + "\n\n")
 			}
-			// G104: Handle potential error from fmt.Fprintf
-			_, _ = fmt.Fprintf(contentMap[tag], "{%% swagger src=\"https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml\" path=\"%s\" method=\"%s\" %%}\n", pathName, method)
-			// G104: Handle potential error from WriteString
-			_, _ = contentMap[tag].WriteString("[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)\n")
-			// G104: Handle potential error from WriteString
-			_, _ = contentMap[tag].WriteString("{% endswagger %}\n\n")
+			fmt.Fprintf(contentMap[tag], "{%% swagger src=\"https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml\" path=\"%s\" method=\"%s\" %%}\n", pathName, method)
+			contentMap[tag].WriteString("[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)\n")
+			contentMap[tag].WriteString("{% endswagger %}\n\n")
 		}
 	}
 
-	// G301: Use more restrictive permissions (0750) for directory creation
-	err = os.MkdirAll("./docs/en/web-api-reference", 0750)
+	err = os.MkdirAll("./docs/en/web-api-reference", 0755)
 	if err != nil {
 		panic(err)
 	}

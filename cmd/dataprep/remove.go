@@ -32,7 +32,7 @@ This will not remove
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 
 		removeCars := c.Bool("cars")
 

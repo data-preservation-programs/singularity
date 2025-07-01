@@ -33,7 +33,7 @@ func main() {
 	sb.WriteString(getStdout([]string{}))
 	sb.WriteString("```\n")
 	sb.WriteString("{% endcode %}\n")
-	err := os.MkdirAll("docs/en/cli-reference", 0750)
+	err := os.MkdirAll("docs/en/cli-reference", 0755)
 	if err != nil {
 		panic(err)
 	}
@@ -92,7 +92,7 @@ func saveMarkdown(command *cli.Command, outDir string, args []string) {
 		outFile = path.Join(outDir, command.Name+".md")
 	} else {
 		outFile = path.Join(outDir, command.Name, "README.md")
-		err = os.MkdirAll(path.Join(outDir, command.Name), 0750)
+		err = os.MkdirAll(path.Join(outDir, command.Name), 0755)
 		if err != nil {
 			panic(err)
 		}

@@ -15,7 +15,6 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/dataprep"
 	"github.com/data-preservation-programs/singularity/cmd/deal"
 	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
-	"github.com/data-preservation-programs/singularity/cmd/dealtemplate"
 	"github.com/data-preservation-programs/singularity/cmd/ez"
 	"github.com/data-preservation-programs/singularity/cmd/run"
 	"github.com/data-preservation-programs/singularity/cmd/storage"
@@ -112,7 +111,6 @@ Upgrading:
 		return nil
 	},
 	Commands: []*cli.Command{
-		OnboardCmd,
 		ez.PrepCmd,
 		VersionCmd,
 		{
@@ -122,7 +120,6 @@ Upgrading:
 			Subcommands: []*cli.Command{
 				admin.InitCmd,
 				admin.ResetCmd,
-				admin.MigrateCmd,
 				admin.MigrateDatasetCmd,
 				admin.MigrateScheduleCmd,
 			},
@@ -151,17 +148,6 @@ Upgrading:
 			},
 		},
 		{
-			Name:     "deal-template",
-			Usage:    "Deal template management",
-			Category: "Operations",
-			Subcommands: []*cli.Command{
-				dealtemplate.CreateCmd,
-				dealtemplate.ListCmd,
-				dealtemplate.GetCmd,
-				dealtemplate.DeleteCmd,
-			},
-		},
-		{
 			Name:     "run",
 			Category: "Daemons",
 			Usage:    "run different singularity components",
@@ -172,7 +158,6 @@ Upgrading:
 				run.DealTrackerCmd,
 				run.DealPusherCmd,
 				run.DownloadServerCmd,
-				run.UnifiedServiceCmd,
 			},
 		},
 		{
@@ -180,12 +165,9 @@ Upgrading:
 			Category: "Operations",
 			Usage:    "Wallet management",
 			Subcommands: []*cli.Command{
-				wallet.CreateCmd,
 				wallet.ImportCmd,
-				wallet.InitCmd,
 				wallet.ListCmd,
 				wallet.RemoveCmd,
-				wallet.UpdateCmd,
 			},
 		},
 		{
@@ -312,7 +294,7 @@ func SetupHelpPager() {
 		numLines := strings.Count(helpText.String(), "\n")
 		_, maxLinesWithoutPager := terminal.GetSize()
 		if numLines < maxLinesWithoutPager-1 {
-			_, _ = w.Write(helpText.Bytes())
+			w.Write(helpText.Bytes())
 			return
 		}
 		pager := os.Getenv("PAGER")
@@ -322,28 +304,27 @@ func SetupHelpPager() {
 
 		pagerPath, err := exec.LookPath(pager)
 		if err != nil {
-			_, _ = w.Write(helpText.Bytes())
+			w.Write(helpText.Bytes())
 			return
 		}
-		// G204: Using exec.LookPath to validate pager path before execution
-		cmd := exec.Command(pagerPath) // #nosec G204
+		cmd := exec.Command(pagerPath)
 		pagerIn, err := cmd.StdinPipe()
 		cmd.Stdout = w
 		if err != nil {
-			_, _ = w.Write(helpText.Bytes())
+			w.Write(helpText.Bytes())
 			return
 		}
 
 		if err := cmd.Start(); err != nil {
-			_, _ = w.Write(helpText.Bytes())
+			w.Write(helpText.Bytes())
 			return
 		}
 
 		if _, err := io.Copy(pagerIn, &helpText); err != nil {
-			_, _ = w.Write(helpText.Bytes())
+			w.Write(helpText.Bytes())
 			return
 		}
-		_ = pagerIn.Close()
-		_ = cmd.Wait()
+		pagerIn.Close()
+		cmd.Wait()
 	}
 }

@@ -12,7 +12,6 @@ import (
 	util2 "github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/pack/push"
 	"github.com/data-preservation-programs/singularity/util"
-	boxoutil "github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/urfave/cli/v2"
@@ -150,7 +149,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 				return errors.Wrap(err, "failed to decode output file list")
 			}
 			for _, generatedFile := range fileList.GeneratedFileList {
-				if generatedFile.CID == "unrecoverable" || generatedFile.CID == cid.NewCidV1(cid.Raw, boxoutil.Hash([]byte("unrecoverable"))).String() {
+				if generatedFile.CID == "unrecoverable" {
 					continue
 				}
 				if generatedFile.Dir {
@@ -256,7 +255,7 @@ func MigrateDataset(cctx *cli.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer func() { _ = closer.Close() }()
+	defer closer.Close()
 	ctx := cctx.Context
 	db = db.WithContext(ctx)
 	mg, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoConnectionString))
@@ -264,9 +263,9 @@ func MigrateDataset(cctx *cli.Context) error {
 		return errors.Wrap(err, "failed to connect to mongo")
 	}
 
-	err = model.GetMigrator(db).Migrate()
+	err = model.AutoMigrate(db)
 	if err != nil {
-		return errors.Wrap(err, "failed to migrate database")
+		return errors.Wrap(err, "failed to auto-migrate database")
 	}
 
 	resp, err := mg.Database("singularity").Collection("scanningrequests").Find(ctx, bson.M{})

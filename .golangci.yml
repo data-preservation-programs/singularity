@@ -42,10 +42,9 @@ linters:
     - wsl
     - contextcheck
     - forcetypeassert
+    - funcorder
     - exhaustive
     - intrange
-    - staticcheck
-    - errchkjson
   settings:
     gosec:
       excludes:
@@ -59,16 +58,30 @@ linters:
       rules:
         - name: var-naming
           disabled: true
+    recvcheck:
+      disable-builtin: true
+      exclusions:
+        - "*.Value"
+        - "*.String"
+        - "*.MarshalBinary"
+        - "*.MarshalJSON"
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
   exclusions:
     generated: lax
     paths:
-      - third_party
-      - builtin
-      - examples
-    rules:
-      - path: model/basetypes.go
-        linters:
-          - recvcheck
-      - path: migrate/migrations/
-        linters:
-          - stylecheck
+      - third_party$
+      - builtin$
+      - examples$

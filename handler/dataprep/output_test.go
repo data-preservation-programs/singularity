@@ -2,7 +2,6 @@ package dataprep
 
 import (
 	"context"
-	"strconv"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
@@ -40,22 +39,14 @@ func TestAddOutputStorageHandler_PreparationNotFound(t *testing.T) {
 
 func TestAddOutputStorageHandler_AlreadyAttached(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		// Create preparation with output storage already attached
-		prep := model.Preparation{
-			OutputStorages: []model.Storage{
-				{
-					Name: "output-already-attached",
-					Type: "local",
-					Path: "/tmp",
-				},
-			},
-		}
-		err := db.Create(&prep).Error
+		err := db.Create(&model.Preparation{
+			OutputStorages: []model.Storage{{
+				Name: "output",
+			}},
+		}).Error
 		require.NoError(t, err)
 
-		// Try to attach the same storage again - this should fail
-		prepIDStr := strconv.Itoa(int(prep.ID))
-		_, err = Default.AddOutputStorageHandler(ctx, db, prepIDStr, "output-already-attached")
+		_, err = Default.AddOutputStorageHandler(ctx, db, "1", "output")
 		require.ErrorIs(t, err, handlererror.ErrDuplicateRecord)
 		require.ErrorContains(t, err, "already")
 	})

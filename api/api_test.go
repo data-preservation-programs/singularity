@@ -184,13 +184,9 @@ func setupMockWallet() wallet.Handler {
 	m := new(wallet.MockWallet)
 	m.On("AttachHandler", mock.Anything, mock.Anything, "id", "wallet").
 		Return(&model.Preparation{}, nil)
-	m.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything).
-		Return(&model.Wallet{}, nil)
 	m.On("DetachHandler", mock.Anything, mock.Anything, "id", "wallet").
 		Return(&model.Preparation{}, nil)
 	m.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-		Return(&model.Wallet{}, nil)
-	m.On("InitHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&model.Wallet{}, nil)
 	m.On("ListHandler", mock.Anything, mock.Anything).
 		Return([]model.Wallet{{}}, nil)
@@ -238,7 +234,7 @@ func TestAllAPIs(t *testing.T) {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 		go func() {
-			_ = service.StartServers(ctx, log.Logger("test"), &s)
+			service.StartServers(ctx, log.Logger("test"), &s)
 		}()
 
 		var resp *http2.Response
@@ -305,28 +301,10 @@ func TestAllAPIs(t *testing.T) {
 		})
 
 		t.Run("wallet", func(t *testing.T) {
-			t.Run("CreateWallet", func(t *testing.T) {
-				resp, err := client.Wallet.CreateWallet(&wallet2.CreateWalletParams{
-					Request: &models.WalletCreateRequest{},
-					Context: ctx,
-				})
-				require.NoError(t, err)
-				require.True(t, resp.IsSuccess())
-				require.NotNil(t, resp.Payload)
-			})
 			t.Run("ImportWallet", func(t *testing.T) {
 				resp, err := client.Wallet.ImportWallet(&wallet2.ImportWalletParams{
 					Request: &models.WalletImportRequest{},
 					Context: ctx,
-				})
-				require.NoError(t, err)
-				require.True(t, resp.IsSuccess())
-				require.NotNil(t, resp.Payload)
-			})
-			t.Run("InitWallet", func(t *testing.T) {
-				resp, err := client.Wallet.InitWallet(&wallet2.InitWalletParams{
-					Context: ctx,
-					Address: "wallet",
 				})
 				require.NoError(t, err)
 				require.True(t, resp.IsSuccess())

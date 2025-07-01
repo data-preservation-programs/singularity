@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/retriever/endpointfinder"
 	"github.com/filecoin-shipyard/boostly"
-	"github.com/ipfs/go-log/v2"
 	"github.com/ipld/go-ipld-prime/codec/dagcbor"
 	"github.com/ipld/go-ipld-prime/node/bindnode"
 	"github.com/ipld/go-ipld-prime/node/bindnode/registry"
@@ -21,15 +21,6 @@ import (
 )
 
 func TestEndpointFetcher(t *testing.T) {
-	// Suppress error logs during testing to avoid confusing output.
-	// These tests intentionally trigger error conditions that generate error logs,
-	// but the errors are expected and tested for, so we suppress them to keep
-	// test output clean and avoid confusion in CI environments.
-	log.SetLogLevel("singularity/retriever/endpointfinder", "fatal")
-	defer func() {
-		log.SetLogLevel("singularity/retriever/endpointfinder", "info")
-	}()
-
 	testCases := []struct {
 		testName                 string
 		providers                int
@@ -43,7 +34,7 @@ func TestEndpointFetcher(t *testing.T) {
 		{
 			testName:             "unable to find miner on chain",
 			minerInfoNotFindable: true,
-			expectedErrString:    "no http endpoints found for providers [%s]: looking up provider info: miner not found",
+			expectedErrString:    fmt.Errorf("no http endpoints found for providers [%%s]: looking up provider info: %w", errMinerNotFound).Error(),
 		},
 		{
 			testName:          "unable to dial provider",
@@ -58,7 +49,7 @@ func TestEndpointFetcher(t *testing.T) {
 		{
 			testName:          "provider not serving http",
 			noHTTP:            true,
-			expectedErrString: "no http endpoints found for providers [%s]: provider does not support http",
+			expectedErrString: fmt.Errorf("no http endpoints found for providers [%%s]: %w", endpointfinder.ErrHTTPNotSupported).Error(),
 		},
 	}
 	for i, testCase := range testCases {
@@ -99,7 +90,7 @@ func TestEndpointFetcher(t *testing.T) {
 				other.SetStreamHandler(boostly.FilRetrievalTransportsProtocol_1_0_0, handler)
 			}
 
-			endpointFinder := endpointfinder.NewEndpointFinder(minerInfoFetcher, source, endpointfinder.WithErrorLruSize(3))
+			endpointFinder := endpointfinder.NewEndpointFinder(minerInfoFetcher, source, endpointfinder.WithErrorLruSize(3), endpointfinder.WithErrorLruSize(3))
 
 			addrInfos, err := endpointFinder.FindHTTPEndpoints(context.Background(), []string{testProvider})
 			if testCase.expectedErrString == "" {
@@ -119,12 +110,8 @@ func TestEndpointFetcher(t *testing.T) {
 				})
 				require.Equal(t, minerInfoFetcher.callCount, 1)
 			} else {
-				var errMessage string
-				if testCase.testName == "unable to dial provider" {
-					errMessage = fmt.Sprintf(testCase.expectedErrString, testProvider, source.ID(), other.ID())
-				} else {
-					errMessage = fmt.Sprintf(testCase.expectedErrString, testProvider)
-				}
+				errMessage := fmt.Sprintf(testCase.expectedErrString, testProvider, source.ID(), other.ID())
+				errMessage = strings.Split(errMessage, "%!(EXTRA")[0]
 				require.EqualError(t, err, errMessage)
 				require.Nil(t, addrInfos)
 				// second call should cache error
@@ -184,7 +171,7 @@ type transportsListener struct {
 
 // Called when the client opens a libp2p stream
 func (l transportsListener) HandleQueries(s network.Stream) {
-	defer func() { _ = s.Close() }()
+	defer s.Close()
 
 	// Write the response to the client
 	err := reg.TypeToWriter(&l.response, s, dagcbor.Encode)

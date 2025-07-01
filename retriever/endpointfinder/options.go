@@ -16,6 +16,18 @@ type config struct {
 	ErrorLruTimeout time.Duration
 }
 
+func applyOptions(opts ...Option) *config {
+	cfg := &config{
+		LruSize:         defaultLruSize,
+		ErrorLruSize:    defaultErrorLruSize,
+		ErrorLruTimeout: defaultErrorLruTimeout,
+	}
+	for _, opt := range opts {
+		opt(cfg)
+	}
+	return cfg
+}
+
 type Option func(*config)
 
 func WithLruSize(size int) Option {
@@ -40,16 +52,4 @@ func WithErrorLruTimeout(timeout time.Duration) Option {
 	return func(cfg *config) {
 		cfg.ErrorLruTimeout = timeout
 	}
-}
-
-func applyOptions(opts ...Option) *config {
-	cfg := &config{
-		LruSize:         defaultLruSize,
-		ErrorLruSize:    defaultErrorLruSize,
-		ErrorLruTimeout: defaultErrorLruTimeout,
-	}
-	for _, opt := range opts {
-		opt(cfg)
-	}
-	return cfg
 }

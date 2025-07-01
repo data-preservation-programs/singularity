@@ -19,7 +19,7 @@ var ListPiecesCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 
 		pieces, err := dataprep.Default.ListPiecesHandler(c.Context, db, c.Args().Get(0))
 		if err != nil {
@@ -66,7 +66,7 @@ var AddPieceCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 
 		pieces, err := dataprep.Default.AddPieceHandler(c.Context, db, c.Args().Get(0), dataprep.AddPieceRequest{
 			PieceCID:  c.String("piece-cid"),

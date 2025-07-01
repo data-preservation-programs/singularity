@@ -138,17 +138,13 @@ func TestRetrieveFileHandler(t *testing.T) {
 					require.NoError(t, err)
 				}
 
-				wallet := &model.Wallet{ActorID: "f01", Address: "f11"}
-				err = db.Create(wallet).Error
-				require.NoError(t, err)
-
 				deals := make([]model.Deal, 0, 4)
 				for i, testCid := range testCids {
 					deal := model.Deal{
 						State:    model.DealActive,
 						PieceCID: model.CID(testCid),
 						Provider: "apples" + strconv.Itoa(i),
-						Wallet:   wallet,
+						Wallet:   &model.Wallet{},
 					}
 					err = db.Create(&deal).Error
 					require.NoError(t, err)
@@ -162,7 +158,7 @@ func TestRetrieveFileHandler(t *testing.T) {
 						State:    state,
 						PieceCID: model.CID(testCid),
 						Provider: "oranges" + strconv.Itoa(i),
-						Wallet:   wallet,
+						Wallet:   &model.Wallet{},
 					}
 					err = db.Create(&deal).Error
 					require.NoError(t, err)
@@ -229,7 +225,7 @@ func TestRetrieveFileHandler(t *testing.T) {
 				// remaining data. This also tests the seeker's WriteTo
 				// function.
 				const seekBack = int64(16384)
-				_, _ = seeker.Seek(-seekBack, io.SeekEnd)
+				seeker.Seek(-seekBack, io.SeekEnd)
 				buf := bytes.NewBuffer(nil)
 				copied, err := io.Copy(buf, seeker)
 				require.NoError(t, err)
@@ -307,13 +303,13 @@ func (fr *fakeRetriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int
 		// Simulate deserialize goroutine.
 		_, err := io.Copy(out, reader)
 		errChan <- err
-		_ = reader.Close()
+		reader.Close()
 	}()
 	go func() {
 		// Simulate getContent goroutine.
 		_, err := io.Copy(writer, io.LimitReader(nlr, rangeEnd-rangeStart))
 		errChan <- err
-		_ = writer.Close()
+		writer.Close()
 	}()
 
 	// collect errors
@@ -364,7 +360,7 @@ func (fr *fakeRetriever) RetrieveReader(ctx context.Context, c cid.Cid, rangeSta
 	go func() {
 		// Simulate deserialize goroutine.
 		_, err := io.Copy(outWriter, reader)
-		_ = reader.Close()
+		reader.Close()
 		outWriter.CloseWithError(err)
 		fr.wg.Done()
 	}()
@@ -408,12 +404,12 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 	connStr := "sqlite:" + b.TempDir() + "/singularity.db"
 	db, closer, err := database.OpenWithLogger(connStr)
 	require.NoError(b, err)
-	defer func() { _ = closer.Close() }()
+	defer closer.Close()
 	b.Setenv("DATABASE_CONNECTION_STRING", connStr)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	db = db.WithContext(ctx)
-	require.NoError(b, model.GetMigrator(db).Migrate())
+	require.NoError(b, model.AutoMigrate(db))
 
 	path := b.TempDir()
 	lsys := cidlink.DefaultLinkSystem()
@@ -488,16 +484,12 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 		require.NoError(b, err)
 	}
 
-	wallet := &model.Wallet{ActorID: "f01", Address: "f11"}
-	err = db.Create(wallet).Error
-	require.NoError(b, err)
-
 	for i, testCid := range testCids {
 		deal := model.Deal{
 			State:    model.DealActive,
 			PieceCID: model.CID(testCid),
 			Provider: "apples" + strconv.Itoa(i),
-			Wallet:   wallet,
+			Wallet:   &model.Wallet{},
 		}
 		err = db.Create(&deal).Error
 		require.NoError(b, err)
@@ -510,7 +502,7 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 			State:    state,
 			PieceCID: model.CID(testCid),
 			Provider: "oranges" + strconv.Itoa(i),
-			Wallet:   wallet,
+			Wallet:   &model.Wallet{},
 		}
 		err = db.Create(&deal).Error
 		require.NoError(b, err)
@@ -541,7 +533,7 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 			}
 		}
 
-		_ = seeker.Close()
+		seeker.Close()
 	}
 
 	b.StopTimer()

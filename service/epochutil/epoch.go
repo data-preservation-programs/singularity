@@ -8,7 +8,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/go-state-types/abi"
-	"github.com/ybbus/jsonrpc/v3"
 )
 
 var GenesisTimestamp = int32(1598306400)
@@ -36,20 +35,12 @@ type block struct {
 //
 //   - error: An error that represents the failure of the operation, or nil if the operation was successful.
 func Initialize(ctx context.Context, lotusAPI string, lotusToken string) error {
-	return InitializeWithClient(ctx, lotusAPI, lotusToken, nil)
-}
-
-// InitializeWithClient allows for dependency injection of the RPC client for testing
-func InitializeWithClient(ctx context.Context, lotusAPI string, lotusToken string, client jsonrpc.RPCClient) error {
 	if strings.HasPrefix(lotusAPI, "https://api.node.glif.io/rpc") {
 		GenesisTimestamp = int32(1598306400)
 		return nil
 	}
 
-	if client == nil {
-		client = util.NewLotusClient(lotusAPI, lotusToken)
-	}
-
+	client := util.NewLotusClient(lotusAPI, lotusToken)
 	var r result
 	err := client.CallFor(ctx, &r, "Filecoin.ChainGetGenesis")
 	if err != nil {

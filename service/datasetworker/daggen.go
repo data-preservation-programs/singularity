@@ -35,17 +35,6 @@ type DagGenerator struct {
 	noInline     bool
 }
 
-func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID model.SourceAttachmentID, root cid.Cid, noInline bool) *DagGenerator {
-	return &DagGenerator{
-		ctx:          ctx,
-		db:           db,
-		attachmentID: attachmentID,
-		root:         root,
-		dirCIDs:      make(map[model.DirectoryID]model.CID),
-		noInline:     noInline,
-	}
-}
-
 // Read implements the io.Reader interface for the DagGenerator. It generates
 // a CAR (Content Addressable Archive) representation of directories from a database,
 // which can be read in chunks using the provided byte slice.
@@ -147,6 +136,17 @@ func (d *DagGenerator) Close() error {
 	return nil
 }
 
+func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID model.SourceAttachmentID, root cid.Cid, noInline bool) *DagGenerator {
+	return &DagGenerator{
+		ctx:          ctx,
+		db:           db,
+		attachmentID: attachmentID,
+		root:         root,
+		dirCIDs:      make(map[model.DirectoryID]model.CID),
+		noInline:     noInline,
+	}
+}
+
 var ErrDagNotReady = errors.New("dag is not ready to be generated")
 
 var ErrDagDisabled = errors.New("dag generation is disabled for this preparation")
@@ -197,7 +197,7 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 	}
 
 	dagGenerator := NewDagGenerator(ctx, db, job.Attachment.ID, rootCID, job.Attachment.Preparation.NoInline)
-	defer func() { _ = dagGenerator.Close() }()
+	defer dagGenerator.Close()
 
 	var filename string
 	calc := &commp.Calc{}

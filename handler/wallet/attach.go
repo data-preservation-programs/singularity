@@ -38,7 +38,7 @@ func (DefaultHandler) AttachHandler(
 	}
 
 	var w model.Wallet
-	err = w.FindByIDOrAddr(db, wallet)
+	err = db.Where("address = ? OR id = ?", wallet, wallet).First(&w).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not found", wallet)
 	}

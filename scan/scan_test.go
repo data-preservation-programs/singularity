@@ -27,14 +27,14 @@ func TestScan(t *testing.T) {
 		"1/2/32.bin":   32,
 	}
 	for path, size := range files {
-		err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(path)), 0750)
+		err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(path)), 0755)
 		require.NoError(t, err)
 		err = os.WriteFile(filepath.Join(tmp, path), testutil.GenerateRandomBytes(size), 0644)
 		require.NoError(t, err)
 	}
 
 	// Create empty folder
-	err := os.MkdirAll(filepath.Join(tmp, "emptyfolder"), 0750)
+	err := os.MkdirAll(filepath.Join(tmp, "emptyfolder"), 0755)
 	require.NoError(t, err)
 
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {

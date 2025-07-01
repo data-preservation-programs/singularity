@@ -28,29 +28,6 @@ var ErrNoWallet = errors.New("no wallets to choose from")
 
 var ErrNoDatacap = errors.New("no wallets have enough datacap")
 
-type DatacapWalletChooser struct {
-	db          *gorm.DB
-	cache       *ttlcache.Cache[string, int64]
-	lotusClient jsonrpc.RPCClient
-	min         uint64
-}
-
-func NewDatacapWalletChooser(db *gorm.DB, cacheTTL time.Duration,
-	lotusAPI string, lotusToken string, min uint64, //nolint:predeclared // We're ok with using the same name as the predeclared identifier here
-) DatacapWalletChooser {
-	cache := ttlcache.New[string, int64](
-		ttlcache.WithTTL[string, int64](cacheTTL),
-		ttlcache.WithDisableTouchOnHit[string, int64]())
-
-	lotusClient := util.NewLotusClient(lotusAPI, lotusToken)
-	return DatacapWalletChooser{
-		db:          db,
-		cache:       cache,
-		lotusClient: lotusClient,
-		min:         min,
-	}
-}
-
 // Choose selects a random Wallet from the provided slice of Wallets.
 //
 // The Choose function of the RandomWalletChooser type randomly selects
@@ -82,6 +59,69 @@ func (w RandomWalletChooser) Choose(ctx context.Context, wallets []model.Wallet)
 	}
 	chosenWallet := wallets[randomPick.Int64()]
 	return chosenWallet, nil
+}
+
+type DatacapWalletChooser struct {
+	db          *gorm.DB
+	cache       *ttlcache.Cache[string, int64]
+	lotusClient jsonrpc.RPCClient
+	min         uint64
+}
+
+func NewDatacapWalletChooser(db *gorm.DB, cacheTTL time.Duration,
+	lotusAPI string, lotusToken string, min uint64, //nolint:predeclared // We're ok with using the same name as the predeclared identifier here
+) DatacapWalletChooser {
+	cache := ttlcache.New[string, int64](
+		ttlcache.WithTTL[string, int64](cacheTTL),
+		ttlcache.WithDisableTouchOnHit[string, int64]())
+
+	lotusClient := util.NewLotusClient(lotusAPI, lotusToken)
+	return DatacapWalletChooser{
+		db:          db,
+		cache:       cache,
+		lotusClient: lotusClient,
+		min:         min,
+	}
+}
+
+func (w DatacapWalletChooser) getDatacap(ctx context.Context, wallet model.Wallet) (int64, error) {
+	var result string
+	err := w.lotusClient.CallFor(ctx, &result, "Filecoin.StateMarketBalance", wallet.Address, nil)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	return strconv.ParseInt(result, 10, 64)
+}
+
+func (w DatacapWalletChooser) getDatacapCached(ctx context.Context, wallet model.Wallet) (int64, error) {
+	file := w.cache.Get(wallet.Address)
+	if file != nil && !file.IsExpired() {
+		return file.Value(), nil
+	}
+	datacap, err := w.getDatacap(ctx, wallet)
+	if err != nil {
+		logger.Errorf("failed to get datacap for wallet %s: %s", wallet.Address, err)
+		if file != nil {
+			return file.Value(), nil
+		}
+		return 0, errors.WithStack(err)
+	}
+	w.cache.Set(wallet.Address, datacap, ttlcache.DefaultTTL)
+	return datacap, nil
+}
+
+func (w DatacapWalletChooser) getPendingDeals(ctx context.Context, wallet model.Wallet) (int64, error) {
+	var totalPieceSize int64
+	err := w.db.WithContext(ctx).Model(&model.Deal{}).
+		Select("COALESCE(SUM(piece_size), 0)").
+		Where("client_id = ? AND verified AND state = ?", wallet.ID, model.DealProposed).
+		Scan(&totalPieceSize).
+		Error
+	if err != nil {
+		logger.Errorf("failed to get pending deals for wallet %s: %s", wallet.Address, err)
+		return 0, errors.WithStack(err)
+	}
+	return totalPieceSize, nil
 }
 
 // Choose selects a random Wallet from the provided slice of Wallets based on certain criteria.
@@ -139,44 +179,4 @@ func (w DatacapWalletChooser) Choose(ctx context.Context, wallets []model.Wallet
 	}
 	chosenWallet := eligibleWallets[randomPick.Int64()]
 	return chosenWallet, nil
-}
-
-func (w DatacapWalletChooser) getDatacap(ctx context.Context, wallet model.Wallet) (int64, error) {
-	var result string
-	err := w.lotusClient.CallFor(ctx, &result, "Filecoin.StateMarketBalance", wallet.Address, nil)
-	if err != nil {
-		return 0, errors.WithStack(err)
-	}
-	return strconv.ParseInt(result, 10, 64)
-}
-
-func (w DatacapWalletChooser) getDatacapCached(ctx context.Context, wallet model.Wallet) (int64, error) {
-	file := w.cache.Get(wallet.Address)
-	if file != nil && !file.IsExpired() {
-		return file.Value(), nil
-	}
-	datacap, err := w.getDatacap(ctx, wallet)
-	if err != nil {
-		logger.Errorf("failed to get datacap for wallet %s: %s", wallet.Address, err)
-		if file != nil {
-			return file.Value(), nil
-		}
-		return 0, errors.WithStack(err)
-	}
-	w.cache.Set(wallet.Address, datacap, ttlcache.DefaultTTL)
-	return datacap, nil
-}
-
-func (w DatacapWalletChooser) getPendingDeals(ctx context.Context, wallet model.Wallet) (int64, error) {
-	var totalPieceSize int64
-	err := w.db.WithContext(ctx).Model(&model.Deal{}).
-		Select("COALESCE(SUM(piece_size), 0)").
-		Where("client_id = ? AND verified = ? AND state = ?", wallet.ID, true, model.DealProposed).
-		Scan(&totalPieceSize).
-		Error
-	if err != nil {
-		logger.Errorf("failed to get pending deals for wallet %s: %s", wallet.Address, err)
-		return 0, errors.WithStack(err)
-	}
-	return totalPieceSize, nil
 }

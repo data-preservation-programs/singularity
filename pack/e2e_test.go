@@ -202,7 +202,7 @@ func TestLastPieceBehaviorE2ENoInline(t *testing.T) {
 			// Verify the CAR file format
 			reader, err := car.OpenReader(carFilePath)
 			require.NoError(t, err, "Should be able to open CAR file %s", carFilePath)
-			defer func() { _ = reader.Close() }()
+			defer reader.Close()
 
 			// Verify the CAR has roots
 			roots, err := reader.Roots()
@@ -212,7 +212,7 @@ func TestLastPieceBehaviorE2ENoInline(t *testing.T) {
 			// Read all blocks to verify integrity
 			rd, err := os.Open(carFilePath)
 			require.NoError(t, err)
-			defer func() { _ = rd.Close() }()
+			defer rd.Close()
 
 			blockReader, err := car.NewBlockReader(rd)
 			require.NoError(t, err, "Should be able to create block reader")

@@ -15,7 +15,6 @@ import (
 
 // SQLite is not supported on Windows 32-bit
 func TestEzPrep(t *testing.T) {
-
 	source := t.TempDir()
 	sizes := []int{0, 1, 1 << 20, 10 << 20, 30 << 20}
 	for _, size := range sizes {

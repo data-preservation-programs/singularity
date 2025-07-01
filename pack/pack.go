@@ -103,7 +103,7 @@ func Pack(
 		skipInaccessibleFile = *job.Attachment.Storage.ClientConfig.SkipInaccessibleFile
 	}
 	assembler := NewAssembler(ctx, storageReader, job.FileRanges, job.Attachment.Preparation.NoInline, skipInaccessibleFile)
-	defer func() { _ = assembler.Close() }()
+	defer assembler.Close()
 	var filename string
 	calc := &commp.Calc{}
 	var pieceCid cid.Cid

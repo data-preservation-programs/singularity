@@ -8,7 +8,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
-	logging "github.com/ipfs/go-log/v2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/ybbus/jsonrpc/v3"
@@ -44,19 +43,15 @@ func (m *MockRPCClient) CallBatchRaw(ctx context.Context, requests jsonrpc.RPCRe
 }
 
 func TestDatacapWalletChooser_Choose(t *testing.T) {
-	// Temporarily suppress error logs to avoid confusing test output
-	logging.SetLogLevel("replication", "FATAL")
-	defer logging.SetLogLevel("replication", "ERROR")
-
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		lotusClient := new(MockRPCClient)
 
 		// Set up the test data
 		wallets := []model.Wallet{
-			{ActorID: "1", Address: "address1"},
-			{ActorID: "2", Address: "address2"},
-			{ActorID: "3", Address: "address3"},
-			{ActorID: "4", Address: "address4"},
+			{ID: "1", Address: "address1"},
+			{ID: "2", Address: "address2"},
+			{ID: "3", Address: "address3"},
+			{ID: "4", Address: "address4"},
 		}
 
 		// Set up expectations for the lotusClient mock
@@ -87,11 +82,10 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 		err := db.Create(&wallets).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Deal{
-			ClientID:      &wallets[2].ID,
-			ClientActorID: wallets[2].ActorID,
-			Verified:      true,
-			State:         model.DealProposed,
-			PieceSize:     500000,
+			ClientID:  "3",
+			Verified:  true,
+			State:     model.DealProposed,
+			PieceSize: 500000,
 		}).Error
 		require.NoError(t, err)
 
@@ -117,8 +111,8 @@ func TestRandomWalletChooser(t *testing.T) {
 	chooser := &RandomWalletChooser{}
 	ctx := context.Background()
 	wallet, err := chooser.Choose(ctx, []model.Wallet{
-		{ActorID: "1", Address: "address1"},
-		{ActorID: "2", Address: "address2"},
+		{ID: "1", Address: "address1"},
+		{ID: "2", Address: "address2"},
 	})
 	require.NoError(t, err)
 	require.Contains(t, wallet.Address, "address")

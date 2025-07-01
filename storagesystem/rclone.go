@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"slices"
 	"strings"
 	"sync"
 	"time"
+
+	"slices"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
@@ -37,68 +38,6 @@ type RCloneHandler struct {
 	retryBackoff            time.Duration
 	retryBackoffExponential float64
 	scanConcurrency         int
-}
-
-func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, error) {
-	_, ok := BackendMap[s.Type]
-	registry, err := fs.Find(s.Type)
-	if !ok || err != nil {
-		return nil, errors.Wrapf(ErrBackendNotSupported, "type: %s", s.Type)
-	}
-
-	ctx, _ = fs.AddConfig(ctx)
-	config := fs.GetConfig(ctx)
-	overrideConfig(config, s)
-
-	noHeadObjectConfig := make(map[string]string)
-	headObjectConfig := make(map[string]string)
-	for k, v := range s.Config {
-		noHeadObjectConfig[k] = v
-		headObjectConfig[k] = v
-	}
-	noHeadObjectConfig["no_head_object"] = "true"
-	headObjectConfig["no_head_object"] = "false"
-
-	noHeadFS, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(noHeadObjectConfig))
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
-	}
-
-	headFS, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(headObjectConfig))
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
-	}
-
-	scanConcurrency := 1
-	if s.ClientConfig.ScanConcurrency != nil {
-		scanConcurrency = *s.ClientConfig.ScanConcurrency
-	}
-
-	handler := &RCloneHandler{
-		name:                    s.Name,
-		fs:                      headFS,
-		fsNoHead:                noHeadFS,
-		retryMaxCount:           10,
-		retryDelay:              time.Second,
-		retryBackoff:            time.Second,
-		retryBackoffExponential: 1.0,
-		scanConcurrency:         scanConcurrency,
-	}
-
-	if s.ClientConfig.RetryMaxCount != nil {
-		handler.retryMaxCount = *s.ClientConfig.RetryMaxCount
-	}
-	if s.ClientConfig.RetryDelay != nil {
-		handler.retryDelay = *s.ClientConfig.RetryDelay
-	}
-	if s.ClientConfig.RetryBackoff != nil {
-		handler.retryBackoff = *s.ClientConfig.RetryBackoff
-	}
-	if s.ClientConfig.RetryBackoffExponential != nil {
-		handler.retryBackoffExponential = *s.ClientConfig.RetryBackoffExponential
-	}
-
-	return handler, nil
 }
 
 func (h RCloneHandler) Name() string {
@@ -136,6 +75,54 @@ func (h RCloneHandler) About(ctx context.Context) (*fs.Usage, error) {
 func (h RCloneHandler) List(ctx context.Context, path string) ([]fs.DirEntry, error) {
 	logger.Debugw("List: listing path", "type", h.fs.Name(), "root", h.fs.Root(), "path", path)
 	return h.fs.List(ctx, path)
+}
+
+func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, wp *workerpool.WorkerPool, wg *sync.WaitGroup) {
+	if ctx.Err() != nil {
+		return
+	}
+	logger.Infow("Scan: listing path", "type", h.fs.String(), "path", path)
+	entries, err := h.fs.List(ctx, path)
+	if err != nil {
+		err = errors.Wrapf(err, "list path: %s", path)
+		select {
+		case <-ctx.Done():
+			return
+		case ch <- Entry{Error: err}:
+		}
+	}
+
+	slices.SortFunc(entries, func(i, j fs.DirEntry) int {
+		return strings.Compare(i.Remote(), j.Remote())
+	})
+
+	var subCount int
+	for _, entry := range entries {
+		switch v := entry.(type) {
+		case fs.Directory:
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- Entry{Dir: v}:
+			}
+
+			subPath := v.Remote()
+			wg.Add(1)
+			wp.Submit(func() {
+				h.scan(ctx, subPath, ch, wp, wg)
+				wg.Done()
+			})
+			subCount++
+		case fs.Object:
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- Entry{Info: v}:
+			}
+		}
+	}
+
+	logger.Debugf("Scan: finished listing path, remaining %d paths to list", subCount)
 }
 
 func (h RCloneHandler) Scan(ctx context.Context, path string) <-chan Entry {
@@ -209,7 +196,7 @@ func (r *readerWithRetry) Read(p []byte) (int, error) {
 	r.retryCount += 1
 	r.retryDelay = time.Duration(float64(r.retryDelay) * r.retryBackoffExponential)
 	r.retryDelay += r.retryBackoff
-	_ = r.reader.Close()
+	r.reader.Close()
 	var err2 error
 	r.reader, err2 = r.object.Open(r.ctx, &fs.SeekOption{Offset: r.offset})
 	if err2 != nil {
@@ -250,6 +237,68 @@ func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, leng
 		Reader: io.LimitReader(readerWithRetry, length),
 		Closer: readerWithRetry,
 	}, object, errors.WithStack(err)
+}
+
+func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, error) {
+	_, ok := BackendMap[s.Type]
+	registry, err := fs.Find(s.Type)
+	if !ok || err != nil {
+		return nil, errors.Wrapf(ErrBackendNotSupported, "type: %s", s.Type)
+	}
+
+	ctx, _ = fs.AddConfig(ctx)
+	config := fs.GetConfig(ctx)
+	overrideConfig(config, s)
+
+	noHeadObjectConfig := make(map[string]string)
+	headObjectConfig := make(map[string]string)
+	for k, v := range s.Config {
+		noHeadObjectConfig[k] = v
+		headObjectConfig[k] = v
+	}
+	noHeadObjectConfig["no_head_object"] = "true"
+	headObjectConfig["no_head_object"] = "false"
+
+	noHeadFS, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(noHeadObjectConfig))
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
+	}
+
+	headFS, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(headObjectConfig))
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
+	}
+
+	scanConcurrency := 1
+	if s.ClientConfig.ScanConcurrency != nil {
+		scanConcurrency = *s.ClientConfig.ScanConcurrency
+	}
+
+	handler := &RCloneHandler{
+		name:                    s.Name,
+		fs:                      headFS,
+		fsNoHead:                noHeadFS,
+		retryMaxCount:           10,
+		retryDelay:              time.Second,
+		retryBackoff:            time.Second,
+		retryBackoffExponential: 1.0,
+		scanConcurrency:         scanConcurrency,
+	}
+
+	if s.ClientConfig.RetryMaxCount != nil {
+		handler.retryMaxCount = *s.ClientConfig.RetryMaxCount
+	}
+	if s.ClientConfig.RetryDelay != nil {
+		handler.retryDelay = *s.ClientConfig.RetryDelay
+	}
+	if s.ClientConfig.RetryBackoff != nil {
+		handler.retryBackoff = *s.ClientConfig.RetryBackoff
+	}
+	if s.ClientConfig.RetryBackoffExponential != nil {
+		handler.retryBackoffExponential = *s.ClientConfig.RetryBackoffExponential
+	}
+
+	return handler, nil
 }
 
 func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
@@ -301,52 +350,4 @@ func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
 	if s.ClientConfig.LowLevelRetries != nil {
 		config.LowLevelRetries = *s.ClientConfig.LowLevelRetries
 	}
-}
-
-func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, wp *workerpool.WorkerPool, wg *sync.WaitGroup) {
-	if ctx.Err() != nil {
-		return
-	}
-	logger.Infow("Scan: listing path", "type", h.fs.String(), "path", path)
-	entries, err := h.fs.List(ctx, path)
-	if err != nil {
-		err = errors.Wrapf(err, "list path: %s", path)
-		select {
-		case <-ctx.Done():
-			return
-		case ch <- Entry{Error: err}:
-		}
-	}
-
-	slices.SortFunc(entries, func(i, j fs.DirEntry) int {
-		return strings.Compare(i.Remote(), j.Remote())
-	})
-
-	var subCount int
-	for _, entry := range entries {
-		switch v := entry.(type) {
-		case fs.Directory:
-			select {
-			case <-ctx.Done():
-				return
-			case ch <- Entry{Dir: v}:
-			}
-
-			subPath := v.Remote()
-			wg.Add(1)
-			wp.Submit(func() {
-				h.scan(ctx, subPath, ch, wp, wg)
-				wg.Done()
-			})
-			subCount++
-		case fs.Object:
-			select {
-			case <-ctx.Done():
-				return
-			case ch <- Entry{Info: v}:
-			}
-		}
-	}
-
-	logger.Debugf("Scan: finished listing path, remaining %d paths to list", subCount)
 }

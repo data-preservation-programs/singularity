@@ -21,7 +21,7 @@ var StartPackCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 		var jobID int64
 		if c.Args().Get(2) != "" {
 			jobID, err = strconv.ParseInt(c.Args().Get(2), 10, 64)
@@ -49,7 +49,7 @@ var PausePackCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 		var jobID int64
 		if c.Args().Get(2) != "" {
 			jobID, err = strconv.ParseInt(c.Args().Get(2), 10, 64)

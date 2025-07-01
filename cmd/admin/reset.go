@@ -20,7 +20,7 @@ var ResetCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 		return admin.Default.ResetHandler(c.Context, db)
 	},
 }

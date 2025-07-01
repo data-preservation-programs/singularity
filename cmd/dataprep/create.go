@@ -2,20 +2,15 @@ package dataprep
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"math/rand"
 	"path/filepath"
-	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
-	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
@@ -78,103 +73,13 @@ var CreateCmd = &cli.Command{
 			Name:  "no-dag",
 			Usage: "Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.",
 		},
-		&cli.BoolFlag{
-			Name:     "auto-create-deals",
-			Usage:    "Enable automatic deal schedule creation after preparation completion",
-			Category: "Auto Deal Creation",
-		},
-		&cli.StringFlag{
-			Name:     "deal-template",
-			Usage:    "Name or ID of deal template to use (optional - can specify deal parameters directly instead)",
-			Category: "Auto Deal Creation",
-		},
-		&cli.Float64Flag{
-			Name:     "deal-price-per-gb",
-			Usage:    "Price in FIL per GiB for storage deals",
-			Value:    0.0,
-			Category: "Auto Deal Creation",
-		},
-		&cli.Float64Flag{
-			Name:     "deal-price-per-gb-epoch",
-			Usage:    "Price in FIL per GiB per epoch for storage deals",
-			Value:    0.0,
-			Category: "Auto Deal Creation",
-		},
-		&cli.Float64Flag{
-			Name:     "deal-price-per-deal",
-			Usage:    "Price in FIL per deal for storage deals",
-			Value:    0.0,
-			Category: "Auto Deal Creation",
-		},
-		&cli.DurationFlag{
-			Name:     "deal-duration",
-			Usage:    "Duration for storage deals (e.g., 535 days)",
-			Value:    0,
-			Category: "Auto Deal Creation",
-		},
-		&cli.DurationFlag{
-			Name:     "deal-start-delay",
-			Usage:    "Start delay for storage deals (e.g., 72h)",
-			Value:    0,
-			Category: "Auto Deal Creation",
-		},
-		&cli.BoolFlag{
-			Name:     "deal-verified",
-			Usage:    "Whether deals should be verified",
-			Category: "Auto Deal Creation",
-		},
-		&cli.BoolFlag{
-			Name:     "deal-keep-unsealed",
-			Usage:    "Whether to keep unsealed copy of deals",
-			Category: "Auto Deal Creation",
-		},
-		&cli.BoolFlag{
-			Name:     "deal-announce-to-ipni",
-			Usage:    "Whether to announce deals to IPNI",
-			Category: "Auto Deal Creation",
-		},
-		&cli.StringFlag{
-			Name:     "deal-provider",
-			Usage:    "Storage Provider ID for deals (e.g., f01000)",
-			Category: "Auto Deal Creation",
-		},
-		&cli.StringFlag{
-			Name:     "deal-url-template",
-			Usage:    "URL template for deals",
-			Category: "Auto Deal Creation",
-		},
-		&cli.StringFlag{
-			Name:     "deal-http-headers",
-			Usage:    "HTTP headers for deals in JSON format",
-			Category: "Auto Deal Creation",
-		},
-		&cli.BoolFlag{
-			Name:     "wallet-validation",
-			Usage:    "Enable wallet balance validation before deal creation",
-			Category: "Validation",
-		},
-		&cli.BoolFlag{
-			Name:     "sp-validation",
-			Usage:    "Enable storage provider validation before deal creation",
-			Category: "Validation",
-		},
-		&cli.BoolFlag{
-			Name:     "auto-start",
-			Usage:    "Automatically start scanning after preparation creation",
-			Category: "Workflow Automation",
-		},
-		&cli.BoolFlag{
-			Name:     "auto-progress",
-			Usage:    "Enable automatic job progression (scan → pack → daggen → deals)",
-			Category: "Workflow Automation",
-		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 		db = db.WithContext(c.Context)
 		name := c.String("name")
 		if name == "" {
@@ -200,57 +105,19 @@ var CreateCmd = &cli.Command{
 			outputStorages = append(outputStorages, output.Name)
 		}
 
-		// Parse deal HTTP headers if provided
-		var dealHTTPHeaders model.ConfigMap
-		if headersStr := c.String("deal-http-headers"); headersStr != "" {
-			var tempMap map[string]string
-			if err := json.Unmarshal([]byte(headersStr), &tempMap); err != nil {
-				return errors.Wrapf(err, "invalid JSON format for deal-http-headers: %s", headersStr)
-			}
-			dealHTTPHeaders = model.ConfigMap(tempMap)
-		}
-
 		prep, err := dataprep.Default.CreatePreparationHandler(c.Context, db, dataprep.CreateRequest{
-			SourceStorages:      sourceStorages,
-			OutputStorages:      outputStorages,
-			MaxSizeStr:          maxSizeStr,
-			PieceSizeStr:        pieceSizeStr,
-			MinPieceSizeStr:     minPieceSizeStr,
-			DeleteAfterExport:   c.Bool("delete-after-export"),
-			Name:                name,
-			NoInline:            c.Bool("no-inline"),
-			NoDag:               c.Bool("no-dag"),
-			AutoCreateDeals:     c.Bool("auto-create-deals"),
-			DealTemplate:        c.String("deal-template"),
-			DealPricePerGB:      c.Float64("deal-price-per-gb"),
-			DealPricePerGBEpoch: c.Float64("deal-price-per-gb-epoch"),
-			DealPricePerDeal:    c.Float64("deal-price-per-deal"),
-			DealDuration:        c.Duration("deal-duration"),
-			DealStartDelay:      c.Duration("deal-start-delay"),
-			DealVerified:        c.Bool("deal-verified"),
-			DealKeepUnsealed:    c.Bool("deal-keep-unsealed"),
-			DealAnnounceToIPNI:  c.Bool("deal-announce-to-ipni"),
-			DealProvider:        c.String("deal-provider"),
-			DealURLTemplate:     c.String("deal-url-template"),
-			DealHTTPHeaders:     dealHTTPHeaders,
-			WalletValidation:    c.Bool("wallet-validation"),
-			SPValidation:        c.Bool("sp-validation"),
+			SourceStorages:    sourceStorages,
+			OutputStorages:    outputStorages,
+			MaxSizeStr:        maxSizeStr,
+			PieceSizeStr:      pieceSizeStr,
+			MinPieceSizeStr:   minPieceSizeStr,
+			Name:              name,
+			DeleteAfterExport: c.Bool("delete-after-export"),
+			NoInline:          c.Bool("no-inline"),
+			NoDag:             c.Bool("no-dag"),
 		})
 		if err != nil {
 			return errors.WithStack(err)
-		}
-
-		// Enable workflow orchestration if auto-progress is requested
-		if c.Bool("auto-progress") {
-			enableWorkflowOrchestration(c.Context)
-		}
-
-		// Auto-start scanning if requested
-		if c.Bool("auto-start") {
-			err = autoStartScanning(c.Context, db, prep)
-			if err != nil {
-				return errors.Wrap(err, "failed to auto-start scanning")
-			}
 		}
 
 		cliutil.Print(c, *prep)
@@ -299,54 +166,4 @@ func randomReadableString(length int) string {
 		b[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(b)
-}
-
-// enableWorkflowOrchestration enables the workflow orchestrator for automatic job progression
-func enableWorkflowOrchestration(_ context.Context) {
-	workflow.DefaultOrchestrator.SetEnabled(true)
-	fmt.Printf("✓ Workflow orchestration enabled (automatic scan → pack → daggen → deals)\n")
-}
-
-// autoStartScanning automatically starts scanning for all source attachments in the preparation
-func autoStartScanning(ctx context.Context, db *gorm.DB, prep *model.Preparation) error {
-	// Get all source attachments for this preparation
-	var attachments []model.SourceAttachment
-	err := db.WithContext(ctx).Where("preparation_id = ?", prep.ID).Find(&attachments).Error
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	if len(attachments) == 0 {
-		fmt.Printf("⚠ No source attachments found for preparation %s\n", prep.Name)
-		return nil
-	}
-
-	jobHandler := &job.DefaultHandler{}
-	successCount := 0
-
-	// Start scan jobs for each source attachment
-	for _, attachment := range attachments {
-		_, err = jobHandler.StartScanHandler(ctx, db, strconv.FormatUint(uint64(attachment.ID), 10), "")
-		if err != nil {
-			fmt.Printf("⚠ Failed to start scan for attachment %d: %v\n", attachment.ID, err)
-			continue
-		}
-		successCount++
-	}
-
-	if successCount > 0 {
-		fmt.Printf("✓ Started scanning for %d source attachment(s) in preparation %s\n", successCount, prep.Name)
-		if successCount < len(attachments) {
-			fmt.Printf("⚠ %d attachment(s) failed to start scanning\n", len(attachments)-successCount)
-		}
-	} else {
-		return errors.New("failed to start scanning for any attachments")
-	}
-
-	return nil
-}
-
-// StartScanningForPreparation starts scanning for all source attachments in a preparation
-func StartScanningForPreparation(ctx context.Context, db *gorm.DB, prep *model.Preparation) error {
-	return autoStartScanning(ctx, db, prep)
 }

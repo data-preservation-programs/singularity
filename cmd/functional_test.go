@@ -262,7 +262,7 @@ func TestDataPrep(t *testing.T) {
 		require.NoError(t, err)
 		readCloser, _, err := s3Handler.Read(context.Background(), entryPath, 0, entry.Info.Size())
 		require.NoError(t, err)
-		defer func() { _ = readCloser.Close() }()
+		defer readCloser.Close()
 		content, err := io.ReadAll(readCloser)
 		require.NoError(t, err)
 		err = os.WriteFile(destPath, content, 0777)
@@ -428,7 +428,7 @@ func TestDataPrep(t *testing.T) {
 						defer func() { <-downloadServerDone }()
 						defer cancel()
 						go func() {
-							_, _, _ = NewRunner().Run(contentProviderCtx, "singularity run content-provider --http-bind "+contentProviderBind)
+							NewRunner().Run(contentProviderCtx, "singularity run content-provider --http-bind "+contentProviderBind)
 							close(contentProviderDone)
 						}()
 						// Wait for content provider to be ready
@@ -436,7 +436,7 @@ func TestDataPrep(t *testing.T) {
 						require.NoError(t, err)
 
 						go func() {
-							_, _, _ = NewRunner().Run(contentProviderCtx, "singularity run download-server --metadata-api http://"+contentProviderBind)
+							NewRunner().Run(contentProviderCtx, "singularity run download-server --metadata-api http://"+contentProviderBind)
 							close(downloadServerDone)
 						}()
 						// Wait for download server to be ready

@@ -16,7 +16,7 @@ var ListCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 		schedules, err := schedule.Default.ListHandler(c.Context, db)
 		if err != nil {
 			return errors.WithStack(err)

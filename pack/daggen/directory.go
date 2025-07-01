@@ -38,47 +38,6 @@ func NewDirectoryTree() DirectoryTree {
 	}
 }
 
-// DirectoryData represents a structured directory in a content-addressed file system.
-// It manages the underlying data and provides methods for interacting with this data
-// as a hierarchical directory structure.
-//
-// Fields:
-//
-//   - dir: The current representation of the directory, implementing the uio.Directory interface.
-//   - bstore: The blockstore used to store and retrieve blocks of data associated with the directory.
-//   - node: The cached format.Node representation of the current directory.
-//   - nodeDirty : A flag indicating whether the cached node representation is potentially outdated
-//     and needs to be refreshed from the internal directory representation.
-type DirectoryData struct {
-	dir        uio.Directory
-	dagServ    *RecordedDagService
-	node       format.Node
-	nodeDirty  bool
-	additional map[cid.Cid][]byte
-}
-
-// NewDirectoryData creates and initializes a new DirectoryData instance.
-// This function:
-//  1. Creates a new in-memory map datastore.
-//  2. Initializes a new blockstore with the created datastore.
-//  3. Initializes a new DAG service with the blockstore.
-//  4. Creates a new directory with the DAG service and sets its CID (Content Identifier) builder.
-//
-// Returns:
-//
-//   - DirectoryData : A new DirectoryData instance with the initialized directory, blockstore, and a dirty node flag set to true.
-func NewDirectoryData() DirectoryData {
-	dagServ := NewRecordedDagService()
-	dir := uio.NewDirectory(dagServ)
-	dir.SetCidBuilder(merkledag.V1CidPrefix())
-	return DirectoryData{
-		dir:        dir,
-		nodeDirty:  true,
-		dagServ:    dagServ,
-		additional: make(map[cid.Cid][]byte),
-	}
-}
-
 func (t DirectoryTree) Cache() map[model.DirectoryID]*DirectoryDetail {
 	return t.cache
 }
@@ -158,6 +117,25 @@ func (t DirectoryTree) Resolve(ctx context.Context, dirID model.DirectoryID) (*f
 	}, nil
 }
 
+// DirectoryData represents a structured directory in a content-addressed file system.
+// It manages the underlying data and provides methods for interacting with this data
+// as a hierarchical directory structure.
+//
+// Fields:
+//
+//   - dir: The current representation of the directory, implementing the uio.Directory interface.
+//   - bstore: The blockstore used to store and retrieve blocks of data associated with the directory.
+//   - node: The cached format.Node representation of the current directory.
+//   - nodeDirty : A flag indicating whether the cached node representation is potentially outdated
+//     and needs to be refreshed from the internal directory representation.
+type DirectoryData struct {
+	dir        uio.Directory
+	dagServ    *RecordedDagService
+	node       format.Node
+	nodeDirty  bool
+	additional map[cid.Cid][]byte
+}
+
 // Node retrieves the format.Node representation of the current DirectoryData.
 // If the node representation is marked as dirty (meaning it is potentially outdated),
 // this method:
@@ -180,6 +158,28 @@ func (d *DirectoryData) Node() (format.Node, error) {
 		d.nodeDirty = false
 	}
 	return d.node, nil
+}
+
+// NewDirectoryData creates and initializes a new DirectoryData instance.
+// This function:
+//  1. Creates a new in-memory map datastore.
+//  2. Initializes a new blockstore with the created datastore.
+//  3. Initializes a new DAG service with the blockstore.
+//  4. Creates a new directory with the DAG service and sets its CID (Content Identifier) builder.
+//
+// Returns:
+//
+//   - DirectoryData : A new DirectoryData instance with the initialized directory, blockstore, and a dirty node flag set to true.
+func NewDirectoryData() DirectoryData {
+	dagServ := NewRecordedDagService()
+	dir := uio.NewDirectory(dagServ)
+	dir.SetCidBuilder(merkledag.V1CidPrefix())
+	return DirectoryData{
+		dir:        dir,
+		nodeDirty:  true,
+		dagServ:    dagServ,
+		additional: make(map[cid.Cid][]byte),
+	}
 }
 
 // AddFile adds a new file to the directory with the specified name, content identifier (CID), and length.

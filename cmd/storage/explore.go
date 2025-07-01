@@ -18,7 +18,7 @@ var ExploreCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 
 		entries, err := storage.Default.ExploreHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {

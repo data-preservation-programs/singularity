@@ -41,18 +41,16 @@ DESCRIPTION:
 
 
 COMMANDS:
-   onboard     Complete data onboarding workflow (storage → preparation → scanning → deal creation)
    version, v  Print version information
    help, h     Shows a list of commands or help for one command
    Daemons:
      run  run different singularity components
    Operations:
-     admin          Admin commands
-     deal           Replication / Deal making management
-     deal-template  Deal template management
-     wallet         Wallet management
-     storage        Create and manage storage system connections
-     prep           Create and manage dataset preparations
+     admin    Admin commands
+     deal     Replication / Deal making management
+     wallet   Wallet management
+     storage  Create and manage storage system connections
+     prep     Create and manage dataset preparations
    Utility:
      ez-prep      Prepare a dataset from a local path
      download     Download a CAR file from the metadata API

@@ -30,51 +30,7 @@ type Global struct {
 	Value string `json:"value"`
 }
 
-// Notification represents system notifications for warnings, errors, and info messages
-type Notification struct {
-	ID           uint      `gorm:"primaryKey"    json:"id"`
-	CreatedAt    time.Time `json:"createdAt"     table:"format:2006-01-02 15:04:05"`
-	Type         string    `json:"type"`  // info, warning, error
-	Level        string    `json:"level"` // low, medium, high
-	Title        string    `json:"title"`
-	Message      string    `json:"message"`
-	Source       string    `json:"source"`   // Component that generated the notification
-	SourceID     string    `json:"sourceId"` // Optional ID of the source entity
-	Metadata     ConfigMap `gorm:"type:JSON" json:"metadata"`
-	Acknowledged bool      `json:"acknowledged"`
-}
-
 type PreparationID uint32
-
-type DealTemplateID uint32
-
-// DealTemplate stores reusable deal parameters that can be applied during preparation creation
-type DealTemplate struct {
-	ID          DealTemplateID `gorm:"primaryKey" json:"id"`
-	Name        string         `gorm:"unique" json:"name"`
-	Description string         `json:"description"`
-	CreatedAt   time.Time      `json:"createdAt" table:"format:2006-01-02 15:04:05"`
-	UpdatedAt   time.Time      `json:"updatedAt" table:"format:2006-01-02 15:04:05"`
-
-	// Deal Parameters (encapsulated in DealConfig struct)
-	DealConfig DealConfig `gorm:"embedded;embeddedPrefix:template_" json:"dealConfig"`
-}
-
-// FindByIDOrName finds a deal template by ID or name
-func (t *DealTemplate) FindByIDOrName(db *gorm.DB, name string, preloads ...string) error {
-	id, err := strconv.ParseUint(name, 10, 32)
-	if err == nil {
-		for _, preload := range preloads {
-			db = db.Preload(preload)
-		}
-		return db.First(t, id).Error
-	} else {
-		for _, preload := range preloads {
-			db = db.Preload(preload)
-		}
-		return db.Where("name = ?", name).First(t).Error
-	}
-}
 
 // Preparation is a data preparation definition that can attach multiple source storages and up to one output storage.
 type Preparation struct {
@@ -89,17 +45,10 @@ type Preparation struct {
 	NoInline          bool          `json:"noInline"`
 	NoDag             bool          `json:"noDag"`
 
-	// Deal configuration (encapsulated in DealConfig struct)
-	DealConfig       DealConfig      `gorm:"embedded;embeddedPrefix:deal_config_" json:"dealConfig"`
-	DealTemplateID   *DealTemplateID `json:"dealTemplateId,omitempty"` // Optional deal template to use
-	WalletValidation bool            `json:"walletValidation"`         // Enable wallet balance validation
-	SPValidation     bool            `json:"spValidation"`             // Enable storage provider validation
-
 	// Associations
-	DealTemplate   *DealTemplate `gorm:"foreignKey:DealTemplateID;constraint:OnDelete:SET NULL" json:"dealTemplate,omitempty"   swaggerignore:"true"                   table:"expand"`
-	Wallets        []Wallet      `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
-	SourceStorages []Storage     `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" table:"expand;header:Source Storages:"`
-	OutputStorages []Storage     `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" table:"expand;header:Output Storages:"`
+	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
+	SourceStorages []Storage `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" table:"expand;header:Source Storages:"`
+	OutputStorages []Storage `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" table:"expand;header:Output Storages:"`
 }
 
 func (s *Preparation) FindByIDOrName(db *gorm.DB, name string, preloads ...string) error {
@@ -382,9 +331,9 @@ func (c CarBlock) BlockLength() int32 {
 
 // GetMinPieceSize returns the minimum piece size for the preparation, with a fallback to 1MiB if not set.
 // This ensures backward compatibility with older preparations that don't have minPieceSize set.
-func (s *Preparation) GetMinPieceSize() int64 {
-	if s.MinPieceSize == 0 {
+func (p *Preparation) GetMinPieceSize() int64 {
+	if p.MinPieceSize == 0 {
 		return 1 << 20 // 1MiB
 	}
-	return s.MinPieceSize
+	return p.MinPieceSize
 }

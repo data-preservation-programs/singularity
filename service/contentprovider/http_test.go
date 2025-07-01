@@ -205,7 +205,7 @@ func TestHTTPServerHandler(t *testing.T) {
 
 		// Add car file
 		tmp := t.TempDir()
-		err = db.Model(&model.Car{}).Where("id = ?", 1).Update("storage_path", filepath.Join(tmp, "test.car")).Error
+		err = db.Model(&model.Car{}).Where("id = ?", 1).Update("file_path", filepath.Join(tmp, "test.car")).Error
 		testfunc := func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/piece/:id", nil)
 			rec := httptest.NewRecorder()

@@ -18,7 +18,7 @@ var RenameCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 
 		storage, err := storage.Default.RenameStorageHandler(c.Context, db, c.Args().Get(0), storage.RenameRequest{Name: c.Args().Get(1)})
 		if err != nil {

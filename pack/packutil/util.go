@@ -3,7 +3,6 @@ package packutil
 import (
 	"bytes"
 	"io"
-	"math"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/util"
@@ -19,17 +18,6 @@ import (
 
 var EmptyFileCid = cid.NewCidV1(cid.Raw, util2.Hash([]byte("")))
 
-// safeIntToUint64 safely converts int to uint64, handling negative values
-func safeIntToUint64(val int) uint64 {
-	if val < 0 {
-		return 0
-	}
-	if val > math.MaxInt {
-		return math.MaxUint64
-	}
-	return uint64(val)
-}
-
 var EmptyFileVarint = varint.ToUvarint(uint64(len(EmptyFileCid.Bytes())))
 
 var EmptyCarHeader, _ = util.GenerateCarHeader(EmptyFileCid)
@@ -38,6 +26,47 @@ const (
 	ChunkSize      int64 = 1 << 20
 	NumLinkPerNode       = 1024
 )
+
+// createParentNode creates a new parent ProtoNode for a given set of links.
+// It constructs a UnixFS node with the type Data_File and adds the sizes of
+// the links as block sizes to this UnixFS node. It then creates a new ProtoNode
+// with the UnixFS node's data and adds the links to this ProtoNode.
+//
+// Parameters:
+//   - links: An array of format.Link objects. These links will be added as child
+//     links to the new ProtoNode.
+//
+// Returns:
+//   - *merkledag.ProtoNode: A pointer to the new parent ProtoNode that has been
+//     created. This node contains the data of the UnixFS node and the child links.
+//   - uint64: The total size of the data that the new parent node represents. This
+//     is the sum of the sizes of all the links.
+//   - error: An error that can occur during the creation of the new parent node, or
+//     nil if the operation was successful.
+func createParentNode(links []format.Link) (*merkledag.ProtoNode, uint64, error) {
+	node := unixfs.NewFSNode(unixfs_pb.Data_File)
+	total := uint64(0)
+	for _, link := range links {
+		node.AddBlockSize(link.Size)
+		total += link.Size
+	}
+	nodeBytes, err := node.GetBytes()
+	if err != nil {
+		return nil, 0, errors.WithStack(err)
+	}
+	pbNode := merkledag.NodeWithData(nodeBytes)
+	err = pbNode.SetCidBuilder(merkledag.V1CidPrefix())
+	if err != nil {
+		return nil, 0, errors.WithStack(err)
+	}
+	for i := range links {
+		err = pbNode.AddRawLink("", &links[i])
+		if err != nil {
+			return nil, 0, errors.WithStack(err)
+		}
+	}
+	return pbNode, total, nil
+}
 
 func Min(i int, i2 int) int {
 	if i < i2 {
@@ -131,7 +160,7 @@ func WriteCarHeader(writer io.Writer, root cid.Cid) ([]byte, error) {
 //   - error: An error that can occur during the write process, or nil if the write was successful.
 func WriteCarBlock(writer io.Writer, block blocks.Block) (int64, error) {
 	written := int64(0)
-	varintBytes := varint.ToUvarint(safeIntToUint64(len(block.RawData()) + block.Cid().ByteLen()))
+	varintBytes := varint.ToUvarint(uint64(len(block.RawData()) + block.Cid().ByteLen()))
 	n, err := io.Copy(writer, bytes.NewReader(varintBytes))
 	if err != nil {
 		return written, errors.WithStack(err)
@@ -150,45 +179,4 @@ func WriteCarBlock(writer io.Writer, block blocks.Block) (int64, error) {
 	}
 	written += n
 	return written, nil
-}
-
-// createParentNode creates a new parent ProtoNode for a given set of links.
-// It constructs a UnixFS node with the type Data_File and adds the sizes of
-// the links as block sizes to this UnixFS node. It then creates a new ProtoNode
-// with the UnixFS node's data and adds the links to this ProtoNode.
-//
-// Parameters:
-//   - links: An array of format.Link objects. These links will be added as child
-//     links to the new ProtoNode.
-//
-// Returns:
-//   - *merkledag.ProtoNode: A pointer to the new parent ProtoNode that has been
-//     created. This node contains the data of the UnixFS node and the child links.
-//   - uint64: The total size of the data that the new parent node represents. This
-//     is the sum of the sizes of all the links.
-//   - error: An error that can occur during the creation of the new parent node, or
-//     nil if the operation was successful.
-func createParentNode(links []format.Link) (*merkledag.ProtoNode, uint64, error) {
-	node := unixfs.NewFSNode(unixfs_pb.Data_File)
-	total := uint64(0)
-	for _, link := range links {
-		node.AddBlockSize(link.Size)
-		total += link.Size
-	}
-	nodeBytes, err := node.GetBytes()
-	if err != nil {
-		return nil, 0, errors.WithStack(err)
-	}
-	pbNode := merkledag.NodeWithData(nodeBytes)
-	err = pbNode.SetCidBuilder(merkledag.V1CidPrefix())
-	if err != nil {
-		return nil, 0, errors.WithStack(err)
-	}
-	for i := range links {
-		err = pbNode.AddRawLink("", &links[i])
-		if err != nil {
-			return nil, 0, errors.WithStack(err)
-		}
-	}
-	return pbNode, total, nil
 }

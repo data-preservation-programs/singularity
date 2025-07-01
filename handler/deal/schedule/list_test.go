@@ -14,7 +14,7 @@ func TestListHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
 			Wallets: []model.Wallet{{
-				ActorID: "f01",
+				ID: "f01",
 			}},
 		}).Error
 		require.NoError(t, err)

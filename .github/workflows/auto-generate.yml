@@ -17,10 +17,6 @@ jobs:
       with:
         go-version-file: 'go.mod'
 
-    - name: Initialize DB
-      run: |
-        singularity admin init
-
     - name: Run go generate
       run: |
         go generate ./...

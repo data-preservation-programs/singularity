@@ -41,8 +41,7 @@ func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, ca
 	deal.ID = 0
 	deal.PieceCID = car.PieceCID
 	deal.PieceSize = car.PieceSize
-	deal.ClientID = &walletObj.ID
-	deal.ClientActorID = walletObj.ActorID
+	deal.ClientID = walletObj.ID
 	deal.Provider = dealConfig.Provider
 	deal.Verified = dealConfig.Verified
 	deal.ProposalID = uuid.NewString()
@@ -108,45 +107,14 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		defer cancel()
 		provider := "f0miner"
 		client := "f0client"
-
-		// Create preparation first
-		prep := model.Preparation{
-			Name: "test-prep",
-		}
-		err = db.Create(&prep).Error
-		require.NoError(t, err)
-
-		// Create storage
-		storage := model.Storage{
-			Name: "test-storage",
-			Type: "local",
-			Path: t.TempDir(),
-		}
-		err = db.Create(&storage).Error
-		require.NoError(t, err)
-
-		// Create source attachment
-		attachment := model.SourceAttachment{
-			PreparationID: prep.ID,
-			StorageID:     storage.ID,
-		}
-		err = db.Create(&attachment).Error
-		require.NoError(t, err)
-
-		// Add the wallet to the preparation
-		wallet := model.Wallet{
-			ActorID: client,
-			Address: "f0xx",
-		}
-		err = db.Create(&wallet).Error
-		require.NoError(t, err)
-
-		// Associate wallet with preparation
-		err = db.Model(&prep).Association("Wallets").Append(&wallet)
-		require.NoError(t, err)
-
 		schedule := model.Schedule{
-			PreparationID:        prep.ID,
+			Preparation: &model.Preparation{
+				SourceStorages: []model.Storage{{}},
+				Wallets: []model.Wallet{
+					{
+						ID: client, Address: "f0xx",
+					},
+				}},
 			State:                model.ScheduleActive,
 			Provider:             provider,
 			MaxPendingDealNumber: 2,
@@ -161,8 +129,8 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		}
 		err = db.Create([]model.Car{
 			{
-				AttachmentID:  &attachment.ID,
-				PreparationID: prep.ID,
+				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
+				PreparationID: 1,
 				PieceCID:      pieceCIDs[0],
 				PieceSize:     1024,
 				StoragePath:   "0",
@@ -200,7 +168,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 				SourceStorages: []model.Storage{{}},
 				Wallets: []model.Wallet{
 					{
-						ActorID: client, Address: "f0xx",
+						ID: client, Address: "f0xx",
 					},
 				}},
 			State:            model.ScheduleActive,
@@ -295,7 +263,7 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 				SourceStorages: []model.Storage{{}},
 				Wallets: []model.Wallet{
 					{
-						ActorID: client, Address: "f0xx",
+						ID: client, Address: "f0xx",
 					},
 				}},
 			State:                model.ScheduleActive,
@@ -399,12 +367,12 @@ func TestDealmakerService_Force(t *testing.T) {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 		provider := "f0miner"
-		clientActorID := "f0client"
+		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				Wallets: []model.Wallet{
 					{
-						ActorID: clientActorID, Address: "f0xx",
+						ID: client, Address: "f0xx",
 					},
 				},
 				SourceStorages: []model.Storage{{}},
@@ -413,7 +381,6 @@ func TestDealmakerService_Force(t *testing.T) {
 			Provider: provider,
 			Force:    true,
 		}
-		clientID := &schedule.Preparation.Wallets[0].ID
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
@@ -432,12 +399,11 @@ func TestDealmakerService_Force(t *testing.T) {
 		require.NoError(t, err)
 		err = db.Create([]model.Deal{
 			{
-				Provider:      provider,
-				ClientID:      clientID,
-				ClientActorID: clientActorID,
-				PieceCID:      pieceCID,
-				PieceSize:     1024,
-				State:         model.DealProposed,
+				Provider:  provider,
+				ClientID:  client,
+				PieceCID:  pieceCID,
+				PieceSize: 1024,
+				State:     model.DealProposed,
 			},
 		}).Error
 		require.NoError(t, err)
@@ -460,12 +426,12 @@ func TestDealMakerService_MaxReplica(t *testing.T) {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 		provider := "f0miner"
-		clientActorID := "f0client"
+		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				Wallets: []model.Wallet{
 					{
-						ActorID: clientActorID, Address: "f0xx",
+						ID: client, Address: "f0xx",
 					},
 				},
 				SourceStorages: []model.Storage{{}},
@@ -473,7 +439,6 @@ func TestDealMakerService_MaxReplica(t *testing.T) {
 			State:    model.ScheduleActive,
 			Provider: provider,
 		}
-		clientID := &schedule.Preparation.Wallets[0].ID
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
@@ -491,13 +456,12 @@ func TestDealMakerService_MaxReplica(t *testing.T) {
 		require.NoError(t, err)
 		err = db.Create([]model.Deal{
 			{
-				ScheduleID:    &schedule.ID,
-				Provider:      "another",
-				ClientID:      clientID,
-				ClientActorID: clientActorID,
-				PieceCID:      pieceCID,
-				PieceSize:     1024,
-				State:         model.DealProposed,
+				ScheduleID: &schedule.ID,
+				Provider:   "another",
+				ClientID:   client,
+				PieceCID:   pieceCID,
+				PieceSize:  1024,
+				State:      model.DealProposed,
 			}}).Error
 		require.NoError(t, err)
 		service.runOnce(ctx)
@@ -528,12 +492,12 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 		// All deal proposal will be accepted
 		// Create test schedule
 		provider := "f0miner"
-		clientActorID := "f0client"
+		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				Wallets: []model.Wallet{
 					{
-						ActorID: clientActorID, Address: "f0xx",
+						ID: client, Address: "f0xx",
 					},
 				},
 				SourceStorages: []model.Storage{{}},
@@ -542,7 +506,6 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 			Provider:         provider,
 			AllowedPieceCIDs: underscore.Map(pieceCIDs[:5], func(cid model.CID) string { return cid.String() }),
 		}
-		clientID := &schedule.Preparation.Wallets[0].ID
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
 
@@ -603,39 +566,35 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 		// Test5 is not proposed
 		err = db.Create([]model.Deal{
 			{
-				ScheduleID:    &schedule.ID,
-				Provider:      provider,
-				ClientID:      clientID,
-				ClientActorID: clientActorID,
-				PieceCID:      pieceCIDs[0],
-				PieceSize:     1024,
-				State:         model.DealProposed,
+				ScheduleID: &schedule.ID,
+				Provider:   provider,
+				ClientID:   client,
+				PieceCID:   pieceCIDs[0],
+				PieceSize:  1024,
+				State:      model.DealProposed,
 			},
 			{
-				ScheduleID:    &schedule.ID,
-				Provider:      provider,
-				ClientID:      clientID,
-				ClientActorID: clientActorID,
-				PieceCID:      pieceCIDs[1],
-				PieceSize:     1024,
-				State:         model.DealProposalExpired,
+				ScheduleID: &schedule.ID,
+				Provider:   provider,
+				ClientID:   client,
+				PieceCID:   pieceCIDs[1],
+				PieceSize:  1024,
+				State:      model.DealProposalExpired,
 			},
 			{
-				ScheduleID:    &schedule.ID,
-				Provider:      provider,
-				ClientID:      clientID,
-				ClientActorID: clientActorID,
-				PieceCID:      pieceCIDs[2],
-				PieceSize:     1024,
-				State:         model.DealActive,
+				ScheduleID: &schedule.ID,
+				Provider:   provider,
+				ClientID:   client,
+				PieceCID:   pieceCIDs[2],
+				PieceSize:  1024,
+				State:      model.DealActive,
 			},
 			{
-				Provider:      provider,
-				ClientID:      clientID,
-				ClientActorID: clientActorID,
-				PieceCID:      pieceCIDs[3],
-				PieceSize:     1024,
-				State:         model.DealProposed,
+				Provider:  provider,
+				ClientID:  client,
+				PieceCID:  pieceCIDs[3],
+				PieceSize: 1024,
+				State:     model.DealProposed,
 			},
 		}).Error
 		require.NoError(t, err)
@@ -661,6 +620,6 @@ func calculateCommp(t *testing.T, content []byte, targetPieceSize uint64) cid.Ci
 
 func generateRandomBytes(n int) []byte {
 	b := make([]byte, n)
-	_, _ = rand.Read(b)
+	rand.Read(b)
 	return b
 }

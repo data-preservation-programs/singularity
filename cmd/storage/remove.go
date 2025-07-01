@@ -18,7 +18,7 @@ var RemoveCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 
 		err = storage.Default.RemoveHandler(c.Context, db, c.Args().Get(0))
 		if err != nil {

@@ -22,7 +22,7 @@ var ImportCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		defer func() { _ = closer.Close() }()
+		defer closer.Close()
 
 		var privateKey string
 		if c.Args().Len() > 0 {

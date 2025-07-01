@@ -41,17 +41,17 @@ func (f *faultyReader) Close() error {
 func TestScanWithConcurrency(t *testing.T) {
 	tmp := t.TempDir()
 	for i := 0; i < 10; i++ {
-		err := os.MkdirAll(filepath.Join(tmp, strconv.Itoa(i)), 0750)
+		err := os.MkdirAll(filepath.Join(tmp, strconv.Itoa(i)), 0755)
 		require.NoError(t, err)
 		err = os.WriteFile(filepath.Join(tmp, strconv.Itoa(i), "test.txt"), []byte("test"), 0644)
 		require.NoError(t, err)
 		for j := 0; j < 10; j++ {
-			err = os.MkdirAll(filepath.Join(tmp, strconv.Itoa(i), strconv.Itoa(j)), 0750)
+			err = os.MkdirAll(filepath.Join(tmp, strconv.Itoa(i), strconv.Itoa(j)), 0755)
 			require.NoError(t, err)
 			err = os.WriteFile(filepath.Join(tmp, strconv.Itoa(i), strconv.Itoa(j), "test.txt"), []byte("test"), 0644)
 			require.NoError(t, err)
 			for k := 0; k < 10; k++ {
-				err = os.MkdirAll(filepath.Join(tmp, strconv.Itoa(i), strconv.Itoa(j), strconv.Itoa(k)), 0750)
+				err = os.MkdirAll(filepath.Join(tmp, strconv.Itoa(i), strconv.Itoa(j), strconv.Itoa(k)), 0755)
 				require.NoError(t, err)
 				err = os.WriteFile(filepath.Join(tmp, strconv.Itoa(i), strconv.Itoa(j), strconv.Itoa(k), "test.txt"), []byte("test"), 0644)
 				require.NoError(t, err)
@@ -133,7 +133,7 @@ func TestRCloneHandler_ReadS3Files(t *testing.T) {
 
 	tempDir := t.TempDir()
 	dir := filepath.Join(tempDir, bucketName, subDir)
-	err := os.MkdirAll(dir, 0750)
+	err := os.MkdirAll(dir, 0755)
 	require.NoError(t, err)
 
 	f, err := os.Create(filepath.Join(dir, emptyFile))
@@ -181,7 +181,7 @@ func TestRCloneHandler_ReadS3Files(t *testing.T) {
 	// Verify empty file.
 	stream, obj, err := handler.Read(ctx, path.Join(subDir, emptyFile), 0, 0)
 	require.NoError(t, err)
-	defer func() { _ = stream.Close() }()
+	defer stream.Close()
 	require.NotNil(t, stream)
 	require.NotNil(t, obj)
 	require.EqualValues(t, 0, obj.Size())
@@ -192,7 +192,7 @@ func TestRCloneHandler_ReadS3Files(t *testing.T) {
 	// Verify non-empty file.
 	stream, obj, err = handler.Read(ctx, path.Join(subDir, helloFile), 0, helloSize)
 	require.NoError(t, err)
-	defer func() { _ = stream.Close() }()
+	defer stream.Close()
 	require.NotNil(t, stream)
 	require.NotNil(t, obj)
 	require.EqualValues(t, helloSize, obj.Size())
@@ -221,21 +221,21 @@ func TestRCloneHandler(t *testing.T) {
 
 	readCloser, _, err := handler.Read(ctx, "test.txt", 0, 4)
 	require.NoError(t, err)
-	defer func() { _ = readCloser.Close() }()
+	defer readCloser.Close()
 	read, err := io.ReadAll(readCloser)
 	require.NoError(t, err)
 	require.EqualValues(t, "test", read)
 
 	readCloser2, _, err := handler.Read(ctx, "test.txt", 0, 0)
 	require.NoError(t, err)
-	defer func() { _ = readCloser2.Close() }()
+	defer readCloser2.Close()
 	read, err = io.ReadAll(readCloser2)
 	require.NoError(t, err)
 	require.EqualValues(t, "", read)
 
 	readCloser3, _, err := handler.Read(ctx, "test.txt", 0, -1)
 	require.NoError(t, err)
-	defer func() { _ = readCloser3.Close() }()
+	defer readCloser3.Close()
 	read, err = io.ReadAll(readCloser3)
 	require.NoError(t, err)
 	require.EqualValues(t, "test", read)
