@@ -24,10 +24,10 @@ func TestAutoPrepDealsIntegration(t *testing.T) {
 		// t.TempDir() automatically handles cleanup via t.Cleanup()
 		source := t.TempDir()
 		output := t.TempDir()
-		
+
 		// Create test files of different sizes to trigger packing and deal creation
 		testFiles := createTestFiles(t, source)
-		
+
 		runner := Runner{mode: Verbose}
 		// Runner.Save() replaces temp directory paths with normalized placeholders
 		// ensuring test outputs are deterministic across different systems
@@ -106,10 +106,10 @@ func TestAutoPrepDealsErrorScenarios(t *testing.T) {
 // createTestFiles creates test files of various sizes to simulate realistic data
 func createTestFiles(t *testing.T, source string) map[string]int {
 	testFiles := map[string]int{
-		"small.txt":      1024,           // 1KB
-		"medium.txt":     1024 * 1024,    // 1MB
-		"large.txt":      5 * 1024 * 1024, // 5MB
-		"xlarge.txt":     10 * 1024 * 1024, // 10MB
+		"small.txt":  1024,             // 1KB
+		"medium.txt": 1024 * 1024,      // 1MB
+		"large.txt":  5 * 1024 * 1024,  // 5MB
+		"xlarge.txt": 10 * 1024 * 1024, // 10MB
 	}
 
 	for filename, size := range testFiles {
@@ -142,9 +142,9 @@ func testVerifyAutoStorageCreation(t *testing.T, db *gorm.DB, source, output str
 	var storages []model.Storage
 	err := db.Where("type = ?", "local").Find(&storages).Error
 	require.NoError(t, err, "Should be able to query storages")
-	
+
 	require.GreaterOrEqual(t, len(storages), 2, "At least 2 local storages should be created (source and output)")
-	
+
 	t.Logf("Found %d local storages created:", len(storages))
 	for _, storage := range storages {
 		t.Logf("  - Storage: ID=%d, Name=%s, Path=%s", storage.ID, storage.Name, storage.Path)
@@ -220,7 +220,7 @@ func testVerifyDealScheduleAutoCreation(t *testing.T, db *gorm.DB) {
 	if len(schedules) > 0 {
 		t.Logf("Found %d auto-created deal schedules", len(schedules))
 		for _, schedule := range schedules {
-			t.Logf("Schedule: ID=%d, PrepID=%d, Provider=%s", 
+			t.Logf("Schedule: ID=%d, PrepID=%d, Provider=%s",
 				schedule.ID, schedule.PreparationID, schedule.Provider)
 		}
 	} else {
@@ -242,7 +242,7 @@ func testManualTrigger(t *testing.T, ctx context.Context, runner Runner, db *gor
 		t.Logf("Manual schedule creation failed (expected in some cases): %v", err)
 	} else {
 		t.Log("Manual schedule creation succeeded")
-		
+
 		// Verify schedule was created
 		var schedules []model.Schedule
 		err = db.Where("preparation_id = ?", prep.ID).Find(&schedules).Error
@@ -275,7 +275,7 @@ func testInsufficientBalance(t *testing.T, ctx context.Context, runner Runner, s
 	// Note: In a full integration environment, this test would verify that insufficient balance
 	// prevents deal creation. However, in test environments, Lotus balance checks are typically
 	// mocked or disabled to allow testing without real funds.
-	// 
+	//
 	// To properly test this scenario with mocking:
 	// 1. Set up a mock Lotus client that returns insufficient balance
 	// 2. Configure singularity to use the mock client via environment variables
@@ -373,7 +373,7 @@ func testInvalidOutputPath(t *testing.T, ctx context.Context, runner Runner, sou
 		// Make the directory unwritable
 		err := os.Chmod(unwritablePath, 0444)
 		require.NoError(t, err, "Should be able to change directory permissions")
-		
+
 		// Ensure we restore permissions for cleanup
 		defer func() {
 			os.Chmod(unwritablePath, 0755)
@@ -399,43 +399,43 @@ func testInvalidOutputPath(t *testing.T, ctx context.Context, runner Runner, sou
 // logFinalDatabaseState logs the final state of Preparation, Storage, and Schedule rows for debugging
 func logFinalDatabaseState(t *testing.T, db *gorm.DB) {
 	t.Log("=== FINAL DATABASE STATE ===")
-	
+
 	// Log all preparations
 	var preparations []model.Preparation
 	err := db.Find(&preparations).Error
 	require.NoError(t, err, "Should query preparations")
-	
+
 	t.Logf("PREPARATIONS (%d total):", len(preparations))
 	for _, prep := range preparations {
 		t.Logf("  ID: %d, Name: %s, AutoCreateDeals: %v, Provider: %s, Verified: %v, PricePerGB: %f",
-			prep.ID, prep.Name, prep.DealConfig.AutoCreateDeals, 
+			prep.ID, prep.Name, prep.DealConfig.AutoCreateDeals,
 			prep.DealConfig.DealProvider, prep.DealConfig.DealVerified,
 			prep.DealConfig.DealPricePerGb)
 	}
-	
+
 	// Log all storages
 	var storages []model.Storage
 	err = db.Find(&storages).Error
 	require.NoError(t, err, "Should query storages")
-	
+
 	t.Logf("\nSTORAGES (%d total):", len(storages))
 	for _, storage := range storages {
 		t.Logf("  ID: %d, Name: %s, Type: %s, Path: %s",
 			storage.ID, storage.Name, storage.Type, storage.Path)
 	}
-	
+
 	// Log all schedules
 	var schedules []model.Schedule
 	err = db.Find(&schedules).Error
 	require.NoError(t, err, "Should query schedules")
-	
+
 	t.Logf("\nSCHEDULES (%d total):", len(schedules))
 	for _, schedule := range schedules {
 		t.Logf("  ID: %d, PrepID: %d, Provider: %s, PricePerGBEpoch: %f, Verified: %v, State: %s",
 			schedule.ID, schedule.PreparationID, schedule.Provider,
 			schedule.PricePerGBEpoch, schedule.Verified, schedule.State)
 	}
-	
+
 	// Log job summary
 	var jobSummary []struct {
 		Type  model.JobType
@@ -447,11 +447,11 @@ func logFinalDatabaseState(t *testing.T, db *gorm.DB) {
 		Group("type, state").
 		Find(&jobSummary).Error
 	require.NoError(t, err, "Should query job summary")
-	
+
 	t.Logf("\nJOB SUMMARY:")
 	for _, js := range jobSummary {
 		t.Logf("  Type: %s, State: %s, Count: %d", js.Type, js.State, js.Count)
 	}
-	
+
 	t.Log("=== END FINAL DATABASE STATE ===")
 }
