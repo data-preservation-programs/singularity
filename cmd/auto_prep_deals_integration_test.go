@@ -162,7 +162,8 @@ func testVerifyPrepCreatedWithDealConfig(t *testing.T, db *gorm.DB) {
 	require.True(t, prep.DealConfig.DealVerified, "DealVerified should be enabled")
 	require.Equal(t, float64(0.001), prep.DealConfig.DealPricePerGb, "DealPricePerGb should be set correctly")
 
-	t.Logf("Preparation created with correct deal config: %+v", prep.DealConfig)
+	t.Logf("Preparation created with correct deal config - AutoCreateDeals: %v, Provider: %s, Verified: %v, PricePerGb: %f",
+		prep.DealConfig.AutoCreateDeals, prep.DealConfig.DealProvider, prep.DealConfig.DealVerified, prep.DealConfig.DealPricePerGb)
 }
 
 // testRunJobsAndVerifyProgression runs jobs and verifies auto-progression through scan -> pack -> daggen
