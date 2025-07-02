@@ -380,7 +380,7 @@ func testInvalidOutputPath(t *testing.T, ctx context.Context, runner Runner, sou
 			os.Chmod(unwritablePath, 0755)
 		}()
 
-		_, stderr, err = runner.Run(ctx, fmt.Sprintf(
+		_, _, err = runner.Run(ctx, fmt.Sprintf(
 			"singularity prep create --auto-create-deals --name unwritable-output-test "+
 				"--deal-provider f01234 --deal-price-per-gb 0.001 "+
 				"--local-source %s --local-output %s",
