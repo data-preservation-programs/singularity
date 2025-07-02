@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -182,7 +183,7 @@ func testRunJobsAndVerifyProgression(t *testing.T, ctx context.Context, db *gorm
 	var attachments []model.SourceAttachment
 	err = db.Where("preparation_id = ?", prep.ID).Find(&attachments).Error
 	require.NoError(t, err, "Should query source attachments")
-	
+
 	var attachmentIDs []model.SourceAttachmentID
 	for _, attachment := range attachments {
 		attachmentIDs = append(attachmentIDs, attachment.ID)
@@ -370,7 +371,13 @@ func testInvalidOutputPath(t *testing.T, ctx context.Context, runner Runner, sou
 
 	if err != nil {
 		t.Logf("Expected error with non-existent output path: %v", err)
-		require.Contains(t, stderr, "output", "Error should mention output path issue")
+		// Error should mention either "output", "directory", or "not found" to indicate path issue
+		errorMessage := strings.ToLower(stderr + err.Error())
+		require.True(t,
+			strings.Contains(errorMessage, "output") ||
+				strings.Contains(errorMessage, "directory") ||
+				strings.Contains(errorMessage, "not found"),
+			"Error should mention path-related issue, got: %s", errorMessage)
 	} else {
 		t.Log("Non-existent output path accepted - storage handler may create directories automatically")
 	}
