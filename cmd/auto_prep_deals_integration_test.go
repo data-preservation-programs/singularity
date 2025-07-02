@@ -50,7 +50,7 @@ func TestAutoPrepDealsIntegration(t *testing.T) {
 
 		// Test 4: Run jobs and verify auto-progression
 		t.Run("RunJobsAndVerifyProgression", func(t *testing.T) {
-			testRunJobsAndVerifyProgression(t, ctx, runner, testFiles)
+			testRunJobsAndVerifyProgression(t, ctx, db, runner, testFiles)
 		})
 
 		// Test 5: Verify deal schedule auto-creation
@@ -167,46 +167,53 @@ func testVerifyPrepCreatedWithDealConfig(t *testing.T, db *gorm.DB) {
 }
 
 // testRunJobsAndVerifyProgression runs jobs and verifies auto-progression through scan -> pack -> daggen
-func testRunJobsAndVerifyProgression(t *testing.T, ctx context.Context, runner Runner, testFiles map[string]int) {
+func testRunJobsAndVerifyProgression(t *testing.T, ctx context.Context, db *gorm.DB, runner Runner, testFiles map[string]int) {
 	// Run scan jobs
 	stdout, _, err := runner.Run(ctx, "singularity run dataset-worker --exit-on-complete --exit-on-error")
 	require.NoError(t, err, "Dataset worker should complete scan/pack/daggen jobs")
 	t.Logf("Dataset worker output: %s", stdout)
 
-	// Verify all jobs completed successfully by checking database
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		// Get the preparation
-		var prep model.Preparation
-		err := db.Where("name = ?", "auto-prep-test").First(&prep).Error
-		require.NoError(t, err, "Should find preparation")
+	// Get the preparation
+	var prep model.Preparation
+	err = db.Where("name = ?", "auto-prep-test").First(&prep).Error
+	require.NoError(t, err, "Should find preparation")
 
-		// Check scan jobs
-		var scanJobs []model.Job
-		err = db.Where("dataset_id = ? AND type = ?", prep.ID, model.Scan).Find(&scanJobs).Error
-		require.NoError(t, err, "Should query scan jobs")
-		for _, job := range scanJobs {
-			require.Equal(t, model.Complete, job.State, "Scan job %d should be complete", job.ID)
-		}
-		t.Logf("Verified %d scan jobs completed", len(scanJobs))
+	// Get source attachments for this preparation
+	var attachments []model.SourceAttachment
+	err = db.Where("preparation_id = ?", prep.ID).Find(&attachments).Error
+	require.NoError(t, err, "Should query source attachments")
+	
+	var attachmentIDs []model.SourceAttachmentID
+	for _, attachment := range attachments {
+		attachmentIDs = append(attachmentIDs, attachment.ID)
+	}
 
-		// Check pack jobs
-		var packJobs []model.Job
-		err = db.Where("dataset_id = ? AND type = ?", prep.ID, model.Pack).Find(&packJobs).Error
-		require.NoError(t, err, "Should query pack jobs")
-		for _, job := range packJobs {
-			require.Equal(t, model.Complete, job.State, "Pack job %d should be complete", job.ID)
-		}
-		t.Logf("Verified %d pack jobs completed", len(packJobs))
+	// Check scan jobs
+	var scanJobs []model.Job
+	err = db.Where("attachment_id IN ? AND type = ?", attachmentIDs, model.Scan).Find(&scanJobs).Error
+	require.NoError(t, err, "Should query scan jobs")
+	for _, job := range scanJobs {
+		require.Equal(t, model.Complete, job.State, "Scan job %d should be complete", job.ID)
+	}
+	t.Logf("Verified %d scan jobs completed", len(scanJobs))
 
-		// Check daggen jobs
-		var daggenJobs []model.Job
-		err = db.Where("dataset_id = ? AND type = ?", prep.ID, model.DagGen).Find(&daggenJobs).Error
-		require.NoError(t, err, "Should query daggen jobs")
-		for _, job := range daggenJobs {
-			require.Equal(t, model.Complete, job.State, "Daggen job %d should be complete", job.ID)
-		}
-		t.Logf("Verified %d daggen jobs completed", len(daggenJobs))
-	})
+	// Check pack jobs
+	var packJobs []model.Job
+	err = db.Where("attachment_id IN ? AND type = ?", attachmentIDs, model.Pack).Find(&packJobs).Error
+	require.NoError(t, err, "Should query pack jobs")
+	for _, job := range packJobs {
+		require.Equal(t, model.Complete, job.State, "Pack job %d should be complete", job.ID)
+	}
+	t.Logf("Verified %d pack jobs completed", len(packJobs))
+
+	// Check daggen jobs
+	var daggenJobs []model.Job
+	err = db.Where("attachment_id IN ? AND type = ?", attachmentIDs, model.DagGen).Find(&daggenJobs).Error
+	require.NoError(t, err, "Should query daggen jobs")
+	for _, job := range daggenJobs {
+		require.Equal(t, model.Complete, job.State, "Daggen job %d should be complete", job.ID)
+	}
+	t.Logf("Verified %d daggen jobs completed", len(daggenJobs))
 }
 
 // testVerifyDealScheduleAutoCreation verifies that deal schedules are automatically created
