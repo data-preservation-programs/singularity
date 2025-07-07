@@ -618,17 +618,18 @@ func createStorageIfNotExist(ctx context.Context, db *gorm.DB, path, storageType
 	// Build storage configuration based on type
 	config := make(map[string]string)
 
-	if storageType == "s3" {
+	switch storageType {
+	case "s3":
 		config = parseS3Config(c)
 		if provider == "" {
 			provider = "aws" // Default S3 provider
 		}
-	} else if storageType == "gcs" {
+	case "gcs":
 		config = parseGCSConfig(c)
 		if provider == "" {
 			provider = "google" // Default GCS provider
 		}
-	} else if storageType == "local" {
+	case "local":
 		provider = "local"
 	}
 
