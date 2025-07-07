@@ -152,11 +152,13 @@ var CreateCmd = &cli.Command{
 			Name:     "wallet-validation",
 			Usage:    "Enable wallet balance validation before deal creation",
 			Category: "Validation",
+			Value:    true,
 		},
 		&cli.BoolFlag{
 			Name:     "sp-validation",
 			Usage:    "Enable storage provider validation before deal creation",
 			Category: "Validation",
+			Value:    true,
 		},
 		&cli.BoolFlag{
 			Name:     "auto-start",
