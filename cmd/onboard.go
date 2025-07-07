@@ -720,7 +720,6 @@ func validateOnboardInputs(c *cli.Context) error {
 
 	// Source and output validation
 	sourcePaths := c.StringSlice("source")
-	outputPaths := c.StringSlice("output")
 
 	if len(sourcePaths) == 0 {
 		return errors.New("at least one source path is required (--source)")
