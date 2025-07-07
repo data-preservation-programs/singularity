@@ -617,7 +617,7 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 func createStorageIfNotExist(ctx context.Context, db *gorm.DB, path, storageType, provider string, c *cli.Context, prefix string) (*model.Storage, error) {
 	// Build storage configuration based on type
 	config := make(map[string]string)
-	
+
 	if storageType == "s3" {
 		config = parseS3Config(c)
 		if provider == "" {
@@ -667,7 +667,7 @@ func createStorageIfNotExist(ctx context.Context, db *gorm.DB, path, storageType
 // parseS3Config builds S3 configuration from CLI flags
 func parseS3Config(c *cli.Context) map[string]string {
 	config := make(map[string]string)
-	
+
 	if c.IsSet("s3-access-key-id") {
 		config["access_key_id"] = c.String("s3-access-key-id")
 	}
@@ -685,14 +685,14 @@ func parseS3Config(c *cli.Context) map[string]string {
 			config["env_auth"] = "true"
 		}
 	}
-	
+
 	return config
 }
 
 // parseGCSConfig builds GCS configuration from CLI flags
 func parseGCSConfig(c *cli.Context) map[string]string {
 	config := make(map[string]string)
-	
+
 	if c.IsSet("gcs-service-account-file") {
 		config["service_account_file"] = c.String("gcs-service-account-file")
 	}
@@ -707,7 +707,7 @@ func parseGCSConfig(c *cli.Context) map[string]string {
 			config["env_auth"] = "true"
 		}
 	}
-	
+
 	return config
 }
 
