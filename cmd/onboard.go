@@ -400,7 +400,7 @@ func startScanningForPreparation(ctx context.Context, db *gorm.DB, prep *model.P
 
 	// Start scan jobs for each source attachment
 	for _, attachment := range attachments {
-		_, err = jobHandler.StartScanHandler(ctx, db, strconv.FormatUint(uint64(attachment.ID), 10), "")
+		_, err = jobHandler.StartScanHandler(ctx, db, strconv.FormatUint(uint64(attachment.PreparationID), 10), strconv.FormatUint(uint64(attachment.StorageID), 10))
 		if err != nil {
 			fmt.Printf("⚠ Failed to start scan for attachment %d: %v\n", attachment.ID, err)
 			continue
