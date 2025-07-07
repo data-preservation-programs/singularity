@@ -57,12 +57,81 @@ This is the simplest way to onboard data from source to storage deals.`,
 		},
 		&cli.StringSliceFlag{
 			Name:     "source",
-			Usage:    "Local source path(s) to onboard",
+			Usage:    "Source path(s) to onboard (local paths or remote URLs like s3://bucket/path)",
 			Required: true,
 		},
 		&cli.StringSliceFlag{
 			Name:  "output",
-			Usage: "Local output path(s) for CAR files (optional)",
+			Usage: "Output path(s) for CAR files (local paths or remote URLs like s3://bucket/path)",
+		},
+
+		// Remote storage configuration
+		&cli.StringFlag{
+			Name:  "source-type",
+			Usage: "Source storage type (local, s3, gcs, azure, etc.)",
+			Value: "local",
+		},
+		&cli.StringFlag{
+			Name:  "source-provider",
+			Usage: "Source storage provider (for s3: aws, minio, wasabi, etc.)",
+		},
+		&cli.StringFlag{
+			Name:  "output-type",
+			Usage: "Output storage type (local, s3, gcs, azure, etc.)",
+			Value: "local",
+		},
+		&cli.StringFlag{
+			Name:  "output-provider",
+			Usage: "Output storage provider",
+		},
+
+		// S3 configuration
+		&cli.StringFlag{
+			Name:     "s3-access-key-id",
+			Usage:    "S3 Access Key ID",
+			Category: "S3 Configuration",
+		},
+		&cli.StringFlag{
+			Name:     "s3-secret-access-key",
+			Usage:    "S3 Secret Access Key",
+			Category: "S3 Configuration",
+		},
+		&cli.StringFlag{
+			Name:     "s3-region",
+			Usage:    "S3 Region (e.g., us-east-1)",
+			Category: "S3 Configuration",
+		},
+		&cli.StringFlag{
+			Name:     "s3-endpoint",
+			Usage:    "Custom S3 endpoint URL",
+			Category: "S3 Configuration",
+		},
+		&cli.BoolFlag{
+			Name:     "s3-env-auth",
+			Usage:    "Use environment variables for S3 authentication",
+			Category: "S3 Configuration",
+		},
+
+		// GCS configuration
+		&cli.StringFlag{
+			Name:     "gcs-service-account-file",
+			Usage:    "Path to GCS service account JSON file",
+			Category: "GCS Configuration",
+		},
+		&cli.StringFlag{
+			Name:     "gcs-service-account-credentials",
+			Usage:    "GCS service account JSON credentials (inline)",
+			Category: "GCS Configuration",
+		},
+		&cli.StringFlag{
+			Name:     "gcs-project-id",
+			Usage:    "GCS Project ID",
+			Category: "GCS Configuration",
+		},
+		&cli.BoolFlag{
+			Name:     "gcs-env-auth",
+			Usage:    "Use environment variables for GCS authentication",
+			Category: "GCS Configuration",
 		},
 
 		// Preparation settings
@@ -317,7 +386,7 @@ func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Con
 	// Convert source paths to storage names (create if needed)
 	var sourceStorages []string
 	for _, sourcePath := range c.StringSlice("source") {
-		storage, err := createLocalStorageIfNotExist(ctx, db, sourcePath, "source")
+		storage, err := createStorageIfNotExist(ctx, db, sourcePath, c.String("source-type"), c.String("source-provider"), c, "source")
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to create source storage for %s", sourcePath)
 		}
@@ -327,7 +396,7 @@ func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Con
 	// Convert output paths to storage names (create if needed)
 	var outputStorages []string
 	for _, outputPath := range c.StringSlice("output") {
-		storage, err := createLocalStorageIfNotExist(ctx, db, outputPath, "output")
+		storage, err := createStorageIfNotExist(ctx, db, outputPath, c.String("output-type"), c.String("output-provider"), c, "output")
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to create output storage for %s", outputPath)
 		}
@@ -544,11 +613,28 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 	return status, false, nil
 }
 
-// Helper function to create local storage if it doesn't exist
-func createLocalStorageIfNotExist(ctx context.Context, db *gorm.DB, path, prefix string) (*model.Storage, error) {
-	// Check if storage already exists for this path
+// Helper function to create storage if it doesn't exist
+func createStorageIfNotExist(ctx context.Context, db *gorm.DB, path, storageType, provider string, c *cli.Context, prefix string) (*model.Storage, error) {
+	// Build storage configuration based on type
+	config := make(map[string]string)
+	
+	if storageType == "s3" {
+		config = parseS3Config(c)
+		if provider == "" {
+			provider = "aws" // Default S3 provider
+		}
+	} else if storageType == "gcs" {
+		config = parseGCSConfig(c)
+		if provider == "" {
+			provider = "google" // Default GCS provider
+		}
+	} else if storageType == "local" {
+		provider = "local"
+	}
+
+	// Check if storage already exists for this path and config
 	var existing model.Storage
-	err := db.WithContext(ctx).Where("type = ? AND path = ?", "local", path).First(&existing).Error
+	err := db.WithContext(ctx).Where("type = ? AND path = ?", storageType, path).First(&existing).Error
 	if err == nil {
 		return &existing, nil
 	}
@@ -565,17 +651,64 @@ func createLocalStorageIfNotExist(ctx context.Context, db *gorm.DB, path, prefix
 	request := storageHandlers.CreateRequest{
 		Name:         storageName,
 		Path:         path,
-		Provider:     "local",
-		Config:       make(map[string]string),
+		Provider:     provider,
+		Config:       config,
 		ClientConfig: model.ClientConfig{},
 	}
 
-	storage, err := storageHandler.CreateStorageHandler(ctx, db, "local", request)
+	storage, err := storageHandler.CreateStorageHandler(ctx, db, storageType, request)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	return storage, nil
+}
+
+// parseS3Config builds S3 configuration from CLI flags
+func parseS3Config(c *cli.Context) map[string]string {
+	config := make(map[string]string)
+	
+	if c.IsSet("s3-access-key-id") {
+		config["access_key_id"] = c.String("s3-access-key-id")
+	}
+	if c.IsSet("s3-secret-access-key") {
+		config["secret_access_key"] = c.String("s3-secret-access-key")
+	}
+	if c.IsSet("s3-region") {
+		config["region"] = c.String("s3-region")
+	}
+	if c.IsSet("s3-endpoint") {
+		config["endpoint"] = c.String("s3-endpoint")
+	}
+	if c.IsSet("s3-env-auth") {
+		if c.Bool("s3-env-auth") {
+			config["env_auth"] = "true"
+		}
+	}
+	
+	return config
+}
+
+// parseGCSConfig builds GCS configuration from CLI flags
+func parseGCSConfig(c *cli.Context) map[string]string {
+	config := make(map[string]string)
+	
+	if c.IsSet("gcs-service-account-file") {
+		config["service_account_file"] = c.String("gcs-service-account-file")
+	}
+	if c.IsSet("gcs-service-account-credentials") {
+		config["service_account_credentials"] = c.String("gcs-service-account-credentials")
+	}
+	if c.IsSet("gcs-project-id") {
+		config["project_number"] = c.String("gcs-project-id")
+	}
+	if c.IsSet("gcs-env-auth") {
+		if c.Bool("gcs-env-auth") {
+			config["env_auth"] = "true"
+		}
+	}
+	
+	return config
 }
 
 // validateOnboardInputs validates CLI inputs for onboard command
@@ -593,8 +726,22 @@ func validateOnboardInputs(c *cli.Context) error {
 		return errors.New("at least one source path is required (--source)")
 	}
 
-	if len(outputPaths) == 0 {
-		return errors.New("at least one output path is required (--output)")
+	// Validate storage type configurations
+	sourceType := c.String("source-type")
+	outputType := c.String("output-type")
+
+	// Validate S3 configuration if using S3
+	if sourceType == "s3" || outputType == "s3" {
+		if err := validateS3Config(c); err != nil {
+			return err
+		}
+	}
+
+	// Validate GCS configuration if using GCS
+	if sourceType == "gcs" || outputType == "gcs" {
+		if err := validateGCSConfig(c); err != nil {
+			return err
+		}
 	}
 
 	// Auto-deal validation
@@ -653,5 +800,30 @@ func validateOnboardInputs(c *cli.Context) error {
 		return errors.New("max workers must be at least 1")
 	}
 
+	return nil
+}
+
+// validateS3Config validates S3 configuration parameters
+func validateS3Config(c *cli.Context) error {
+	// If using S3 without environment auth, access key and secret are required
+	if !c.Bool("s3-env-auth") {
+		if c.String("s3-access-key-id") == "" {
+			return errors.New("S3 access key ID is required when not using environment authentication (--s3-access-key-id)")
+		}
+		if c.String("s3-secret-access-key") == "" {
+			return errors.New("S3 secret access key is required when not using environment authentication (--s3-secret-access-key)")
+		}
+	}
+	return nil
+}
+
+// validateGCSConfig validates GCS configuration parameters
+func validateGCSConfig(c *cli.Context) error {
+	// If using GCS without environment auth, service account credentials are required
+	if !c.Bool("gcs-env-auth") {
+		if c.String("gcs-service-account-file") == "" && c.String("gcs-service-account-credentials") == "" {
+			return errors.New("GCS service account file or credentials are required when not using environment authentication (--gcs-service-account-file or --gcs-service-account-credentials)")
+		}
+	}
 	return nil
 }
