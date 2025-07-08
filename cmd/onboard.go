@@ -84,35 +84,7 @@ This is the simplest way to onboard data from source to storage deals.`,
 		},
 		&cli.StringFlag{
 			Name:     "deal-template-id",
-			Usage:    "Deal template ID to use for deal configuration (overrides individual deal flags)",
-			Category: "Deal Settings",
-		},
-		&cli.StringFlag{
-			Name:     "deal-provider",
-			Usage:    "Storage Provider ID for deals (e.g., f01000)",
-			Category: "Deal Settings",
-		},
-		&cli.Float64Flag{
-			Name:     "deal-price-per-gb",
-			Usage:    "Price in FIL per GiB for storage deals",
-			Value:    0.0,
-			Category: "Deal Settings",
-		},
-		&cli.DurationFlag{
-			Name:     "deal-duration",
-			Usage:    "Duration for storage deals (e.g., 535 days)",
-			Value:    12840 * time.Hour, // ~535 days
-			Category: "Deal Settings",
-		},
-		&cli.DurationFlag{
-			Name:     "deal-start-delay",
-			Usage:    "Start delay for storage deals (e.g., 72h)",
-			Value:    72 * time.Hour,
-			Category: "Deal Settings",
-		},
-		&cli.BoolFlag{
-			Name:     "deal-verified",
-			Usage:    "Whether deals should be verified",
+			Usage:    "Deal template ID to use for deal configuration (required when auto-create-deals is enabled)",
 			Category: "Deal Settings",
 		},
 
@@ -348,11 +320,6 @@ func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Con
 		NoDag:            c.Bool("no-dag"),
 		AutoCreateDeals:  c.Bool("auto-create-deals"),
 		DealTemplate:     c.String("deal-template-id"),
-		DealProvider:     c.String("deal-provider"),
-		DealPricePerGB:   c.Float64("deal-price-per-gb"),
-		DealDuration:     c.Duration("deal-duration"),
-		DealStartDelay:   c.Duration("deal-start-delay"),
-		DealVerified:     c.Bool("deal-verified"),
 		WalletValidation: c.Bool("wallet-validation"),
 		SPValidation:     c.Bool("sp-validation"),
 	})
@@ -605,45 +572,9 @@ func validateOnboardInputs(c *cli.Context) error {
 
 	// Auto-deal validation
 	if c.Bool("auto-create-deals") {
-		// Deal provider is required when auto-create-deals is enabled
-		if c.String("deal-provider") == "" {
-			return errors.New("deal provider is required when auto-create-deals is enabled (--deal-provider)")
-		}
-
-		// Validate deal duration
-		if c.Duration("deal-duration") <= 0 {
-			return errors.New("deal duration must be positive when auto-create-deals is enabled (--deal-duration)")
-		}
-
-		// Validate deal start delay is non-negative
-		if c.Duration("deal-start-delay") < 0 {
-			return errors.New("deal start delay cannot be negative (--deal-start-delay)")
-		}
-
-		// Validate at least one pricing method is specified
-		pricePerGB := c.Float64("deal-price-per-gb")
-		pricePerDeal := c.Float64("deal-price-per-deal")
-		pricePerGBEpoch := c.Float64("deal-price-per-gb-epoch")
-
-		if pricePerGB == 0 && pricePerDeal == 0 && pricePerGBEpoch == 0 {
-			return errors.New("at least one pricing method must be specified when auto-create-deals is enabled (--deal-price-per-gb, --deal-price-per-deal, or --deal-price-per-gb-epoch)")
-		}
-
-		// Validate prices are non-negative
-		if pricePerGB < 0 {
-			return errors.New("deal price per GB must be non-negative (--deal-price-per-gb)")
-		}
-		if pricePerDeal < 0 {
-			return errors.New("deal price per deal must be non-negative (--deal-price-per-deal)")
-		}
-		if pricePerGBEpoch < 0 {
-			return errors.New("deal price per GB epoch must be non-negative (--deal-price-per-gb-epoch)")
-		}
-
-		// Validate deal provider format (should start with 'f0' or 't0')
-		dealProvider := c.String("deal-provider")
-		if len(dealProvider) < 3 || (dealProvider[:2] != "f0" && dealProvider[:2] != "t0") {
-			return errors.New("deal provider must be a valid storage provider ID (e.g., f01234 or t01234)")
+		// Deal template is required when auto-create-deals is enabled
+		if c.String("deal-template-id") == "" {
+			return errors.New("deal template ID is required when auto-create-deals is enabled (--deal-template-id)")
 		}
 	}
 
