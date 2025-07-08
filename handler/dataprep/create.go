@@ -145,13 +145,15 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		outputs = append(outputs, output)
 	}
 
-	if len(outputs) == 0 && request.DeleteAfterExport {
-		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "deleteAfterExport cannot be set without output storages")
-	}
+	   if len(outputs) == 0 && request.DeleteAfterExport {
+			   return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "deleteAfterExport cannot be set without output storages")
+	   }
 
-	if len(outputs) == 0 && request.NoInline {
-		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "inline preparation cannot be disabled without output storages")
-	}
+	   // Make output storages truly optional: do not error if outputs is empty and NoInline is false
+	   // Only error if NoInline is true and no outputs are provided
+	   if len(outputs) == 0 && request.NoInline {
+			   return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "inline preparation cannot be disabled without output storages")
+	   }
 
 	// Create preparation with basic fields
 	preparation := &model.Preparation{
