@@ -115,10 +115,12 @@ This is the simplest way to onboard data from source to storage deals.`,
 		&cli.BoolFlag{
 			Name:  "wallet-validation",
 			Usage: "Enable wallet balance validation",
+			Value: true,
 		},
 		&cli.BoolFlag{
 			Name:  "sp-validation",
 			Usage: "Enable storage provider validation",
+			Value: true,
 		},
 
 		// Output format
@@ -558,17 +560,14 @@ func validateOnboardInputs(c *cli.Context) error {
 		return errors.New("preparation name is required (--name)")
 	}
 
-	// Source and output validation
+	// Source validation
 	sourcePaths := c.StringSlice("source")
-	outputPaths := c.StringSlice("output")
 
 	if len(sourcePaths) == 0 {
 		return errors.New("at least one source path is required (--source)")
 	}
 
-	if len(outputPaths) == 0 {
-		return errors.New("at least one output path is required (--output)")
-	}
+	// Output paths are optional - no validation needed
 
 	// Auto-deal validation
 	if c.Bool("auto-create-deals") {
