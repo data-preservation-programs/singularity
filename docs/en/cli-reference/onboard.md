@@ -27,13 +27,13 @@ OPTIONS:
    --max-workers value                Maximum number of workers to run (default: 3)
    --name value                       Name for the preparation
    --no-dag                           Disable maintaining folder DAG structure (default: false)
-   --output value [ --output value ]  Local output path(s) for CAR files (optional)
+   --output value [ --output value ]  Local output path(s) for CAR files (optional unless --no-inline or --delete-after-export is set)
    --source value [ --source value ]  Local source path(s) to onboard
-   --sp-validation                    Enable storage provider validation (default: false)
+   --sp-validation                    Enable storage provider validation (default: true)
    --start-workers                    Start managed workers to process jobs automatically (default: true)
    --timeout value                    Timeout for waiting for completion (0 = no timeout) (default: 0s)
    --wait-for-completion              Wait and monitor until all jobs complete (default: false)
-   --wallet-validation                Enable wallet balance validation (default: false)
+   --wallet-validation                Enable wallet balance validation (default: true)
 
    Deal Settings
 

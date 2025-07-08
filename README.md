@@ -121,11 +121,11 @@ Use validation to control when deals are created:
 ```bash
 # Only create deals if wallet has sufficient balance
 singularity onboard --name "conditional" --source "/data" --auto-create-deals \
-  --deal-provider "f01234" --wallet-validation
+  --deal-provider "f01234" --wallet-validation  # (default: true)
 
 # Only create deals if provider is verified  
 singularity onboard --name "verified-only" --source "/data" --auto-create-deals \
-  --deal-provider "f01234" --sp-validation
+  --deal-provider "f01234" --sp-validation  # (default: true)
 ```
 
 ### Monitoring

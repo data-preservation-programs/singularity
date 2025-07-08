@@ -18,8 +18,8 @@ OPTIONS:
    --min-piece-size value             The minimum size of a piece. Pieces smaller than this will be padded up to this size. It's recommended to leave this as the default (default: 1MiB)
    --name value                       The name for the preparation (default: Auto generated)
    --no-dag                           Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID. (default: false)
-   --no-inline                        Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage. (default: false)
-   --output value [ --output value ]  The id or name of the output storage to be used for the preparation
+   --no-inline                        Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage if set. (default: false)
+   --output value [ --output value ]  The id or name of the output storage to be used for the preparation (optional unless --no-inline or --delete-after-export is set)
    --piece-size value                 The target piece size of the CAR files used for piece commitment calculation (default: Determined by --max-size)
    --source value [ --source value ]  The id or name of the source storage to be used for the preparation
 
@@ -49,8 +49,8 @@ OPTIONS:
 
    Validation
 
-   --sp-validation      Enable storage provider validation before deal creation (default: false)
-   --wallet-validation  Enable wallet balance validation before deal creation (default: false)
+   --sp-validation      Enable storage provider validation before deal creation (default: true)
+   --wallet-validation  Enable wallet balance validation before deal creation (default: true)
 
    Workflow Automation
 
