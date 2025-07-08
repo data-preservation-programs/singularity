@@ -13,7 +13,7 @@ singularity admin init
 ## 2. Connect to Storage Systems
 Singularity partners with RClone to provide seamless integration with over 40 different storage systems. These storage systems can play two main roles:
 * **Source Storage**: This is where the dataset is currently stored and where Singularity will source data from for preparation.
-* **Output Storage**: This is the destination where Singularity will store the CAR (Content Addressable Archive) files after processing.
+* **Output Storage**: (Optional) The destination where Singularity will store the CAR (Content Addressable Archive) files after processing. Required only if you disable inline storage (`--no-inline`) or enable `--delete-after-export`.
 Choose a storage system appropriate for your needs and connect it with Singularity to start preparing your datasets.
 
 ### 2a. Add a local file system
