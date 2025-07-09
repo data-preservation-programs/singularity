@@ -2,6 +2,8 @@ package dealtemplate
 
 import (
 	"encoding/json"
+	"os"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
@@ -74,6 +76,22 @@ var CreateCmd = &cli.Command{
 			Name:  "deal-http-headers",
 			Usage: "HTTP headers for deals in JSON format",
 		},
+		&cli.StringFlag{
+			Name:  "notes",
+			Usage: "Notes or tags for tracking purposes",
+		},
+		&cli.BoolFlag{
+			Name:  "force",
+			Usage: "Force deals regardless of replication restrictions",
+		},
+		&cli.StringSliceFlag{
+			Name:  "allowed-piece-cid",
+			Usage: "List of allowed piece CIDs for this template",
+		},
+		&cli.StringFlag{
+			Name:  "allowed-piece-cid-file",
+			Usage: "File containing list of allowed piece CIDs",
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -98,6 +116,31 @@ var CreateCmd = &cli.Command{
 			dealHTTPHeaders = model.ConfigMap(tempMap)
 		}
 
+		// Parse allowed piece CIDs from flags and file
+		var allowedPieceCIDs model.StringSlice
+		
+		// Add piece CIDs from flag
+		if flagCIDs := c.StringSlice("allowed-piece-cid"); len(flagCIDs) > 0 {
+			allowedPieceCIDs = append(allowedPieceCIDs, flagCIDs...)
+		}
+		
+		// Add piece CIDs from file
+		if filePath := c.String("allowed-piece-cid-file"); filePath != "" {
+			fileContent, err := os.ReadFile(filePath)
+			if err != nil {
+				return errors.Wrapf(err, "failed to read allowed-piece-cid-file: %s", filePath)
+			}
+			
+			// Split by lines and filter out empty ones
+			lines := strings.Split(string(fileContent), "\n")
+			for _, line := range lines {
+				line = strings.TrimSpace(line)
+				if line != "" && !strings.HasPrefix(line, "#") { // Skip empty lines and comments
+					allowedPieceCIDs = append(allowedPieceCIDs, line)
+				}
+			}
+		}
+
 		template, err := dealtemplate.Default.CreateHandler(c.Context, db, dealtemplate.CreateRequest{
 			Name:                c.String("name"),
 			Description:         c.String("description"),
@@ -112,6 +155,9 @@ var CreateCmd = &cli.Command{
 			DealProvider:        c.String("deal-provider"),
 			DealURLTemplate:     c.String("deal-url-template"),
 			DealHTTPHeaders:     dealHTTPHeaders,
+			DealNotes:           c.String("notes"),
+			DealForce:           c.Bool("force"),
+			DealAllowedPieceCIDs: allowedPieceCIDs,
 		})
 		if err != nil {
 			return errors.WithStack(err)
@@ -175,6 +221,13 @@ func validateCreateTemplateInputs(c *cli.Context) error {
 			if value == "" {
 				return errors.New("HTTP header values cannot be empty")
 			}
+		}
+	}
+
+	// Validate allowed piece CID file if provided
+	if filePath := c.String("allowed-piece-cid-file"); filePath != "" {
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			return errors.Wrapf(err, "allowed-piece-cid-file does not exist: %s", filePath)
 		}
 	}
 

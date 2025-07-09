@@ -18,19 +18,22 @@ var Default = &Handler{}
 
 // CreateRequest represents the request to create a deal template
 type CreateRequest struct {
-	Name                string          `json:"name"`
-	Description         string          `json:"description"`
-	DealPricePerGB      float64         `json:"dealPricePerGb"`
-	DealPricePerGBEpoch float64         `json:"dealPricePerGbEpoch"`
-	DealPricePerDeal    float64         `json:"dealPricePerDeal"`
-	DealDuration        time.Duration   `json:"dealDuration"`
-	DealStartDelay      time.Duration   `json:"dealStartDelay"`
-	DealVerified        bool            `json:"dealVerified"`
-	DealKeepUnsealed    bool            `json:"dealKeepUnsealed"`
-	DealAnnounceToIPNI  bool            `json:"dealAnnounceToIpni"`
-	DealProvider        string          `json:"dealProvider"`
-	DealHTTPHeaders     model.ConfigMap `json:"dealHttpHeaders"`
-	DealURLTemplate     string          `json:"dealUrlTemplate"`
+	Name                string            `json:"name"`
+	Description         string            `json:"description"`
+	DealPricePerGB      float64           `json:"dealPricePerGb"`
+	DealPricePerGBEpoch float64           `json:"dealPricePerGbEpoch"`
+	DealPricePerDeal    float64           `json:"dealPricePerDeal"`
+	DealDuration        time.Duration     `json:"dealDuration"`
+	DealStartDelay      time.Duration     `json:"dealStartDelay"`
+	DealVerified        bool              `json:"dealVerified"`
+	DealKeepUnsealed    bool              `json:"dealKeepUnsealed"`
+	DealAnnounceToIPNI  bool              `json:"dealAnnounceToIpni"`
+	DealProvider        string            `json:"dealProvider"`
+	DealHTTPHeaders     model.ConfigMap   `json:"dealHttpHeaders"`
+	DealURLTemplate     string            `json:"dealUrlTemplate"`
+	DealNotes           string            `json:"dealNotes"`
+	DealForce           bool              `json:"dealForce"`
+	DealAllowedPieceCIDs model.StringSlice `json:"dealAllowedPieceCids"`
 }
 
 // CreateHandler creates a new deal template
@@ -51,18 +54,21 @@ func (h *Handler) CreateHandler(ctx context.Context, db *gorm.DB, request Create
 		Name:        request.Name,
 		Description: request.Description,
 		DealConfig: model.DealConfig{
-			AutoCreateDeals:     true, // Templates are for auto-creation
-			DealPricePerGb:      request.DealPricePerGB,
-			DealPricePerGbEpoch: request.DealPricePerGBEpoch,
-			DealPricePerDeal:    request.DealPricePerDeal,
-			DealDuration:        request.DealDuration,
-			DealStartDelay:      request.DealStartDelay,
-			DealVerified:        request.DealVerified,
-			DealKeepUnsealed:    request.DealKeepUnsealed,
-			DealAnnounceToIpni:  request.DealAnnounceToIPNI,
-			DealProvider:        request.DealProvider,
-			DealHTTPHeaders:     request.DealHTTPHeaders,
-			DealURLTemplate:     request.DealURLTemplate,
+			AutoCreateDeals:      true, // Templates are for auto-creation
+			DealPricePerGb:       request.DealPricePerGB,
+			DealPricePerGbEpoch:  request.DealPricePerGBEpoch,
+			DealPricePerDeal:     request.DealPricePerDeal,
+			DealDuration:         request.DealDuration,
+			DealStartDelay:       request.DealStartDelay,
+			DealVerified:         request.DealVerified,
+			DealKeepUnsealed:     request.DealKeepUnsealed,
+			DealAnnounceToIpni:   request.DealAnnounceToIPNI,
+			DealProvider:         request.DealProvider,
+			DealHTTPHeaders:      request.DealHTTPHeaders,
+			DealURLTemplate:      request.DealURLTemplate,
+			DealNotes:            request.DealNotes,
+			DealForce:            request.DealForce,
+			DealAllowedPieceCIDs: request.DealAllowedPieceCIDs,
 		},
 	}
 
@@ -102,19 +108,22 @@ func (h *Handler) GetHandler(ctx context.Context, db *gorm.DB, idOrName string) 
 
 // UpdateRequest represents the request to update a deal template
 type UpdateRequest struct {
-	Name                *string          `json:"name,omitempty"`
-	Description         *string          `json:"description,omitempty"`
-	DealPricePerGB      *float64         `json:"dealPricePerGb,omitempty"`
-	DealPricePerGBEpoch *float64         `json:"dealPricePerGbEpoch,omitempty"`
-	DealPricePerDeal    *float64         `json:"dealPricePerDeal,omitempty"`
-	DealDuration        *time.Duration   `json:"dealDuration,omitempty"`
-	DealStartDelay      *time.Duration   `json:"dealStartDelay,omitempty"`
-	DealVerified        *bool            `json:"dealVerified,omitempty"`
-	DealKeepUnsealed    *bool            `json:"dealKeepUnsealed,omitempty"`
-	DealAnnounceToIPNI  *bool            `json:"dealAnnounceToIpni,omitempty"`
-	DealProvider        *string          `json:"dealProvider,omitempty"`
-	DealHTTPHeaders     *model.ConfigMap `json:"dealHttpHeaders,omitempty"`
-	DealURLTemplate     *string          `json:"dealUrlTemplate,omitempty"`
+	Name                *string            `json:"name,omitempty"`
+	Description         *string            `json:"description,omitempty"`
+	DealPricePerGB      *float64           `json:"dealPricePerGb,omitempty"`
+	DealPricePerGBEpoch *float64           `json:"dealPricePerGbEpoch,omitempty"`
+	DealPricePerDeal    *float64           `json:"dealPricePerDeal,omitempty"`
+	DealDuration        *time.Duration     `json:"dealDuration,omitempty"`
+	DealStartDelay      *time.Duration     `json:"dealStartDelay,omitempty"`
+	DealVerified        *bool              `json:"dealVerified,omitempty"`
+	DealKeepUnsealed    *bool              `json:"dealKeepUnsealed,omitempty"`
+	DealAnnounceToIPNI  *bool              `json:"dealAnnounceToIpni,omitempty"`
+	DealProvider        *string            `json:"dealProvider,omitempty"`
+	DealHTTPHeaders     *model.ConfigMap   `json:"dealHttpHeaders,omitempty"`
+	DealURLTemplate     *string            `json:"dealUrlTemplate,omitempty"`
+	DealNotes           *string            `json:"dealNotes,omitempty"`
+	DealForce           *bool              `json:"dealForce,omitempty"`
+	DealAllowedPieceCIDs *model.StringSlice `json:"dealAllowedPieceCids,omitempty"`
 }
 
 // UpdateHandler updates a deal template
@@ -167,6 +176,15 @@ func (h *Handler) UpdateHandler(ctx context.Context, db *gorm.DB, idOrName strin
 	}
 	if request.DealURLTemplate != nil {
 		updates["deal_url_template"] = *request.DealURLTemplate
+	}
+	if request.DealNotes != nil {
+		updates["deal_notes"] = *request.DealNotes
+	}
+	if request.DealForce != nil {
+		updates["deal_force"] = *request.DealForce
+	}
+	if request.DealAllowedPieceCIDs != nil {
+		updates["deal_allowed_piece_cids"] = *request.DealAllowedPieceCIDs
 	}
 
 	if len(updates) == 0 {

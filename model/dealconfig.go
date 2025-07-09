@@ -65,6 +65,15 @@ type DealConfig struct {
 
 	// DealURLTemplate specifies the URL template for deals
 	DealURLTemplate string `json:"dealUrlTemplate" gorm:"type:text"`
+
+	// DealNotes provides additional notes or comments for the deal
+	DealNotes string `json:"dealNotes" gorm:"type:text"`
+
+	// DealForce indicates whether to force deal creation even if conditions aren't met
+	DealForce bool `json:"dealForce" gorm:"default:false"`
+
+	// DealAllowedPieceCIDs specifies which piece CIDs are allowed for this deal config
+	DealAllowedPieceCIDs StringSlice `gorm:"type:JSON;column:deal_allowed_piece_cids" json:"dealAllowedPieceCids"`
 }
 
 // Validate validates the deal configuration and returns any errors
@@ -111,7 +120,10 @@ func (dc *DealConfig) IsEmpty() bool {
 		dc.DealPricePerDeal == 0 &&
 		dc.DealPricePerGb == 0 &&
 		dc.DealPricePerGbEpoch == 0 &&
-		dc.DealURLTemplate == ""
+		dc.DealURLTemplate == "" &&
+		dc.DealNotes == "" &&
+		!dc.DealForce &&
+		len(dc.DealAllowedPieceCIDs) == 0
 }
 
 // SetDurationFromString parses a duration string and converts it to time.Duration
@@ -243,6 +255,18 @@ func (dc *DealConfig) ApplyOverrides(template *DealConfig) {
 	if len(dc.DealHTTPHeaders) == 0 && len(template.DealHTTPHeaders) > 0 {
 		dealConfigLogger.Debugf("Overriding DealHTTPHeaders: %d headers -> %d headers", len(dc.DealHTTPHeaders), len(template.DealHTTPHeaders))
 		dc.DealHTTPHeaders = template.DealHTTPHeaders
+	}
+	if dc.DealNotes == "" && template.DealNotes != "" {
+		dealConfigLogger.Debugf("Overriding DealNotes: '%s' -> '%s'", dc.DealNotes, template.DealNotes)
+		dc.DealNotes = template.DealNotes
+	}
+	if !dc.DealForce && template.DealForce {
+		dealConfigLogger.Debugf("Overriding DealForce: %v -> %v", dc.DealForce, template.DealForce)
+		dc.DealForce = template.DealForce
+	}
+	if len(dc.DealAllowedPieceCIDs) == 0 && len(template.DealAllowedPieceCIDs) > 0 {
+		dealConfigLogger.Debugf("Overriding DealAllowedPieceCIDs: %d pieces -> %d pieces", len(dc.DealAllowedPieceCIDs), len(template.DealAllowedPieceCIDs))
+		dc.DealAllowedPieceCIDs = template.DealAllowedPieceCIDs
 	}
 
 	dealConfigLogger.Debug("Template override application completed")
