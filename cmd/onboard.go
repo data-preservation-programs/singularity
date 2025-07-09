@@ -19,6 +19,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/workermanager"
 	"github.com/data-preservation-programs/singularity/service/workflow"
+	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/gotidy/ptr"
@@ -148,6 +149,16 @@ This is the simplest way to onboard data from source to storage deals.`,
 		&cli.StringFlag{
 			Name:     "output-name",
 			Usage:    "Custom name for output storage (auto-generated if not provided)",
+			Category: "Storage Configuration",
+		},
+		&cli.StringFlag{
+			Name:     "source-config",
+			Usage:    "Source storage configuration in JSON format (key-value pairs)",
+			Category: "Storage Configuration",
+		},
+		&cli.StringFlag{
+			Name:     "output-config",
+			Usage:    "Output storage configuration in JSON format (key-value pairs)",
 			Category: "Storage Configuration",
 		},
 
@@ -396,6 +407,9 @@ func onboardAction(c *cli.Context) error {
 
 // createPreparationForOnboarding creates a preparation with all onboarding settings
 func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Context) (*model.Preparation, error) {
+	// Log warning for insecure client configurations
+	logInsecureClientConfigWarning(c)
+	
 	// Convert source paths to storage names (create if needed)
 	var sourceStorages []string
 	for i, sourcePath := range c.StringSlice("source") {
@@ -405,7 +419,7 @@ func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Con
 		} else if len(c.StringSlice("source")) > 1 {
 			storageName = fmt.Sprintf("%s-%d", storageName, i)
 		}
-		storage, err := createStorageIfNotExist(ctx, db, sourcePath, c.String("source-type"), c.String("source-provider"), c, storageName)
+		storage, err := createStorageIfNotExistWithConfig(ctx, db, sourcePath, c.String("source-type"), c.String("source-provider"), c, storageName, "source")
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to create source storage for %s", sourcePath)
 		}
@@ -421,7 +435,7 @@ func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Con
 		} else if len(c.StringSlice("output")) > 1 {
 			storageName = fmt.Sprintf("%s-%d", storageName, i)
 		}
-		storage, err := createStorageIfNotExist(ctx, db, outputPath, c.String("output-type"), c.String("output-provider"), c, storageName)
+		storage, err := createStorageIfNotExistWithConfig(ctx, db, outputPath, c.String("output-type"), c.String("output-provider"), c, storageName, "output")
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to create output storage for %s", outputPath)
 		}
@@ -657,6 +671,16 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 
 // Helper function to create storage if it doesn't exist
 func createStorageIfNotExist(ctx context.Context, db *gorm.DB, path, storageType, provider string, c *cli.Context, storageName string) (*model.Storage, error) {
+	// Check for duplicate storage names first
+	if err := checkDuplicateStorageNames(ctx, db, storageName); err != nil {
+		return nil, err
+	}
+
+	// Validate storage type is supported
+	if err := validateStorageType(storageType, "storage"); err != nil {
+		return nil, err
+	}
+
 	// Build storage configuration based on type
 	config := make(map[string]string)
 
@@ -680,6 +704,13 @@ func createStorageIfNotExist(ctx context.Context, db *gorm.DB, path, storageType
 		}
 	}
 
+	// Merge custom config if provided
+	if customConfig := getCustomStorageConfig(c, storageType); customConfig != nil {
+		for key, value := range customConfig {
+			config[key] = value
+		}
+	}
+
 	// Check if storage already exists for this path and config
 	var existing model.Storage
 	err := db.WithContext(ctx).Where("type = ? AND path = ?", storageType, path).First(&existing).Error
@@ -688,7 +719,7 @@ func createStorageIfNotExist(ctx context.Context, db *gorm.DB, path, storageType
 	}
 
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.WithStack(err)
+		return nil, errors.Wrapf(err, "failed to check existing storage")
 	}
 
 	// Get client configuration from flags
@@ -709,7 +740,7 @@ func createStorageIfNotExist(ctx context.Context, db *gorm.DB, path, storageType
 
 	storage, err := storageHandler.CreateStorageHandler(ctx, db, storageType, request)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Wrapf(err, "failed to create storage '%s'", storageName)
 	}
 
 	return storage, nil
@@ -780,6 +811,14 @@ func validateOnboardInputs(c *cli.Context) error {
 	sourceType := c.String("source-type")
 	outputType := c.String("output-type")
 
+	// Validate storage types are supported using BackendMap
+	if err := validateStorageType(sourceType, "source"); err != nil {
+		return err
+	}
+	if err := validateStorageType(outputType, "output"); err != nil {
+		return err
+	}
+
 	// Validate S3 configuration if using S3
 	if sourceType == "s3" || outputType == "s3" {
 		if err := validateS3Config(c); err != nil {
@@ -790,6 +829,18 @@ func validateOnboardInputs(c *cli.Context) error {
 	// Validate GCS configuration if using GCS
 	if sourceType == "gcs" || outputType == "gcs" {
 		if err := validateGCSConfig(c); err != nil {
+			return err
+		}
+	}
+
+	// Validate custom storage configurations if provided
+	if sourceConfig := c.String("source-config"); sourceConfig != "" {
+		if err := validateStorageConfig(sourceConfig, "source"); err != nil {
+			return err
+		}
+	}
+	if outputConfig := c.String("output-config"); outputConfig != "" {
+		if err := validateStorageConfig(outputConfig, "output"); err != nil {
 			return err
 		}
 	}
@@ -968,4 +1019,162 @@ func getOnboardClientConfig(c *cli.Context) (*model.ClientConfig, error) {
 		config.ScanConcurrency = ptr.Of(c.Int("client-scan-concurrency"))
 	}
 	return &config, nil
+}
+
+// validateStorageType validates that a storage type is supported using BackendMap
+func validateStorageType(storageType string, prefix string) error {
+	if storageType == "" {
+		return nil // Allow empty storage type (defaults to local)
+	}
+	
+	_, ok := storagesystem.BackendMap[storageType]
+	if !ok {
+		return errors.Errorf("%s storage type '%s' is not supported", prefix, storageType)
+	}
+	
+	return nil
+}
+
+// validateStorageConfig validates that a storage configuration is valid JSON
+func validateStorageConfig(configStr string, prefix string) error {
+	var config map[string]string
+	if err := json.Unmarshal([]byte(configStr), &config); err != nil {
+		return errors.Wrapf(err, "invalid JSON format for %s-config", prefix)
+	}
+	
+	// Validate that keys and values are non-empty strings
+	for key, value := range config {
+		if key == "" {
+			return errors.Errorf("%s-config cannot have empty keys", prefix)
+		}
+		if value == "" {
+			return errors.Errorf("%s-config cannot have empty values", prefix)
+		}
+	}
+	
+	return nil
+}
+
+// checkDuplicateStorageNames validates that storage names are unique
+func checkDuplicateStorageNames(ctx context.Context, db *gorm.DB, storageName string) error {
+	var existingStorage model.Storage
+	err := db.WithContext(ctx).Where("name = ?", storageName).First(&existingStorage).Error
+	if err == nil {
+		return errors.Errorf("storage with name '%s' already exists", storageName)
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.Wrapf(err, "failed to check for duplicate storage name '%s'", storageName)
+	}
+	return nil
+}
+
+// logInsecureClientConfigWarning logs warnings for insecure client configurations
+func logInsecureClientConfigWarning(c *cli.Context) {
+	if c.Bool("client-insecure-skip-verify") {
+		fmt.Printf("⚠️  WARNING: Insecure SSL/TLS configuration detected. Certificate verification is disabled.\n")
+		fmt.Printf("   This may expose your data to man-in-the-middle attacks.\n")
+		fmt.Printf("   Consider using proper certificates in production environments.\n\n")
+	}
+}
+
+// getCustomStorageConfig returns custom storage configuration for the given storage type
+func getCustomStorageConfig(c *cli.Context, storageContext string) map[string]string {
+	var configFlag string
+	
+	// Determine which config flag to use based on storage context
+	switch storageContext {
+	case "source":
+		configFlag = c.String("source-config")
+	case "output":
+		configFlag = c.String("output-config")
+	}
+	
+	if configFlag == "" {
+		return nil
+	}
+	
+	var config map[string]string
+	if err := json.Unmarshal([]byte(configFlag), &config); err != nil {
+		// This should have been caught in validation, but handle gracefully
+		return nil
+	}
+	
+	return config
+}
+
+// createStorageIfNotExistWithConfig creates storage with context-aware custom configuration
+func createStorageIfNotExistWithConfig(ctx context.Context, db *gorm.DB, path, storageType, provider string, c *cli.Context, storageName, storageContext string) (*model.Storage, error) {
+	// Check for duplicate storage names first
+	if err := checkDuplicateStorageNames(ctx, db, storageName); err != nil {
+		return nil, err
+	}
+
+	// Validate storage type is supported
+	if err := validateStorageType(storageType, storageContext); err != nil {
+		return nil, err
+	}
+
+	// Build storage configuration based on type
+	config := make(map[string]string)
+
+	switch storageType {
+	case "s3":
+		config = parseS3Config(c)
+		if provider == "" {
+			provider = "aws" // Default S3 provider
+		}
+	case "gcs":
+		config = parseGCSConfig(c)
+		if provider == "" {
+			provider = "google" // Default GCS provider
+		}
+	case "local":
+		provider = "local"
+	default:
+		// For other storage types, use default provider if not specified
+		if provider == "" {
+			provider = "" // Let the storage system use its default
+		}
+	}
+
+	// Merge custom config if provided
+	if customConfig := getCustomStorageConfig(c, storageContext); customConfig != nil {
+		for key, value := range customConfig {
+			config[key] = value
+		}
+	}
+
+	// Check if storage already exists for this path and config
+	var existing model.Storage
+	err := db.WithContext(ctx).Where("type = ? AND path = ?", storageType, path).First(&existing).Error
+	if err == nil {
+		return &existing, nil
+	}
+
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrapf(err, "failed to check existing storage")
+	}
+
+	// Get client configuration from flags
+	clientConfig, err := getOnboardClientConfig(c)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse client configuration")
+	}
+
+	// Use the storage handler to create new storage with proper validation
+	storageHandler := storageHandlers.Default
+	request := storageHandlers.CreateRequest{
+		Name:         storageName,
+		Path:         path,
+		Provider:     provider,
+		Config:       config,
+		ClientConfig: *clientConfig,
+	}
+
+	storage, err := storageHandler.CreateStorageHandler(ctx, db, storageType, request)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create storage '%s'", storageName)
+	}
+
+	return storage, nil
 }
