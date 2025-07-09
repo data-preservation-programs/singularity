@@ -230,18 +230,24 @@ This is the simplest way to onboard data from source to storage deals.`,
 			if err != nil {
 				return outputJSONError("monitoring failed", err)
 			}
-		}
-
-		// Cleanup workers if we started them
-		if workerManager != nil {
-			if !isJSON {
-				fmt.Println("\n🧹 Cleaning up workers...")
-			}
-			err = workerManager.Stop(ctx)
-			if err != nil {
+			
+			// Only cleanup workers after completion monitoring finishes successfully
+			if workerManager != nil {
 				if !isJSON {
-					fmt.Printf("⚠ Warning: failed to stop workers cleanly: %v\n", err)
+					fmt.Println("\n🧹 Cleaning up workers...")
 				}
+				err = workerManager.Stop(ctx)
+				if err != nil {
+					if !isJSON {
+						fmt.Printf("⚠ Warning: failed to stop workers cleanly: %v\n", err)
+					}
+				}
+			}
+		} else if workerManager != nil {
+			// When not waiting for completion, leave workers running to process jobs
+			if !isJSON {
+				fmt.Println("\n✅ Workers will continue running to process jobs")
+				fmt.Println("💡 Use --wait-for-completion to monitor progress and stop workers when done")
 			}
 		}
 
@@ -253,7 +259,11 @@ This is the simplest way to onboard data from source to storage deals.`,
 				"Check jobs: singularity job list",
 			}
 			if c.Bool("start-workers") {
-				nextSteps = append(nextSteps, "Workers will process jobs automatically")
+				if c.Bool("wait-for-completion") {
+					nextSteps = append(nextSteps, "Workers have been stopped after completion")
+				} else {
+					nextSteps = append(nextSteps, "Workers are running and will process jobs automatically")
+				}
 			} else {
 				nextSteps = append(nextSteps, "Start workers: singularity run unified")
 			}
@@ -280,7 +290,7 @@ This is the simplest way to onboard data from source to storage deals.`,
 				fmt.Println("   • Monitor progress: singularity prep status", prep.Name)
 				fmt.Println("   • Check jobs: singularity job list")
 				if c.Bool("start-workers") {
-					fmt.Println("   • Workers will process jobs automatically")
+					fmt.Println("   • Workers are running and will process jobs automatically")
 				} else {
 					fmt.Println("   • Start workers: singularity run unified")
 				}
