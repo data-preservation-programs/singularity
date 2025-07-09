@@ -230,7 +230,7 @@ This is the simplest way to onboard data from source to storage deals.`,
 			if err != nil {
 				return outputJSONError("monitoring failed", err)
 			}
-			
+
 			// Only cleanup workers after completion monitoring finishes successfully
 			if workerManager != nil {
 				if !isJSON {
