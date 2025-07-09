@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
@@ -50,6 +52,12 @@ func (h *Handler) CreateHandler(ctx context.Context, db *gorm.DB, request Create
 		return nil, errors.WithStack(err)
 	}
 
+	// Validate and deduplicate piece CIDs
+	validatedPieceCIDs, err := h.validateAndDeduplicatePieceCIDs(request.DealAllowedPieceCIDs)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
 	template := model.DealTemplate{
 		Name:        request.Name,
 		Description: request.Description,
@@ -68,7 +76,7 @@ func (h *Handler) CreateHandler(ctx context.Context, db *gorm.DB, request Create
 			DealURLTemplate:      request.DealURLTemplate,
 			DealNotes:            request.DealNotes,
 			DealForce:            request.DealForce,
-			DealAllowedPieceCIDs: request.DealAllowedPieceCIDs,
+			DealAllowedPieceCIDs: validatedPieceCIDs,
 		},
 	}
 
@@ -184,7 +192,12 @@ func (h *Handler) UpdateHandler(ctx context.Context, db *gorm.DB, idOrName strin
 		updates["deal_force"] = *request.DealForce
 	}
 	if request.DealAllowedPieceCIDs != nil {
-		updates["deal_allowed_piece_cids"] = *request.DealAllowedPieceCIDs
+		// Validate and deduplicate piece CIDs
+		validatedPieceCIDs, err := h.validateAndDeduplicatePieceCIDs(*request.DealAllowedPieceCIDs)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		updates["deal_allowed_piece_cids"] = validatedPieceCIDs
 	}
 
 	if len(updates) == 0 {
@@ -239,4 +252,43 @@ func (h *Handler) ApplyTemplateToPreparation(template *model.DealTemplate, prep 
 
 	logger.Debugf("Applied template %s to preparation %s - template values applied for unset fields only",
 		template.Name, prep.Name)
+}
+
+// validateAndDeduplicatePieceCIDs validates piece CIDs and removes duplicates
+func (h *Handler) validateAndDeduplicatePieceCIDs(pieceCIDs model.StringSlice) (model.StringSlice, error) {
+	if len(pieceCIDs) == 0 {
+		return pieceCIDs, nil
+	}
+
+	seen := make(map[string]bool)
+	var deduplicated model.StringSlice
+
+	for _, pieceCID := range pieceCIDs {
+		// Skip if already seen (deduplication)
+		if seen[pieceCID] {
+			logger.Debugf("Skipping duplicate piece CID: %s", pieceCID)
+			continue
+		}
+
+		// Validate CID format
+		parsed, err := cid.Parse(pieceCID)
+		if err != nil {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid piece CID format '%s': %v", pieceCID, err)
+		}
+
+		// Validate it's a piece commitment (commp) CID
+		if parsed.Type() != cid.FilCommitmentUnsealed {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "piece CID '%s' is not a piece commitment (commp) CID", pieceCID)
+		}
+
+		// Add to seen map and deduplicated list
+		seen[pieceCID] = true
+		deduplicated = append(deduplicated, pieceCID)
+	}
+
+	if len(deduplicated) != len(pieceCIDs) {
+		logger.Infof("Deduplicated piece CIDs: %d original -> %d unique", len(pieceCIDs), len(deduplicated))
+	}
+
+	return deduplicated, nil
 }

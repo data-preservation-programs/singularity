@@ -151,8 +151,8 @@ Upgrading:
 			},
 		},
 		{
-			Name:     "deal-template",
-			Usage:    "Deal template management",
+			Name:     "deal-schedule-template",
+			Usage:    "Deal schedule template management",
 			Category: "Operations",
 			Subcommands: []*cli.Command{
 				dealtemplate.CreateCmd,

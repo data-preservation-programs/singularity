@@ -42,12 +42,13 @@ var OnboardCmd = &cli.Command{
 
 It performs the following steps automatically:
 1. Creates storage connections (if paths provided)
-2. Creates data preparation with deal parameters
+2. Creates data preparation with deal template configuration
 3. Starts scanning immediately
 4. Enables automatic job progression (scan → pack → daggen → deals)
 5. Optionally starts managed workers to process jobs
 
-This is the simplest way to onboard data from source to storage deals.`,
+This is the simplest way to onboard data from source to storage deals.
+Use deal templates to configure deal parameters - individual deal flags are not supported.`,
 	Flags: []cli.Flag{
 		// Data source flags
 		&cli.StringFlag{
@@ -84,7 +85,7 @@ This is the simplest way to onboard data from source to storage deals.`,
 		},
 		&cli.StringFlag{
 			Name:     "deal-template-id",
-			Usage:    "Deal template ID to use for deal configuration (required when auto-create-deals is enabled)",
+			Usage:    "Deal template ID to use for deal configuration (required when auto-create-deals is enabled). Individual deal flags are not supported - use templates instead.",
 			Category: "Deal Settings",
 		},
 
@@ -151,10 +152,6 @@ This is the simplest way to onboard data from source to storage deals.`,
 			return outputJSONError("input validation failed", err)
 		}
 
-		if !isJSON {
-			fmt.Println("🚀 Starting unified data onboarding...")
-		}
-
 		// Initialize database
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
@@ -163,6 +160,17 @@ This is the simplest way to onboard data from source to storage deals.`,
 		defer func() { _ = closer.Close() }()
 
 		ctx := c.Context
+
+		// Validate deal template exists if specified
+		if c.Bool("auto-create-deals") {
+			if err := validateDealTemplateExists(ctx, db, c.String("deal-template-id")); err != nil {
+				return outputJSONError("deal template validation failed", err)
+			}
+		}
+
+		if !isJSON {
+			fmt.Println("🚀 Starting unified data onboarding...")
+		}
 
 		// Step 1: Create preparation with deal configuration
 		if !isJSON {
@@ -597,6 +605,25 @@ func validateOnboardInputs(c *cli.Context) error {
 	// Validate worker count
 	if maxWorkers := c.Int("max-workers"); maxWorkers < 1 {
 		return errors.New("max workers must be at least 1")
+	}
+
+	return nil
+}
+
+// validateDealTemplateExists validates that the deal template ID exists in the database
+func validateDealTemplateExists(ctx context.Context, db *gorm.DB, templateID string) error {
+	if templateID == "" {
+		return nil // No template specified, validation not needed
+	}
+
+	// Check if template exists by ID or name
+	var template model.DealTemplate
+	err := db.WithContext(ctx).Where("id = ? OR name = ?", templateID, templateID).First(&template).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.Errorf("deal template '%s' not found. Please create the template first using 'singularity deal-schedule-template create'", templateID)
+	}
+	if err != nil {
+		return errors.WithStack(err)
 	}
 
 	return nil
