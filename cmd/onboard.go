@@ -667,7 +667,6 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 	return status, false, nil
 }
 
-
 // parseS3Config builds S3 configuration from CLI flags
 func parseS3Config(c *cli.Context) map[string]string {
 	config := make(map[string]string)
