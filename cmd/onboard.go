@@ -409,7 +409,7 @@ func onboardAction(c *cli.Context) error {
 func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Context) (*model.Preparation, error) {
 	// Log warning for insecure client configurations
 	logInsecureClientConfigWarning(c)
-	
+
 	// Convert source paths to storage names (create if needed)
 	var sourceStorages []string
 	for i, sourcePath := range c.StringSlice("source") {
@@ -1026,12 +1026,12 @@ func validateStorageType(storageType string, prefix string) error {
 	if storageType == "" {
 		return nil // Allow empty storage type (defaults to local)
 	}
-	
+
 	_, ok := storagesystem.BackendMap[storageType]
 	if !ok {
 		return errors.Errorf("%s storage type '%s' is not supported", prefix, storageType)
 	}
-	
+
 	return nil
 }
 
@@ -1041,7 +1041,7 @@ func validateStorageConfig(configStr string, prefix string) error {
 	if err := json.Unmarshal([]byte(configStr), &config); err != nil {
 		return errors.Wrapf(err, "invalid JSON format for %s-config", prefix)
 	}
-	
+
 	// Validate that keys and values are non-empty strings
 	for key, value := range config {
 		if key == "" {
@@ -1051,7 +1051,7 @@ func validateStorageConfig(configStr string, prefix string) error {
 			return errors.Errorf("%s-config cannot have empty values", prefix)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -1080,7 +1080,7 @@ func logInsecureClientConfigWarning(c *cli.Context) {
 // getCustomStorageConfig returns custom storage configuration for the given storage type
 func getCustomStorageConfig(c *cli.Context, storageContext string) map[string]string {
 	var configFlag string
-	
+
 	// Determine which config flag to use based on storage context
 	switch storageContext {
 	case "source":
@@ -1088,17 +1088,17 @@ func getCustomStorageConfig(c *cli.Context, storageContext string) map[string]st
 	case "output":
 		configFlag = c.String("output-config")
 	}
-	
+
 	if configFlag == "" {
 		return nil
 	}
-	
+
 	var config map[string]string
 	if err := json.Unmarshal([]byte(configFlag), &config); err != nil {
 		// This should have been caught in validation, but handle gracefully
 		return nil
 	}
-	
+
 	return config
 }
 

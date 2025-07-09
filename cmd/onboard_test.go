@@ -333,19 +333,19 @@ func TestValidateOnboardInputs(t *testing.T) {
 		{
 			name: "valid minimal input should pass",
 			flags: map[string]interface{}{
-				"name":                 "test-prep",
-				"source":               []string{"/tmp/test"},
-				"auto-create-deals":    false,
-				"source-type":          "local",
-				"output-type":          "local",
+				"name":              "test-prep",
+				"source":            []string{"/tmp/test"},
+				"auto-create-deals": false,
+				"source-type":       "local",
+				"output-type":       "local",
 			},
 			wantErr: false,
 		},
 		{
 			name: "missing name should fail",
 			flags: map[string]interface{}{
-				"source":               []string{"/tmp/test"},
-				"auto-create-deals":    false,
+				"source":            []string{"/tmp/test"},
+				"auto-create-deals": false,
 			},
 			wantErr: true,
 			errMsg:  "preparation name is required",
@@ -353,8 +353,8 @@ func TestValidateOnboardInputs(t *testing.T) {
 		{
 			name: "missing source should fail",
 			flags: map[string]interface{}{
-				"name":                 "test-prep",
-				"auto-create-deals":    false,
+				"name":              "test-prep",
+				"auto-create-deals": false,
 			},
 			wantErr: true,
 			errMsg:  "at least one source path is required",
@@ -362,10 +362,10 @@ func TestValidateOnboardInputs(t *testing.T) {
 		{
 			name: "invalid source storage type should fail",
 			flags: map[string]interface{}{
-				"name":                 "test-prep",
-				"source":               []string{"/tmp/test"},
-				"source-type":          "invalid-type",
-				"auto-create-deals":    false,
+				"name":              "test-prep",
+				"source":            []string{"/tmp/test"},
+				"source-type":       "invalid-type",
+				"auto-create-deals": false,
 			},
 			wantErr: true,
 			errMsg:  "source storage type 'invalid-type' is not supported",
@@ -373,11 +373,11 @@ func TestValidateOnboardInputs(t *testing.T) {
 		{
 			name: "invalid source config should fail",
 			flags: map[string]interface{}{
-				"name":                 "test-prep",
-				"source":               []string{"/tmp/test"},
-				"source-type":          "local",
-				"source-config":        `{"key": }`,
-				"auto-create-deals":    false,
+				"name":              "test-prep",
+				"source":            []string{"/tmp/test"},
+				"source-type":       "local",
+				"source-config":     `{"key": }`,
+				"auto-create-deals": false,
 			},
 			wantErr: true,
 			errMsg:  "invalid JSON format for source-config",
@@ -385,10 +385,10 @@ func TestValidateOnboardInputs(t *testing.T) {
 		{
 			name: "auto-create-deals without provider should fail",
 			flags: map[string]interface{}{
-				"name":                 "test-prep",
-				"source":               []string{"/tmp/test"},
-				"source-type":          "local",
-				"auto-create-deals":    true,
+				"name":              "test-prep",
+				"source":            []string{"/tmp/test"},
+				"source-type":       "local",
+				"auto-create-deals": true,
 			},
 			wantErr: true,
 			errMsg:  "deal provider is required when auto-create-deals is enabled",
@@ -396,13 +396,13 @@ func TestValidateOnboardInputs(t *testing.T) {
 		{
 			name: "auto-create-deals with valid config should pass",
 			flags: map[string]interface{}{
-				"name":                 "test-prep",
-				"source":               []string{"/tmp/test"},
-				"source-type":          "local",
-				"auto-create-deals":    true,
-				"deal-provider":        "f01234",
-				"deal-duration":        "535h",
-				"deal-price-per-gb":    0.1,
+				"name":              "test-prep",
+				"source":            []string{"/tmp/test"},
+				"source-type":       "local",
+				"auto-create-deals": true,
+				"deal-provider":     "f01234",
+				"deal-duration":     "535h",
+				"deal-price-per-gb": 0.1,
 			},
 			wantErr: false,
 		},
@@ -468,19 +468,19 @@ func TestValidateOnboardInputs(t *testing.T) {
 
 func TestLogInsecureClientConfigWarning(t *testing.T) {
 	tests := []struct {
-		name           string
+		name            string
 		insecureSkipTLS bool
-		expectWarning  bool
+		expectWarning   bool
 	}{
 		{
-			name:           "insecure skip verify should trigger warning",
+			name:            "insecure skip verify should trigger warning",
 			insecureSkipTLS: true,
-			expectWarning:  true,
+			expectWarning:   true,
 		},
 		{
-			name:           "secure config should not trigger warning",
+			name:            "secure config should not trigger warning",
 			insecureSkipTLS: false,
-			expectWarning:  false,
+			expectWarning:   false,
 		},
 	}
 
