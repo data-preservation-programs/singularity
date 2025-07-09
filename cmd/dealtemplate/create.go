@@ -118,19 +118,19 @@ var CreateCmd = &cli.Command{
 
 		// Parse allowed piece CIDs from flags and file
 		var allowedPieceCIDs model.StringSlice
-		
+
 		// Add piece CIDs from flag
 		if flagCIDs := c.StringSlice("allowed-piece-cid"); len(flagCIDs) > 0 {
 			allowedPieceCIDs = append(allowedPieceCIDs, flagCIDs...)
 		}
-		
+
 		// Add piece CIDs from file
 		if filePath := c.String("allowed-piece-cid-file"); filePath != "" {
 			fileContent, err := os.ReadFile(filePath)
 			if err != nil {
 				return errors.Wrapf(err, "failed to read allowed-piece-cid-file: %s", filePath)
 			}
-			
+
 			// Split by lines and filter out empty ones
 			lines := strings.Split(string(fileContent), "\n")
 			for _, line := range lines {
@@ -142,21 +142,21 @@ var CreateCmd = &cli.Command{
 		}
 
 		template, err := dealtemplate.Default.CreateHandler(c.Context, db, dealtemplate.CreateRequest{
-			Name:                c.String("name"),
-			Description:         c.String("description"),
-			DealPricePerGB:      c.Float64("deal-price-per-gb"),
-			DealPricePerGBEpoch: c.Float64("deal-price-per-gb-epoch"),
-			DealPricePerDeal:    c.Float64("deal-price-per-deal"),
-			DealDuration:        c.Duration("deal-duration"),
-			DealStartDelay:      c.Duration("deal-start-delay"),
-			DealVerified:        c.Bool("deal-verified"),
-			DealKeepUnsealed:    c.Bool("deal-keep-unsealed"),
-			DealAnnounceToIPNI:  c.Bool("deal-announce-to-ipni"),
-			DealProvider:        c.String("deal-provider"),
-			DealURLTemplate:     c.String("deal-url-template"),
-			DealHTTPHeaders:     dealHTTPHeaders,
-			DealNotes:           c.String("notes"),
-			DealForce:           c.Bool("force"),
+			Name:                 c.String("name"),
+			Description:          c.String("description"),
+			DealPricePerGB:       c.Float64("deal-price-per-gb"),
+			DealPricePerGBEpoch:  c.Float64("deal-price-per-gb-epoch"),
+			DealPricePerDeal:     c.Float64("deal-price-per-deal"),
+			DealDuration:         c.Duration("deal-duration"),
+			DealStartDelay:       c.Duration("deal-start-delay"),
+			DealVerified:         c.Bool("deal-verified"),
+			DealKeepUnsealed:     c.Bool("deal-keep-unsealed"),
+			DealAnnounceToIPNI:   c.Bool("deal-announce-to-ipni"),
+			DealProvider:         c.String("deal-provider"),
+			DealURLTemplate:      c.String("deal-url-template"),
+			DealHTTPHeaders:      dealHTTPHeaders,
+			DealNotes:            c.String("notes"),
+			DealForce:            c.Bool("force"),
 			DealAllowedPieceCIDs: allowedPieceCIDs,
 		})
 		if err != nil {
