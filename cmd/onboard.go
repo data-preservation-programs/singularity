@@ -54,21 +54,21 @@ It performs the following steps automatically:
 
 This is the simplest way to onboard data from source to storage deals.`,
 	Flags: []cli.Flag{
-	// Data source flags
-	&cli.StringFlag{
-		Name:     "name",
-		Usage:    "Name for the preparation",
-		Required: true,
-	},
-	&cli.StringSliceFlag{
-		Name:     "source",
-		Usage:    "Source path(s) to onboard (local paths or remote URLs like s3://bucket/path)",
-		Required: true,
-	},
-	&cli.StringSliceFlag{
-		Name:  "output",
-		Usage: "Output path(s) for CAR files (local paths or remote URLs like s3://bucket/path)",
-	},
+		// Data source flags
+		&cli.StringFlag{
+			Name:     "name",
+			Usage:    "Name for the preparation",
+			Required: true,
+		},
+		&cli.StringSliceFlag{
+			Name:     "source",
+			Usage:    "Source path(s) to onboard (local paths or remote URLs like s3://bucket/path)",
+			Required: true,
+		},
+		&cli.StringSliceFlag{
+			Name:  "output",
+			Usage: "Output path(s) for CAR files (local paths or remote URLs like s3://bucket/path)",
+		},
 
 	// Remote storage configuration
 	&cli.StringFlag{
@@ -325,18 +325,24 @@ func onboardAction(c *cli.Context) error {
 		if err != nil {
 			return outputJSONError("monitoring failed", err)
 		}
-	}
-
-	// Cleanup workers if we started them
-	if workerManager != nil {
-		if !isJSON {
-			fmt.Println("\n🧹 Cleaning up workers...")
-		}
-		err = workerManager.Stop(ctx)
-		if err != nil {
+		
+		// Only cleanup workers after completion monitoring finishes successfully
+		if workerManager != nil {
 			if !isJSON {
-				fmt.Printf("⚠ Warning: failed to stop workers cleanly: %v\n", err)
+				fmt.Println("\n🧹 Cleaning up workers...")
 			}
+			err = workerManager.Stop(ctx)
+			if err != nil {
+				if !isJSON {
+					fmt.Printf("⚠ Warning: failed to stop workers cleanly: %v\n", err)
+				}
+			}
+		}
+	} else if workerManager != nil {
+		// When not waiting for completion, leave workers running to process jobs
+		if !isJSON {
+			fmt.Println("\n✅ Workers will continue running to process jobs")
+			fmt.Println("💡 Use --wait-for-completion to monitor progress and stop workers when done")
 		}
 	}
 
@@ -348,7 +354,11 @@ func onboardAction(c *cli.Context) error {
 			"Check jobs: singularity job list",
 		}
 		if c.Bool("start-workers") {
-			nextSteps = append(nextSteps, "Workers will process jobs automatically")
+			if c.Bool("wait-for-completion") {
+				nextSteps = append(nextSteps, "Workers have been stopped after completion")
+			} else {
+				nextSteps = append(nextSteps, "Workers are running and will process jobs automatically")
+			}
 		} else {
 			nextSteps = append(nextSteps, "Start workers: singularity run unified")
 		}
@@ -375,7 +385,7 @@ func onboardAction(c *cli.Context) error {
 			fmt.Println("   • Monitor progress: singularity prep status", prep.Name)
 			fmt.Println("   • Check jobs: singularity job list")
 			if c.Bool("start-workers") {
-				fmt.Println("   • Workers will process jobs automatically")
+				fmt.Println("   • Workers are running and will process jobs automatically")
 			} else {
 				fmt.Println("   • Start workers: singularity run unified")
 			}
@@ -502,12 +512,12 @@ func startScanningForPreparation(ctx context.Context, db *gorm.DB, prep *model.P
 
 	// Start scan jobs for each source attachment
 	for _, attachment := range attachments {
-	_, err = jobHandler.StartScanHandler(ctx, db, strconv.FormatUint(uint64(attachment.ID), 10), "")
-	if err != nil {
-		fmt.Printf("⚠ Failed to start scan for attachment %d: %v\n", attachment.ID, err)
-		continue
-	}
-	successCount++
+		_, err = jobHandler.StartScanHandler(ctx, db, strconv.FormatUint(uint64(attachment.PreparationID), 10), strconv.FormatUint(uint64(attachment.StorageID), 10))
+		if err != nil {
+			fmt.Printf("⚠ Failed to start scan for attachment %d: %v\n", attachment.ID, err)
+			continue
+		}
+		successCount++
 	}
 
 	if successCount > 0 {
@@ -764,7 +774,7 @@ func validateOnboardInputs(c *cli.Context) error {
 	sourcePaths := c.StringSlice("source")
 
 	if len(sourcePaths) == 0 {
-	return errors.New("at least one source path is required (--source)")
+		return errors.New("at least one source path is required (--source)")
 	}
 
 	// Validate storage type configurations
@@ -773,16 +783,16 @@ func validateOnboardInputs(c *cli.Context) error {
 
 	// Validate S3 configuration if using S3
 	if sourceType == "s3" || outputType == "s3" {
-	if err := validateS3Config(c); err != nil {
-		return err
-	}
+		if err := validateS3Config(c); err != nil {
+			return err
+		}
 	}
 
 	// Validate GCS configuration if using GCS
 	if sourceType == "gcs" || outputType == "gcs" {
-	if err := validateGCSConfig(c); err != nil {
-		return err
-	}
+		if err := validateGCSConfig(c); err != nil {
+			return err
+		}
 	}
 
 	// Auto-deal validation

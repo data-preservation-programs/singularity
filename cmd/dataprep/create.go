@@ -152,11 +152,13 @@ var CreateCmd = &cli.Command{
 			Name:     "wallet-validation",
 			Usage:    "Enable wallet balance validation before deal creation",
 			Category: "Validation",
+			Value:    true,
 		},
 		&cli.BoolFlag{
 			Name:     "sp-validation",
 			Usage:    "Enable storage provider validation before deal creation",
 			Category: "Validation",
+			Value:    true,
 		},
 		&cli.BoolFlag{
 			Name:     "auto-start",
@@ -326,7 +328,7 @@ func autoStartScanning(ctx context.Context, db *gorm.DB, prep *model.Preparation
 
 	// Start scan jobs for each source attachment
 	for _, attachment := range attachments {
-		_, err = jobHandler.StartScanHandler(ctx, db, strconv.FormatUint(uint64(attachment.ID), 10), "")
+		_, err = jobHandler.StartScanHandler(ctx, db, strconv.FormatUint(uint64(attachment.PreparationID), 10), strconv.FormatUint(uint64(attachment.StorageID), 10))
 		if err != nil {
 			fmt.Printf("⚠ Failed to start scan for attachment %d: %v\n", attachment.ID, err)
 			continue
