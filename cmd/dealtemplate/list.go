@@ -1,10 +1,10 @@
 package dealtemplate
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/dealtemplate"
 	"github.com/urfave/cli/v2"
@@ -12,7 +12,7 @@ import (
 
 var ListCmd = &cli.Command{
 	Name:     "list",
-	Usage:    "List all deal templates",
+	Usage:    "List all deal templates as pretty-printed JSON",
 	Category: "Deal Template Management",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -27,20 +27,16 @@ var ListCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
-		// Handle empty results
 		if len(templates) == 0 {
-			if !c.Bool("json") {
-				fmt.Println("No deal templates found.")
-				return nil
-			}
-		} else {
-			// Print summary for non-JSON output
-			if !c.Bool("json") {
-				fmt.Printf("✓ %d deal template(s) found.\n\n", len(templates))
-			}
+			fmt.Println("[]")
+			return nil
 		}
 
-		cliutil.Print(c, templates)
+		jsonBytes, err := json.MarshalIndent(templates, "", "  ")
+		if err != nil {
+			return errors.Wrap(err, "failed to marshal templates as JSON")
+		}
+		fmt.Println(string(jsonBytes))
 		return nil
 	},
 }
