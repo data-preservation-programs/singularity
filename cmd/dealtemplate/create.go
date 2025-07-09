@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/dealtemplate"
 	"github.com/data-preservation-programs/singularity/model"
@@ -16,8 +15,21 @@ import (
 
 var CreateCmd = &cli.Command{
 	Name:     "create",
-	Usage:    "Create a new deal template",
-	Category: "Deal Template Management",
+	Usage:    "Create a new deal template with unified flags and defaults",
+	Description: `Create a new deal template using the same flags and default values as deal schedule create.
+
+Key flags:
+  --provider           Storage Provider ID (e.g., f01234)
+  --duration           Deal duration (default: 12840h)
+  --start-delay        Deal start delay (default: 72h)
+  --verified           Propose deals as verified (default: true)
+  --keep-unsealed      Keep unsealed copy (default: true)
+  --ipni               Announce deals to IPNI (default: true)
+  --http-header        HTTP headers (key=value)
+  --allowed-piece-cid  List of allowed piece CIDs
+  --allowed-piece-cid-file File with allowed piece CIDs
+
+See --help for all options.`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "name",
@@ -225,12 +237,13 @@ var CreateCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
-		// Print success confirmation
-		if !c.Bool("json") {
-			println("✓ Deal template \"" + template.Name + "\" created successfully")
+		// Always print as pretty JSON
+		jsonBytes, err := json.MarshalIndent(template, "", "  ")
+		if err != nil {
+			return errors.Wrap(err, "failed to marshal template as JSON")
 		}
-
-		cliutil.Print(c, *template)
+		os.Stdout.Write(jsonBytes)
+		os.Stdout.Write([]byte("\n"))
 		return nil
 	},
 }
