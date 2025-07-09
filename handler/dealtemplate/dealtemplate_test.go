@@ -354,9 +354,9 @@ func TestApplyTemplateToPreparation(t *testing.T) {
 				DealDuration:   time.Hour * 24 * 365,
 				DealProvider:   "f01000",
 				DealVerified:   true,
-				DealAllowedPieceCIDs: model.StringSlice{
-					"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq",
-				},
+				// DealAllowedPieceCIDs: model.StringSlice{
+				// 	"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq",
+				// },
 			},
 		}
 
