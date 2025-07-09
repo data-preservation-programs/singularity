@@ -172,7 +172,8 @@ func TestTrackDeal(t *testing.T) {
 		deals = append(deals, deal)
 		return nil
 	}
-	err := tracker.trackDeal(context.Background(), callback)
+	walletIDs := map[string]struct{}{"t0100": {}}
+	err := tracker.trackDeal(context.Background(), walletIDs, callback)
 	require.NoError(t, err)
 	require.Len(t, deals, 1)
 }
