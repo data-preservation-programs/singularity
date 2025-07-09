@@ -592,12 +592,12 @@ func TestMergeStorageConfigWithDefaults(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			merged := mergeStorageConfigWithDefaults(tt.storageType, tt.provider, tt.customConfig)
 			assert.NotNil(t, merged)
-			
+
 			// Check that custom config values are present
 			for key, value := range tt.customConfig {
 				assert.Equal(t, value, merged[key])
 			}
-			
+
 			if tt.expectMerged {
 				// For valid storage types, we expect the merged config to potentially have more keys
 				// than just the custom config
@@ -662,7 +662,7 @@ func TestParseGenericStorageConfig(t *testing.T) {
 
 			result := parseGenericStorageConfig(c, tt.storageType)
 			assert.NotNil(t, result)
-			
+
 			// Check that expected keys are present
 			for _, expectedKey := range tt.expectKeys {
 				assert.Contains(t, result, expectedKey)
@@ -750,22 +750,22 @@ func TestAdvancedGCSConfig(t *testing.T) {
 		{
 			name: "advanced GCS flags should be parsed",
 			flags: map[string]interface{}{
-				"gcs-project-id":          "test-project",
-				"gcs-object-acl":          "private",
-				"gcs-storage-class":       "COLDLINE",
-				"gcs-location":            "us-central1",
-				"gcs-chunk-size":          "8Mi",
-				"gcs-bucket-policy-only":  true,
-				"gcs-anonymous":           true,
+				"gcs-project-id":         "test-project",
+				"gcs-object-acl":         "private",
+				"gcs-storage-class":      "COLDLINE",
+				"gcs-location":           "us-central1",
+				"gcs-chunk-size":         "8Mi",
+				"gcs-bucket-policy-only": true,
+				"gcs-anonymous":          true,
 			},
 			expected: map[string]string{
-				"project_number":      "test-project",
-				"object_acl":          "private",
-				"storage_class":       "COLDLINE",
-				"location":            "us-central1",
-				"chunk_size":          "8Mi",
-				"bucket_policy_only":  "true",
-				"anonymous":           "true",
+				"project_number":     "test-project",
+				"object_acl":         "private",
+				"storage_class":      "COLDLINE",
+				"location":           "us-central1",
+				"chunk_size":         "8Mi",
+				"bucket_policy_only": "true",
+				"anonymous":          "true",
 			},
 		},
 	}

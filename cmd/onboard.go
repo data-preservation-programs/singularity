@@ -834,20 +834,20 @@ func parseGCSConfig(c *cli.Context) map[string]string {
 // This function handles storage types that don't have specific parsing functions
 func parseGenericStorageConfig(c *cli.Context, storageType string) map[string]string {
 	config := make(map[string]string)
-	
+
 	// Get backend configuration from storage system
 	backend, exists := storagesystem.BackendMap[storageType]
 	if !exists {
 		return config
 	}
-	
+
 	// For each provider option, check if there are corresponding CLI flags
 	for _, providerOptions := range backend.ProviderOptions {
 		for _, option := range providerOptions.Options {
 			// Convert option name to CLI flag format
 			flagName := strings.ReplaceAll(option.Name, "_", "-")
 			flagNameWithPrefix := storageType + "-" + flagName
-			
+
 			// Check if the flag is set
 			if c.IsSet(flagNameWithPrefix) {
 				switch (*fs.Option)(&option).Type() {
@@ -869,20 +869,20 @@ func parseGenericStorageConfig(c *cli.Context, storageType string) map[string]st
 			}
 		}
 	}
-	
+
 	return config
 }
 
 // getProviderDefaults returns default configuration values for a storage provider
 func getProviderDefaults(storageType, provider string) map[string]string {
 	defaults := make(map[string]string)
-	
+
 	// Get backend configuration from storage system
 	backend, exists := storagesystem.BackendMap[storageType]
 	if !exists {
 		return defaults
 	}
-	
+
 	// Find the provider-specific options
 	for _, providerOptions := range backend.ProviderOptions {
 		if providerOptions.Provider == provider {
@@ -904,7 +904,7 @@ func getProviderDefaults(storageType, provider string) map[string]string {
 			break
 		}
 	}
-	
+
 	return defaults
 }
 
@@ -912,12 +912,12 @@ func getProviderDefaults(storageType, provider string) map[string]string {
 func mergeStorageConfigWithDefaults(storageType, provider string, customConfig map[string]string) map[string]string {
 	// Start with provider defaults
 	merged := getProviderDefaults(storageType, provider)
-	
+
 	// Override with custom configuration
 	for key, value := range customConfig {
 		merged[key] = value
 	}
-	
+
 	return merged
 }
 
@@ -1002,11 +1002,11 @@ func validateOnboardInputs(c *cli.Context) error {
 	// Auto-deal validation
 	if c.Bool("auto-create-deals") {
 		dealTemplate := c.String("deal-template")
-		
+
 		// Check if inline deal flags are being used without a template
-		hasInlineDealFlags := (c.IsSet("deal-provider") || 
-			c.IsSet("deal-price-per-gb") || 
-			c.IsSet("deal-price-per-deal") || 
+		hasInlineDealFlags := (c.IsSet("deal-provider") ||
+			c.IsSet("deal-price-per-gb") ||
+			c.IsSet("deal-price-per-deal") ||
 			c.IsSet("deal-price-per-gb-epoch") ||
 			c.IsSet("deal-duration") ||
 			c.IsSet("deal-start-delay") ||
@@ -1088,7 +1088,7 @@ func validateOnboardInputs(c *cli.Context) error {
 		pricePerGB := c.Float64("deal-price-per-gb")
 		pricePerDeal := c.Float64("deal-price-per-deal")
 		pricePerGBEpoch := c.Float64("deal-price-per-gb-epoch")
-		
+
 		if pricePerGB < 0 {
 			return errors.New("deal price per GB must be non-negative (--deal-price-per-gb)")
 		}
