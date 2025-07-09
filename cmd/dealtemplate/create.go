@@ -83,7 +83,7 @@ var CreateCmd = &cli.Command{
 		},
 		&cli.BoolFlag{
 			Name:  "force",
-			Usage: "Force deals regardless of replication restrictions",
+			Usage: "Force deals regardless of replication restrictions (overrides max pending/total deal limits and piece CID restrictions)",
 		},
 		&cli.StringSliceFlag{
 			Name:  "allowed-piece-cid",
@@ -92,6 +92,55 @@ var CreateCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:  "allowed-piece-cid-file",
 			Usage: "File containing list of allowed piece CIDs",
+		},
+
+		// Scheduling flags (matching deal schedule create command)
+		&cli.StringFlag{
+			Name:     "schedule-cron",
+			Usage:    "Cron schedule to send out batch deals (e.g., @daily, @hourly, '0 0 * * *')",
+			Category: "Scheduling",
+		},
+		&cli.IntFlag{
+			Name:     "schedule-deal-number",
+			Usage:    "Max deal number per triggered schedule (0 = unlimited)",
+			Category: "Scheduling",
+		},
+		&cli.StringFlag{
+			Name:     "schedule-deal-size",
+			Usage:    "Max deal sizes per triggered schedule (e.g., 500GiB, 0 = unlimited)",
+			Category: "Scheduling",
+			Value:    "0",
+		},
+
+		// Restriction flags (matching deal schedule create command)
+		&cli.IntFlag{
+			Name:     "total-deal-number",
+			Usage:    "Max total deal number for this template (0 = unlimited)",
+			Category: "Restrictions",
+		},
+		&cli.StringFlag{
+			Name:     "total-deal-size",
+			Usage:    "Max total deal sizes for this template (e.g., 100TiB, 0 = unlimited)",
+			Category: "Restrictions",
+			Value:    "0",
+		},
+		&cli.IntFlag{
+			Name:     "max-pending-deal-number",
+			Usage:    "Max pending deal number overall (0 = unlimited)",
+			Category: "Restrictions",
+		},
+		&cli.StringFlag{
+			Name:     "max-pending-deal-size",
+			Usage:    "Max pending deal sizes overall (e.g., 1000GiB, 0 = unlimited)",
+			Category: "Restrictions",
+			Value:    "0",
+		},
+
+		// HTTP headers as string slice (matching deal schedule create command)
+		&cli.StringSliceFlag{
+			Name:     "http-header",
+			Usage:    "HTTP headers to be passed with the request (key=value format)",
+			Category: "Boost Only",
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -143,6 +192,12 @@ var CreateCmd = &cli.Command{
 			}
 		}
 
+		// Parse HTTP headers from string slice to model.StringSlice
+		var httpHeaders model.StringSlice
+		if flagHeaders := c.StringSlice("http-header"); len(flagHeaders) > 0 {
+			httpHeaders = model.StringSlice(flagHeaders)
+		}
+
 		template, err := dealtemplate.Default.CreateHandler(c.Context, db, dealtemplate.CreateRequest{
 			Name:                 c.String("name"),
 			Description:          c.String("description"),
@@ -160,6 +215,20 @@ var CreateCmd = &cli.Command{
 			DealNotes:            c.String("notes"),
 			DealForce:            c.Bool("force"),
 			DealAllowedPieceCIDs: allowedPieceCIDs,
+
+			// New scheduling fields
+			ScheduleCron:       c.String("schedule-cron"),
+			ScheduleDealNumber: c.Int("schedule-deal-number"),
+			ScheduleDealSize:   c.String("schedule-deal-size"),
+
+			// New restriction fields
+			TotalDealNumber:      c.Int("total-deal-number"),
+			TotalDealSize:        c.String("total-deal-size"),
+			MaxPendingDealNumber: c.Int("max-pending-deal-number"),
+			MaxPendingDealSize:   c.String("max-pending-deal-size"),
+
+			// HTTP headers as string slice
+			HTTPHeaders: httpHeaders,
 		})
 		if err != nil {
 			return errors.WithStack(err)
@@ -230,6 +299,36 @@ func validateCreateTemplateInputs(c *cli.Context) error {
 	if filePath := c.String("allowed-piece-cid-file"); filePath != "" {
 		if _, err := os.Stat(filePath); os.IsNotExist(err) {
 			return errors.Wrapf(err, "allowed-piece-cid-file does not exist: %s", filePath)
+		}
+	}
+
+	// Validate scheduling fields
+	if scheduleCron := c.String("schedule-cron"); scheduleCron != "" {
+		// Basic validation for cron format - could be enhanced with actual cron parsing
+		if !strings.HasPrefix(scheduleCron, "@") && len(strings.Fields(scheduleCron)) < 5 {
+			return errors.New("invalid cron format - use descriptors like @daily or standard cron format")
+		}
+	}
+
+	// Validate deal numbers are non-negative
+	if c.Int("schedule-deal-number") < 0 {
+		return errors.New("schedule deal number cannot be negative")
+	}
+	if c.Int("total-deal-number") < 0 {
+		return errors.New("total deal number cannot be negative")
+	}
+	if c.Int("max-pending-deal-number") < 0 {
+		return errors.New("max pending deal number cannot be negative")
+	}
+
+	// Validate HTTP headers format
+	for _, header := range c.StringSlice("http-header") {
+		if !strings.Contains(header, "=") {
+			return errors.Errorf("invalid HTTP header format '%s' - use key=value format", header)
+		}
+		parts := strings.SplitN(header, "=", 2)
+		if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+			return errors.Errorf("invalid HTTP header format '%s' - both key and value must be non-empty", header)
 		}
 	}
 

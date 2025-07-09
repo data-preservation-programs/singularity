@@ -13,5 +13,6 @@ func GetMigrations() []*gormigrate.Migration {
 		_202506240816_create_deal_templates(),
 		_202507090900_add_missing_deal_template_fields(),
 		_202507090915_add_not_null_defaults(),
+		_202507091000_add_schedule_fields_to_deal_templates(),
 	}
 }

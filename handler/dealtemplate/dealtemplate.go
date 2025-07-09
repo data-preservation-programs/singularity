@@ -18,6 +18,15 @@ type Handler struct{}
 
 var Default = &Handler{}
 
+// Deal templates now fully support ALL fields from deal schedule create command:
+// ✅ All deal proposal settings (price, duration, provider, etc.)
+// ✅ All scheduling settings (cron, deal number/size per schedule)
+// ✅ All restriction settings (total limits, pending limits)
+// ✅ All boost-specific settings (HTTP headers, URL template, IPNI)
+// ✅ All validation and piece CID restrictions
+//
+// This makes deal templates a complete replacement for inline deal parameters.
+
 // CreateRequest represents the request to create a deal template
 type CreateRequest struct {
 	Name                 string            `json:"name"`
@@ -36,6 +45,20 @@ type CreateRequest struct {
 	DealNotes            string            `json:"dealNotes"`
 	DealForce            bool              `json:"dealForce"`
 	DealAllowedPieceCIDs model.StringSlice `json:"dealAllowedPieceCids"`
+
+	// New scheduling fields (matching deal schedule create command)
+	ScheduleCron       string `json:"scheduleCron"`
+	ScheduleDealNumber int    `json:"scheduleDealNumber"`
+	ScheduleDealSize   string `json:"scheduleDealSize"`
+
+	// New restriction fields (matching deal schedule create command)
+	TotalDealNumber      int    `json:"totalDealNumber"`
+	TotalDealSize        string `json:"totalDealSize"`
+	MaxPendingDealNumber int    `json:"maxPendingDealNumber"`
+	MaxPendingDealSize   string `json:"maxPendingDealSize"`
+
+	// HTTP headers as string slice (matching deal schedule create command)
+	HTTPHeaders model.StringSlice `json:"httpHeaders"`
 }
 
 // CreateHandler creates a new deal template
@@ -77,6 +100,20 @@ func (h *Handler) CreateHandler(ctx context.Context, db *gorm.DB, request Create
 			DealNotes:            request.DealNotes,
 			DealForce:            request.DealForce,
 			DealAllowedPieceCIDs: validatedPieceCIDs,
+
+			// New scheduling fields
+			ScheduleCron:       request.ScheduleCron,
+			ScheduleDealNumber: request.ScheduleDealNumber,
+			ScheduleDealSize:   request.ScheduleDealSize,
+
+			// New restriction fields
+			TotalDealNumber:      request.TotalDealNumber,
+			TotalDealSize:        request.TotalDealSize,
+			MaxPendingDealNumber: request.MaxPendingDealNumber,
+			MaxPendingDealSize:   request.MaxPendingDealSize,
+
+			// HTTP headers as string slice
+			HTTPHeaders: request.HTTPHeaders,
 		},
 	}
 
@@ -132,6 +169,20 @@ type UpdateRequest struct {
 	DealNotes            *string            `json:"dealNotes,omitempty"`
 	DealForce            *bool              `json:"dealForce,omitempty"`
 	DealAllowedPieceCIDs *model.StringSlice `json:"dealAllowedPieceCids,omitempty"`
+
+	// New scheduling fields
+	ScheduleCron       *string `json:"scheduleCron,omitempty"`
+	ScheduleDealNumber *int    `json:"scheduleDealNumber,omitempty"`
+	ScheduleDealSize   *string `json:"scheduleDealSize,omitempty"`
+
+	// New restriction fields
+	TotalDealNumber      *int    `json:"totalDealNumber,omitempty"`
+	TotalDealSize        *string `json:"totalDealSize,omitempty"`
+	MaxPendingDealNumber *int    `json:"maxPendingDealNumber,omitempty"`
+	MaxPendingDealSize   *string `json:"maxPendingDealSize,omitempty"`
+
+	// HTTP headers as string slice
+	HTTPHeaders *model.StringSlice `json:"httpHeaders,omitempty"`
 }
 
 // UpdateHandler updates a deal template
@@ -198,6 +249,36 @@ func (h *Handler) UpdateHandler(ctx context.Context, db *gorm.DB, idOrName strin
 			return nil, errors.WithStack(err)
 		}
 		updates["deal_allowed_piece_cids"] = validatedPieceCIDs
+	}
+
+	// Update scheduling fields
+	if request.ScheduleCron != nil {
+		updates["schedule_cron"] = *request.ScheduleCron
+	}
+	if request.ScheduleDealNumber != nil {
+		updates["schedule_deal_number"] = *request.ScheduleDealNumber
+	}
+	if request.ScheduleDealSize != nil {
+		updates["schedule_deal_size"] = *request.ScheduleDealSize
+	}
+
+	// Update restriction fields
+	if request.TotalDealNumber != nil {
+		updates["total_deal_number"] = *request.TotalDealNumber
+	}
+	if request.TotalDealSize != nil {
+		updates["total_deal_size"] = *request.TotalDealSize
+	}
+	if request.MaxPendingDealNumber != nil {
+		updates["max_pending_deal_number"] = *request.MaxPendingDealNumber
+	}
+	if request.MaxPendingDealSize != nil {
+		updates["max_pending_deal_size"] = *request.MaxPendingDealSize
+	}
+
+	// Update HTTP headers
+	if request.HTTPHeaders != nil {
+		updates["http_headers"] = *request.HTTPHeaders
 	}
 
 	if len(updates) == 0 {

@@ -74,6 +74,20 @@ type DealConfig struct {
 
 	// DealAllowedPieceCIDs specifies which piece CIDs are allowed for this deal config
 	DealAllowedPieceCIDs StringSlice `gorm:"type:JSON;column:deal_allowed_piece_cids" json:"dealAllowedPieceCids"`
+
+	// Scheduling fields (matching deal schedule create command)
+	ScheduleCron       string `json:"scheduleCron" gorm:"type:varchar(255);default:''"`
+	ScheduleDealNumber int    `json:"scheduleDealNumber" gorm:"default:0"`
+	ScheduleDealSize   string `json:"scheduleDealSize" gorm:"type:varchar(255);default:'0'"`
+
+	// Restriction fields (matching deal schedule create command)
+	TotalDealNumber      int    `json:"totalDealNumber" gorm:"default:0"`
+	TotalDealSize        string `json:"totalDealSize" gorm:"type:varchar(255);default:'0'"`
+	MaxPendingDealNumber int    `json:"maxPendingDealNumber" gorm:"default:0"`
+	MaxPendingDealSize   string `json:"maxPendingDealSize" gorm:"type:varchar(255);default:'0'"`
+
+	// HTTP headers as string slice (matching deal schedule create command)
+	HTTPHeaders StringSlice `gorm:"type:JSON;column:http_headers" json:"httpHeaders"`
 }
 
 // Validate validates the deal configuration and returns any errors
@@ -123,7 +137,15 @@ func (dc *DealConfig) IsEmpty() bool {
 		dc.DealURLTemplate == "" &&
 		dc.DealNotes == "" &&
 		!dc.DealForce &&
-		len(dc.DealAllowedPieceCIDs) == 0
+		len(dc.DealAllowedPieceCIDs) == 0 &&
+		dc.ScheduleCron == "" &&
+		dc.ScheduleDealNumber == 0 &&
+		dc.ScheduleDealSize == "0" &&
+		dc.TotalDealNumber == 0 &&
+		dc.TotalDealSize == "0" &&
+		dc.MaxPendingDealNumber == 0 &&
+		dc.MaxPendingDealSize == "0" &&
+		len(dc.HTTPHeaders) == 0
 }
 
 // SetDurationFromString parses a duration string and converts it to time.Duration
@@ -267,6 +289,44 @@ func (dc *DealConfig) ApplyOverrides(template *DealConfig) {
 	if len(dc.DealAllowedPieceCIDs) == 0 && len(template.DealAllowedPieceCIDs) > 0 {
 		dealConfigLogger.Debugf("Overriding DealAllowedPieceCIDs: %d pieces -> %d pieces", len(dc.DealAllowedPieceCIDs), len(template.DealAllowedPieceCIDs))
 		dc.DealAllowedPieceCIDs = template.DealAllowedPieceCIDs
+	}
+
+	// Apply scheduling overrides
+	if dc.ScheduleCron == "" && template.ScheduleCron != "" {
+		dealConfigLogger.Debugf("Overriding ScheduleCron: '%s' -> '%s'", dc.ScheduleCron, template.ScheduleCron)
+		dc.ScheduleCron = template.ScheduleCron
+	}
+	if dc.ScheduleDealNumber == 0 && template.ScheduleDealNumber != 0 {
+		dealConfigLogger.Debugf("Overriding ScheduleDealNumber: %d -> %d", dc.ScheduleDealNumber, template.ScheduleDealNumber)
+		dc.ScheduleDealNumber = template.ScheduleDealNumber
+	}
+	if dc.ScheduleDealSize == "0" && template.ScheduleDealSize != "0" {
+		dealConfigLogger.Debugf("Overriding ScheduleDealSize: '%s' -> '%s'", dc.ScheduleDealSize, template.ScheduleDealSize)
+		dc.ScheduleDealSize = template.ScheduleDealSize
+	}
+
+	// Apply restriction overrides
+	if dc.TotalDealNumber == 0 && template.TotalDealNumber != 0 {
+		dealConfigLogger.Debugf("Overriding TotalDealNumber: %d -> %d", dc.TotalDealNumber, template.TotalDealNumber)
+		dc.TotalDealNumber = template.TotalDealNumber
+	}
+	if dc.TotalDealSize == "0" && template.TotalDealSize != "0" {
+		dealConfigLogger.Debugf("Overriding TotalDealSize: '%s' -> '%s'", dc.TotalDealSize, template.TotalDealSize)
+		dc.TotalDealSize = template.TotalDealSize
+	}
+	if dc.MaxPendingDealNumber == 0 && template.MaxPendingDealNumber != 0 {
+		dealConfigLogger.Debugf("Overriding MaxPendingDealNumber: %d -> %d", dc.MaxPendingDealNumber, template.MaxPendingDealNumber)
+		dc.MaxPendingDealNumber = template.MaxPendingDealNumber
+	}
+	if dc.MaxPendingDealSize == "0" && template.MaxPendingDealSize != "0" {
+		dealConfigLogger.Debugf("Overriding MaxPendingDealSize: '%s' -> '%s'", dc.MaxPendingDealSize, template.MaxPendingDealSize)
+		dc.MaxPendingDealSize = template.MaxPendingDealSize
+	}
+
+	// Apply HTTP headers override
+	if len(dc.HTTPHeaders) == 0 && len(template.HTTPHeaders) > 0 {
+		dealConfigLogger.Debugf("Overriding HTTPHeaders: %d headers -> %d headers", len(dc.HTTPHeaders), len(template.HTTPHeaders))
+		dc.HTTPHeaders = template.HTTPHeaders
 	}
 
 	dealConfigLogger.Debug("Template override application completed")

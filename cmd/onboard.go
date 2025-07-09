@@ -611,6 +611,7 @@ func validateOnboardInputs(c *cli.Context) error {
 }
 
 // validateDealTemplateExists validates that the deal template ID exists in the database
+// and checks basic fields like provider format, pricing, and duration
 func validateDealTemplateExists(ctx context.Context, db *gorm.DB, templateID string) error {
 	if templateID == "" {
 		return nil // No template specified, validation not needed
@@ -624,6 +625,26 @@ func validateDealTemplateExists(ctx context.Context, db *gorm.DB, templateID str
 	}
 	if err != nil {
 		return errors.WithStack(err)
+	}
+
+	// Validate basic template fields
+	if template.DealConfig.DealProvider == "" {
+		return errors.Errorf("deal template '%s' has no provider specified", templateID)
+	}
+
+	// Validate provider format (should be like f01000)
+	if len(template.DealConfig.DealProvider) < 4 || template.DealConfig.DealProvider[:1] != "f" {
+		return errors.Errorf("deal template '%s' has invalid provider format '%s' (expected format: f01000)", templateID, template.DealConfig.DealProvider)
+	}
+
+	// Validate duration is set
+	if template.DealConfig.DealDuration <= 0 {
+		return errors.Errorf("deal template '%s' has invalid duration %v (must be > 0)", templateID, template.DealConfig.DealDuration)
+	}
+
+	// Validate pricing is non-negative
+	if template.DealConfig.DealPricePerGb < 0 || template.DealConfig.DealPricePerGbEpoch < 0 || template.DealConfig.DealPricePerDeal < 0 {
+		return errors.Errorf("deal template '%s' has negative pricing values", templateID)
 	}
 
 	return nil
