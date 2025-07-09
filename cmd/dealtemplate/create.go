@@ -3,6 +3,7 @@ package dealtemplate
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/cockroachdb/errors"
@@ -126,7 +127,8 @@ var CreateCmd = &cli.Command{
 
 		// Add piece CIDs from file
 		if filePath := c.String("allowed-piece-cid-file"); filePath != "" {
-			fileContent, err := os.ReadFile(filePath)
+			cleanPath := filepath.Clean(filePath)
+			fileContent, err := os.ReadFile(cleanPath)
 			if err != nil {
 				return errors.Wrapf(err, "failed to read allowed-piece-cid-file: %s", filePath)
 			}
