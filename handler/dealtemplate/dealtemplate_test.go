@@ -144,35 +144,34 @@ func TestCreateHandler(t *testing.T) {
 			require.Contains(t, err.Error(), "already exists")
 		})
 
-		// TODO: Enable these tests after database migrations are applied
-		// t.Run("piece CID validation during creation", func(t *testing.T) {
-		// 	req := CreateRequest{
-		// 		Name: "invalid-cid-template",
-		// 		DealAllowedPieceCIDs: model.StringSlice{
-		// 			"invalid-cid-format",
-		// 		},
-		// 	}
-		//
-		// 	_, err := handler.CreateHandler(ctx, db, req)
-		// 	require.Error(t, err)
-		// 	require.Contains(t, err.Error(), "invalid piece CID format")
-		// })
-		//
-		// t.Run("piece CID deduplication during creation", func(t *testing.T) {
-		// 	req := CreateRequest{
-		// 		Name: "dedup-template",
-		// 		DealAllowedPieceCIDs: model.StringSlice{
-		// 			"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq",
-		// 			"baga6ea4seaqjtcl7dtqxe4vx4kqpb5f2zwz2ydbgshkjlx6jfhpbwjjh3gqjl6a",
-		// 			"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq", // duplicate
-		// 		},
-		// 	}
-		//
-		// 	template, err := handler.CreateHandler(ctx, db, req)
-		// 	require.NoError(t, err)
-		// 	require.NotNil(t, template)
-		// 	require.Len(t, template.DealConfig.DealAllowedPieceCIDs, 2) // should be deduplicated to 2
-		// })
+		t.Run("piece CID validation during creation", func(t *testing.T) {
+			req := CreateRequest{
+				Name: "invalid-cid-template",
+				DealAllowedPieceCIDs: model.StringSlice{
+					"invalid-cid-format",
+				},
+			}
+
+			_, err := handler.CreateHandler(ctx, db, req)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "invalid piece CID format")
+		})
+
+		t.Run("piece CID deduplication during creation", func(t *testing.T) {
+			req := CreateRequest{
+				Name: "dedup-template",
+				DealAllowedPieceCIDs: model.StringSlice{
+					"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq",
+					"baga6ea4seaqjtcl7dtqxe4vx4kqpb5f2zwz2ydbgshkjlx6jfhpbwjjh3gqjl6a",
+					"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq", // duplicate
+				},
+			}
+
+			template, err := handler.CreateHandler(ctx, db, req)
+			require.NoError(t, err)
+			require.NotNil(t, template)
+			require.Len(t, template.DealConfig.DealAllowedPieceCIDs, 2) // should be deduplicated to 2
+		})
 	})
 }
 
@@ -272,33 +271,32 @@ func TestUpdateHandler(t *testing.T) {
 			require.Equal(t, 0.001, updated.DealConfig.DealPricePerGb) // unchanged
 		})
 
-		// TODO: Enable these tests after database migrations are applied
-		// t.Run("update piece CIDs with validation", func(t *testing.T) {
-		// 	newCIDs := model.StringSlice{
-		// 		"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq",
-		// 		"baga6ea4seaqjtcl7dtqxe4vx4kqpb5f2zwz2ydbgshkjlx6jfhpbwjjh3gqjl6a",
-		// 		"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq", // duplicate
-		// 	}
-		// 	updateReq := UpdateRequest{
-		// 		DealAllowedPieceCIDs: &newCIDs,
-		// 	}
-		//
-		// 	updated, err := handler.UpdateHandler(ctx, db, "update-test-template", updateReq)
-		// 	require.NoError(t, err)
-		// 	require.NotNil(t, updated)
-		// 	require.Len(t, updated.DealConfig.DealAllowedPieceCIDs, 2) // should be deduplicated
-		// })
-		//
-		// t.Run("update with invalid piece CID", func(t *testing.T) {
-		// 	invalidCIDs := model.StringSlice{"invalid-cid-format"}
-		// 	updateReq := UpdateRequest{
-		// 		DealAllowedPieceCIDs: &invalidCIDs,
-		// 	}
-		//
-		// 	_, err := handler.UpdateHandler(ctx, db, "update-test-template", updateReq)
-		// 	require.Error(t, err)
-		// 	require.Contains(t, err.Error(), "invalid piece CID format")
-		// })
+		t.Run("update piece CIDs with validation", func(t *testing.T) {
+			newCIDs := model.StringSlice{
+				"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq",
+				"baga6ea4seaqjtcl7dtqxe4vx4kqpb5f2zwz2ydbgshkjlx6jfhpbwjjh3gqjl6a",
+				"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq", // duplicate
+			}
+			updateReq := UpdateRequest{
+				DealAllowedPieceCIDs: &newCIDs,
+			}
+
+			updated, err := handler.UpdateHandler(ctx, db, "update-test-template", updateReq)
+			require.NoError(t, err)
+			require.NotNil(t, updated)
+			require.Len(t, updated.DealConfig.DealAllowedPieceCIDs, 2) // should be deduplicated
+		})
+
+		t.Run("update with invalid piece CID", func(t *testing.T) {
+			invalidCIDs := model.StringSlice{"invalid-cid-format"}
+			updateReq := UpdateRequest{
+				DealAllowedPieceCIDs: &invalidCIDs,
+			}
+
+			_, err := handler.UpdateHandler(ctx, db, "update-test-template", updateReq)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "invalid piece CID format")
+		})
 
 		t.Run("empty update", func(t *testing.T) {
 			updateReq := UpdateRequest{} // no fields to update
