@@ -388,17 +388,15 @@ func onboardAction(c *cli.Context) error {
 			return errors.Wrap(err, "failed to marshal JSON result")
 		}
 		fmt.Println(string(data))
-	} else {
-		if !c.Bool("wait-for-completion") {
-			fmt.Println("\n✅ Onboarding initiated successfully!")
-			fmt.Println("\n📝 Next steps:")
-			fmt.Println("   • Monitor progress: singularity prep status", prep.Name)
-			fmt.Println("   • Check jobs: singularity job list")
-			if c.Bool("start-workers") {
-				fmt.Println("   • Workers are running and will process jobs automatically")
-			} else {
-				fmt.Println("   • Start workers: singularity run unified")
-			}
+	} else if !c.Bool("wait-for-completion") {
+		fmt.Println("\n✅ Onboarding initiated successfully!")
+		fmt.Println("\n📝 Next steps:")
+		fmt.Println("   • Monitor progress: singularity prep status", prep.Name)
+		fmt.Println("   • Check jobs: singularity job list")
+		if c.Bool("start-workers") {
+			fmt.Println("   • Workers are running and will process jobs automatically")
+		} else {
+			fmt.Println("   • Start workers: singularity run unified")
 		}
 	}
 
@@ -669,82 +667,6 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 	return status, false, nil
 }
 
-// Helper function to create storage if it doesn't exist
-func createStorageIfNotExist(ctx context.Context, db *gorm.DB, path, storageType, provider string, c *cli.Context, storageName string) (*model.Storage, error) {
-	// Check for duplicate storage names first
-	if err := checkDuplicateStorageNames(ctx, db, storageName); err != nil {
-		return nil, err
-	}
-
-	// Validate storage type is supported
-	if err := validateStorageType(storageType, "storage"); err != nil {
-		return nil, err
-	}
-
-	// Build storage configuration based on type
-	config := make(map[string]string)
-
-	switch storageType {
-	case "s3":
-		config = parseS3Config(c)
-		if provider == "" {
-			provider = "aws" // Default S3 provider
-		}
-	case "gcs":
-		config = parseGCSConfig(c)
-		if provider == "" {
-			provider = "google" // Default GCS provider
-		}
-	case "local":
-		provider = "local"
-	default:
-		// For other storage types, use default provider if not specified
-		if provider == "" {
-			provider = "" // Let the storage system use its default
-		}
-	}
-
-	// Merge custom config if provided
-	if customConfig := getCustomStorageConfig(c, storageType); customConfig != nil {
-		for key, value := range customConfig {
-			config[key] = value
-		}
-	}
-
-	// Check if storage already exists for this path and config
-	var existing model.Storage
-	err := db.WithContext(ctx).Where("type = ? AND path = ?", storageType, path).First(&existing).Error
-	if err == nil {
-		return &existing, nil
-	}
-
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(err, "failed to check existing storage")
-	}
-
-	// Get client configuration from flags
-	clientConfig, err := getOnboardClientConfig(c)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse client configuration")
-	}
-
-	// Use the storage handler to create new storage with proper validation
-	storageHandler := storageHandlers.Default
-	request := storageHandlers.CreateRequest{
-		Name:         storageName,
-		Path:         path,
-		Provider:     provider,
-		Config:       config,
-		ClientConfig: *clientConfig,
-	}
-
-	storage, err := storageHandler.CreateStorageHandler(ctx, db, storageType, request)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create storage '%s'", storageName)
-	}
-
-	return storage, nil
-}
 
 // parseS3Config builds S3 configuration from CLI flags
 func parseS3Config(c *cli.Context) map[string]string {
