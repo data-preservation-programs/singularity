@@ -13,12 +13,17 @@ DESCRIPTION:
 
    It performs the following steps automatically:
    1. Creates storage connections (if paths provided)
-   2. Creates data preparation with deal parameters
+   2. Creates data preparation with deal parameters from a deal template
    3. Starts scanning immediately
    4. Enables automatic job progression (scan → pack → daggen → deals)
    5. Optionally starts managed workers to process jobs
 
    This is the simplest way to onboard data from source to storage deals.
+   
+   IMPORTANT: Deal configuration is managed through deal templates (--deal-template-id).
+   Create a deal template first using 'singularity deal-template create' with your
+   desired deal parameters, then reference it during onboarding for consistent,
+   auditable deal configuration.
 
 OPTIONS:
    --auto-create-deals                Enable automatic deal creation after preparation completion (default: true)
@@ -37,11 +42,7 @@ OPTIONS:
 
    Deal Settings
 
-   --deal-duration value      Duration for storage deals (e.g., 535 days) (default: 12840h0m0s)
-   --deal-price-per-gb value  Price in FIL per GiB for storage deals (default: 0)
-   --deal-provider value      Storage Provider ID for deals (e.g., f01000)
-   --deal-start-delay value   Start delay for storage deals (e.g., 72h) (default: 72h0m0s)
-   --deal-verified            Whether deals should be verified (default: false)
+   --deal-template-id value   Deal template ID to use for deal configuration (required when auto-create-deals is enabled)
 
 ```
 {% endcode %}
