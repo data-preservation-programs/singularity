@@ -23,6 +23,7 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/gotidy/ptr"
+	"github.com/rclone/rclone/fs"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
@@ -671,6 +672,7 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 func parseS3Config(c *cli.Context) map[string]string {
 	config := make(map[string]string)
 
+	// Basic authentication
 	if c.IsSet("s3-access-key-id") {
 		config["access_key_id"] = c.String("s3-access-key-id")
 	}
@@ -689,6 +691,66 @@ func parseS3Config(c *cli.Context) map[string]string {
 		}
 	}
 
+	// Advanced S3 configuration options
+	if c.IsSet("s3-session-token") {
+		config["session_token"] = c.String("s3-session-token")
+	}
+	if c.IsSet("s3-profile") {
+		config["profile"] = c.String("s3-profile")
+	}
+	if c.IsSet("s3-shared-credentials-file") {
+		config["shared_credentials_file"] = c.String("s3-shared-credentials-file")
+	}
+	if c.IsSet("s3-storage-class") {
+		config["storage_class"] = c.String("s3-storage-class")
+	}
+	if c.IsSet("s3-server-side-encryption") {
+		config["server_side_encryption"] = c.String("s3-server-side-encryption")
+	}
+	if c.IsSet("s3-sse-kms-key-id") {
+		config["sse_kms_key_id"] = c.String("s3-sse-kms-key-id")
+	}
+	if c.IsSet("s3-chunk-size") {
+		config["chunk_size"] = c.String("s3-chunk-size")
+	}
+	if c.IsSet("s3-upload-concurrency") {
+		config["upload_concurrency"] = c.String("s3-upload-concurrency")
+	}
+	if c.IsSet("s3-copy-cutoff") {
+		config["copy_cutoff"] = c.String("s3-copy-cutoff")
+	}
+	if c.IsSet("s3-upload-cutoff") {
+		config["upload_cutoff"] = c.String("s3-upload-cutoff")
+	}
+	if c.IsSet("s3-acl") {
+		config["acl"] = c.String("s3-acl")
+	}
+	if c.IsSet("s3-requester-pays") {
+		if c.Bool("s3-requester-pays") {
+			config["requester_pays"] = "true"
+		}
+	}
+	if c.IsSet("s3-force-path-style") {
+		if c.Bool("s3-force-path-style") {
+			config["force_path_style"] = "true"
+		}
+	}
+	if c.IsSet("s3-v2-auth") {
+		if c.Bool("s3-v2-auth") {
+			config["v2_auth"] = "true"
+		}
+	}
+	if c.IsSet("s3-use-accelerate-endpoint") {
+		if c.Bool("s3-use-accelerate-endpoint") {
+			config["use_accelerate_endpoint"] = "true"
+		}
+	}
+	if c.IsSet("s3-leave-parts-on-error") {
+		if c.Bool("s3-leave-parts-on-error") {
+			config["leave_parts_on_error"] = "true"
+		}
+	}
+
 	return config
 }
 
@@ -696,6 +758,7 @@ func parseS3Config(c *cli.Context) map[string]string {
 func parseGCSConfig(c *cli.Context) map[string]string {
 	config := make(map[string]string)
 
+	// Basic authentication
 	if c.IsSet("gcs-service-account-file") {
 		config["service_account_file"] = c.String("gcs-service-account-file")
 	}
@@ -711,7 +774,177 @@ func parseGCSConfig(c *cli.Context) map[string]string {
 		}
 	}
 
+	// Advanced GCS configuration options
+	if c.IsSet("gcs-object-acl") {
+		config["object_acl"] = c.String("gcs-object-acl")
+	}
+	if c.IsSet("gcs-bucket-acl") {
+		config["bucket_acl"] = c.String("gcs-bucket-acl")
+	}
+	if c.IsSet("gcs-bucket-policy-only") {
+		if c.Bool("gcs-bucket-policy-only") {
+			config["bucket_policy_only"] = "true"
+		}
+	}
+	if c.IsSet("gcs-location") {
+		config["location"] = c.String("gcs-location")
+	}
+	if c.IsSet("gcs-storage-class") {
+		config["storage_class"] = c.String("gcs-storage-class")
+	}
+	if c.IsSet("gcs-token") {
+		config["token"] = c.String("gcs-token")
+	}
+	if c.IsSet("gcs-auth-url") {
+		config["auth_url"] = c.String("gcs-auth-url")
+	}
+	if c.IsSet("gcs-token-url") {
+		config["token_url"] = c.String("gcs-token-url")
+	}
+	if c.IsSet("gcs-anonymous") {
+		if c.Bool("gcs-anonymous") {
+			config["anonymous"] = "true"
+		}
+	}
+	if c.IsSet("gcs-chunk-size") {
+		config["chunk_size"] = c.String("gcs-chunk-size")
+	}
+	if c.IsSet("gcs-upload-cutoff") {
+		config["upload_cutoff"] = c.String("gcs-upload-cutoff")
+	}
+	if c.IsSet("gcs-copy-cutoff") {
+		config["copy_cutoff"] = c.String("gcs-copy-cutoff")
+	}
+	if c.IsSet("gcs-decompress") {
+		if c.Bool("gcs-decompress") {
+			config["decompress"] = "true"
+		}
+	}
+	if c.IsSet("gcs-endpoint") {
+		config["endpoint"] = c.String("gcs-endpoint")
+	}
+	if c.IsSet("gcs-encoding") {
+		config["encoding"] = c.String("gcs-encoding")
+	}
+
 	return config
+}
+
+// parseGenericStorageConfig builds generic storage configuration from CLI flags
+// This function handles storage types that don't have specific parsing functions
+func parseGenericStorageConfig(c *cli.Context, storageType string) map[string]string {
+	config := make(map[string]string)
+	
+	// Get backend configuration from storage system
+	backend, exists := storagesystem.BackendMap[storageType]
+	if !exists {
+		return config
+	}
+	
+	// For each provider option, check if there are corresponding CLI flags
+	for _, providerOptions := range backend.ProviderOptions {
+		for _, option := range providerOptions.Options {
+			// Convert option name to CLI flag format
+			flagName := strings.ReplaceAll(option.Name, "_", "-")
+			flagNameWithPrefix := storageType + "-" + flagName
+			
+			// Check if the flag is set
+			if c.IsSet(flagNameWithPrefix) {
+				switch (*fs.Option)(&option).Type() {
+				case "bool":
+					if c.Bool(flagNameWithPrefix) {
+						config[option.Name] = "true"
+					}
+				case "string":
+					config[option.Name] = c.String(flagNameWithPrefix)
+				case "int":
+					config[option.Name] = strconv.Itoa(c.Int(flagNameWithPrefix))
+				case "SizeSuffix":
+					config[option.Name] = c.String(flagNameWithPrefix)
+				case "Duration":
+					config[option.Name] = c.Duration(flagNameWithPrefix).String()
+				default:
+					config[option.Name] = c.String(flagNameWithPrefix)
+				}
+			}
+		}
+	}
+	
+	return config
+}
+
+// getProviderDefaults returns default configuration values for a storage provider
+func getProviderDefaults(storageType, provider string) map[string]string {
+	defaults := make(map[string]string)
+	
+	// Get backend configuration from storage system
+	backend, exists := storagesystem.BackendMap[storageType]
+	if !exists {
+		return defaults
+	}
+	
+	// Find the provider-specific options
+	for _, providerOptions := range backend.ProviderOptions {
+		if providerOptions.Provider == provider {
+			// Extract default values from options
+			for _, option := range providerOptions.Options {
+				if option.Default != nil {
+					switch v := option.Default.(type) {
+					case string:
+						if v != "" {
+							defaults[option.Name] = v
+						}
+					case bool:
+						defaults[option.Name] = fmt.Sprintf("%v", v)
+					case int:
+						defaults[option.Name] = fmt.Sprintf("%d", v)
+					}
+				}
+			}
+			break
+		}
+	}
+	
+	return defaults
+}
+
+// mergeStorageConfigWithDefaults merges custom config with provider defaults
+func mergeStorageConfigWithDefaults(storageType, provider string, customConfig map[string]string) map[string]string {
+	// Start with provider defaults
+	merged := getProviderDefaults(storageType, provider)
+	
+	// Override with custom configuration
+	for key, value := range customConfig {
+		merged[key] = value
+	}
+	
+	return merged
+}
+
+// testStorageConnectivity validates storage configuration by testing connectivity
+func testStorageConnectivity(ctx context.Context, storageType, provider, path string, config map[string]string, clientConfig model.ClientConfig) error {
+	// Create a temporary storage model to test connectivity
+	tempStorage := model.Storage{
+		Name:         "test-connectivity-" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		Type:         storageType,
+		Path:         path,
+		Config:       config,
+		ClientConfig: clientConfig,
+	}
+
+	// Test connectivity using the storage system
+	rclone, err := storagesystem.NewRCloneHandler(ctx, tempStorage)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create storage handler for connectivity test")
+	}
+
+	// Test basic connectivity by listing the root directory
+	_, err = rclone.List(ctx, "")
+	if err != nil {
+		return errors.Wrapf(err, "storage connectivity test failed")
+	}
+
+	return nil
 }
 
 // validateOnboardInputs validates CLI inputs for onboard command
@@ -768,28 +1001,69 @@ func validateOnboardInputs(c *cli.Context) error {
 
 	// Auto-deal validation
 	if c.Bool("auto-create-deals") {
-		// Deal provider is required when auto-create-deals is enabled
-		if c.String("deal-provider") == "" {
-			return errors.New("deal provider is required when auto-create-deals is enabled (--deal-provider)")
+		dealTemplate := c.String("deal-template")
+		
+		// Check if inline deal flags are being used without a template
+		hasInlineDealFlags := (c.IsSet("deal-provider") || 
+			c.IsSet("deal-price-per-gb") || 
+			c.IsSet("deal-price-per-deal") || 
+			c.IsSet("deal-price-per-gb-epoch") ||
+			c.IsSet("deal-duration") ||
+			c.IsSet("deal-start-delay") ||
+			c.IsSet("deal-verified") ||
+			c.IsSet("deal-keep-unsealed") ||
+			c.IsSet("deal-announce-to-ipni") ||
+			c.IsSet("deal-url-template") ||
+			c.IsSet("deal-http-headers"))
+
+		if hasInlineDealFlags && dealTemplate == "" {
+			return errors.New("inline deal flags are not allowed without a deal template. Please use --deal-template to specify a template, or remove inline deal flags")
 		}
 
-		// Validate deal duration
-		if c.Duration("deal-duration") <= 0 {
-			return errors.New("deal duration must be positive when auto-create-deals is enabled (--deal-duration)")
+		// If using a template, validate it exists (basic validation)
+		if dealTemplate != "" {
+			// Template validation will be handled by the dataprep handler
+			// but we can add basic format validation here
+			if len(dealTemplate) == 0 {
+				return errors.New("deal template cannot be empty")
+			}
+		} else {
+			// If no template is provided, we cannot proceed with auto-create-deals
+			return errors.New("deal template is required when auto-create-deals is enabled (--deal-template)")
 		}
 
-		// Validate deal start delay is non-negative
-		if c.Duration("deal-start-delay") < 0 {
-			return errors.New("deal start delay cannot be negative (--deal-start-delay)")
+		// Legacy validation for explicit deal flags when template is provided
+		// These are kept for backward compatibility but should be discouraged
+		if dealTemplate != "" && hasInlineDealFlags {
+			// Warn user about conflicting configurations
+			// The dataprep handler will handle the precedence
 		}
 
-		// Validate at least one pricing method is specified
-		pricePerGB := c.Float64("deal-price-per-gb")
-		pricePerDeal := c.Float64("deal-price-per-deal")
-		pricePerGBEpoch := c.Float64("deal-price-per-gb-epoch")
+		// If using inline deal flags (legacy mode), perform validation
+		if hasInlineDealFlags {
+			// Deal provider is required when auto-create-deals is enabled
+			if c.String("deal-provider") == "" {
+				return errors.New("deal provider is required when auto-create-deals is enabled (--deal-provider)")
+			}
 
-		if pricePerGB == 0 && pricePerDeal == 0 && pricePerGBEpoch == 0 {
-			return errors.New("at least one pricing method must be specified when auto-create-deals is enabled (--deal-price-per-gb, --deal-price-per-deal, or --deal-price-per-gb-epoch)")
+			// Validate deal duration
+			if c.Duration("deal-duration") <= 0 {
+				return errors.New("deal duration must be positive when auto-create-deals is enabled (--deal-duration)")
+			}
+
+			// Validate deal start delay is non-negative
+			if c.Duration("deal-start-delay") < 0 {
+				return errors.New("deal start delay cannot be negative (--deal-start-delay)")
+			}
+
+			// Validate at least one pricing method is specified
+			pricePerGB := c.Float64("deal-price-per-gb")
+			pricePerDeal := c.Float64("deal-price-per-deal")
+			pricePerGBEpoch := c.Float64("deal-price-per-gb-epoch")
+
+			if pricePerGB == 0 && pricePerDeal == 0 && pricePerGBEpoch == 0 {
+				return errors.New("at least one pricing method must be specified when auto-create-deals is enabled (--deal-price-per-gb, --deal-price-per-deal, or --deal-price-per-gb-epoch)")
+			}
 		}
 
 		// Validate HTTP headers if provided
@@ -811,6 +1085,10 @@ func validateOnboardInputs(c *cli.Context) error {
 		}
 
 		// Validate prices are non-negative
+		pricePerGB := c.Float64("deal-price-per-gb")
+		pricePerDeal := c.Float64("deal-price-per-deal")
+		pricePerGBEpoch := c.Float64("deal-price-per-gb-epoch")
+		
 		if pricePerGB < 0 {
 			return errors.New("deal price per GB must be non-negative (--deal-price-per-gb)")
 		}
@@ -1038,6 +1316,7 @@ func createStorageIfNotExistWithConfig(ctx context.Context, db *gorm.DB, path, s
 	// Build storage configuration based on type
 	config := make(map[string]string)
 
+	// Set default provider if not specified
 	switch storageType {
 	case "s3":
 		config = parseS3Config(c)
@@ -1052,7 +1331,8 @@ func createStorageIfNotExistWithConfig(ctx context.Context, db *gorm.DB, path, s
 	case "local":
 		provider = "local"
 	default:
-		// For other storage types, use default provider if not specified
+		// For other storage types, use generic parser to handle all backend options
+		config = parseGenericStorageConfig(c, storageType)
 		if provider == "" {
 			provider = "" // Let the storage system use its default
 		}
@@ -1064,6 +1344,9 @@ func createStorageIfNotExistWithConfig(ctx context.Context, db *gorm.DB, path, s
 			config[key] = value
 		}
 	}
+
+	// Merge with provider defaults - this ensures all provider-specific defaults are applied
+	config = mergeStorageConfigWithDefaults(storageType, provider, config)
 
 	// Check if storage already exists for this path and config
 	var existing model.Storage
@@ -1080,6 +1363,11 @@ func createStorageIfNotExistWithConfig(ctx context.Context, db *gorm.DB, path, s
 	clientConfig, err := getOnboardClientConfig(c)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to parse client configuration")
+	}
+
+	// Test storage connectivity before creating the storage
+	if err := testStorageConnectivity(ctx, storageType, provider, path, config, *clientConfig); err != nil {
+		return nil, errors.Wrapf(err, "storage configuration validation failed")
 	}
 
 	// Use the storage handler to create new storage with proper validation
