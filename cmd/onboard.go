@@ -895,9 +895,9 @@ func getProviderDefaults(storageType, provider string) map[string]string {
 							defaults[option.Name] = v
 						}
 					case bool:
-						defaults[option.Name] = fmt.Sprintf("%v", v)
+						defaults[option.Name] = strconv.FormatBool(v)
 					case int:
-						defaults[option.Name] = fmt.Sprintf("%d", v)
+						defaults[option.Name] = strconv.Itoa(v)
 					}
 				}
 			}
@@ -922,7 +922,7 @@ func mergeStorageConfigWithDefaults(storageType, provider string, customConfig m
 }
 
 // testStorageConnectivity validates storage configuration by testing connectivity
-func testStorageConnectivity(ctx context.Context, storageType, provider, path string, config map[string]string, clientConfig model.ClientConfig) error {
+func testStorageConnectivity(ctx context.Context, storageType, _, path string, config map[string]string, clientConfig model.ClientConfig) error {
 	// Create a temporary storage model to test connectivity
 	tempStorage := model.Storage{
 		Name:         "test-connectivity-" + strconv.FormatInt(time.Now().UnixNano(), 10),
