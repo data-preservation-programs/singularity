@@ -239,10 +239,11 @@ Use deal templates to configure deal parameters - individual deal flags are not 
 				return outputJSONError("monitoring failed", err)
 			}
 
-			// Only cleanup workers after completion monitoring finishes successfully
+      // Only cleanup workers after completion monitoring finishes successfully
 			if workerManager != nil {
 				if !isJSON {
 					fmt.Println("\n🧹 Cleaning up workers...")
+
 				}
 				err = workerManager.Stop(ctx)
 				if err != nil {
@@ -250,6 +251,18 @@ Use deal templates to configure deal parameters - individual deal flags are not 
 						fmt.Printf("⚠ Warning: failed to stop workers cleanly: %v\n", err)
 					}
 				}
+				err = workerManager.Stop(ctx)
+				if err != nil {
+					if !isJSON {
+						fmt.Printf("⚠ Warning: failed to stop workers cleanly: %v\n", err)
+					}
+				}
+			}
+		} else if workerManager != nil {
+			// When not waiting for completion, leave workers running to process jobs
+			if !isJSON {
+				fmt.Println("\n✅ Workers will continue running to process jobs")
+				fmt.Println("💡 Use --wait-for-completion to monitor progress and stop workers when done")
 			}
 		} else if workerManager != nil {
 			// When not waiting for completion, leave workers running to process jobs
