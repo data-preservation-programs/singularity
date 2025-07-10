@@ -107,9 +107,9 @@ func TestDealConfig_IsEmpty(t *testing.T) {
 		want   bool
 	}{
 		{
-			name:   "default config (matches CLI defaults, should not be empty)",
+			name: "default config (matches CLI defaults, should not be empty)",
 			config: DealConfig{
-				DealVerified:    true,
+				DealVerified:     true,
 				DealKeepUnsealed: true,
 				// Add other new defaults here if needed
 			},

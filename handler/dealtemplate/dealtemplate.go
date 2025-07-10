@@ -18,7 +18,6 @@ type Handler struct{}
 
 var Default = &Handler{}
 
-
 // CreateRequest represents the request to create a deal template
 type CreateRequest struct {
 	Name                 string            `json:"name"`

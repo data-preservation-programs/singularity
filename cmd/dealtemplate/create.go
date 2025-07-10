@@ -15,8 +15,8 @@ import (
 )
 
 var CreateCmd = &cli.Command{
-	Name:     "create",
-	Usage:    "Create a new deal template with unified flags and defaults",
+	Name:  "create",
+	Usage: "Create a new deal template with unified flags and defaults",
 	Description: `Create a new deal template using the same flags and default values as deal schedule create.
 
 Key flags:
@@ -208,7 +208,6 @@ See --help for all options.`,
 				}
 			}
 		}
-
 
 		template, err := dealtemplate.Default.CreateHandler(c.Context, db, dealtemplate.CreateRequest{
 			Name:                 c.String("name"),
