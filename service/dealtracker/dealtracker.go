@@ -16,6 +16,8 @@ import (
 	"net/http/pprof"
 	_ "net/http/pprof"
 
+	"bytes"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
@@ -255,62 +257,148 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 	go func() {
 		defer close(rawDealChan)
 
-		// Read entire response into memory for gjson parsing
-		// This is manageable due to compression (~7GB compressed to ~500MB)
-		data, err := io.ReadAll(reader)
-		if err != nil {
-			Logger.Errorw("failed to read response data", "error", err)
-			return
-		}
+		// Streaming state machine for low memory parsing
+		const bufferSize = 64 * 1024 // 64KB buffer
+		buffer := make([]byte, bufferSize)
 
-		// Parse JSON with gjson
-		parsed := gjson.ParseBytes(data)
+		var accumulated []byte
+		var inString bool
+		var escapeNext bool
+		var braceDepth int
+		var foundMainObject bool
+		var dealValueStart int
+		var currentDealID string
 
-		// Handle depth=2 case (Lotus API format with "result" wrapper)
-		dealsObj := parsed
-		if depth == 2 {
-			dealsObj = parsed.Get("result")
-			if !dealsObj.Exists() {
-				Logger.Errorw("result field not found in lotus API response")
+		// State tracking
+		type parseState int
+		const (
+			seekingDeals  parseState = iota // Looking for start of deals object
+			inDealsObject                   // Inside the deals object, looking for deal keys
+			foundDealKey                    // Found a deal key, seeking the value
+			inDealValue                     // Inside a deal value object
+		)
+		state := seekingDeals
+
+		for {
+			n, err := reader.Read(buffer[:])
+			if n > 0 {
+				chunk := buffer[:n]
+
+				for i := 0; i < len(chunk); i++ {
+					b := chunk[i]
+					accumulated = append(accumulated, b)
+
+					if escapeNext {
+						escapeNext = false
+						continue
+					}
+
+					switch b {
+					case '\\':
+						if inString {
+							escapeNext = true
+						}
+					case '"':
+						if !escapeNext {
+							inString = !inString
+
+							// Check for deal key when we close a string
+							if !inString && state == inDealsObject && braceDepth == (1+(depth-1)) {
+								// Extract the key we just finished
+								keyEnd := len(accumulated) - 1
+								for keyStart := keyEnd - 1; keyStart >= 0; keyStart-- {
+									if accumulated[keyStart] == '"' {
+										currentDealID = string(accumulated[keyStart+1 : keyEnd])
+										state = foundDealKey
+										break
+									}
+								}
+							}
+						}
+					case ':':
+						if !inString && state == foundDealKey {
+							// Start of deal value - skip whitespace
+							dealValueStart = len(accumulated)
+							for dealValueStart < len(accumulated) && (accumulated[dealValueStart-1] == ' ' || accumulated[dealValueStart-1] == '\t' || accumulated[dealValueStart-1] == '\n' || accumulated[dealValueStart-1] == '\r') {
+								dealValueStart++
+							}
+							state = inDealValue
+						}
+					case '{':
+						if !inString {
+							braceDepth++
+							if !foundMainObject {
+								foundMainObject = true
+								if depth == 1 {
+									state = inDealsObject // Direct deals object
+								}
+								// For depth=2, we need to find "result" first
+							}
+
+							// Check if we found "result" object for depth=2
+							if depth == 2 && braceDepth == 2 && state == seekingDeals {
+								// Look back for "result":
+								if len(accumulated) >= 10 {
+									lookback := accumulated[max(0, len(accumulated)-20):]
+									if bytes.Contains(lookback, []byte(`"result"`)) {
+										state = inDealsObject
+									}
+								}
+							}
+						}
+					case '}':
+						if !inString {
+							braceDepth--
+
+							// Check if we finished a deal value
+							if state == inDealValue && braceDepth == (1+(depth-1)) {
+								// Process the complete deal
+								dealJSON := accumulated[dealValueStart:len(accumulated)]
+								processDealFast(currentDealID, dealJSON, rawDealChan, walletIDs)
+
+								// Reset for next deal
+								state = inDealsObject
+								currentDealID = ""
+							}
+						}
+					case ',':
+						if !inString && state == inDealValue && braceDepth == (1+(depth-1)) {
+							// End of deal value
+							dealJSON := accumulated[dealValueStart : len(accumulated)-1]
+							processDealFast(currentDealID, dealJSON, rawDealChan, walletIDs)
+
+							// Reset for next deal
+							state = inDealsObject
+							currentDealID = ""
+						}
+					}
+				}
+			}
+
+			if err == io.EOF {
+				// Process final deal if any
+				if state == inDealValue && len(currentDealID) > 0 && dealValueStart < len(accumulated) {
+					// Remove trailing braces
+					endPos := len(accumulated)
+					for endPos > dealValueStart && (accumulated[endPos-1] == '}' || accumulated[endPos-1] == ' ' || accumulated[endPos-1] == '\t' || accumulated[endPos-1] == '\n' || accumulated[endPos-1] == '\r') {
+						if accumulated[endPos-1] == '}' {
+							endPos--
+							break
+						}
+						endPos--
+					}
+					if dealValueStart < endPos {
+						dealJSON := accumulated[dealValueStart:endPos]
+						processDealFast(currentDealID, dealJSON, rawDealChan, walletIDs)
+					}
+				}
+				break
+			}
+			if err != nil {
+				Logger.Errorw("failed to read response data", "error", err)
 				return
 			}
 		}
-
-		// Iterate through all deals with gjson
-		dealsObj.ForEach(func(dealIDResult, dealData gjson.Result) bool {
-			// Parse deal ID
-			dealIDStr := dealIDResult.String()
-			dealID, err := strconv.ParseUint(dealIDStr, 10, 64)
-			if err != nil {
-				Logger.Warnw("failed to parse deal ID", "key", dealIDStr, "error", err)
-				return true // continue
-			}
-
-			// Fast client check with gjson
-			client := dealData.Get("Proposal.Client").String()
-			if client == "" {
-				return true // continue - skip deals without client
-			}
-
-			// Check if we care about this client
-			if _, want := walletIDs[client]; !want {
-				return true // continue - skip unwanted clients
-			}
-
-			// Convert dealData back to json.RawMessage for workers
-			rawDeal := json.RawMessage(dealData.Raw)
-
-			// Send raw deal to worker goroutines
-			rawDealChan <- struct {
-				DealID  uint64
-				RawDeal json.RawMessage
-			}{
-				DealID:  dealID,
-				RawDeal: rawDeal,
-			}
-
-			return true // continue processing
-		})
 	}()
 
 	return dealChan, countingReader, closer, nil
@@ -772,4 +860,45 @@ func (d *DealTracker) dealStateStreamCustom(ctx context.Context, walletIDs map[s
 	req.Header.Set("Content-Type", "application/json")
 	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
 	return DealStateStreamFromHTTPRequest(req, 2, false, walletIDs)
+}
+
+// Helper function for max
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Fast deal processing with integrated filtering
+func processDealFast(dealIDStr string, dealJSON []byte, rawDealChan chan struct {
+	DealID  uint64
+	RawDeal json.RawMessage
+}, walletIDs map[string]struct{}) {
+	// Parse deal ID
+	dealID, err := strconv.ParseUint(dealIDStr, 10, 64)
+	if err != nil {
+		Logger.Warnw("failed to parse deal ID", "key", dealIDStr, "error", err)
+		return
+	}
+
+	// Fast client check with gjson - only parse what we need
+	client := gjson.GetBytes(dealJSON, "Proposal.Client").String()
+	if client == "" {
+		return // Skip deals without client
+	}
+
+	// Check if we care about this client
+	if _, want := walletIDs[client]; !want {
+		return // Skip unwanted clients - this saves lots of processing
+	}
+
+	// Only send deals we actually want to the workers
+	rawDealChan <- struct {
+		DealID  uint64
+		RawDeal json.RawMessage
+	}{
+		DealID:  dealID,
+		RawDeal: json.RawMessage(dealJSON),
+	}
 }
