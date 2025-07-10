@@ -464,7 +464,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	defer func() {
 		Logger.Infof("updated %d deals and inserted %d deals", updated, inserted)
 	}()
-	err = d.trackDeal(ctx, func(dealID uint64, deal Deal) error {
+	err = d.trackDeal(ctx, walletIDs, func(dealID uint64, deal Deal) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
@@ -589,7 +589,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	return nil
 }
 
-func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64, deal Deal) error) error {
+func (d *DealTracker) trackDeal(ctx context.Context, walletIDs map[string]struct{}, callback func(dealID uint64, deal Deal) error) error {
 	kvstream, counter, closer, err := d.dealStateStream(ctx)
 	if err != nil {
 		return errors.WithStack(err)
@@ -617,6 +617,17 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 
 		if !ok {
 			return errors.New("failed to get key value pair")
+		}
+
+		// ── fast-path: peek at Proposal.Client before full decode ──
+		if obj, ok := keyValuePair.Value.(map[string]any); ok {
+			if prop, ok := obj["Proposal"].(map[string]any); ok {
+				if client, ok := prop["Client"].(string); ok {
+					if _, want := walletIDs[client]; !want {
+						continue
+					}
+				}
+			}
 		}
 
 		var deal Deal
