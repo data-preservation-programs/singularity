@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -181,11 +182,8 @@ func init() {
 	// Add common storage client flags to the onboard command
 	OnboardCmd.Flags = append(OnboardCmd.Flags, cliutil.CommonStorageClientFlags...)
 
-	// Add common S3 flags to the onboard command
-	OnboardCmd.Flags = append(OnboardCmd.Flags, cliutil.CommonS3Flags...)
-
-	// Add common GCS flags to the onboard command
-	OnboardCmd.Flags = append(OnboardCmd.Flags, cliutil.CommonGCSFlags...)
+	// Add dynamic storage flags for all supported backends
+	OnboardCmd.Flags = append(OnboardCmd.Flags, generateDynamicStorageFlags()...)
 
 	// Set the action function
 	OnboardCmd.Action = onboardAction
@@ -625,215 +623,135 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 	return status, false, nil
 }
 
-// parseS3Config builds S3 configuration from CLI flags
-func parseS3Config(c *cli.Context) map[string]string {
-	config := make(map[string]string)
+// generateDynamicStorageFlags creates CLI flags for all supported storage backends
+func generateDynamicStorageFlags() []cli.Flag {
+	var flags []cli.Flag
+	seenFlags := make(map[string]bool)
 
-	// Basic authentication
-	if c.IsSet("s3-access-key-id") {
-		config["access_key_id"] = c.String("s3-access-key-id")
-	}
-	if c.IsSet("s3-secret-access-key") {
-		config["secret_access_key"] = c.String("s3-secret-access-key")
-	}
-	if c.IsSet("s3-region") {
-		config["region"] = c.String("s3-region")
-	}
-	if c.IsSet("s3-endpoint") {
-		config["endpoint"] = c.String("s3-endpoint")
-	}
-	// Only set env_auth if explicitly requested and no explicit credentials are provided
-	if c.IsSet("s3-env-auth") && c.Bool("s3-env-auth") {
-		// Check if explicit credentials are also provided
-		hasExplicitCredentials := c.IsSet("s3-access-key-id") || c.IsSet("s3-secret-access-key") || c.IsSet("s3-session-token")
-		if hasExplicitCredentials {
-			// Log warning about conflicting auth methods
-			fmt.Printf("⚠️  WARNING: Both s3-env-auth and explicit S3 credentials provided. Using explicit credentials.\n")
-		} else {
-			config["env_auth"] = "true"
-		}
-	}
+	// Add flags for each supported backend
+	for _, backend := range storagesystem.Backends {
+		for _, providerOptions := range backend.ProviderOptions {
+			for _, option := range providerOptions.Options {
+				// Convert option name to CLI flag format
+				flagName := strings.ReplaceAll(option.Name, "_", "-")
 
-	// Advanced S3 configuration options
-	if c.IsSet("s3-session-token") {
-		config["session_token"] = c.String("s3-session-token")
-	}
-	if c.IsSet("s3-profile") {
-		config["profile"] = c.String("s3-profile")
-	}
-	if c.IsSet("s3-shared-credentials-file") {
-		config["shared_credentials_file"] = c.String("s3-shared-credentials-file")
-	}
-	if c.IsSet("s3-storage-class") {
-		config["storage_class"] = c.String("s3-storage-class")
-	}
-	if c.IsSet("s3-server-side-encryption") {
-		config["server_side_encryption"] = c.String("s3-server-side-encryption")
-	}
-	if c.IsSet("s3-sse-kms-key-id") {
-		config["sse_kms_key_id"] = c.String("s3-sse-kms-key-id")
-	}
-	if c.IsSet("s3-chunk-size") {
-		config["chunk_size"] = c.String("s3-chunk-size")
-	}
-	if c.IsSet("s3-upload-concurrency") {
-		config["upload_concurrency"] = c.String("s3-upload-concurrency")
-	}
-	if c.IsSet("s3-copy-cutoff") {
-		config["copy_cutoff"] = c.String("s3-copy-cutoff")
-	}
-	if c.IsSet("s3-upload-cutoff") {
-		config["upload_cutoff"] = c.String("s3-upload-cutoff")
-	}
-	if c.IsSet("s3-acl") {
-		config["acl"] = c.String("s3-acl")
-	}
-	if c.IsSet("s3-requester-pays") {
-		if c.Bool("s3-requester-pays") {
-			config["requester_pays"] = "true"
-		}
-	}
-	if c.IsSet("s3-force-path-style") {
-		if c.Bool("s3-force-path-style") {
-			config["force_path_style"] = "true"
-		}
-	}
-	if c.IsSet("s3-v2-auth") {
-		if c.Bool("s3-v2-auth") {
-			config["v2_auth"] = "true"
-		}
-	}
-	if c.IsSet("s3-use-accelerate-endpoint") {
-		if c.Bool("s3-use-accelerate-endpoint") {
-			config["use_accelerate_endpoint"] = "true"
-		}
-	}
-	if c.IsSet("s3-leave-parts-on-error") {
-		if c.Bool("s3-leave-parts-on-error") {
-			config["leave_parts_on_error"] = "true"
+				// Create flag for each storage type context (source/output)
+				for _, context := range []string{"source", "output"} {
+					fullFlagName := context + "-" + backend.Prefix + "-" + flagName
+
+					// Skip if we've already seen this flag name
+					if seenFlags[fullFlagName] {
+						continue
+					}
+					seenFlags[fullFlagName] = true
+
+					// Create flag based on option type
+					switch (*fs.Option)(&option).Type() {
+					case "bool":
+						flags = append(flags, &cli.BoolFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+						})
+					case "string":
+						flags = append(flags, &cli.StringFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+						})
+					case "int":
+						flags = append(flags, &cli.IntFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+						})
+					case "SizeSuffix":
+						flags = append(flags, &cli.StringFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+						})
+					case "Duration":
+						flags = append(flags, &cli.DurationFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+						})
+					default:
+						flags = append(flags, &cli.StringFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+						})
+					}
+				}
+			}
 		}
 	}
 
-	return config
+	return flags
 }
 
-// parseGCSConfig builds GCS configuration from CLI flags
-func parseGCSConfig(c *cli.Context) map[string]string {
+// parseStorageConfig builds storage configuration from CLI flags using dynamic approach
+func parseStorageConfig(c *cli.Context, storageType, storageContext string) map[string]string {
 	config := make(map[string]string)
 
-	// Basic authentication
-	if c.IsSet("gcs-service-account-file") {
-		config["service_account_file"] = c.String("gcs-service-account-file")
-	}
-	if c.IsSet("gcs-service-account-credentials") {
-		config["service_account_credentials"] = c.String("gcs-service-account-credentials")
-	}
-	if c.IsSet("gcs-project-id") {
-		config["project_number"] = c.String("gcs-project-id")
-	}
-	if c.IsSet("gcs-env-auth") {
-		if c.Bool("gcs-env-auth") {
-			config["env_auth"] = "true"
-		}
-	}
-
-	// Advanced GCS configuration options
-	if c.IsSet("gcs-object-acl") {
-		config["object_acl"] = c.String("gcs-object-acl")
-	}
-	if c.IsSet("gcs-bucket-acl") {
-		config["bucket_acl"] = c.String("gcs-bucket-acl")
-	}
-	if c.IsSet("gcs-bucket-policy-only") {
-		if c.Bool("gcs-bucket-policy-only") {
-			config["bucket_policy_only"] = "true"
-		}
-	}
-	if c.IsSet("gcs-location") {
-		config["location"] = c.String("gcs-location")
-	}
-	if c.IsSet("gcs-storage-class") {
-		config["storage_class"] = c.String("gcs-storage-class")
-	}
-	if c.IsSet("gcs-token") {
-		config["token"] = c.String("gcs-token")
-	}
-	if c.IsSet("gcs-auth-url") {
-		config["auth_url"] = c.String("gcs-auth-url")
-	}
-	if c.IsSet("gcs-token-url") {
-		config["token_url"] = c.String("gcs-token-url")
-	}
-	if c.IsSet("gcs-anonymous") {
-		if c.Bool("gcs-anonymous") {
-			config["anonymous"] = "true"
-		}
-	}
-	if c.IsSet("gcs-chunk-size") {
-		config["chunk_size"] = c.String("gcs-chunk-size")
-	}
-	if c.IsSet("gcs-upload-cutoff") {
-		config["upload_cutoff"] = c.String("gcs-upload-cutoff")
-	}
-	if c.IsSet("gcs-copy-cutoff") {
-		config["copy_cutoff"] = c.String("gcs-copy-cutoff")
-	}
-	if c.IsSet("gcs-decompress") {
-		if c.Bool("gcs-decompress") {
-			config["decompress"] = "true"
-		}
-	}
-	if c.IsSet("gcs-endpoint") {
-		config["endpoint"] = c.String("gcs-endpoint")
-	}
-	if c.IsSet("gcs-encoding") {
-		config["encoding"] = c.String("gcs-encoding")
-	}
-
-	return config
-}
-
-// parseGenericStorageConfig builds generic storage configuration from CLI flags
-// This function handles storage types that don't have specific parsing functions
-func parseGenericStorageConfig(c *cli.Context, storageType string) map[string]string {
-	config := make(map[string]string)
-
-	// Get backend configuration from storage system
+	// Get backend configuration
 	backend, exists := storagesystem.BackendMap[storageType]
 	if !exists {
 		return config
 	}
 
-	// For each provider option, check if there are corresponding CLI flags
+	// Parse configuration for all provider options
 	for _, providerOptions := range backend.ProviderOptions {
 		for _, option := range providerOptions.Options {
 			// Convert option name to CLI flag format
 			flagName := strings.ReplaceAll(option.Name, "_", "-")
-			flagNameWithPrefix := storageType + "-" + flagName
+			fullFlagName := storageContext + "-" + backend.Prefix + "-" + flagName
 
-			// Check if the flag is set
-			if c.IsSet(flagNameWithPrefix) {
+			// Check if the flag is set and extract value
+			if c.IsSet(fullFlagName) {
 				switch (*fs.Option)(&option).Type() {
 				case "bool":
-					if c.Bool(flagNameWithPrefix) {
+					if c.Bool(fullFlagName) {
 						config[option.Name] = "true"
 					}
 				case "string":
-					config[option.Name] = c.String(flagNameWithPrefix)
+					if value := c.String(fullFlagName); value != "" {
+						config[option.Name] = value
+					}
 				case "int":
-					config[option.Name] = strconv.Itoa(c.Int(flagNameWithPrefix))
+					config[option.Name] = strconv.Itoa(c.Int(fullFlagName))
 				case "SizeSuffix":
-					config[option.Name] = c.String(flagNameWithPrefix)
+					if value := c.String(fullFlagName); value != "" {
+						config[option.Name] = value
+					}
 				case "Duration":
-					config[option.Name] = c.Duration(flagNameWithPrefix).String()
+					config[option.Name] = c.Duration(fullFlagName).String()
 				default:
-					config[option.Name] = c.String(flagNameWithPrefix)
+					if value := c.String(fullFlagName); value != "" {
+						config[option.Name] = value
+					}
 				}
 			}
 		}
 	}
 
 	return config
+}
+
+// getDefaultProvider returns the default provider for a storage type
+func getDefaultProvider(storageType string) string {
+	switch storageType {
+	case "s3":
+		return "aws"
+	case "gcs":
+		return "google"
+	case "local":
+		return "local"
+	default:
+		return ""
+	}
 }
 
 // getProviderDefaults returns default configuration values for a storage provider
@@ -885,7 +803,12 @@ func mergeStorageConfigWithDefaults(storageType, provider string, customConfig m
 }
 
 // testStorageConnectivity validates storage configuration by testing connectivity
-func testStorageConnectivity(ctx context.Context, storageType, _, path string, config map[string]string, clientConfig model.ClientConfig) error {
+func testStorageConnectivity(ctx context.Context, storageType, provider, path string, config map[string]string, clientConfig model.ClientConfig) error {
+	if storageType == "local" {
+		// For local storage, just check if the path exists or can be created
+		return validateLocalPath(path)
+	}
+
 	// Create a temporary storage model to test connectivity
 	tempStorage := model.Storage{
 		Name:         "test-connectivity-" + strconv.FormatInt(time.Now().UnixNano(), 10),
@@ -898,13 +821,32 @@ func testStorageConnectivity(ctx context.Context, storageType, _, path string, c
 	// Test connectivity using the storage system
 	rclone, err := storagesystem.NewRCloneHandler(ctx, tempStorage)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create storage handler for connectivity test")
+		return errors.Wrapf(err, "failed to create %s storage handler for connectivity test (provider: %s, path: %s)",
+			storageType, provider, path)
 	}
 
 	// Test basic connectivity by listing the root directory
 	_, err = rclone.List(ctx, "")
 	if err != nil {
-		return errors.Wrapf(err, "storage connectivity test failed")
+		return errors.Wrapf(err, "%s storage connectivity test failed (provider: %s, path: %s): verify credentials and network access",
+			storageType, provider, path)
+	}
+
+	return nil
+}
+
+// validateLocalPath validates local storage path
+func validateLocalPath(path string) error {
+	if path == "" {
+		return errors.New("local storage path cannot be empty")
+	}
+
+	// Check if path exists
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			return errors.Errorf("local storage path does not exist: %s", path)
+		}
+		return errors.Wrapf(err, "failed to access local storage path: %s", path)
 	}
 
 	return nil
@@ -936,16 +878,14 @@ func validateOnboardInputs(c *cli.Context) error {
 		return err
 	}
 
-	// Validate S3 configuration if using S3
-	if sourceType == "s3" || outputType == "s3" {
-		if err := validateS3Config(c); err != nil {
+	// Validate storage configurations dynamically
+	if sourceType != "local" {
+		if err := validateStorageConfigFlags(c, sourceType, "source"); err != nil {
 			return err
 		}
 	}
-
-	// Validate GCS configuration if using GCS
-	if sourceType == "gcs" || outputType == "gcs" {
-		if err := validateGCSConfig(c); err != nil {
+	if outputType != "local" {
+		if err := validateStorageConfigFlags(c, outputType, "output"); err != nil {
 			return err
 		}
 	}
@@ -1028,28 +968,42 @@ func validateOnboardInputs(c *cli.Context) error {
 	return nil
 }
 
-// validateS3Config validates S3 configuration parameters
-func validateS3Config(c *cli.Context) error {
-	// If using S3 without environment auth, access key and secret are required
-	if !c.Bool("s3-env-auth") {
-		if c.String("s3-access-key-id") == "" {
-			return errors.New("S3 access key ID is required when not using environment authentication (--s3-access-key-id)")
-		}
-		if c.String("s3-secret-access-key") == "" {
-			return errors.New("S3 secret access key is required when not using environment authentication (--s3-secret-access-key)")
-		}
+// validateStorageConfigFlags validates storage configuration flags dynamically
+func validateStorageConfigFlags(c *cli.Context, storageType, storageContext string) error {
+	// Get backend configuration
+	backend, exists := storagesystem.BackendMap[storageType]
+	if !exists {
+		return errors.Errorf("unsupported storage type: %s", storageType)
 	}
-	return nil
-}
 
-// validateGCSConfig validates GCS configuration parameters
-func validateGCSConfig(c *cli.Context) error {
-	// If using GCS without environment auth, service account credentials are required
-	if !c.Bool("gcs-env-auth") {
-		if c.String("gcs-service-account-file") == "" && c.String("gcs-service-account-credentials") == "" {
-			return errors.New("GCS service account file or credentials are required when not using environment authentication (--gcs-service-account-file or --gcs-service-account-credentials)")
+	// Validate required fields for the storage type
+	for _, providerOptions := range backend.ProviderOptions {
+		for _, option := range providerOptions.Options {
+			// Convert option name to CLI flag format
+			flagName := strings.ReplaceAll(option.Name, "_", "-")
+			fullFlagName := storageContext + "-" + backend.Prefix + "-" + flagName
+
+			// Check if required field is provided
+			if option.Required && !c.IsSet(fullFlagName) {
+				return errors.Errorf("%s %s configuration missing required field: %s", storageContext, storageType, flagName)
+			}
+
+			// Validate field values if set
+			if c.IsSet(fullFlagName) {
+				switch (*fs.Option)(&option).Type() {
+				case "string":
+					if c.String(fullFlagName) == "" {
+						return errors.Errorf("%s %s configuration field %s cannot be empty", storageContext, storageType, flagName)
+					}
+				case "int":
+					if c.Int(fullFlagName) < 0 {
+						return errors.Errorf("%s %s configuration field %s must be non-negative", storageContext, storageType, flagName)
+					}
+				}
+			}
 		}
 	}
+
 	return nil
 }
 
@@ -1133,9 +1087,20 @@ func validateStorageType(storageType string, prefix string) error {
 		return nil // Allow empty storage type (defaults to local)
 	}
 
-	_, ok := storagesystem.BackendMap[storageType]
+	backend, ok := storagesystem.BackendMap[storageType]
 	if !ok {
-		return errors.Errorf("%s storage type '%s' is not supported", prefix, storageType)
+		// Get list of supported storage types for better error message
+		var supportedTypes []string
+		for backendType := range storagesystem.BackendMap {
+			supportedTypes = append(supportedTypes, backendType)
+		}
+		return errors.Errorf("%s storage type '%s' is not supported. Supported types: %s",
+			prefix, storageType, strings.Join(supportedTypes, ", "))
+	}
+
+	// Additional validation - check if backend is properly configured
+	if backend.Prefix != storageType {
+		return errors.Errorf("backend configuration mismatch for storage type '%s'", storageType)
 	}
 
 	return nil
@@ -1163,13 +1128,18 @@ func validateStorageConfig(configStr string, prefix string) error {
 
 // checkDuplicateStorageNames validates that storage names are unique
 func checkDuplicateStorageNames(ctx context.Context, db *gorm.DB, storageName string) error {
+	if storageName == "" {
+		return errors.New("storage name cannot be empty")
+	}
+
 	var existingStorage model.Storage
 	err := db.WithContext(ctx).Where("name = ?", storageName).First(&existingStorage).Error
 	if err == nil {
-		return errors.Errorf("storage with name '%s' already exists", storageName)
+		return errors.Errorf("storage with name '%s' already exists (ID: %d, Type: %s)",
+			storageName, existingStorage.ID, existingStorage.Type)
 	}
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.Wrapf(err, "failed to check for duplicate storage name '%s'", storageName)
+		return errors.Wrapf(err, "database error while checking for duplicate storage name '%s'", storageName)
 	}
 	return nil
 }
@@ -1220,36 +1190,19 @@ func createStorageIfNotExistWithConfig(ctx context.Context, db *gorm.DB, path, s
 		return nil, err
 	}
 
-	// Build storage configuration based on type
-	config := make(map[string]string)
+	// Build storage configuration using dynamic approach
+	config := parseStorageConfig(c, storageType, storageContext)
 
-	// Set default provider if not specified
-	switch storageType {
-	case "s3":
-		config = parseS3Config(c)
-		if provider == "" {
-			provider = "aws" // Default S3 provider
-		}
-	case "gcs":
-		config = parseGCSConfig(c)
-		if provider == "" {
-			provider = "google" // Default GCS provider
-		}
-	case "local":
-		provider = "local"
-	default:
-		// For other storage types, use generic parser to handle all backend options
-		config = parseGenericStorageConfig(c, storageType)
-		if provider == "" {
-			provider = "" // Let the storage system use its default
-		}
-	}
-
-	// Merge custom config if provided
+	// Merge custom config if provided via JSON config flag
 	if customConfig := getCustomStorageConfig(c, storageContext); customConfig != nil {
 		for key, value := range customConfig {
 			config[key] = value
 		}
+	}
+
+	// Set default provider if not specified
+	if provider == "" {
+		provider = getDefaultProvider(storageType)
 	}
 
 	// Merge with provider defaults - this ensures all provider-specific defaults are applied

@@ -168,161 +168,6 @@ func TestGetCustomStorageConfig(t *testing.T) {
 	}
 }
 
-func TestParseS3Config(t *testing.T) {
-	tests := []struct {
-		name     string
-		flags    map[string]interface{}
-		expected map[string]string
-	}{
-		{
-			name: "all S3 flags should be parsed",
-			flags: map[string]interface{}{
-				"s3-access-key-id":     "test-key",
-				"s3-secret-access-key": "test-secret",
-				"s3-region":            "us-east-1",
-				"s3-endpoint":          "https://s3.amazonaws.com",
-				"s3-env-auth":          true,
-			},
-			expected: map[string]string{
-				"access_key_id":     "test-key",
-				"secret_access_key": "test-secret",
-				"region":            "us-east-1",
-				"endpoint":          "https://s3.amazonaws.com",
-				"env_auth":          "true",
-			},
-		},
-		{
-			name:     "empty flags should return empty config",
-			flags:    map[string]interface{}{},
-			expected: map[string]string{},
-		},
-		{
-			name: "env-auth false should not set env_auth",
-			flags: map[string]interface{}{
-				"s3-access-key-id": "test-key",
-				"s3-env-auth":      false,
-			},
-			expected: map[string]string{
-				"access_key_id": "test-key",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			app := &cli.App{
-				Flags: []cli.Flag{
-					&cli.StringFlag{Name: "s3-access-key-id"},
-					&cli.StringFlag{Name: "s3-secret-access-key"},
-					&cli.StringFlag{Name: "s3-region"},
-					&cli.StringFlag{Name: "s3-endpoint"},
-					&cli.BoolFlag{Name: "s3-env-auth"},
-				},
-			}
-
-			args := []string{"app"}
-			for flag, value := range tt.flags {
-				switch v := value.(type) {
-				case string:
-					args = append(args, "--"+flag, v)
-				case bool:
-					if v {
-						args = append(args, "--"+flag)
-					}
-				}
-			}
-
-			var c *cli.Context
-			app.Action = func(ctx *cli.Context) error {
-				c = ctx
-				return nil
-			}
-
-			err := app.Run(args)
-			assert.NoError(t, err)
-
-			result := parseS3Config(c)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
-}
-
-func TestParseGCSConfig(t *testing.T) {
-	tests := []struct {
-		name     string
-		flags    map[string]interface{}
-		expected map[string]string
-	}{
-		{
-			name: "all GCS flags should be parsed",
-			flags: map[string]interface{}{
-				"gcs-service-account-file":        "/path/to/service-account.json",
-				"gcs-service-account-credentials": `{"type": "service_account"}`,
-				"gcs-project-id":                  "test-project",
-				"gcs-env-auth":                    true,
-			},
-			expected: map[string]string{
-				"service_account_file":        "/path/to/service-account.json",
-				"service_account_credentials": `{"type": "service_account"}`,
-				"project_number":              "test-project",
-				"env_auth":                    "true",
-			},
-		},
-		{
-			name:     "empty flags should return empty config",
-			flags:    map[string]interface{}{},
-			expected: map[string]string{},
-		},
-		{
-			name: "env-auth false should not set env_auth",
-			flags: map[string]interface{}{
-				"gcs-project-id": "test-project",
-				"gcs-env-auth":   false,
-			},
-			expected: map[string]string{
-				"project_number": "test-project",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			app := &cli.App{
-				Flags: []cli.Flag{
-					&cli.StringFlag{Name: "gcs-service-account-file"},
-					&cli.StringFlag{Name: "gcs-service-account-credentials"},
-					&cli.StringFlag{Name: "gcs-project-id"},
-					&cli.BoolFlag{Name: "gcs-env-auth"},
-				},
-			}
-
-			args := []string{"app"}
-			for flag, value := range tt.flags {
-				switch v := value.(type) {
-				case string:
-					args = append(args, "--"+flag, v)
-				case bool:
-					if v {
-						args = append(args, "--"+flag)
-					}
-				}
-			}
-
-			var c *cli.Context
-			app.Action = func(ctx *cli.Context) error {
-				c = ctx
-				return nil
-			}
-
-			err := app.Run(args)
-			assert.NoError(t, err)
-
-			result := parseGCSConfig(c)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
-}
-
 func TestValidateOnboardInputs(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -607,70 +452,6 @@ func TestMergeStorageConfigWithDefaults(t *testing.T) {
 	}
 }
 
-func TestParseGenericStorageConfig(t *testing.T) {
-	tests := []struct {
-		name        string
-		storageType string
-		flags       map[string]interface{}
-		expectKeys  []string
-	}{
-		{
-			name:        "invalid storage type should return empty config",
-			storageType: "invalid-type",
-			flags:       map[string]interface{}{},
-			expectKeys:  []string{},
-		},
-		{
-			name:        "local storage should parse encoding flag",
-			storageType: "local",
-			flags: map[string]interface{}{
-				"local-encoding": "base64",
-			},
-			expectKeys: []string{"encoding"},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Create a mock CLI context with the specified flags
-			app := &cli.App{
-				Flags: []cli.Flag{
-					&cli.StringFlag{Name: "local-encoding"},
-				},
-			}
-
-			args := []string{"app"}
-			for flag, value := range tt.flags {
-				switch v := value.(type) {
-				case string:
-					args = append(args, "--"+flag, v)
-				case bool:
-					if v {
-						args = append(args, "--"+flag)
-					}
-				}
-			}
-
-			var c *cli.Context
-			app.Action = func(ctx *cli.Context) error {
-				c = ctx
-				return nil
-			}
-
-			err := app.Run(args)
-			assert.NoError(t, err)
-
-			result := parseGenericStorageConfig(c, tt.storageType)
-			assert.NotNil(t, result)
-
-			// Check that expected keys are present
-			for _, expectedKey := range tt.expectKeys {
-				assert.Contains(t, result, expectedKey)
-			}
-		})
-	}
-}
-
 func TestAdvancedS3Config(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -735,7 +516,7 @@ func TestAdvancedS3Config(t *testing.T) {
 			err := app.Run(args)
 			assert.NoError(t, err)
 
-			result := parseS3Config(c)
+			result := parseStorageConfig(c, "s3", "source")
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -805,8 +586,63 @@ func TestAdvancedGCSConfig(t *testing.T) {
 			err := app.Run(args)
 			assert.NoError(t, err)
 
-			result := parseGCSConfig(c)
+			result := parseStorageConfig(c, "gcs", "source")
 			assert.Equal(t, tt.expected, result)
 		})
 	}
+}
+
+// Test the new dynamic flag generation function
+func TestGenerateDynamicStorageFlags(t *testing.T) {
+	flags := generateDynamicStorageFlags()
+
+	// Should generate flags for both source and output contexts
+	assert.Greater(t, len(flags), 0, "Should generate at least some flags")
+
+	// Check that we have some expected S3 flags
+	hasS3Flags := false
+	for _, flag := range flags {
+		switch f := flag.(type) {
+		case *cli.StringFlag:
+			if f.Name == "source-s3-access-key-id" || f.Name == "output-s3-access-key-id" {
+				hasS3Flags = true
+			}
+		}
+	}
+	assert.True(t, hasS3Flags, "Should generate S3 access key flags")
+}
+
+// Test the new parseStorageConfig function
+func TestParseStorageConfig(t *testing.T) {
+	// Create a minimal CLI context for testing
+	app := &cli.App{
+		Flags: generateDynamicStorageFlags(),
+	}
+
+	var c *cli.Context
+	app.Action = func(ctx *cli.Context) error {
+		c = ctx
+		return nil
+	}
+
+	// Test with no flags set
+	args := []string{"test"}
+	err := app.Run(args)
+	assert.NoError(t, err)
+
+	result := parseStorageConfig(c, "s3", "source")
+	assert.NotNil(t, result)
+	assert.Equal(t, 0, len(result), "Should return empty config with no flags set")
+}
+
+// Test storage type validation
+func TestValidateStorageTypeWithBetterErrors(t *testing.T) {
+	// Test invalid storage type
+	err := validateStorageType("invalid-type", "test")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Supported types:")
+
+	// Test valid storage type
+	err = validateStorageType("local", "test")
+	assert.NoError(t, err)
 }
