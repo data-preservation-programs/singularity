@@ -2,16 +2,80 @@ package dealtracker
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"testing"
+	"time"
 
-	"github.com/bcicen/jstream"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+func TestBatchParser_shouldProcessDeal(t *testing.T) {
+	walletIDs := map[string]struct{}{
+		"t0100": {},
+		"t0200": {},
+	}
+
+	parser := NewBatchParser(walletIDs, 10)
+
+	// Test deal that should be processed (client in wallet set)
+	dealJSON := `{
+		"Proposal": {
+			"Client": "t0100",
+			"Provider": "t1provider1"
+		}
+	}`
+	assert.True(t, parser.shouldProcessDeal([]byte(dealJSON)))
+
+	// Test deal that should not be processed (client not in wallet set)
+	dealJSON2 := `{
+		"Proposal": {
+			"Client": "t0300",
+			"Provider": "t1provider1"
+		}
+	}`
+	assert.False(t, parser.shouldProcessDeal([]byte(dealJSON2)))
+
+	// Test invalid JSON
+	assert.False(t, parser.shouldProcessDeal([]byte(`{"invalid":`)))
+}
+
+func TestBatchParser_parseDeal(t *testing.T) {
+	walletIDs := map[string]struct{}{
+		"t0100": {},
+	}
+
+	parser := NewBatchParser(walletIDs, 10)
+
+	dealJSON := `{
+		"DealID": "12345",
+		"Proposal": {
+			"Client": "t0100",
+			"Provider": "t1provider1",
+			"Label": "test-deal",
+			"StartEpoch": 100,
+			"EndEpoch": 200,
+			"StoragePricePerEpoch": "1000",
+			"ProviderCollateral": "5000",
+			"ClientCollateral": "2000",
+			"VerifiedDeal": true
+		},
+		"State": {
+			"SectorStartEpoch": 105,
+			"LastUpdatedEpoch": 150,
+			"SlashEpoch": -1
+		}
+	}`
+
+	result, err := parser.parseDeal([]byte(dealJSON))
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	assert.Equal(t, uint64(12345), result.DealID)
+	assert.Equal(t, "t0100", result.Deal.Proposal.Client)
+	assert.Equal(t, "t1provider1", result.Deal.Proposal.Provider)
+}
+
 func TestBatchParser_ParseStream(t *testing.T) {
-	// Create test data
 	walletIDs := map[string]struct{}{
 		"t0100": {},
 		"t0200": {},
@@ -19,153 +83,46 @@ func TestBatchParser_ParseStream(t *testing.T) {
 
 	parser := NewBatchParser(walletIDs, 2) // Small batch size for testing
 
-	// Create a mock stream
-	kvstream := make(chan *jstream.MetaValue, 10)
+	// Create a channel with test deals
+	dealStream := make(chan []byte, 10)
 
-	// Add test deals
-	testDeals := []struct {
-		key   string
-		value map[string]interface{}
-	}{
-		{
-			key: "1",
-			value: map[string]interface{}{
-				"Proposal": map[string]interface{}{
-					"Client":   "t0100", // Should match
-					"Provider": "f01000",
-					"PieceCID": map[string]interface{}{"/": "bafy2bzaced..."},
-				},
-				"State": map[string]interface{}{
-					"SectorStartEpoch": 100,
-				},
-			},
-		},
-		{
-			key: "2",
-			value: map[string]interface{}{
-				"Proposal": map[string]interface{}{
-					"Client":   "t0300", // Should not match
-					"Provider": "f01000",
-				},
-				"State": map[string]interface{}{},
-			},
-		},
-		{
-			key: "3",
-			value: map[string]interface{}{
-				"Proposal": map[string]interface{}{
-					"Client":   "t0200", // Should match
-					"Provider": "f01000",
-				},
-				"State": map[string]interface{}{},
-			},
-		},
+	// Add deals - some matching, some not
+	deals := []string{
+		`{"DealID": "1", "Proposal": {"Client": "t0100", "Provider": "t1p1"}}`,
+		`{"DealID": "2", "Proposal": {"Client": "t0300", "Provider": "t1p1"}}`, // Should be filtered
+		`{"DealID": "3", "Proposal": {"Client": "t0200", "Provider": "t1p2"}}`,
+		`{"DealID": "4", "Proposal": {"Client": "t0100", "Provider": "t1p3"}}`,
+		`{"DealID": "5", "Proposal": {"Client": "t0400", "Provider": "t1p1"}}`, // Should be filtered
 	}
 
-	// Send test data
 	go func() {
-		for _, td := range testDeals {
-			kvstream <- &jstream.MetaValue{
-				Value: jstream.KV{
-					Key:   td.key,
-					Value: td.value,
-				},
-			}
+		defer close(dealStream)
+		for _, dealJSON := range deals {
+			dealStream <- []byte(dealJSON)
 		}
-		close(kvstream)
 	}()
 
-	ctx := context.Background()
-	batches, err := parser.ParseStream(ctx, kvstream)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	batches, err := parser.ParseStream(ctx, dealStream)
 	require.NoError(t, err)
 
-	// Collect results
-	var results []ParsedDeal
+	var allDeals []ParsedDeal
 	for batch := range batches {
-		results = append(results, batch...)
+		allDeals = append(allDeals, batch...)
 	}
 
-	// Should only have 2 results (deals 1 and 3)
-	require.Len(t, results, 2)
-	require.Equal(t, uint64(1), results[0].DealID)
-	require.Equal(t, "t0100", results[0].Deal.Proposal.Client)
-	require.Equal(t, uint64(3), results[1].DealID)
-	require.Equal(t, "t0200", results[1].Deal.Proposal.Client)
-}
+	// Should have 3 deals (IDs 1, 3, 4) after filtering
+	require.Len(t, allDeals, 3)
 
-func BenchmarkBatchParser_ShouldProcessDeal(b *testing.B) {
-	walletIDs := map[string]struct{}{
-		"t0100": {},
-		"t0200": {},
-		"t0300": {},
+	// Check the deal IDs are correct
+	dealIDs := make([]uint64, len(allDeals))
+	for i, deal := range allDeals {
+		dealIDs[i] = deal.DealID
 	}
 
-	parser := NewBatchParser(walletIDs, 100)
-
-	// Create test deal as map
-	dealMap := map[string]interface{}{
-		"Proposal": map[string]interface{}{
-			"Client":    "t0100",
-			"Provider":  "f01000",
-			"PieceCID":  map[string]interface{}{"/": "bafy2bzaced..."},
-			"PieceSize": 34359738368,
-			"Label":     "some-label",
-		},
-		"State": map[string]interface{}{
-			"SectorStartEpoch": 100,
-			"LastUpdatedEpoch": 200,
-		},
-	}
-
-	// Also create as JSON bytes for comparison
-	dealJSON, _ := json.Marshal(dealMap)
-
-	b.Run("MapInterface", func(b *testing.B) {
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = parser.shouldProcessDeal(dealMap)
-		}
-	})
-
-	b.Run("JSONBytes", func(b *testing.B) {
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = parser.shouldProcessDeal(dealJSON)
-		}
-	})
-}
-
-func BenchmarkBatchParser_ParseDeal(b *testing.B) {
-	walletIDs := map[string]struct{}{"t0100": {}}
-	parser := NewBatchParser(walletIDs, 100)
-
-	// Create a realistic deal
-	dealMap := map[string]interface{}{
-		"Proposal": map[string]interface{}{
-			"PieceCID": map[string]interface{}{
-				"/": "baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq",
-			},
-			"PieceSize":            int64(34359738368),
-			"VerifiedDeal":         true,
-			"Client":               "t0100",
-			"Provider":             "f01000",
-			"Label":                "bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz",
-			"StartEpoch":           int32(100),
-			"EndEpoch":             int32(999999999),
-			"StoragePricePerEpoch": "0",
-		},
-		"State": map[string]interface{}{
-			"SectorStartEpoch": int32(100),
-			"LastUpdatedEpoch": int32(200),
-			"SlashEpoch":       int32(-1),
-		},
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, err := parser.parseDeal(fmt.Sprintf("%d", i), dealMap)
-		if err != nil {
-			b.Fatal(err)
-		}
-	}
+	assert.Contains(t, dealIDs, uint64(1))
+	assert.Contains(t, dealIDs, uint64(3))
+	assert.Contains(t, dealIDs, uint64(4))
 }

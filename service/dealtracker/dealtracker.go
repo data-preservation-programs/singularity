@@ -2,12 +2,19 @@ package dealtracker
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	// Add pprof imports
+
+	"net/http/pprof"
+	_ "net/http/pprof"
 
 	"github.com/bcicen/jstream"
 	"github.com/cockroachdb/errors"
@@ -22,6 +29,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/klauspost/compress/zstd"
+	"github.com/tidwall/gjson"
 	"gorm.io/gorm"
 )
 
@@ -217,6 +225,114 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 	return jsonDecoder.Stream(), countingReader, closer, nil
 }
 
+// DealStateStreamWithCustomParser creates a custom streaming parser that avoids jstream overhead
+func DealStateStreamWithCustomParser(request *http.Request, decompress bool, walletIDs map[string]struct{}) (chan *ParsedDeal, Counter, io.Closer, error) {
+	//nolint: bodyclose
+	resp, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return nil, nil, nil, errors.WithStack(err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		_ = resp.Body.Close()
+		return nil, nil, nil, errors.Newf("failed to get deal state: %s", resp.Status)
+	}
+
+	var reader io.Reader
+	var closer io.Closer
+	countingReader := NewCountingReader(resp.Body)
+
+	if decompress {
+		decompressor, err := zstd.NewReader(countingReader)
+		if err != nil {
+			_ = resp.Body.Close()
+			return nil, nil, nil, errors.WithStack(err)
+		}
+		reader = decompressor
+		closer = CloserFunc(func() error {
+			decompressor.Close()
+			return resp.Body.Close()
+		})
+	} else {
+		reader = countingReader
+		closer = resp.Body
+	}
+
+	// Create channel for parsed deals
+	dealChan := make(chan *ParsedDeal, 100)
+
+	go func() {
+		defer close(dealChan)
+
+		decoder := json.NewDecoder(reader)
+
+		// Read opening brace of main object
+		token, err := decoder.Token()
+		if err != nil {
+			Logger.Errorw("failed to read opening token", "error", err)
+			return
+		}
+		if delim, ok := token.(json.Delim); !ok || delim != '{' {
+			Logger.Errorw("expected object, got", "token", token)
+			return
+		}
+
+		// Process each deal
+		for decoder.More() {
+			// Read deal ID key
+			keyToken, err := decoder.Token()
+			if err != nil {
+				Logger.Errorw("failed to read deal key", "error", err)
+				break
+			}
+
+			dealIDStr, ok := keyToken.(string)
+			if !ok {
+				Logger.Errorw("expected string key, got", "token", keyToken)
+				continue
+			}
+
+			dealID, err := strconv.ParseUint(dealIDStr, 10, 64)
+			if err != nil {
+				Logger.Warnw("failed to parse deal ID", "key", dealIDStr, "error", err)
+				continue
+			}
+
+			// Read the deal value as raw JSON
+			var rawDeal json.RawMessage
+			if err := decoder.Decode(&rawDeal); err != nil {
+				Logger.Errorw("failed to decode deal value", "dealID", dealID, "error", err)
+				continue
+			}
+
+			// Fast client check with gjson
+			client := gjson.GetBytes(rawDeal, "Proposal.Client").String()
+			if client == "" {
+				continue // Skip deals without client
+			}
+
+			// Check if we care about this client
+			if _, want := walletIDs[client]; !want {
+				continue // Skip unwanted clients - this is the key optimization!
+			}
+
+			// Only parse deals we actually want
+			var deal Deal
+			if err := json.Unmarshal(rawDeal, &deal); err != nil {
+				Logger.Warnw("failed to unmarshal wanted deal", "dealID", dealID, "error", err)
+				continue
+			}
+
+			// Send parsed deal
+			dealChan <- &ParsedDeal{
+				DealID: dealID,
+				Deal:   deal,
+			}
+		}
+	}()
+
+	return dealChan, countingReader, closer, nil
+}
+
 func (*DealTracker) Name() string {
 	return "DealTracker"
 }
@@ -281,6 +397,22 @@ func (d *DealTracker) Start(ctx context.Context, exitErr chan<- error) error {
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
 
+	// Start pprof server for performance profiling
+	pprofMux := http.NewServeMux()
+	pprofMux.HandleFunc("/debug/pprof/", pprof.Index)
+	pprofMux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	pprofMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	pprofMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	pprofMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	pprofServer := &http.Server{Addr: ":6060", Handler: pprofMux}
+
+	go func() {
+		Logger.Info("Starting pprof server on :6060")
+		if err := pprofServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			Logger.Warnw("pprof server error", "error", err)
+		}
+	}()
+
 	healthcheckDone := make(chan struct{})
 	go func() {
 		defer close(healthcheckDone)
@@ -330,6 +462,12 @@ func (d *DealTracker) Start(ctx context.Context, exitErr chan<- error) error {
 
 		ctx2, cancel2 := context.WithTimeout(context.Background(), cleanupTimeout)
 		defer cancel2()
+
+		// Shutdown pprof server
+		if err := pprofServer.Shutdown(ctx2); err != nil {
+			Logger.Warnw("failed to shutdown pprof server", "error", err)
+		}
+
 		//nolint:contextcheck
 		err := d.cleanup(ctx2)
 		if err != nil {
@@ -590,7 +728,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 }
 
 func (d *DealTracker) trackDeal(ctx context.Context, walletIDs map[string]struct{}, callback func(dealID uint64, deal Deal) error) error {
-	kvstream, counter, closer, err := d.dealStateStream(ctx)
+	dealStream, counter, closer, err := d.dealStateStreamCustom(ctx, walletIDs)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -615,26 +753,13 @@ func (d *DealTracker) trackDeal(ctx context.Context, walletIDs map[string]struct
 		}
 	}()
 
-	// Create batch parser with configured batch size
-	// Batching reduces DB contention and improves throughput
-	parser := NewBatchParser(walletIDs, d.batchSize)
-
-	// Start parsing deals in batches
-	batches, err := parser.ParseStream(ctx, kvstream)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	// Process batches of deals
-	for batch := range batches {
-		// Process all deals in the batch
-		for _, parsed := range batch {
-			if err := callback(parsed.DealID, parsed.Deal); err != nil {
-				return errors.WithStack(err)
-			}
+	// Process deals directly - no batching needed since we're only getting wanted deals
+	for parsed := range dealStream {
+		if err := callback(parsed.DealID, parsed.Deal); err != nil {
+			return errors.WithStack(err)
 		}
 
-		// Check if context is cancelled between batches
+		// Check if context is cancelled
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
@@ -664,4 +789,27 @@ func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaVa
 	req.Header.Set("Content-Type", "application/json")
 	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
 	return DealStateStreamFromHTTPRequest(req, 2, false)
+}
+
+func (d *DealTracker) dealStateStreamCustom(ctx context.Context, walletIDs map[string]struct{}) (chan *ParsedDeal, Counter, io.Closer, error) {
+	if d.dealZstURL != "" {
+		Logger.Infof("getting deal state from %s with custom parser", d.dealZstURL)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.dealZstURL, nil)
+		if err != nil {
+			return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state zst file %s", d.dealZstURL)
+		}
+		return DealStateStreamWithCustomParser(req, true, walletIDs)
+	}
+
+	Logger.Infof("getting deal state from %s with custom parser", d.lotusURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state from lotus API %s", d.lotusURL)
+	}
+	if d.lotusToken != "" {
+		req.Header.Set("Authorization", "Bearer "+d.lotusToken)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
+	return DealStateStreamWithCustomParser(req, false, walletIDs)
 }

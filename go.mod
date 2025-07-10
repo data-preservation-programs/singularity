@@ -57,7 +57,6 @@ require (
 	github.com/libp2p/go-libp2p v0.39.1
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/minio/sha256-simd v1.0.1
-	github.com/mitchellh/mapstructure v1.5.0
 	github.com/multiformats/go-multiaddr v0.14.0
 	github.com/multiformats/go-multicodec v0.9.0
 	github.com/multiformats/go-multihash v0.2.3
@@ -87,9 +86,14 @@ require (
 )
 
 require (
+	github.com/bitfield/gotestdox v0.2.2 // indirect
+	github.com/dnephin/pflag v1.0.7 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/shirou/gopsutil/v3 v3.23.3 // indirect
 	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c // indirect
+	gotest.tools/gotestsum v1.12.3 // indirect
 )
 
 require (
@@ -174,7 +178,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gopacket v1.1.19 // indirect
 	github.com/google/pprof v0.0.0-20250202011525-fc3143867406 // indirect
