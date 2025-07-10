@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/dealtemplate"
 	"github.com/data-preservation-programs/singularity/model"
@@ -16,8 +16,21 @@ import (
 
 var CreateCmd = &cli.Command{
 	Name:     "create",
-	Usage:    "Create a new deal template",
-	Category: "Deal Template Management",
+	Usage:    "Create a new deal template with unified flags and defaults",
+	Description: `Create a new deal template using the same flags and default values as deal schedule create.
+
+Key flags:
+  --provider           Storage Provider ID (e.g., f01234)
+  --duration           Deal duration (default: 12840h)
+  --start-delay        Deal start delay (default: 72h)
+  --verified           Propose deals as verified (default: true)
+  --keep-unsealed      Keep unsealed copy (default: true)
+  --ipni               Announce deals to IPNI (default: true)
+  --http-header        HTTP headers (key=value)
+  --allowed-piece-cid  List of allowed piece CIDs
+  --allowed-piece-cid-file File with allowed piece CIDs
+
+See --help for all options.`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "name",
@@ -25,57 +38,57 @@ var CreateCmd = &cli.Command{
 			Required: true,
 		},
 		&cli.StringFlag{
-			Name:  "description",
-			Usage: "Description of the deal template",
+			Name:     "provider",
+			Usage:    "Storage Provider ID (e.g., f01000)",
+			Required: true,
 		},
 		&cli.Float64Flag{
-			Name:  "deal-price-per-gb",
+			Name:  "price-per-gb",
 			Usage: "Price in FIL per GiB for storage deals",
 			Value: 0.0,
 		},
 		&cli.Float64Flag{
-			Name:  "deal-price-per-gb-epoch",
+			Name:  "price-per-gb-epoch",
 			Usage: "Price in FIL per GiB per epoch for storage deals",
 			Value: 0.0,
 		},
 		&cli.Float64Flag{
-			Name:  "deal-price-per-deal",
+			Name:  "price-per-deal",
 			Usage: "Price in FIL per deal for storage deals",
 			Value: 0.0,
 		},
 		&cli.DurationFlag{
-			Name:  "deal-duration",
-			Usage: "Duration for storage deals (e.g., 535 days)",
-			Value: 0,
+			Name:  "duration",
+			Usage: "Duration for storage deals (e.g., 12840h for 535 days)",
+			Value: 12840 * time.Hour,
 		},
 		&cli.DurationFlag{
-			Name:  "deal-start-delay",
-			Usage: "Start delay for storage deals (e.g., 72h)",
-			Value: 0,
+			Name:  "start-delay",
+			Usage: "Start delay for storage deals",
+			Value: 72 * time.Hour,
 		},
 		&cli.BoolFlag{
-			Name:  "deal-verified",
+			Name:  "verified",
 			Usage: "Whether deals should be verified",
+			Value: true,
 		},
 		&cli.BoolFlag{
-			Name:  "deal-keep-unsealed",
+			Name:  "keep-unsealed",
 			Usage: "Whether to keep unsealed copy of deals",
+			Value: true,
 		},
 		&cli.BoolFlag{
-			Name:  "deal-announce-to-ipni",
+			Name:  "ipni",
 			Usage: "Whether to announce deals to IPNI",
+			Value: true,
 		},
 		&cli.StringFlag{
-			Name:  "deal-provider",
-			Usage: "Storage Provider ID for deals (e.g., f01000)",
-		},
-		&cli.StringFlag{
-			Name:  "deal-url-template",
+			Name:  "url-template",
 			Usage: "URL template for deals",
 		},
-		&cli.StringFlag{
-			Name:  "deal-http-headers",
-			Usage: "HTTP headers for deals in JSON format",
+		&cli.StringSliceFlag{
+			Name:  "http-header",
+			Usage: "HTTP headers to be passed with the request (key=value format)",
 		},
 		&cli.StringFlag{
 			Name:  "notes",
@@ -93,8 +106,7 @@ var CreateCmd = &cli.Command{
 			Name:  "allowed-piece-cid-file",
 			Usage: "File containing list of allowed piece CIDs",
 		},
-
-		// Scheduling flags (matching deal schedule create command)
+		// Scheduling flags
 		&cli.StringFlag{
 			Name:     "schedule-cron",
 			Usage:    "Cron schedule to send out batch deals (e.g., @daily, @hourly, '0 0 * * *')",
@@ -111,8 +123,7 @@ var CreateCmd = &cli.Command{
 			Category: "Scheduling",
 			Value:    "0",
 		},
-
-		// Restriction flags (matching deal schedule create command)
+		// Restriction flags
 		&cli.IntFlag{
 			Name:     "total-deal-number",
 			Usage:    "Max total deal number for this template (0 = unlimited)",
@@ -135,13 +146,6 @@ var CreateCmd = &cli.Command{
 			Category: "Restrictions",
 			Value:    "0",
 		},
-
-		// HTTP headers as string slice (matching deal schedule create command)
-		&cli.StringSliceFlag{
-			Name:     "http-header",
-			Usage:    "HTTP headers to be passed with the request (key=value format)",
-			Category: "Boost Only",
-		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -156,22 +160,34 @@ var CreateCmd = &cli.Command{
 			return errors.Wrap(err, "validation failed")
 		}
 
-		// Parse deal HTTP headers if provided
+		// Parse HTTP headers from string slice format to ConfigMap
 		var dealHTTPHeaders model.ConfigMap
-		if headersStr := c.String("deal-http-headers"); headersStr != "" {
-			var tempMap map[string]string
-			if err := json.Unmarshal([]byte(headersStr), &tempMap); err != nil {
-				return errors.Wrapf(err, "invalid JSON format for deal-http-headers: %s", headersStr)
+		httpHeaders := c.StringSlice("http-header")
+		if len(httpHeaders) > 0 {
+			tempMap := make(map[string]string)
+			for _, header := range httpHeaders {
+				parts := strings.SplitN(header, "=", 2)
+				if len(parts) != 2 {
+					return errors.Errorf("invalid HTTP header format: %s (expected key=value)", header)
+				}
+				tempMap[parts[0]] = parts[1]
 			}
 			dealHTTPHeaders = model.ConfigMap(tempMap)
 		}
 
 		// Parse allowed piece CIDs from flags and file
 		var allowedPieceCIDs model.StringSlice
+		cidSet := make(map[string]bool) // Use map to track unique CIDs
 
 		// Add piece CIDs from flag
 		if flagCIDs := c.StringSlice("allowed-piece-cid"); len(flagCIDs) > 0 {
-			allowedPieceCIDs = append(allowedPieceCIDs, flagCIDs...)
+			for _, cid := range flagCIDs {
+				cid = strings.TrimSpace(cid)
+				if cid != "" && !cidSet[cid] {
+					cidSet[cid] = true
+					allowedPieceCIDs = append(allowedPieceCIDs, cid)
+				}
+			}
 		}
 
 		// Add piece CIDs from file
@@ -186,31 +202,27 @@ var CreateCmd = &cli.Command{
 			lines := strings.Split(string(fileContent), "\n")
 			for _, line := range lines {
 				line = strings.TrimSpace(line)
-				if line != "" && !strings.HasPrefix(line, "#") { // Skip empty lines and comments
+				if line != "" && !strings.HasPrefix(line, "#") && !cidSet[line] { // Skip empty lines, comments, and duplicates
+					cidSet[line] = true
 					allowedPieceCIDs = append(allowedPieceCIDs, line)
 				}
 			}
 		}
 
-		// Parse HTTP headers from string slice to model.StringSlice
-		var httpHeaders model.StringSlice
-		if flagHeaders := c.StringSlice("http-header"); len(flagHeaders) > 0 {
-			httpHeaders = model.StringSlice(flagHeaders)
-		}
 
 		template, err := dealtemplate.Default.CreateHandler(c.Context, db, dealtemplate.CreateRequest{
 			Name:                 c.String("name"),
 			Description:          c.String("description"),
-			DealPricePerGB:       c.Float64("deal-price-per-gb"),
-			DealPricePerGBEpoch:  c.Float64("deal-price-per-gb-epoch"),
-			DealPricePerDeal:     c.Float64("deal-price-per-deal"),
-			DealDuration:         c.Duration("deal-duration"),
-			DealStartDelay:       c.Duration("deal-start-delay"),
-			DealVerified:         c.Bool("deal-verified"),
-			DealKeepUnsealed:     c.Bool("deal-keep-unsealed"),
-			DealAnnounceToIPNI:   c.Bool("deal-announce-to-ipni"),
-			DealProvider:         c.String("deal-provider"),
-			DealURLTemplate:      c.String("deal-url-template"),
+			DealPricePerGB:       c.Float64("price-per-gb"),
+			DealPricePerGBEpoch:  c.Float64("price-per-gb-epoch"),
+			DealPricePerDeal:     c.Float64("price-per-deal"),
+			DealDuration:         c.Duration("duration"),
+			DealStartDelay:       c.Duration("start-delay"),
+			DealVerified:         c.Bool("verified"),
+			DealKeepUnsealed:     c.Bool("keep-unsealed"),
+			DealAnnounceToIPNI:   c.Bool("ipni"),
+			DealProvider:         c.String("provider"),
+			DealURLTemplate:      c.String("url-template"),
 			DealHTTPHeaders:      dealHTTPHeaders,
 			DealNotes:            c.String("notes"),
 			DealForce:            c.Bool("force"),
@@ -228,18 +240,19 @@ var CreateCmd = &cli.Command{
 			MaxPendingDealSize:   c.String("max-pending-deal-size"),
 
 			// HTTP headers as string slice
-			HTTPHeaders: httpHeaders,
+			HTTPHeaders: model.StringSlice(httpHeaders),
 		})
 		if err != nil {
 			return errors.WithStack(err)
 		}
 
-		// Print success confirmation
-		if !c.Bool("json") {
-			println("✓ Deal template \"" + template.Name + "\" created successfully")
+		// Always print as pretty JSON
+		jsonBytes, err := json.MarshalIndent(template, "", "  ")
+		if err != nil {
+			return errors.Wrap(err, "failed to marshal template as JSON")
 		}
-
-		cliutil.Print(c, *template)
+		os.Stdout.Write(jsonBytes)
+		os.Stdout.Write([]byte("\n"))
 		return nil
 	},
 }
@@ -252,46 +265,43 @@ func validateCreateTemplateInputs(c *cli.Context) error {
 	}
 
 	// Validate pricing fields are non-negative
-	if c.Float64("deal-price-per-gb") < 0 {
+	if c.Float64("price-per-gb") < 0 {
 		return errors.New("deal price per GB must be non-negative")
 	}
-	if c.Float64("deal-price-per-gb-epoch") < 0 {
+	if c.Float64("price-per-gb-epoch") < 0 {
 		return errors.New("deal price per GB epoch must be non-negative")
 	}
-	if c.Float64("deal-price-per-deal") < 0 {
+	if c.Float64("price-per-deal") < 0 {
 		return errors.New("deal price per deal must be non-negative")
 	}
 
 	// Validate durations are non-negative
-	if c.Duration("deal-duration") < 0 {
+	if c.Duration("duration") < 0 {
 		return errors.New("deal duration cannot be negative")
 	}
-	if c.Duration("deal-start-delay") < 0 {
+	if c.Duration("start-delay") < 0 {
 		return errors.New("deal start delay cannot be negative")
 	}
 
 	// Validate deal provider format if provided
-	if provider := c.String("deal-provider"); provider != "" {
+	if provider := c.String("provider"); provider != "" {
 		if len(provider) < 3 || (provider[:2] != "f0" && provider[:2] != "t0") {
 			return errors.New("deal provider must be a valid storage provider ID (e.g., f01234 or t01234)")
 		}
 	}
 
 	// Validate HTTP headers if provided
-	if headersStr := c.String("deal-http-headers"); headersStr != "" {
-		var tempMap map[string]string
-		if err := json.Unmarshal([]byte(headersStr), &tempMap); err != nil {
-			return errors.Wrapf(err, "invalid JSON format for deal-http-headers")
+	httpHeaders := c.StringSlice("http-header")
+	for _, header := range httpHeaders {
+		parts := strings.SplitN(header, "=", 2)
+		if len(parts) != 2 {
+			return errors.Errorf("invalid HTTP header format: %s (expected key=value)", header)
 		}
-
-		// Validate header keys and values
-		for key, value := range tempMap {
-			if key == "" {
-				return errors.New("HTTP header keys cannot be empty")
-			}
-			if value == "" {
-				return errors.New("HTTP header values cannot be empty")
-			}
+		if parts[0] == "" {
+			return errors.New("HTTP header keys cannot be empty")
+		}
+		if parts[1] == "" {
+			return errors.New("HTTP header values cannot be empty")
 		}
 	}
 

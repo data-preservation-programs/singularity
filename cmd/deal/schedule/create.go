@@ -18,36 +18,21 @@ var re = regexp.MustCompile(`\bbaga[a-z2-7]+\b`)
 
 var CreateCmd = &cli.Command{
 	Name:  "create",
-	Usage: "Create a schedule to send out deals to a storage provider",
-	Description: `CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field
-  Standard CRON:
-    ┌───────────── minute (0 - 59)
-    │ ┌───────────── hour (0 - 23)
-    │ │ ┌───────────── day of the month (1 - 31)
-    │ │ │ ┌───────────── month (1 - 12)
-    │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
-    │ │ │ │ │                                   
-    │ │ │ │ │
-    │ │ │ │ │
-    * * * * *
+	Usage: "Create a schedule to send out deals to a storage provider with unified flags and defaults",
+	Description: `Create a new deal schedule with unified flags and default values.
 
-  Optional Second field:
-    ┌─────────────  second (0 - 59)
-    │ ┌─────────────  minute (0 - 59)
-    │ │ ┌─────────────  hour (0 - 23)
-    │ │ │ ┌─────────────  day of the month (1 - 31)
-    │ │ │ │ ┌─────────────  month (1 - 12)
-    │ │ │ │ │ ┌─────────────  day of the week (0 - 6) (Sunday to Saturday)
-    │ │ │ │ │ │
-    │ │ │ │ │ │
-    * * * * * *
+Key flags:
+  --provider           Storage Provider ID (e.g., f01234)
+  --duration           Deal duration (default: 12840h)
+  --start-delay        Deal start delay (default: 72h)
+  --verified           Propose deals as verified (default: true)
+  --keep-unsealed      Keep unsealed copy (default: true)
+  --ipni               Announce deals to IPNI (default: true)
+  --http-header        HTTP headers (key=value)
+  --allowed-piece-cid  List of allowed piece CIDs
+  --allowed-piece-cid-file File with allowed piece CIDs
 
-  Descriptor:
-    @yearly, @annually - Equivalent to 0 0 1 1 *
-    @monthly           - Equivalent to 0 0 1 * *
-    @weekly            - Equivalent to 0 0 * * 0
-    @daily,  @midnight - Equivalent to 0 0 * * *
-    @hourly            - Equivalent to 0 * * * *`,
+See --help for all options.`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "preparation",
