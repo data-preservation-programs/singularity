@@ -200,122 +200,117 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 	// Create channel for parsed deals
 	dealChan := make(chan *ParsedDeal, 100)
 
+	// Create channel for raw deals that need processing
+	rawDealChan := make(chan struct {
+		DealID  uint64
+		RawDeal json.RawMessage
+	}, 200)
+
+	// Start worker goroutines for parallel deal processing
+	const numWorkers = 4
+	var wg sync.WaitGroup
+	wg.Add(numWorkers)
+
+	for i := 0; i < numWorkers; i++ {
+		go func() {
+			defer wg.Done()
+			for raw := range rawDealChan {
+				// Extract deal fields directly with gjson
+				deal := Deal{
+					Proposal: DealProposal{
+						PieceCID: Cid{
+							Root: gjson.GetBytes(raw.RawDeal, "Proposal.PieceCID./").String(),
+						},
+						PieceSize:            gjson.GetBytes(raw.RawDeal, "Proposal.PieceSize").Int(),
+						VerifiedDeal:         gjson.GetBytes(raw.RawDeal, "Proposal.VerifiedDeal").Bool(),
+						Client:               gjson.GetBytes(raw.RawDeal, "Proposal.Client").String(),
+						Provider:             gjson.GetBytes(raw.RawDeal, "Proposal.Provider").String(),
+						Label:                gjson.GetBytes(raw.RawDeal, "Proposal.Label").String(),
+						StartEpoch:           int32(gjson.GetBytes(raw.RawDeal, "Proposal.StartEpoch").Int()),
+						EndEpoch:             int32(gjson.GetBytes(raw.RawDeal, "Proposal.EndEpoch").Int()),
+						StoragePricePerEpoch: gjson.GetBytes(raw.RawDeal, "Proposal.StoragePricePerEpoch").String(),
+					},
+					State: DealState{
+						SectorStartEpoch: int32(gjson.GetBytes(raw.RawDeal, "State.SectorStartEpoch").Int()),
+						LastUpdatedEpoch: int32(gjson.GetBytes(raw.RawDeal, "State.LastUpdatedEpoch").Int()),
+						SlashEpoch:       int32(gjson.GetBytes(raw.RawDeal, "State.SlashEpoch").Int()),
+					},
+				}
+
+				// Send parsed deal
+				dealChan <- &ParsedDeal{
+					DealID: raw.DealID,
+					Deal:   deal,
+				}
+			}
+		}()
+	}
+
+	// Goroutine to close dealChan after all workers finish
 	go func() {
-		defer close(dealChan)
+		wg.Wait()
+		close(dealChan)
+	}()
 
-		decoder := json.NewDecoder(reader)
+	go func() {
+		defer close(rawDealChan)
 
-		// Read opening brace of main object
-		token, err := decoder.Token()
+		// Read entire response into memory for gjson parsing
+		// This is manageable due to compression (~7GB compressed to ~500MB)
+		data, err := io.ReadAll(reader)
 		if err != nil {
-			Logger.Errorw("failed to read opening token", "error", err)
+			Logger.Errorw("failed to read response data", "error", err)
 			return
 		}
-		if delim, ok := token.(json.Delim); !ok || delim != '{' {
-			Logger.Errorw("expected object, got", "token", token)
-			return
-		}
+
+		// Parse JSON with gjson
+		parsed := gjson.ParseBytes(data)
 
 		// Handle depth=2 case (Lotus API format with "result" wrapper)
+		dealsObj := parsed
 		if depth == 2 {
-			// Skip to the "result" field
-			for decoder.More() {
-				keyToken, err := decoder.Token()
-				if err != nil {
-					Logger.Errorw("failed to read key", "error", err)
-					return
-				}
-
-				if key, ok := keyToken.(string); ok && key == "result" {
-					// Found result field, read its opening brace
-					token, err := decoder.Token()
-					if err != nil {
-						Logger.Errorw("failed to read result opening token", "error", err)
-						return
-					}
-					if delim, ok := token.(json.Delim); !ok || delim != '{' {
-						Logger.Errorw("expected result object, got", "token", token)
-						return
-					}
-					break
-				} else {
-					// Skip non-result fields
-					var dummy json.RawMessage
-					if err := decoder.Decode(&dummy); err != nil {
-						Logger.Errorw("failed to skip field", "key", key, "error", err)
-						return
-					}
-				}
+			dealsObj = parsed.Get("result")
+			if !dealsObj.Exists() {
+				Logger.Errorw("result field not found in lotus API response")
+				return
 			}
 		}
 
-		// Process each deal (same logic for both depth=1 and depth=2, now we're at the deals level)
-		for decoder.More() {
-			// Read deal ID key
-			keyToken, err := decoder.Token()
-			if err != nil {
-				Logger.Errorw("failed to read deal key", "error", err)
-				break
-			}
-
-			dealIDStr, ok := keyToken.(string)
-			if !ok {
-				Logger.Errorw("expected string key, got", "token", keyToken)
-				continue
-			}
-
+		// Iterate through all deals with gjson
+		dealsObj.ForEach(func(dealIDResult, dealData gjson.Result) bool {
+			// Parse deal ID
+			dealIDStr := dealIDResult.String()
 			dealID, err := strconv.ParseUint(dealIDStr, 10, 64)
 			if err != nil {
 				Logger.Warnw("failed to parse deal ID", "key", dealIDStr, "error", err)
-				continue
-			}
-
-			// Read the deal value as raw JSON
-			var rawDeal json.RawMessage
-			if err := decoder.Decode(&rawDeal); err != nil {
-				Logger.Errorw("failed to decode deal value", "dealID", dealID, "error", err)
-				continue
+				return true // continue
 			}
 
 			// Fast client check with gjson
-			client := gjson.GetBytes(rawDeal, "Proposal.Client").String()
+			client := dealData.Get("Proposal.Client").String()
 			if client == "" {
-				continue // Skip deals without client
+				return true // continue - skip deals without client
 			}
 
 			// Check if we care about this client
 			if _, want := walletIDs[client]; !want {
-				continue // Skip unwanted clients - this is the key optimization!
+				return true // continue - skip unwanted clients
 			}
 
-			// Extract deal fields directly with gjson
-			deal := Deal{
-				Proposal: DealProposal{
-					PieceCID: Cid{
-						Root: gjson.GetBytes(rawDeal, "Proposal.PieceCID./").String(),
-					},
-					PieceSize:            gjson.GetBytes(rawDeal, "Proposal.PieceSize").Int(),
-					VerifiedDeal:         gjson.GetBytes(rawDeal, "Proposal.VerifiedDeal").Bool(),
-					Client:               client, // Already extracted above
-					Provider:             gjson.GetBytes(rawDeal, "Proposal.Provider").String(),
-					Label:                gjson.GetBytes(rawDeal, "Proposal.Label").String(),
-					StartEpoch:           int32(gjson.GetBytes(rawDeal, "Proposal.StartEpoch").Int()),
-					EndEpoch:             int32(gjson.GetBytes(rawDeal, "Proposal.EndEpoch").Int()),
-					StoragePricePerEpoch: gjson.GetBytes(rawDeal, "Proposal.StoragePricePerEpoch").String(),
-				},
-				State: DealState{
-					SectorStartEpoch: int32(gjson.GetBytes(rawDeal, "State.SectorStartEpoch").Int()),
-					LastUpdatedEpoch: int32(gjson.GetBytes(rawDeal, "State.LastUpdatedEpoch").Int()),
-					SlashEpoch:       int32(gjson.GetBytes(rawDeal, "State.SlashEpoch").Int()),
-				},
+			// Convert dealData back to json.RawMessage for workers
+			rawDeal := json.RawMessage(dealData.Raw)
+
+			// Send raw deal to worker goroutines
+			rawDealChan <- struct {
+				DealID  uint64
+				RawDeal json.RawMessage
+			}{
+				DealID:  dealID,
+				RawDeal: rawDeal,
 			}
 
-			// Send parsed deal
-			dealChan <- &ParsedDeal{
-				DealID: dealID,
-				Deal:   deal,
-			}
-		}
+			return true // continue processing
+		})
 	}()
 
 	return dealChan, countingReader, closer, nil
