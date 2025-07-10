@@ -623,6 +623,14 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 	return status, false, nil
 }
 
+// capitalizeFirst capitalizes the first letter of a string
+func capitalizeFirst(s string) string {
+	if s == "" {
+		return ""
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
+}
+
 // generateDynamicStorageFlags creates CLI flags for all supported storage backends
 func generateDynamicStorageFlags() []cli.Flag {
 	var flags []cli.Flag
@@ -651,37 +659,37 @@ func generateDynamicStorageFlags() []cli.Flag {
 						flags = append(flags, &cli.BoolFlag{
 							Name:     fullFlagName,
 							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
 						})
 					case "string":
 						flags = append(flags, &cli.StringFlag{
 							Name:     fullFlagName,
 							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
 						})
 					case "int":
 						flags = append(flags, &cli.IntFlag{
 							Name:     fullFlagName,
 							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
 						})
 					case "SizeSuffix":
 						flags = append(flags, &cli.StringFlag{
 							Name:     fullFlagName,
 							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
 						})
 					case "Duration":
 						flags = append(flags, &cli.DurationFlag{
 							Name:     fullFlagName,
 							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
 						})
 					default:
 						flags = append(flags, &cli.StringFlag{
 							Name:     fullFlagName,
 							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", strings.Title(context), strings.ToUpper(backend.Prefix)),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
 						})
 					}
 				}
