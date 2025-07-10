@@ -18,14 +18,6 @@ type Handler struct{}
 
 var Default = &Handler{}
 
-// Deal templates now fully support ALL fields from deal schedule create command:
-// ✅ All deal proposal settings (price, duration, provider, etc.)
-// ✅ All scheduling settings (cron, deal number/size per schedule)
-// ✅ All restriction settings (total limits, pending limits)
-// ✅ All boost-specific settings (HTTP headers, URL template, IPNI)
-// ✅ All validation and piece CID restrictions
-//
-// This makes deal templates a complete replacement for inline deal parameters.
 
 // CreateRequest represents the request to create a deal template
 type CreateRequest struct {
