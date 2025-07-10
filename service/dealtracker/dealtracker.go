@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -23,7 +22,6 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/klauspost/compress/zstd"
-	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm"
 )
 
@@ -99,6 +97,7 @@ type DealTracker struct {
 	lotusURL    string
 	lotusToken  string
 	once        bool
+	batchSize   int
 }
 
 func NewDealTracker(
@@ -117,6 +116,7 @@ func NewDealTracker(
 		lotusURL:    lotusURL,
 		lotusToken:  lotusToken,
 		once:        once,
+		batchSize:   100, // Default batch size
 	}
 }
 
@@ -594,7 +594,9 @@ func (d *DealTracker) trackDeal(ctx context.Context, walletIDs map[string]struct
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer func() { _ = closer.Close() }()
+	defer closer.Close()
+
+	// Start the download stats logger
 	countingCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go func() {
@@ -612,38 +614,29 @@ func (d *DealTracker) trackDeal(ctx context.Context, walletIDs map[string]struct
 			}
 		}
 	}()
-	for stream := range kvstream {
-		keyValuePair, ok := stream.Value.(jstream.KV)
 
-		if !ok {
-			return errors.New("failed to get key value pair")
-		}
+	// Create batch parser with configured batch size
+	// Batching reduces DB contention and improves throughput
+	parser := NewBatchParser(walletIDs, d.batchSize)
 
-		// ── fast-path: peek at Proposal.Client before full decode ──
-		if obj, ok := keyValuePair.Value.(map[string]any); ok {
-			if prop, ok := obj["Proposal"].(map[string]any); ok {
-				if client, ok := prop["Client"].(string); ok {
-					if _, want := walletIDs[client]; !want {
-						continue
-					}
-				}
+	// Start parsing deals in batches
+	batches, err := parser.ParseStream(ctx, kvstream)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Process batches of deals
+	for batch := range batches {
+		// Process all deals in the batch
+		for _, parsed := range batch {
+			if err := callback(parsed.DealID, parsed.Deal); err != nil {
+				return errors.WithStack(err)
 			}
 		}
 
-		var deal Deal
-		err = mapstructure.Decode(keyValuePair.Value, &deal)
-		if err != nil {
-			return errors.Wrapf(err, "failed to decode deal %s", keyValuePair.Value)
-		}
-
-		dealID, err := strconv.ParseUint(keyValuePair.Key, 10, 64)
-		if err != nil {
-			return errors.Wrapf(err, "failed to convert deal id %s to int", keyValuePair.Key)
-		}
-
-		err = callback(dealID, deal)
-		if err != nil {
-			return errors.WithStack(err)
+		// Check if context is cancelled between batches
+		if ctx.Err() != nil {
+			return ctx.Err()
 		}
 	}
 
