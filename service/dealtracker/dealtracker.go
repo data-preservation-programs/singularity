@@ -288,11 +288,26 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 				continue // Skip unwanted clients - this is the key optimization!
 			}
 
-			// Only parse deals we actually want
-			var deal Deal
-			if err := json.Unmarshal(rawDeal, &deal); err != nil {
-				Logger.Warnw("failed to unmarshal wanted deal", "dealID", dealID, "error", err)
-				continue
+			// Extract deal fields directly with gjson
+			deal := Deal{
+				Proposal: DealProposal{
+					PieceCID: Cid{
+						Root: gjson.GetBytes(rawDeal, "Proposal.PieceCID./").String(),
+					},
+					PieceSize:            gjson.GetBytes(rawDeal, "Proposal.PieceSize").Int(),
+					VerifiedDeal:         gjson.GetBytes(rawDeal, "Proposal.VerifiedDeal").Bool(),
+					Client:               client, // Already extracted above
+					Provider:             gjson.GetBytes(rawDeal, "Proposal.Provider").String(),
+					Label:                gjson.GetBytes(rawDeal, "Proposal.Label").String(),
+					StartEpoch:           int32(gjson.GetBytes(rawDeal, "Proposal.StartEpoch").Int()),
+					EndEpoch:             int32(gjson.GetBytes(rawDeal, "Proposal.EndEpoch").Int()),
+					StoragePricePerEpoch: gjson.GetBytes(rawDeal, "Proposal.StoragePricePerEpoch").String(),
+				},
+				State: DealState{
+					SectorStartEpoch: int32(gjson.GetBytes(rawDeal, "State.SectorStartEpoch").Int()),
+					LastUpdatedEpoch: int32(gjson.GetBytes(rawDeal, "State.LastUpdatedEpoch").Int()),
+					SlashEpoch:       int32(gjson.GetBytes(rawDeal, "State.SlashEpoch").Int()),
+				},
 			}
 
 			// Send parsed deal
