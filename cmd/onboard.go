@@ -245,11 +245,6 @@ Use deal templates to configure deal parameters - individual deal flags are not 
 					fmt.Println("\n🧹 Cleaning up workers...")
 
 				}
-				err = workerManager.Stop(ctx)
-				if err != nil {
-					if !isJSON {
-						fmt.Printf("⚠ Warning: failed to stop workers cleanly: %v\n", err)
-					}
 				}
 				err = workerManager.Stop(ctx)
 				if err != nil {
