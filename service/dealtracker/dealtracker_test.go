@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bcicen/jstream"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/ipfs/boxo/util"
@@ -115,52 +114,6 @@ func TestDealTracker_MultipleRunning(t *testing.T) {
 			t.Fatal("timeout waiting for tracker1 to exit")
 		}
 	})
-}
-
-func TestDealStateStreamFromHttpRequest_Compressed(t *testing.T) {
-	url, server := setupTestServer(t)
-	defer func() { server.Close() }()
-	req, err := http.NewRequest("GET", url, nil)
-	require.NoError(t, err)
-	depth := 1
-	stream, _, closer, err := DealStateStreamFromHTTPRequest(req, depth, true)
-	require.NoError(t, err)
-	defer func() { _ = closer.Close() }()
-	var kvs []jstream.KV
-	for s := range stream {
-		pair, ok := s.Value.(jstream.KV)
-		require.True(t, ok)
-		kvs = append(kvs, pair)
-	}
-	require.Len(t, kvs, 1)
-	require.Equal(t, "0", kvs[0].Key)
-	require.Equal(t, "bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz",
-		kvs[0].Value.(map[string]any)["Proposal"].(map[string]any)["Label"].(string))
-}
-
-func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
-	body := []byte(`{"jsonrpc":"2.0","result":{"0":{"Proposal":{"PieceCID":{"/":"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq"},"PieceSize":34359738368,"VerifiedDeal":true,"Client":"t0100","Provider":"t01000","Label":"bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz","StartEpoch":0,"EndEpoch":1552977,"StoragePricePerEpoch":"0","ProviderCollateral":"0","ClientCollateral":"0"},"State":{"SectorStartEpoch":0,"LastUpdatedEpoch":691200,"SlashEpoch":-1,"VerifiedClaim":0}}}}`)
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write(body)
-	}))
-	defer func() { server.Close() }()
-	req, err := http.NewRequest("GET", server.URL, nil)
-	require.NoError(t, err)
-	depth := 2
-	stream, _, closer, err := DealStateStreamFromHTTPRequest(req, depth, false)
-	require.NoError(t, err)
-	defer func() { _ = closer.Close() }()
-	var kvs []jstream.KV
-	for s := range stream {
-		pair, ok := s.Value.(jstream.KV)
-		require.True(t, ok)
-		kvs = append(kvs, pair)
-	}
-	require.Len(t, kvs, 1)
-	require.Equal(t, "0", kvs[0].Key)
-	require.Equal(t, "bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz",
-		kvs[0].Value.(map[string]any)["Proposal"].(map[string]any)["Label"].(string))
 }
 
 func TestTrackDeal(t *testing.T) {
@@ -390,4 +343,52 @@ func TestRunOnce(t *testing.T) {
 		require.Equal(t, model.DealActive, allDeals[6].State)
 		require.NotNil(t, allDeals[6].LastVerifiedAt)
 	})
+}
+
+func TestDealStateStreamFromHttpRequest_Compressed(t *testing.T) {
+	url, server := setupTestServer(t)
+	defer func() { server.Close() }()
+	req, err := http.NewRequest("GET", url, nil)
+	require.NoError(t, err)
+	depth := 1
+	walletIDs := map[string]struct{}{
+		"t0100": {},
+	}
+	stream, _, closer, err := DealStateStreamFromHTTPRequest(req, depth, true, walletIDs)
+	require.NoError(t, err)
+	defer func() { _ = closer.Close() }()
+	var deals []*ParsedDeal
+	for deal := range stream {
+		deals = append(deals, deal)
+	}
+	require.Len(t, deals, 1)
+	require.Equal(t, uint64(0), deals[0].DealID)
+	require.Equal(t, "bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz",
+		deals[0].Deal.Proposal.Label)
+}
+
+func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
+	body := []byte(`{"jsonrpc":"2.0","result":{"0":{"Proposal":{"PieceCID":{"/":"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq"},"PieceSize":34359738368,"VerifiedDeal":true,"Client":"t0100","Provider":"t01000","Label":"bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz","StartEpoch":0,"EndEpoch":1552977,"StoragePricePerEpoch":"0","ProviderCollateral":"0","ClientCollateral":"0"},"State":{"SectorStartEpoch":0,"LastUpdatedEpoch":691200,"SlashEpoch":-1,"VerifiedClaim":0}}}}`)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(body)
+	}))
+	defer func() { server.Close() }()
+	req, err := http.NewRequest("GET", server.URL, nil)
+	require.NoError(t, err)
+	depth := 2
+	walletIDs := map[string]struct{}{
+		"t0100": {},
+	}
+	stream, _, closer, err := DealStateStreamFromHTTPRequest(req, depth, false, walletIDs)
+	require.NoError(t, err)
+	defer func() { _ = closer.Close() }()
+	var deals []*ParsedDeal
+	for deal := range stream {
+		deals = append(deals, deal)
+	}
+	require.Len(t, deals, 1)
+	require.Equal(t, uint64(0), deals[0].DealID)
+	require.Equal(t, "bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz",
+		deals[0].Deal.Proposal.Label)
 }

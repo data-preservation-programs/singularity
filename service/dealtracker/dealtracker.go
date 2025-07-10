@@ -16,7 +16,6 @@ import (
 	"net/http/pprof"
 	_ "net/http/pprof"
 
-	"github.com/bcicen/jstream"
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
@@ -162,71 +161,8 @@ func (t *ThreadSafeReadCloser) Close() {
 	t.closer()
 }
 
-// DealStateStreamFromHTTPRequest retrieves the deal state from an HTTP request and returns a stream of jstream.MetaValue,
-// along with a Counter, io.Closer, and any error encountered.
-//
-// The function takes the following parameters:
-//   - request: The HTTP request to retrieve the deal state.
-//   - depth: The depth of the JSON decoding.
-//   - decompress: A boolean flag indicating whether to decompress the response body.
-//
-// The function performs the following steps:
-//
-//  1. Sends an HTTP request using http.DefaultClient.Do.
-//
-//  2. If an error occurs during the request, it returns nil for the channel, Counter, io.Closer, and the error wrapped with an appropriate message.
-//
-//  3. If the response status code is not http.StatusOK, it closes the response body and returns nil for the channel, Counter, io.Closer, and an error indicating the failure.
-//
-//  4. Creates a countingReader using NewCountingReader to count the number of bytes read from the response body.
-//
-//  5. If decompress is true, creates a zstd decompressor using zstd.NewReader and wraps it in a ThreadSafeReadCloser.
-//     - If an error occurs during decompression, it closes the response body and returns nil for the channel, Counter, io.Closer, and the error wrapped with an appropriate message.
-//     - Creates a jstream.Decoder using jstream.NewDecoder with the decompressor and specified depth, and sets it to emit key-value pairs.
-//     - Creates a CloserFunc that closes the decompressor and response body.
-//
-//  6. If decompress is false, creates a jstream.Decoder using jstream.NewDecoder with the countingReader and specified depth, and sets it to emit key-value pairs.
-//     - Sets the response body as the closer.
-//
-//  7. Returns the jstream.MetaValue stream from jsonDecoder.Stream(), the countingReader, closer, and nil for the error.
-func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress bool) (chan *jstream.MetaValue, Counter, io.Closer, error) {
-	//nolint: bodyclose
-	resp, err := http.DefaultClient.Do(request)
-	if err != nil {
-		return nil, nil, nil, errors.WithStack(err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		_ = resp.Body.Close()
-		return nil, nil, nil, errors.Newf("failed to get deal state: %s", resp.Status)
-	}
-	var jsonDecoder *jstream.Decoder
-	var closer io.Closer
-	countingReader := NewCountingReader(resp.Body)
-	if decompress {
-		decompressor, err := zstd.NewReader(countingReader)
-		if err != nil {
-			_ = resp.Body.Close()
-			return nil, nil, nil, errors.WithStack(err)
-		}
-		safeDecompressor := &ThreadSafeReadCloser{
-			reader: decompressor,
-			closer: decompressor.Close,
-		}
-		jsonDecoder = jstream.NewDecoder(safeDecompressor, depth).EmitKV()
-		closer = CloserFunc(func() error {
-			safeDecompressor.Close()
-			return resp.Body.Close()
-		})
-	} else {
-		jsonDecoder = jstream.NewDecoder(countingReader, depth).EmitKV()
-		closer = resp.Body
-	}
-
-	return jsonDecoder.Stream(), countingReader, closer, nil
-}
-
-// DealStateStreamWithCustomParser creates a custom streaming parser that avoids jstream overhead
-func DealStateStreamWithCustomParser(request *http.Request, decompress bool, walletIDs map[string]struct{}) (chan *ParsedDeal, Counter, io.Closer, error) {
+// DealStateStreamFromHTTPRequest creates a custom streaming parser for efficient deal processing
+func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress bool, walletIDs map[string]struct{}) (chan *ParsedDeal, Counter, io.Closer, error) {
 	//nolint: bodyclose
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
@@ -247,9 +183,13 @@ func DealStateStreamWithCustomParser(request *http.Request, decompress bool, wal
 			_ = resp.Body.Close()
 			return nil, nil, nil, errors.WithStack(err)
 		}
-		reader = decompressor
+		safeDecompressor := &ThreadSafeReadCloser{
+			reader: decompressor,
+			closer: decompressor.Close,
+		}
+		reader = safeDecompressor
 		closer = CloserFunc(func() error {
-			decompressor.Close()
+			safeDecompressor.Close()
 			return resp.Body.Close()
 		})
 	} else {
@@ -276,7 +216,40 @@ func DealStateStreamWithCustomParser(request *http.Request, decompress bool, wal
 			return
 		}
 
-		// Process each deal
+		// Handle depth=2 case (Lotus API format with "result" wrapper)
+		if depth == 2 {
+			// Skip to the "result" field
+			for decoder.More() {
+				keyToken, err := decoder.Token()
+				if err != nil {
+					Logger.Errorw("failed to read key", "error", err)
+					return
+				}
+
+				if key, ok := keyToken.(string); ok && key == "result" {
+					// Found result field, read its opening brace
+					token, err := decoder.Token()
+					if err != nil {
+						Logger.Errorw("failed to read result opening token", "error", err)
+						return
+					}
+					if delim, ok := token.(json.Delim); !ok || delim != '{' {
+						Logger.Errorw("expected result object, got", "token", token)
+						return
+					}
+					break
+				} else {
+					// Skip non-result fields
+					var dummy json.RawMessage
+					if err := decoder.Decode(&dummy); err != nil {
+						Logger.Errorw("failed to skip field", "key", key, "error", err)
+						return
+					}
+				}
+			}
+		}
+
+		// Process each deal (same logic for both depth=1 and depth=2, now we're at the deals level)
 		for decoder.More() {
 			// Read deal ID key
 			keyToken, err := decoder.Token()
@@ -768,14 +741,14 @@ func (d *DealTracker) trackDeal(ctx context.Context, walletIDs map[string]struct
 	return ctx.Err()
 }
 
-func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaValue, Counter, io.Closer, error) {
+func (d *DealTracker) dealStateStreamCustom(ctx context.Context, walletIDs map[string]struct{}) (chan *ParsedDeal, Counter, io.Closer, error) {
 	if d.dealZstURL != "" {
 		Logger.Infof("getting deal state from %s", d.dealZstURL)
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.dealZstURL, nil)
 		if err != nil {
 			return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state zst file %s", d.dealZstURL)
 		}
-		return DealStateStreamFromHTTPRequest(req, 1, true)
+		return DealStateStreamFromHTTPRequest(req, 1, true, walletIDs)
 	}
 
 	Logger.Infof("getting deal state from %s", d.lotusURL)
@@ -788,28 +761,5 @@ func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaVa
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
-	return DealStateStreamFromHTTPRequest(req, 2, false)
-}
-
-func (d *DealTracker) dealStateStreamCustom(ctx context.Context, walletIDs map[string]struct{}) (chan *ParsedDeal, Counter, io.Closer, error) {
-	if d.dealZstURL != "" {
-		Logger.Infof("getting deal state from %s with custom parser", d.dealZstURL)
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.dealZstURL, nil)
-		if err != nil {
-			return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state zst file %s", d.dealZstURL)
-		}
-		return DealStateStreamWithCustomParser(req, true, walletIDs)
-	}
-
-	Logger.Infof("getting deal state from %s with custom parser", d.lotusURL)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
-	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state from lotus API %s", d.lotusURL)
-	}
-	if d.lotusToken != "" {
-		req.Header.Set("Authorization", "Bearer "+d.lotusToken)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
-	return DealStateStreamWithCustomParser(req, false, walletIDs)
+	return DealStateStreamFromHTTPRequest(req, 2, false, walletIDs)
 }

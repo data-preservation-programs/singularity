@@ -5,7 +5,6 @@ go 1.23.6
 require (
 	github.com/alecthomas/units v0.0.0-20231202071711-9a357b53e9c9
 	github.com/avast/retry-go v3.0.0+incompatible
-	github.com/bcicen/jstream v1.0.1
 	github.com/brianvoe/gofakeit/v6 v6.23.2
 	github.com/cockroachdb/errors v1.11.3
 	github.com/data-preservation-programs/table v0.0.3
