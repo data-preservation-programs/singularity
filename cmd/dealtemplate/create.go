@@ -250,8 +250,12 @@ See --help for all options.`,
 		if err != nil {
 			return errors.Wrap(err, "failed to marshal template as JSON")
 		}
-		os.Stdout.Write(jsonBytes)
-		os.Stdout.Write([]byte("\n"))
+		if _, err := os.Stdout.Write(jsonBytes); err != nil {
+			return errors.Wrap(err, "failed to write JSON to stdout")
+		}
+		if _, err := os.Stdout.Write([]byte("\n")); err != nil {
+			return errors.Wrap(err, "failed to write newline to stdout")
+		}
 		return nil
 	},
 }
