@@ -257,140 +257,33 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 	go func() {
 		defer close(rawDealChan)
 
-		// Streaming state machine for low memory parsing
-		const bufferSize = 64 * 1024 // 64KB buffer
-		buffer := make([]byte, bufferSize)
+		// Read in reasonable chunks to avoid loading 40GB at once
+		const chunkSize = 4 * 1024 * 1024 // 4MB chunks
 
 		var accumulated []byte
-		var inString bool
-		var escapeNext bool
-		var braceDepth int
-		var foundMainObject bool
-		var dealValueStart int
-		var currentDealID string
-
-		// State tracking
-		type parseState int
-		const (
-			seekingDeals  parseState = iota // Looking for start of deals object
-			inDealsObject                   // Inside the deals object, looking for deal keys
-			foundDealKey                    // Found a deal key, seeking the value
-			inDealValue                     // Inside a deal value object
-		)
-		state := seekingDeals
+		buffer := make([]byte, chunkSize)
 
 		for {
-			n, err := reader.Read(buffer[:])
+			n, err := reader.Read(buffer)
 			if n > 0 {
-				chunk := buffer[:n]
+				accumulated = append(accumulated, buffer[:n]...)
 
-				for i := 0; i < len(chunk); i++ {
-					b := chunk[i]
-					accumulated = append(accumulated, b)
+				// Process complete deals from accumulated data
+				processed := findAndProcessCompleteDeals(accumulated, rawDealChan, walletIDs, depth)
 
-					if escapeNext {
-						escapeNext = false
-						continue
-					}
-
-					switch b {
-					case '\\':
-						if inString {
-							escapeNext = true
-						}
-					case '"':
-						if !escapeNext {
-							inString = !inString
-
-							// Check for deal key when we close a string
-							if !inString && state == inDealsObject && braceDepth == (1+(depth-1)) {
-								// Extract the key we just finished
-								keyEnd := len(accumulated) - 1
-								for keyStart := keyEnd - 1; keyStart >= 0; keyStart-- {
-									if accumulated[keyStart] == '"' {
-										currentDealID = string(accumulated[keyStart+1 : keyEnd])
-										state = foundDealKey
-										break
-									}
-								}
-							}
-						}
-					case ':':
-						if !inString && state == foundDealKey {
-							// Start of deal value - skip whitespace
-							dealValueStart = len(accumulated)
-							for dealValueStart < len(accumulated) && (accumulated[dealValueStart-1] == ' ' || accumulated[dealValueStart-1] == '\t' || accumulated[dealValueStart-1] == '\n' || accumulated[dealValueStart-1] == '\r') {
-								dealValueStart++
-							}
-							state = inDealValue
-						}
-					case '{':
-						if !inString {
-							braceDepth++
-							if !foundMainObject {
-								foundMainObject = true
-								if depth == 1 {
-									state = inDealsObject // Direct deals object
-								}
-								// For depth=2, we need to find "result" first
-							}
-
-							// Check if we found "result" object for depth=2
-							if depth == 2 && braceDepth == 2 && state == seekingDeals {
-								// Look back for "result":
-								if len(accumulated) >= 10 {
-									lookback := accumulated[max(0, len(accumulated)-20):]
-									if bytes.Contains(lookback, []byte(`"result"`)) {
-										state = inDealsObject
-									}
-								}
-							}
-						}
-					case '}':
-						if !inString {
-							braceDepth--
-
-							// Check if we finished a deal value
-							if state == inDealValue && braceDepth == (1+(depth-1)) {
-								// Process the complete deal
-								dealJSON := accumulated[dealValueStart:len(accumulated)]
-								processDealFast(currentDealID, dealJSON, rawDealChan, walletIDs)
-
-								// Reset for next deal
-								state = inDealsObject
-								currentDealID = ""
-							}
-						}
-					case ',':
-						if !inString && state == inDealValue && braceDepth == (1+(depth-1)) {
-							// End of deal value
-							dealJSON := accumulated[dealValueStart : len(accumulated)-1]
-							processDealFast(currentDealID, dealJSON, rawDealChan, walletIDs)
-
-							// Reset for next deal
-							state = inDealsObject
-							currentDealID = ""
-						}
-					}
+				// Keep unprocessed remainder
+				if processed > 0 && processed < len(accumulated) {
+					copy(accumulated, accumulated[processed:])
+					accumulated = accumulated[:len(accumulated)-processed]
+				} else if processed == len(accumulated) {
+					accumulated = accumulated[:0] // Clear all
 				}
 			}
 
 			if err == io.EOF {
-				// Process final deal if any
-				if state == inDealValue && len(currentDealID) > 0 && dealValueStart < len(accumulated) {
-					// Remove trailing braces
-					endPos := len(accumulated)
-					for endPos > dealValueStart && (accumulated[endPos-1] == '}' || accumulated[endPos-1] == ' ' || accumulated[endPos-1] == '\t' || accumulated[endPos-1] == '\n' || accumulated[endPos-1] == '\r') {
-						if accumulated[endPos-1] == '}' {
-							endPos--
-							break
-						}
-						endPos--
-					}
-					if dealValueStart < endPos {
-						dealJSON := accumulated[dealValueStart:endPos]
-						processDealFast(currentDealID, dealJSON, rawDealChan, walletIDs)
-					}
+				// Process any remaining complete data
+				if len(accumulated) > 0 {
+					findAndProcessCompleteDeals(accumulated, rawDealChan, walletIDs, depth)
 				}
 				break
 			}
@@ -870,30 +763,202 @@ func max(a, b int) int {
 	return b
 }
 
-// Fast deal processing with integrated filtering
-func processDealFast(dealIDStr string, dealJSON []byte, rawDealChan chan struct {
+// Find and process complete deal objects, return bytes processed
+func findAndProcessCompleteDeals(data []byte, rawDealChan chan struct {
+	DealID  uint64
+	RawDeal json.RawMessage
+}, walletIDs map[string]struct{}, depth int) int {
+
+	// If data is small enough, just parse with gjson
+	if len(data) < 8*1024*1024 { // Less than 8MB
+		if isCompleteJSON(data, depth) {
+			parseWithGjson(data, rawDealChan, walletIDs, depth)
+			return len(data)
+		}
+		return 0 // Wait for more data
+	}
+
+	// For larger data, find individual complete deals
+	processed := 0
+	start := 0
+
+	for {
+		// Find the next complete deal starting from 'start'
+		dealEnd := findNextCompleteDeal(data[start:])
+		if dealEnd == -1 {
+			break // No complete deal found
+		}
+
+		actualEnd := start + dealEnd
+		dealData := data[start:actualEnd]
+
+		// Process this deal
+		if len(dealData) > 10 {
+			processDealChunk(dealData, rawDealChan, walletIDs)
+		}
+
+		processed = actualEnd
+		start = actualEnd
+
+		// Find start of next deal (skip comma/whitespace)
+		for start < len(data) && (data[start] == ',' || data[start] == ' ' || data[start] == '\t' || data[start] == '\n' || data[start] == '\r') {
+			start++
+			processed = start
+		}
+
+		if start >= len(data) {
+			break
+		}
+	}
+
+	return processed
+}
+
+// Check if data contains complete JSON
+func isCompleteJSON(data []byte, depth int) bool {
+	if len(data) < 10 {
+		return false
+	}
+
+	// Simple check: starts with { and ends with }
+	trimmed := bytes.TrimSpace(data)
+	if len(trimmed) == 0 {
+		return false
+	}
+
+	return trimmed[0] == '{' && trimmed[len(trimmed)-1] == '}'
+}
+
+// Parse complete JSON with gjson
+func parseWithGjson(data []byte, rawDealChan chan struct {
+	DealID  uint64
+	RawDeal json.RawMessage
+}, walletIDs map[string]struct{}, depth int) {
+
+	parsed := gjson.ParseBytes(data)
+
+	// Handle depth wrapping
+	dealsObj := parsed
+	if depth == 2 {
+		dealsObj = parsed.Get("result")
+		if !dealsObj.Exists() {
+			return
+		}
+	}
+
+	// Process all deals
+	dealsObj.ForEach(func(dealIDResult, dealData gjson.Result) bool {
+		dealIDStr := dealIDResult.String()
+		dealID, err := strconv.ParseUint(dealIDStr, 10, 64)
+		if err != nil {
+			return true
+		}
+
+		// Fast client check
+		client := dealData.Get("Proposal.Client").String()
+		if client == "" {
+			return true
+		}
+
+		if _, want := walletIDs[client]; !want {
+			return true
+		}
+
+		// Send to workers
+		rawDealChan <- struct {
+			DealID  uint64
+			RawDeal json.RawMessage
+		}{
+			DealID:  dealID,
+			RawDeal: json.RawMessage(dealData.Raw),
+		}
+
+		return true
+	})
+}
+
+// Find the end of the next complete deal (simple approach)
+func findNextCompleteDeal(data []byte) int {
+	if len(data) < 10 {
+		return -1
+	}
+
+	// Look for pattern: "123":{ ... }
+	braceDepth := 0
+	inString := false
+	escape := false
+	foundColon := false
+
+	for i := 0; i < len(data); i++ {
+		b := data[i]
+
+		if escape {
+			escape = false
+			continue
+		}
+
+		switch b {
+		case '\\':
+			if inString {
+				escape = true
+			}
+		case '"':
+			inString = !inString
+		case ':':
+			if !inString && braceDepth == 0 {
+				foundColon = true
+			}
+		case '{':
+			if !inString && foundColon {
+				braceDepth++
+			}
+		case '}':
+			if !inString && braceDepth > 0 {
+				braceDepth--
+				if braceDepth == 0 {
+					return i + 1 // Found complete deal
+				}
+			}
+		}
+	}
+
+	return -1 // No complete deal found
+}
+
+// Process a single deal chunk
+func processDealChunk(dealData []byte, rawDealChan chan struct {
 	DealID  uint64
 	RawDeal json.RawMessage
 }, walletIDs map[string]struct{}) {
-	// Parse deal ID
-	dealID, err := strconv.ParseUint(dealIDStr, 10, 64)
-	if err != nil {
-		Logger.Warnw("failed to parse deal ID", "key", dealIDStr, "error", err)
+
+	// Extract ID and JSON from "123":{...}
+	colonPos := bytes.IndexByte(dealData, ':')
+	if colonPos <= 0 {
 		return
 	}
 
-	// Fast client check with gjson - only parse what we need
+	// Extract ID
+	idPart := bytes.TrimSpace(dealData[:colonPos])
+	idPart = bytes.Trim(idPart, `"`)
+	dealID, err := strconv.ParseUint(string(idPart), 10, 64)
+	if err != nil {
+		return
+	}
+
+	// Extract deal JSON
+	dealJSON := bytes.TrimSpace(dealData[colonPos+1:])
+
+	// Fast client check
 	client := gjson.GetBytes(dealJSON, "Proposal.Client").String()
 	if client == "" {
-		return // Skip deals without client
+		return
 	}
 
-	// Check if we care about this client
 	if _, want := walletIDs[client]; !want {
-		return // Skip unwanted clients - this saves lots of processing
+		return
 	}
 
-	// Only send deals we actually want to the workers
+	// Send to workers
 	rawDealChan <- struct {
 		DealID  uint64
 		RawDeal json.RawMessage
