@@ -92,7 +92,6 @@ This is the simplest way to onboard data from source to storage deals.`,
 			Usage: "Output storage provider",
 		},
 
-
 		// Storage configuration
 		&cli.StringFlag{
 			Name:     "source-name",
@@ -995,7 +994,6 @@ func validateOnboardInputs(c *cli.Context) error {
 			return errors.New("inline deal flags are not allowed when using a deal template. Please configure all deal settings in the template instead of using inline flags")
 		}
 
-
 		// Validate HTTP headers if provided
 		if headersStr := c.String("deal-http-headers"); headersStr != "" {
 			var tempMap map[string]string
@@ -1013,7 +1011,6 @@ func validateOnboardInputs(c *cli.Context) error {
 				}
 			}
 		}
-
 
 	}
 
