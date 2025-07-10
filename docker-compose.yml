@@ -20,6 +20,8 @@ services:
 
   singularity_init:
     image: ghcr.io/data-preservation-programs/singularity:main
+    environment:
+        DATABASE_CONNECTION_STRING: postgres://postgres:postgres@db:5432/singularity
     command: admin init
     restart: on-failure # Restart only on failure
     depends_on:
@@ -52,3 +54,4 @@ services:
 
 volumes:
   singularity_db:
+
