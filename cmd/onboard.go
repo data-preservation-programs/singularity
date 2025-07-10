@@ -92,54 +92,6 @@ This is the simplest way to onboard data from source to storage deals.`,
 			Usage: "Output storage provider",
 		},
 
-		// S3 configuration
-		&cli.StringFlag{
-			Name:     "s3-access-key-id",
-			Usage:    "S3 Access Key ID",
-			Category: "S3 Configuration",
-		},
-		&cli.StringFlag{
-			Name:     "s3-secret-access-key",
-			Usage:    "S3 Secret Access Key",
-			Category: "S3 Configuration",
-		},
-		&cli.StringFlag{
-			Name:     "s3-region",
-			Usage:    "S3 Region (e.g., us-east-1)",
-			Category: "S3 Configuration",
-		},
-		&cli.StringFlag{
-			Name:     "s3-endpoint",
-			Usage:    "Custom S3 endpoint URL",
-			Category: "S3 Configuration",
-		},
-		&cli.BoolFlag{
-			Name:     "s3-env-auth",
-			Usage:    "Use environment variables for S3 authentication",
-			Category: "S3 Configuration",
-		},
-
-		// GCS configuration
-		&cli.StringFlag{
-			Name:     "gcs-service-account-file",
-			Usage:    "Path to GCS service account JSON file",
-			Category: "GCS Configuration",
-		},
-		&cli.StringFlag{
-			Name:     "gcs-service-account-credentials",
-			Usage:    "GCS service account JSON credentials (inline)",
-			Category: "GCS Configuration",
-		},
-		&cli.StringFlag{
-			Name:     "gcs-project-id",
-			Usage:    "GCS Project ID",
-			Category: "GCS Configuration",
-		},
-		&cli.BoolFlag{
-			Name:     "gcs-env-auth",
-			Usage:    "Use environment variables for GCS authentication",
-			Category: "GCS Configuration",
-		},
 
 		// Storage configuration
 		&cli.StringFlag{
@@ -229,6 +181,12 @@ func init() {
 
 	// Add common storage client flags to the onboard command
 	OnboardCmd.Flags = append(OnboardCmd.Flags, cliutil.CommonStorageClientFlags...)
+
+	// Add common S3 flags to the onboard command
+	OnboardCmd.Flags = append(OnboardCmd.Flags, cliutil.CommonS3Flags...)
+
+	// Add common GCS flags to the onboard command
+	OnboardCmd.Flags = append(OnboardCmd.Flags, cliutil.CommonGCSFlags...)
 
 	// Set the action function
 	OnboardCmd.Action = onboardAction
@@ -685,8 +643,14 @@ func parseS3Config(c *cli.Context) map[string]string {
 	if c.IsSet("s3-endpoint") {
 		config["endpoint"] = c.String("s3-endpoint")
 	}
-	if c.IsSet("s3-env-auth") {
-		if c.Bool("s3-env-auth") {
+	// Only set env_auth if explicitly requested and no explicit credentials are provided
+	if c.IsSet("s3-env-auth") && c.Bool("s3-env-auth") {
+		// Check if explicit credentials are also provided
+		hasExplicitCredentials := c.IsSet("s3-access-key-id") || c.IsSet("s3-secret-access-key") || c.IsSet("s3-session-token")
+		if hasExplicitCredentials {
+			// Log warning about conflicting auth methods
+			fmt.Printf("⚠️  WARNING: Both s3-env-auth and explicit S3 credentials provided. Using explicit credentials.\n")
+		} else {
 			config["env_auth"] = "true"
 		}
 	}
@@ -1016,55 +980,21 @@ func validateOnboardInputs(c *cli.Context) error {
 			c.IsSet("deal-url-template") ||
 			c.IsSet("deal-http-headers"))
 
-		if hasInlineDealFlags && dealTemplate == "" {
-			return errors.New("inline deal flags are not allowed without a deal template. Please use --deal-template to specify a template, or remove inline deal flags")
-		}
-
-		// If using a template, validate it exists (basic validation)
-		if dealTemplate != "" {
-			// Template validation will be handled by the dataprep handler
-			// but we can add basic format validation here
-			if len(dealTemplate) == 0 {
-				return errors.New("deal template cannot be empty")
-			}
-		} else {
-			// If no template is provided, we cannot proceed with auto-create-deals
+		// Deal template is required when auto-create-deals is enabled
+		if dealTemplate == "" {
 			return errors.New("deal template is required when auto-create-deals is enabled (--deal-template)")
 		}
 
-		// Legacy validation for explicit deal flags when template is provided
-		// These are kept for backward compatibility but should be discouraged
-		if dealTemplate != "" && hasInlineDealFlags {
-			// Warn user about conflicting configurations
-			// The dataprep handler will handle the precedence
+		// Validate template format (basic validation)
+		if len(dealTemplate) == 0 {
+			return errors.New("deal template cannot be empty")
 		}
 
-		// If using inline deal flags (legacy mode), perform validation
+		// Discourage use of inline deal flags when template is provided
 		if hasInlineDealFlags {
-			// Deal provider is required when auto-create-deals is enabled
-			if c.String("deal-provider") == "" {
-				return errors.New("deal provider is required when auto-create-deals is enabled (--deal-provider)")
-			}
-
-			// Validate deal duration
-			if c.Duration("deal-duration") <= 0 {
-				return errors.New("deal duration must be positive when auto-create-deals is enabled (--deal-duration)")
-			}
-
-			// Validate deal start delay is non-negative
-			if c.Duration("deal-start-delay") < 0 {
-				return errors.New("deal start delay cannot be negative (--deal-start-delay)")
-			}
-
-			// Validate at least one pricing method is specified
-			pricePerGB := c.Float64("deal-price-per-gb")
-			pricePerDeal := c.Float64("deal-price-per-deal")
-			pricePerGBEpoch := c.Float64("deal-price-per-gb-epoch")
-
-			if pricePerGB == 0 && pricePerDeal == 0 && pricePerGBEpoch == 0 {
-				return errors.New("at least one pricing method must be specified when auto-create-deals is enabled (--deal-price-per-gb, --deal-price-per-deal, or --deal-price-per-gb-epoch)")
-			}
+			return errors.New("inline deal flags are not allowed when using a deal template. Please configure all deal settings in the template instead of using inline flags")
 		}
+
 
 		// Validate HTTP headers if provided
 		if headersStr := c.String("deal-http-headers"); headersStr != "" {
@@ -1084,26 +1014,7 @@ func validateOnboardInputs(c *cli.Context) error {
 			}
 		}
 
-		// Validate prices are non-negative
-		pricePerGB := c.Float64("deal-price-per-gb")
-		pricePerDeal := c.Float64("deal-price-per-deal")
-		pricePerGBEpoch := c.Float64("deal-price-per-gb-epoch")
 
-		if pricePerGB < 0 {
-			return errors.New("deal price per GB must be non-negative (--deal-price-per-gb)")
-		}
-		if pricePerDeal < 0 {
-			return errors.New("deal price per deal must be non-negative (--deal-price-per-deal)")
-		}
-		if pricePerGBEpoch < 0 {
-			return errors.New("deal price per GB epoch must be non-negative (--deal-price-per-gb-epoch)")
-		}
-
-		// Validate deal provider format (should start with 'f0' or 't0')
-		dealProvider := c.String("deal-provider")
-		if len(dealProvider) < 3 || (dealProvider[:2] != "f0" && dealProvider[:2] != "t0") {
-			return errors.New("deal provider must be a valid storage provider ID (e.g., f01234 or t01234)")
-		}
 	}
 
 	// Validate max-size format if provided
