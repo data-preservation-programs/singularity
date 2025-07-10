@@ -1011,7 +1011,6 @@ func validateOnboardInputs(c *cli.Context) error {
 				}
 			}
 		}
-
 	}
 
 	// Validate max-size format if provided
