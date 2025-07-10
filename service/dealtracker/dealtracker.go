@@ -1,22 +1,20 @@
 package dealtracker
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/pprof"
+	_ "net/http/pprof"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
-	// Add pprof imports
-
-	"net/http/pprof"
-	_ "net/http/pprof"
-
-	"bytes"
+	"runtime"
+	"sync/atomic"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -24,14 +22,25 @@ import (
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/dustin/go-humanize"
 	"github.com/google/uuid"
 	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/klauspost/compress/zstd"
 	"github.com/tidwall/gjson"
+	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
+
+	// Add riba's Lotus client library for filexp-style approach
+	"code.riba.cloud/go/toolbox-interplanetary/fil"
+
+	filabi "github.com/filecoin-project/go-state-types/abi"
+	filbuiltin "github.com/filecoin-project/go-state-types/builtin"
+	lchadt "github.com/filecoin-project/lotus/chain/actors/adt"
+	lchmarket "github.com/filecoin-project/lotus/chain/actors/builtin/market"
+	lchtypes "github.com/filecoin-project/lotus/chain/types"
+	blocks "github.com/ipfs/go-block-format"
+	ipldcbor "github.com/ipfs/go-ipld-cbor"
 )
 
 var ErrAlreadyRunning = errors.New("another worker already running")
@@ -295,6 +304,321 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 	}()
 
 	return dealChan, countingReader, closer, nil
+}
+
+// StreamingRPCDealsReader provides an efficient streaming JSON reader for Lotus RPC responses
+// Based on the approach from https://github.com/aschmahmann/filexp/commit/d16c79dd98c5179739b559ac5841beb69fef784d
+type StreamingRPCDealsReader struct {
+	ctx       context.Context
+	reader    io.Reader
+	walletIDs map[string]struct{}
+	dealChan  chan *ParsedDeal
+	counter   Counter
+	closer    io.Closer
+
+	// Progress tracking
+	startTime       time.Time
+	lastProgressLog time.Time
+	totalDeals      int64
+	filteredDeals   int64
+	importedDeals   int64
+}
+
+// JsonEntry represents a single deal entry as it appears in the RPC response
+type JsonEntry struct {
+	DealID   *uint64 `json:",omitempty"`
+	Proposal DealProposal
+	State    DealState
+}
+
+// DealStateStreamFromLotusRPC creates an efficient streaming parser for Lotus RPC responses
+// Based on the approach from https://github.com/aschmahmann/filexp/commit/d16c79dd98c5179739b559ac5841beb69fef784d
+func DealStateStreamFromLotusRPC(request *http.Request, walletIDs map[string]struct{}) (chan *ParsedDeal, Counter, io.Closer, error) {
+	Logger.Info("Starting RPC request to Lotus")
+
+	//nolint: bodyclose
+	resp, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return nil, nil, nil, errors.WithStack(err)
+	}
+	Logger.Infof("Got RPC response with status: %s", resp.Status)
+	if resp.StatusCode != http.StatusOK {
+		_ = resp.Body.Close()
+		return nil, nil, nil, errors.Newf("failed to get deal state: %s", resp.Status)
+	}
+
+	countingReader := NewCountingReader(resp.Body)
+
+	// Create channels
+	dealChan := make(chan *ParsedDeal, 100)
+
+	// Create the streaming reader
+	reader := &StreamingRPCDealsReader{
+		ctx:             request.Context(),
+		reader:          countingReader,
+		walletIDs:       walletIDs,
+		dealChan:        dealChan,
+		counter:         countingReader,
+		closer:          resp.Body,
+		startTime:       time.Now(),
+		lastProgressLog: time.Now(),
+	}
+
+	Logger.Info("Starting RPC streaming processor")
+	// Start the streaming processor
+	go reader.processStream()
+
+	return dealChan, countingReader, resp.Body, nil
+}
+
+// processStream handles the main streaming logic with worker goroutines
+func (r *StreamingRPCDealsReader) processStream() {
+	defer close(r.dealChan)
+	defer r.logFinalStats()
+
+	// Setup worker pool similar to filexp approach
+	wrkCnt := runtime.NumCPU()
+	if wrkCnt < 3 {
+		wrkCnt = 3 // one iterator, and at least two encoders
+	} else if wrkCnt > 12 {
+		wrkCnt = 12 // do not overwhelm the blockstore
+	}
+
+	// Create work channels
+	rawDealChan := make(chan struct {
+		DealID  uint64
+		RawDeal json.RawMessage
+	}, wrkCnt*4)
+
+	// Start worker goroutines
+	eg, ctx := errgroup.WithContext(r.ctx)
+
+	// JSON processing workers
+	for i := 0; i < wrkCnt-1; i++ {
+		eg.Go(func() error {
+			return r.dealWorker(ctx, rawDealChan)
+		})
+	}
+
+	// Main streaming reader
+	eg.Go(func() error {
+		defer close(rawDealChan)
+		return r.streamReader(ctx, rawDealChan)
+	})
+
+	// Wait for all workers to complete
+	_ = eg.Wait()
+}
+
+// logProgress logs processing statistics every 15 seconds
+func (r *StreamingRPCDealsReader) logProgress() {
+	now := time.Now()
+	if now.Sub(r.lastProgressLog) >= 15*time.Second {
+		elapsed := now.Sub(r.startTime)
+		totalDeals := atomic.LoadInt64(&r.totalDeals)
+		filteredDeals := atomic.LoadInt64(&r.filteredDeals)
+		importedDeals := atomic.LoadInt64(&r.importedDeals)
+
+		dealsPerSec := float64(totalDeals) / elapsed.Seconds()
+		filteredPerSec := float64(filteredDeals) / elapsed.Seconds()
+		importedPerSec := float64(importedDeals) / elapsed.Seconds()
+
+		var matchRate float64
+		if totalDeals > 0 {
+			matchRate = float64(importedDeals) / float64(totalDeals) * 100
+		}
+
+		Logger.Infof("RPC Progress: %d total deals (%.1f/s), %d filtered (%.1f/s), %d imported (%.1f/s), %.2f%% match rate",
+			totalDeals, dealsPerSec, filteredDeals, filteredPerSec, importedDeals, importedPerSec, matchRate)
+
+		r.lastProgressLog = now
+	}
+}
+
+// forceProgressLog forces a progress log (useful for debugging)
+func (r *StreamingRPCDealsReader) forceProgressLog(message string) {
+	elapsed := time.Since(r.startTime)
+	totalDeals := atomic.LoadInt64(&r.totalDeals)
+	filteredDeals := atomic.LoadInt64(&r.filteredDeals)
+	importedDeals := atomic.LoadInt64(&r.importedDeals)
+
+	Logger.Infof("RPC %s: %d total, %d filtered, %d imported (%.1fs elapsed)",
+		message, totalDeals, filteredDeals, importedDeals, elapsed.Seconds())
+}
+
+// logFinalStats logs final processing statistics
+func (r *StreamingRPCDealsReader) logFinalStats() {
+	elapsed := time.Since(r.startTime)
+	totalDeals := atomic.LoadInt64(&r.totalDeals)
+	filteredDeals := atomic.LoadInt64(&r.filteredDeals)
+	importedDeals := atomic.LoadInt64(&r.importedDeals)
+
+	if elapsed > 0 {
+		dealsPerSec := float64(totalDeals) / elapsed.Seconds()
+		Logger.Infof("RPC Complete: %d total deals processed in %v (%.1f deals/s), %d filtered, %d imported (%.2f%% match rate)",
+			totalDeals, elapsed.Truncate(time.Millisecond), dealsPerSec, filteredDeals, importedDeals,
+			float64(importedDeals)/float64(totalDeals)*100)
+	}
+}
+
+// dealWorker processes individual deals from the raw channel
+func (r *StreamingRPCDealsReader) dealWorker(ctx context.Context, rawDealChan <-chan struct {
+	DealID  uint64
+	RawDeal json.RawMessage
+}) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case raw, ok := <-rawDealChan:
+			if !ok {
+				return nil
+			}
+
+			// Parse deal using gjson for efficiency
+			deal := Deal{
+				Proposal: DealProposal{
+					PieceCID: Cid{
+						Root: gjson.GetBytes(raw.RawDeal, "Proposal.PieceCID./").String(),
+					},
+					PieceSize:            gjson.GetBytes(raw.RawDeal, "Proposal.PieceSize").Int(),
+					VerifiedDeal:         gjson.GetBytes(raw.RawDeal, "Proposal.VerifiedDeal").Bool(),
+					Client:               gjson.GetBytes(raw.RawDeal, "Proposal.Client").String(),
+					Provider:             gjson.GetBytes(raw.RawDeal, "Proposal.Provider").String(),
+					Label:                gjson.GetBytes(raw.RawDeal, "Proposal.Label").String(),
+					StartEpoch:           int32(gjson.GetBytes(raw.RawDeal, "Proposal.StartEpoch").Int()),
+					EndEpoch:             int32(gjson.GetBytes(raw.RawDeal, "Proposal.EndEpoch").Int()),
+					StoragePricePerEpoch: gjson.GetBytes(raw.RawDeal, "Proposal.StoragePricePerEpoch").String(),
+				},
+				State: DealState{
+					SectorStartEpoch: int32(gjson.GetBytes(raw.RawDeal, "State.SectorStartEpoch").Int()),
+					LastUpdatedEpoch: int32(gjson.GetBytes(raw.RawDeal, "State.LastUpdatedEpoch").Int()),
+					SlashEpoch:       int32(gjson.GetBytes(raw.RawDeal, "State.SlashEpoch").Int()),
+				},
+			}
+
+			// Send parsed deal
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case r.dealChan <- &ParsedDeal{
+				DealID: raw.DealID,
+				Deal:   deal,
+			}:
+				atomic.AddInt64(&r.importedDeals, 1)
+			}
+		}
+	}
+}
+
+// streamReader reads and parses the JSON stream
+func (r *StreamingRPCDealsReader) streamReader(ctx context.Context, rawDealChan chan<- struct {
+	DealID  uint64
+	RawDeal json.RawMessage
+}) error {
+	Logger.Info("RPC streamReader starting - will use simple approach and read all data first")
+
+	// Read all data into memory first (simpler approach for now)
+	data, err := io.ReadAll(r.reader)
+	if err != nil {
+		return errors.Wrap(err, "failed to read RPC response")
+	}
+
+	Logger.Infof("Read %d bytes from RPC response", len(data))
+	Logger.Infof("Response preview (first 200 bytes): %s", string(data[:min(len(data), 200)]))
+
+	// Parse the JSON-RPC response
+	var response struct {
+		JSONRPC string          `json:"jsonrpc"`
+		Result  json.RawMessage `json:"result"`
+		Error   json.RawMessage `json:"error"`
+		ID      int             `json:"id"`
+	}
+
+	if err := json.Unmarshal(data, &response); err != nil {
+		return errors.Wrap(err, "failed to parse JSON-RPC response")
+	}
+
+	if response.Error != nil {
+		return errors.Errorf("Lotus RPC error: %s", string(response.Error))
+	}
+
+	if response.Result == nil {
+		return errors.New("empty result in RPC response")
+	}
+
+	Logger.Infof("Successfully parsed RPC response, processing deals from result (%d bytes)", len(response.Result))
+
+	// Process deals from the result using gjson
+	parsed := gjson.ParseBytes(response.Result)
+	if !parsed.IsObject() {
+		return errors.New("result is not a JSON object")
+	}
+
+	var processedCount int64
+	parsed.ForEach(func(dealIDResult, dealData gjson.Result) bool {
+		select {
+		case <-ctx.Done():
+			return false
+		default:
+		}
+
+		dealIDStr := dealIDResult.String()
+		dealID, err := strconv.ParseUint(dealIDStr, 10, 64)
+		if err != nil {
+			return true // Skip invalid deal IDs
+		}
+
+		atomic.AddInt64(&r.totalDeals, 1)
+		processedCount++
+
+		// Log first deal
+		if processedCount == 1 {
+			r.forceProgressLog("first deal processed")
+		}
+
+		// Quick client filter
+		client := dealData.Get("Proposal.Client").String()
+		if client == "" {
+			return true
+		}
+
+		if _, want := r.walletIDs[client]; !want {
+			return true
+		}
+
+		atomic.AddInt64(&r.filteredDeals, 1)
+
+		// Send to worker
+		select {
+		case <-ctx.Done():
+			return false
+		case rawDealChan <- struct {
+			DealID  uint64
+			RawDeal json.RawMessage
+		}{
+			DealID:  dealID,
+			RawDeal: json.RawMessage(dealData.Raw),
+		}:
+		}
+
+		// Log progress periodically
+		if processedCount%10000 == 0 {
+			r.logProgress()
+		}
+
+		return true
+	})
+
+	Logger.Infof("Finished processing RPC deals: %d total processed", processedCount)
+	return nil
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func (*DealTracker) Name() string {
@@ -709,9 +1033,9 @@ func (d *DealTracker) trackDeal(ctx context.Context, walletIDs map[string]struct
 			case <-countingCtx.Done():
 				return
 			case <-timer.C:
-				downloaded := humanize.Bytes(uint64(counter.N()))
-				speed := humanize.Bytes(uint64(counter.Speed()))
-				Logger.Infof("Downloaded %s with average speed %s / s", downloaded, speed)
+				dealsProcessed := counter.N()
+				dealsPerSecond := counter.Speed()
+				Logger.Infof("Processed %d deals with average speed %.0f deals/s", dealsProcessed, dealsPerSecond)
 				timer.Reset(logStatsInterval)
 			}
 		}
@@ -742,17 +1066,30 @@ func (d *DealTracker) dealStateStreamCustom(ctx context.Context, walletIDs map[s
 		return DealStateStreamFromHTTPRequest(req, 1, true, walletIDs)
 	}
 
-	Logger.Infof("getting deal state from %s", d.lotusURL)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
+	Logger.Infof("getting deal state from %s via filexp-style approach", d.lotusURL)
+
+	// Try filexp-style approach first
+	dealChan, counter, closer, err := DealStateStreamFromLotusFilexp(ctx, d.lotusURL, d.lotusToken, walletIDs)
 	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state from lotus API %s", d.lotusURL)
+		Logger.Warnf("filexp-style approach failed: %v", err)
+		Logger.Info("falling back to StateMarketDeals RPC approach")
+
+		// Fall back to original StateMarketDeals RPC approach
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
+		if err != nil {
+			return nil, nil, nil, errors.Wrapf(err, "failed to create request to Lotus RPC %s", d.lotusURL)
+		}
+
+		// Set up the RPC request for StateMarketDeals
+		if d.lotusToken != "" {
+			req.Header.Set("Authorization", "Bearer "+d.lotusToken)
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		return DealStateStreamFromLotusRPC(req, walletIDs)
 	}
-	if d.lotusToken != "" {
-		req.Header.Set("Authorization", "Bearer "+d.lotusToken)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
-	return DealStateStreamFromHTTPRequest(req, 2, false, walletIDs)
+
+	return dealChan, counter, closer, nil
 }
 
 // Helper function for max
@@ -966,4 +1303,316 @@ func processDealChunk(dealData []byte, rawDealChan chan struct {
 		DealID:  dealID,
 		RawDeal: json.RawMessage(dealJSON),
 	}
+}
+
+// FilexpMarketDealState matches the filexp structure for deal states
+type FilexpMarketDealState struct {
+	SectorNumber     filabi.SectorNumber
+	SectorStartEpoch filabi.ChainEpoch
+	LastUpdatedEpoch filabi.ChainEpoch
+	SlashEpoch       filabi.ChainEpoch
+}
+
+// FilexpJsonEntry matches the filexp structure for deal entries
+type FilexpJsonEntry struct {
+	DealID   *filabi.DealID `json:",omitempty"`
+	Proposal lchmarket.DealProposal
+	State    FilexpMarketDealState
+}
+
+// DealStateStreamFromLotusFilexp creates a deal stream using filexp approach with riba library
+func DealStateStreamFromLotusFilexp(ctx context.Context, lotusURL, lotusToken string, walletIDs map[string]struct{}) (chan *ParsedDeal, Counter, io.Closer, error) {
+	Logger.Info("Starting filexp-style deal streaming")
+
+	// Create riba Lotus client with proper signature
+	lApi, apiCloser, err := fil.NewLotusDaemonAPIClientV0(ctx, lotusURL, 30, lotusToken)
+	if err != nil {
+		return nil, nil, nil, errors.Wrap(err, "failed to create Lotus API client")
+	}
+
+	// Get current chain head
+	ts, err := lApi.ChainHead(ctx)
+	if err != nil {
+		apiCloser()
+		return nil, nil, nil, errors.Wrap(err, "failed to get chain head")
+	}
+
+	Logger.Infof("Got chain head at height %d", ts.Height())
+
+	// Create channels and counter with larger buffer
+	dealChan := make(chan *ParsedDeal, 1000)
+	counter := &simpleCounter{start: time.Now()}
+
+	// Create closer that cleans up API connection
+	closer := CloserFunc(func() error {
+		apiCloser()
+		return nil
+	})
+
+	// Start processing in background
+	go func() {
+		defer close(dealChan)
+		err := processStateMarketDealsFilexp(ctx, lApi, ts, dealChan, walletIDs, counter)
+		if err != nil {
+			Logger.Errorw("failed to process state market deals", "error", err)
+		}
+	}()
+
+	return dealChan, counter, closer, nil
+}
+
+// processStateMarketDealsFilexp processes deals using filexp approach with worker goroutines
+func processStateMarketDealsFilexp(ctx context.Context, lApi fil.LotusDaemonAPIClientV0, ts *lchtypes.TipSet, dealChan chan<- *ParsedDeal, walletIDs map[string]struct{}, counter *simpleCounter) error {
+	// Setup worker pool similar to filexp approach
+	wrkCnt := runtime.NumCPU()
+	if wrkCnt < 3 {
+		wrkCnt = 3 // one iterator, and at least two encoders
+	} else if wrkCnt > 12 {
+		wrkCnt = 12 // do not overwhelm the block provider
+	}
+
+	Logger.Infof("Starting filexp-style processing with %d workers", wrkCnt)
+
+	// Create work channels with large buffer like filexp (8<<10 = 8192)
+	rawDealChan := make(chan FilexpJsonEntry, 8<<10)
+
+	// Start worker goroutines
+	eg, ctx := errgroup.WithContext(ctx)
+
+	// JSON processing workers
+	for i := 0; i < wrkCnt-1; i++ {
+		eg.Go(func() error {
+			return filexpDealWorker(ctx, rawDealChan, dealChan, walletIDs)
+		})
+	}
+
+	// Main deal iterator (adapted from filexp)
+	eg.Go(func() error {
+		defer close(rawDealChan)
+		return filexpDealIterator(ctx, lApi, ts, rawDealChan, walletIDs, counter)
+	})
+
+	// Wait for all workers to complete
+	return eg.Wait()
+}
+
+// filexpDealIterator iterates through deals like filexp does
+func filexpDealIterator(ctx context.Context, lApi fil.LotusDaemonAPIClientV0, ts *lchtypes.TipSet, rawDealChan chan<- FilexpJsonEntry, walletIDs map[string]struct{}, counter *simpleCounter) error {
+	Logger.Info("Starting filexp deal iterator")
+
+	// Get the storage market actor state (like filexp does)
+	marketActor, err := lApi.StateGetActor(ctx, filbuiltin.StorageMarketActorAddr, ts.Key())
+	if err != nil {
+		return errors.Wrap(err, "failed to get storage market actor")
+	}
+
+	Logger.Infof("Market actor info: Code=%s, Head=%s, Nonce=%d, Balance=%s",
+		marketActor.Code.String(), marketActor.Head.String(), marketActor.Nonce, marketActor.Balance.String())
+
+	// Create a simple blockstore adapter for the Lotus API
+	// Since riba doesn't export NewAPIBlockstore, we'll create a simple adapter
+	bs := &lotusAPIBlockstore{api: lApi}
+	cbs := ipldcbor.NewCborStore(bs)
+
+	// Load market state
+	marketState, err := lchmarket.Load(lchadt.WrapStore(ctx, cbs), marketActor)
+	if err != nil {
+		Logger.Warnf("Failed to load market state with actor code %s: %v", marketActor.Code.String(), err)
+		Logger.Warn("This usually means the Lotus version doesn't recognize the current network's market actor version")
+		Logger.Warn("Falling back to original StateMarketDeals RPC approach...")
+		return errors.Wrap(err, "failed to load market state - consider using StateMarketDeals URL instead of direct Lotus API")
+	}
+
+	// Get proposals and states
+	proposals, err := marketState.Proposals()
+	if err != nil {
+		return errors.Wrap(err, "failed to get proposals")
+	}
+
+	states, err := marketState.States()
+	if err != nil {
+		return errors.Wrap(err, "failed to get states")
+	}
+
+	Logger.Info("Got market state, starting deal iteration")
+
+	// EXACTLY like filexp - create inner errgroup with limits
+	egInner, ctx := errgroup.WithContext(ctx)
+	wrkCnt := runtime.NumCPU()
+	if wrkCnt < 3 {
+		wrkCnt = 3 // one iterator, and at least two encoders
+	} else if wrkCnt > 12 {
+		wrkCnt = 12 // do not overwhelm the block provider
+	}
+	egInner.SetLimit(wrkCnt)
+
+	var processedCount atomic.Int64
+	var filteredCount atomic.Int64
+
+	// EXACTLY like filexp - one goroutine for the iterator
+	egInner.Go(func() error {
+		// Iterate through proposals (like filexp does)
+		return proposals.ForEach(func(did filabi.DealID, dp lchmarket.DealProposal) error {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+			}
+
+			processed := processedCount.Add(1)
+			atomic.AddInt64(&counter.count, 1)
+
+			// Log progress periodically
+			if processed%10000 == 0 {
+				Logger.Infof("Processed %d deals, filtered %d for our wallets", processed, filteredCount.Load())
+			}
+
+			// MODIFICATION 1: Bail out if deal doesn't match our wallets (early filtering)
+			clientAddr := dp.Client.String()
+			if _, want := walletIDs[clientAddr]; !want {
+				return nil // Skip deals not for our wallets
+			}
+
+			filteredCount.Add(1)
+
+			// EXACTLY like filexp - spawn goroutine for each matching deal
+			egInner.Go(func() error {
+				// Get deal state (like filexp does)
+				mds := FilexpMarketDealState{
+					SectorNumber:     0,
+					SectorStartEpoch: -1,
+					LastUpdatedEpoch: -1,
+					SlashEpoch:       -1,
+				}
+
+				s, found, err := states.Get(did)
+				if err != nil {
+					// Don't fail the whole process for one bad deal
+					Logger.Warnw("failed to get deal state", "dealID", did, "error", err)
+					return nil
+				}
+				if found {
+					mds.SectorNumber = s.SectorNumber()
+					mds.SectorStartEpoch = s.SectorStartEpoch()
+					mds.LastUpdatedEpoch = s.LastUpdatedEpoch()
+					mds.SlashEpoch = s.SlashEpoch()
+				}
+
+				// MODIFICATION 2: Feed matched deals to normal deal tracking logic instead of JSON output
+				entry := FilexpJsonEntry{
+					DealID:   &did,
+					Proposal: dp,
+					State:    mds,
+				}
+
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case rawDealChan <- entry:
+				}
+
+				return nil
+			})
+			return nil
+		})
+	})
+
+	// Wait for inner errgroup to complete
+	return egInner.Wait()
+}
+
+// lotusAPIBlockstore is a simple adapter that implements blockstore interface for Lotus API
+type lotusAPIBlockstore struct {
+	api fil.LotusDaemonAPIClientV0
+}
+
+func (bs *lotusAPIBlockstore) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
+	blkData, err := bs.api.ChainReadObj(ctx, c)
+	if err != nil {
+		return nil, err
+	}
+	return blocks.NewBlockWithCid(blkData, c)
+}
+
+func (bs *lotusAPIBlockstore) Put(ctx context.Context, blk blocks.Block) error {
+	return errors.New("put not supported")
+}
+
+// filexpDealWorker processes deals in parallel like filexp
+func filexpDealWorker(ctx context.Context, rawDealChan <-chan FilexpJsonEntry, dealChan chan<- *ParsedDeal, walletIDs map[string]struct{}) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case entry, ok := <-rawDealChan:
+			if !ok {
+				return nil
+			}
+
+			// Convert DealLabel to string properly
+			labelStr := ""
+			if entry.Proposal.Label.IsString() {
+				if str, err := entry.Proposal.Label.ToString(); err == nil {
+					labelStr = str
+				}
+			} else if entry.Proposal.Label.IsBytes() {
+				if bytes, err := entry.Proposal.Label.ToBytes(); err == nil {
+					labelStr = string(bytes)
+				}
+			}
+
+			// Convert filexp entry to our Deal structure
+			deal := Deal{
+				Proposal: DealProposal{
+					PieceCID: Cid{
+						Root: entry.Proposal.PieceCID.String(),
+					},
+					PieceSize:            int64(entry.Proposal.PieceSize),
+					VerifiedDeal:         entry.Proposal.VerifiedDeal,
+					Client:               entry.Proposal.Client.String(),
+					Provider:             entry.Proposal.Provider.String(),
+					Label:                labelStr,
+					StartEpoch:           int32(entry.Proposal.StartEpoch),
+					EndEpoch:             int32(entry.Proposal.EndEpoch),
+					StoragePricePerEpoch: entry.Proposal.StoragePricePerEpoch.String(),
+				},
+				State: DealState{
+					SectorStartEpoch: int32(entry.State.SectorStartEpoch),
+					LastUpdatedEpoch: int32(entry.State.LastUpdatedEpoch),
+					SlashEpoch:       int32(entry.State.SlashEpoch),
+				},
+			}
+
+			// Send parsed deal
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case dealChan <- &ParsedDeal{
+				DealID: uint64(*entry.DealID),
+				Deal:   deal,
+			}:
+			}
+		}
+	}
+}
+
+// simpleCounter implements Counter interface for filexp compatibility
+type simpleCounter struct {
+	count int64
+	start time.Time
+}
+
+func (c *simpleCounter) N() int64 {
+	return atomic.LoadInt64(&c.count)
+}
+
+func (c *simpleCounter) Speed() float64 {
+	if c.start.IsZero() {
+		c.start = time.Now()
+	}
+	elapsed := time.Since(c.start)
+	if elapsed == 0 {
+		return 0
+	}
+	return float64(atomic.LoadInt64(&c.count)) / elapsed.Seconds()
 }

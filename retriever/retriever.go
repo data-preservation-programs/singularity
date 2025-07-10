@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/retriever/deserializer"
 	lassietypes "github.com/filecoin-project/lassie/pkg/types"
 	"github.com/ipfs/go-cid"
@@ -30,6 +31,7 @@ type EndpointFinder interface {
 type Retriever struct {
 	lassie         lassietypes.Fetcher
 	endpointFinder EndpointFinder
+	disabled       bool
 }
 
 // NewRetriever returns a new retriever instance
@@ -37,11 +39,26 @@ func NewRetriever(lassie lassietypes.Fetcher, endpointFinder EndpointFinder) *Re
 	return &Retriever{
 		lassie:         lassie,
 		endpointFinder: endpointFinder,
+		disabled:       false,
+	}
+}
+
+// NewNoOpRetriever returns a retriever that returns errors for all operations
+// This is used when lassie bitswap functionality is disabled due to dependency issues
+func NewNoOpRetriever() *Retriever {
+	return &Retriever{
+		lassie:         nil,
+		endpointFinder: nil,
+		disabled:       true,
 	}
 }
 
 // Retrieve retrieves a byte range from a cid representing a unixfstree from a given list of SPs, writing the output to a car file
 func (r *Retriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string, out io.Writer) error {
+	if r.disabled {
+		return errors.New("retriever is disabled due to lassie bitswap dependency issues - bitswap retrieval functionality is not available")
+	}
+
 	logger.Infow("retrieving from filecoin", "cid", c, "rangeStart", rangeStart, "rangeEnd", rangeEnd, "sps", sps)
 	reader, writer := io.Pipe()
 	errChan := make(chan error, 2)
@@ -68,6 +85,10 @@ func (r *Retriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, r
 }
 
 func (r *Retriever) RetrieveReader(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string) (io.ReadCloser, error) {
+	if r.disabled {
+		return nil, errors.New("retriever is disabled due to lassie bitswap dependency issues - bitswap retrieval functionality is not available")
+	}
+
 	reader, writer := io.Pipe()
 	go func() {
 		err := r.getContent(ctx, c, rangeStart, rangeEnd, sps, writer)

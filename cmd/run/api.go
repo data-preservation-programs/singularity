@@ -7,7 +7,7 @@ import (
 
 var APICmd = &cli.Command{
 	Name:  "api",
-	Usage: "Run the singularity API",
+	Usage: "Run the singularity API (bitswap retrieval disabled)",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:  "bind",

@@ -27,11 +27,11 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/retriever"
-	"github.com/data-preservation-programs/singularity/retriever/endpointfinder"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/filecoin-project/lassie/pkg/lassie"
+
+	// "github.com/filecoin-project/lassie/pkg/lassie" // Disabled due to bitswap dependency issues
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -102,21 +102,25 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to init host")
 	}
-	lassie, err := lassie.NewLassie(ctx, lassie.WithHost(h))
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to init lassie")
-	}
-	infoFetcher := replication.MinerInfoFetcher{
-		Client: util.NewLotusClient(params.LotusAPI, params.LotusToken),
-	}
-	endpointFinder := endpointfinder.NewEndpointFinder(
-		infoFetcher,
-		h,
-		endpointfinder.WithLruSize(128),
-		endpointfinder.WithLruTimeout(time.Hour*2),
-		endpointfinder.WithErrorLruSize(128),
-		endpointfinder.WithErrorLruTimeout(time.Minute*5),
-	)
+
+	// Disabled lassie and endpoint finder initialization due to bitswap dependency issues
+	// lassie, err := lassie.NewLassie(ctx, lassie.WithHost(h))
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "failed to init lassie")
+	// }
+
+	// infoFetcher := replication.MinerInfoFetcher{
+	// 	Client: util.NewLotusClient(params.LotusAPI, params.LotusToken),
+	// }
+	// endpointFinder disabled since we're using no-op retriever
+	// endpointFinder := endpointfinder.NewEndpointFinder(
+	// 	infoFetcher,
+	// 	h,
+	// 	endpointfinder.WithLruSize(128),
+	// 	endpointfinder.WithLruTimeout(time.Hour*2),
+	// 	endpointfinder.WithErrorLruSize(128),
+	// 	endpointfinder.WithErrorLruTimeout(time.Minute*5),
+	// )
 	return &Server{
 		db:          db,
 		host:        h,
@@ -128,7 +132,7 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 			time.Hour,
 			time.Minute*5,
 		),
-		retriever:       retriever.NewRetriever(lassie, endpointFinder),
+		retriever:       retriever.NewNoOpRetriever(), // Use no-op retriever instead of lassie
 		closer:          closer,
 		adminHandler:    &admin.DefaultHandler{},
 		storageHandler:  &storage.DefaultHandler{},

@@ -166,7 +166,7 @@ Upgrading:
 			Category: "Daemons",
 			Usage:    "run different singularity components",
 			Subcommands: []*cli.Command{
-				run.APICmd,
+				run.APICmd, // Returns error message about lassie dependency issues
 				run.DatasetWorkerCmd,
 				run.ContentProviderCmd,
 				run.DealTrackerCmd,

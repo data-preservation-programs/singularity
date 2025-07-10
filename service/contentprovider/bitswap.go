@@ -8,7 +8,6 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	bsnetwork "github.com/ipfs/boxo/bitswap/network"
 	"github.com/ipfs/boxo/bitswap/server"
-	nilrouting "github.com/ipfs/go-ipfs-routing/none"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -51,12 +50,8 @@ func (BitswapServer) Name() string {
 // and starts serving Bitswap requests.
 // It returns channels that signal when the service has stopped or encountered an error.
 func (s BitswapServer) Start(ctx context.Context, exitErr chan<- error) error {
-	nilRouter, err := nilrouting.ConstructNilRouting(ctx, nil, nil, nil)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	net := bsnetwork.NewFromIpfsHost(s.host, nilRouter)
+	// Updated for boxo v0.26.0 - NewFromIpfsHost no longer takes routing as second parameter
+	net := bsnetwork.NewFromIpfsHost(s.host)
 	bs := &store.FileReferenceBlockStore{DBNoContext: s.dbNoContext}
 	bsserver := server.New(ctx, net, bs)
 	net.Start(bsserver)
@@ -64,7 +59,8 @@ func (s BitswapServer) Start(ctx context.Context, exitErr chan<- error) error {
 	go func() {
 		<-ctx.Done()
 		net.Stop()
-		_ = bsserver.Close()
+		// Updated for boxo v0.26.0 - Close() no longer returns an error
+		bsserver.Close()
 		_ = s.host.Close()
 		if exitErr != nil {
 			exitErr <- nil
