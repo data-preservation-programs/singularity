@@ -2,6 +2,7 @@ package dealtracker
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,7 +11,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bcicen/jstream"
+	// Add pprof imports
+
+	"net/http/pprof"
+	_ "net/http/pprof"
+
+	"bytes"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
@@ -24,7 +31,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/klauspost/compress/zstd"
-	"github.com/mitchellh/mapstructure"
+	"github.com/tidwall/gjson"
 	"gorm.io/gorm"
 )
 
@@ -100,6 +107,7 @@ type DealTracker struct {
 	lotusURL     string
 	lotusToken   string
 	once         bool
+	batchSize    int
 	stateTracker *statetracker.StateChangeTracker
 }
 
@@ -119,6 +127,7 @@ func NewDealTracker(
 		lotusURL:     lotusURL,
 		lotusToken:   lotusToken,
 		once:         once,
+		batchSize:    100, // Default batch size
 		stateTracker: statetracker.NewStateChangeTracker(db),
 	}
 }
@@ -157,34 +166,8 @@ func (t *ThreadSafeReadCloser) Close() {
 	t.closer()
 }
 
-// DealStateStreamFromHTTPRequest retrieves the deal state from an HTTP request and returns a stream of jstream.MetaValue,
-// along with a Counter, io.Closer, and any error encountered.
-//
-// The function takes the following parameters:
-//   - request: The HTTP request to retrieve the deal state.
-//   - depth: The depth of the JSON decoding.
-//   - decompress: A boolean flag indicating whether to decompress the response body.
-//
-// The function performs the following steps:
-//
-//  1. Sends an HTTP request using http.DefaultClient.Do.
-//
-//  2. If an error occurs during the request, it returns nil for the channel, Counter, io.Closer, and the error wrapped with an appropriate message.
-//
-//  3. If the response status code is not http.StatusOK, it closes the response body and returns nil for the channel, Counter, io.Closer, and an error indicating the failure.
-//
-//  4. Creates a countingReader using NewCountingReader to count the number of bytes read from the response body.
-//
-//  5. If decompress is true, creates a zstd decompressor using zstd.NewReader and wraps it in a ThreadSafeReadCloser.
-//     - If an error occurs during decompression, it closes the response body and returns nil for the channel, Counter, io.Closer, and the error wrapped with an appropriate message.
-//     - Creates a jstream.Decoder using jstream.NewDecoder with the decompressor and specified depth, and sets it to emit key-value pairs.
-//     - Creates a CloserFunc that closes the decompressor and response body.
-//
-//  6. If decompress is false, creates a jstream.Decoder using jstream.NewDecoder with the countingReader and specified depth, and sets it to emit key-value pairs.
-//     - Sets the response body as the closer.
-//
-//  7. Returns the jstream.MetaValue stream from jsonDecoder.Stream(), the countingReader, closer, and nil for the error.
-func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress bool) (chan *jstream.MetaValue, Counter, io.Closer, error) {
+// DealStateStreamFromHTTPRequest creates a custom streaming parser for efficient deal processing
+func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress bool, walletIDs map[string]struct{}) (chan *ParsedDeal, Counter, io.Closer, error) {
 	//nolint: bodyclose
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
@@ -194,9 +177,11 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 		_ = resp.Body.Close()
 		return nil, nil, nil, errors.Newf("failed to get deal state: %s", resp.Status)
 	}
-	var jsonDecoder *jstream.Decoder
+
+	var reader io.Reader
 	var closer io.Closer
 	countingReader := NewCountingReader(resp.Body)
+
 	if decompress {
 		decompressor, err := zstd.NewReader(countingReader)
 		if err != nil {
@@ -207,17 +192,112 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 			reader: decompressor,
 			closer: decompressor.Close,
 		}
-		jsonDecoder = jstream.NewDecoder(safeDecompressor, depth).EmitKV()
+		reader = safeDecompressor
 		closer = CloserFunc(func() error {
 			safeDecompressor.Close()
 			return resp.Body.Close()
 		})
 	} else {
-		jsonDecoder = jstream.NewDecoder(countingReader, depth).EmitKV()
+		reader = countingReader
 		closer = resp.Body
 	}
 
-	return jsonDecoder.Stream(), countingReader, closer, nil
+	// Create channel for parsed deals
+	dealChan := make(chan *ParsedDeal, 100)
+
+	// Create channel for raw deals that need processing
+	rawDealChan := make(chan struct {
+		DealID  uint64
+		RawDeal json.RawMessage
+	}, 200)
+
+	// Start worker goroutines for parallel deal processing
+	const numWorkers = 4
+	var wg sync.WaitGroup
+	wg.Add(numWorkers)
+
+	for i := 0; i < numWorkers; i++ {
+		go func() {
+			defer wg.Done()
+			for raw := range rawDealChan {
+				// Extract deal fields directly with gjson
+				deal := Deal{
+					Proposal: DealProposal{
+						PieceCID: Cid{
+							Root: gjson.GetBytes(raw.RawDeal, "Proposal.PieceCID./").String(),
+						},
+						PieceSize:            gjson.GetBytes(raw.RawDeal, "Proposal.PieceSize").Int(),
+						VerifiedDeal:         gjson.GetBytes(raw.RawDeal, "Proposal.VerifiedDeal").Bool(),
+						Client:               gjson.GetBytes(raw.RawDeal, "Proposal.Client").String(),
+						Provider:             gjson.GetBytes(raw.RawDeal, "Proposal.Provider").String(),
+						Label:                gjson.GetBytes(raw.RawDeal, "Proposal.Label").String(),
+						StartEpoch:           int32(gjson.GetBytes(raw.RawDeal, "Proposal.StartEpoch").Int()),
+						EndEpoch:             int32(gjson.GetBytes(raw.RawDeal, "Proposal.EndEpoch").Int()),
+						StoragePricePerEpoch: gjson.GetBytes(raw.RawDeal, "Proposal.StoragePricePerEpoch").String(),
+					},
+					State: DealState{
+						SectorStartEpoch: int32(gjson.GetBytes(raw.RawDeal, "State.SectorStartEpoch").Int()),
+						LastUpdatedEpoch: int32(gjson.GetBytes(raw.RawDeal, "State.LastUpdatedEpoch").Int()),
+						SlashEpoch:       int32(gjson.GetBytes(raw.RawDeal, "State.SlashEpoch").Int()),
+					},
+				}
+
+				// Send parsed deal
+				dealChan <- &ParsedDeal{
+					DealID: raw.DealID,
+					Deal:   deal,
+				}
+			}
+		}()
+	}
+
+	// Goroutine to close dealChan after all workers finish
+	go func() {
+		wg.Wait()
+		close(dealChan)
+	}()
+
+	go func() {
+		defer close(rawDealChan)
+
+		// Read in reasonable chunks to avoid loading 40GB at once
+		const chunkSize = 4 * 1024 * 1024 // 4MB chunks
+
+		var accumulated []byte
+		buffer := make([]byte, chunkSize)
+
+		for {
+			n, err := reader.Read(buffer)
+			if n > 0 {
+				accumulated = append(accumulated, buffer[:n]...)
+
+				// Process complete deals from accumulated data
+				processed := findAndProcessCompleteDeals(accumulated, rawDealChan, walletIDs, depth)
+
+				// Keep unprocessed remainder
+				if processed > 0 && processed < len(accumulated) {
+					copy(accumulated, accumulated[processed:])
+					accumulated = accumulated[:len(accumulated)-processed]
+				} else if processed == len(accumulated) {
+					accumulated = accumulated[:0] // Clear all
+				}
+			}
+
+			if err == io.EOF {
+				// Process any remaining complete data
+				if len(accumulated) > 0 {
+					findAndProcessCompleteDeals(accumulated, rawDealChan, walletIDs, depth)
+				}
+				break
+			}
+			if err != nil {
+				Logger.Errorw("failed to read response data", "error", err)
+				return
+			}
+		}
+	}()
+
+	return dealChan, countingReader, closer, nil
 }
 
 func (*DealTracker) Name() string {
@@ -284,6 +364,22 @@ func (d *DealTracker) Start(ctx context.Context, exitErr chan<- error) error {
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
 
+	// Start pprof server for performance profiling
+	pprofMux := http.NewServeMux()
+	pprofMux.HandleFunc("/debug/pprof/", pprof.Index)
+	pprofMux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	pprofMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	pprofMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	pprofMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	pprofServer := &http.Server{Addr: ":6060", Handler: pprofMux}
+
+	go func() {
+		Logger.Info("Starting pprof server on :6060")
+		if err := pprofServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			Logger.Warnw("pprof server error", "error", err)
+		}
+	}()
+
 	healthcheckDone := make(chan struct{})
 	go func() {
 		defer close(healthcheckDone)
@@ -333,6 +429,12 @@ func (d *DealTracker) Start(ctx context.Context, exitErr chan<- error) error {
 
 		ctx2, cancel2 := context.WithTimeout(context.Background(), cleanupTimeout)
 		defer cancel2()
+
+		// Shutdown pprof server
+		if err := pprofServer.Shutdown(ctx2); err != nil {
+			Logger.Warnw("failed to shutdown pprof server", "error", err)
+		}
+
 		//nolint:contextcheck
 		err := d.cleanup(ctx2)
 		if err != nil {
@@ -727,11 +829,13 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 }
 
 func (d *DealTracker) trackDeal(ctx context.Context, walletIDs map[string]struct{}, callback func(dealID uint64, deal Deal) error) error {
-	kvstream, counter, closer, err := d.dealStateStream(ctx)
+	dealStream, counter, closer, err := d.dealStateStreamCustom(ctx, walletIDs)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer func() { _ = closer.Close() }()
+	defer closer.Close()
+
+	// Start the download stats logger
 	countingCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go func() {
@@ -749,52 +853,30 @@ func (d *DealTracker) trackDeal(ctx context.Context, walletIDs map[string]struct
 			}
 		}
 	}()
-	for stream := range kvstream {
-		keyValuePair, ok := stream.Value.(jstream.KV)
 
-		if !ok {
-			return errors.New("failed to get key value pair")
-		}
-
-		// ── fast-path: peek at Proposal.Client before full decode ──
-		if obj, ok := keyValuePair.Value.(map[string]any); ok {
-			if prop, ok := obj["Proposal"].(map[string]any); ok {
-				if client, ok := prop["Client"].(string); ok {
-					if _, want := walletIDs[client]; !want {
-						continue
-					}
-				}
-			}
-		}
-
-		var deal Deal
-		err = mapstructure.Decode(keyValuePair.Value, &deal)
-		if err != nil {
-			return errors.Wrapf(err, "failed to decode deal %s", keyValuePair.Value)
-		}
-
-		dealID, err := strconv.ParseUint(keyValuePair.Key, 10, 64)
-		if err != nil {
-			return errors.Wrapf(err, "failed to convert deal id %s to int", keyValuePair.Key)
-		}
-
-		err = callback(dealID, deal)
-		if err != nil {
+	// Process deals directly - no batching needed since we're only getting wanted deals
+	for parsed := range dealStream {
+		if err := callback(parsed.DealID, parsed.Deal); err != nil {
 			return errors.WithStack(err)
+		}
+
+		// Check if context is cancelled
+		if ctx.Err() != nil {
+			return ctx.Err()
 		}
 	}
 
 	return ctx.Err()
 }
 
-func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaValue, Counter, io.Closer, error) {
+func (d *DealTracker) dealStateStreamCustom(ctx context.Context, walletIDs map[string]struct{}) (chan *ParsedDeal, Counter, io.Closer, error) {
 	if d.dealZstURL != "" {
 		Logger.Infof("getting deal state from %s", d.dealZstURL)
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.dealZstURL, nil)
 		if err != nil {
 			return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state zst file %s", d.dealZstURL)
 		}
-		return DealStateStreamFromHTTPRequest(req, 1, true)
+		return DealStateStreamFromHTTPRequest(req, 1, true, walletIDs)
 	}
 
 	Logger.Infof("getting deal state from %s", d.lotusURL)
@@ -807,5 +889,218 @@ func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaVa
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
-	return DealStateStreamFromHTTPRequest(req, 2, false)
+	return DealStateStreamFromHTTPRequest(req, 2, false, walletIDs)
+}
+
+// Helper function for max
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Find and process complete deal objects, return bytes processed
+func findAndProcessCompleteDeals(data []byte, rawDealChan chan struct {
+	DealID  uint64
+	RawDeal json.RawMessage
+}, walletIDs map[string]struct{}, depth int) int {
+
+	// If data is small enough, just parse with gjson
+	if len(data) < 8*1024*1024 { // Less than 8MB
+		if isCompleteJSON(data, depth) {
+			parseWithGjson(data, rawDealChan, walletIDs, depth)
+			return len(data)
+		}
+		return 0 // Wait for more data
+	}
+
+	// For larger data, find individual complete deals
+	processed := 0
+	start := 0
+
+	for {
+		// Find the next complete deal starting from 'start'
+		dealEnd := findNextCompleteDeal(data[start:])
+		if dealEnd == -1 {
+			break // No complete deal found
+		}
+
+		actualEnd := start + dealEnd
+		dealData := data[start:actualEnd]
+
+		// Process this deal
+		if len(dealData) > 10 {
+			processDealChunk(dealData, rawDealChan, walletIDs)
+		}
+
+		processed = actualEnd
+		start = actualEnd
+
+		// Find start of next deal (skip comma/whitespace)
+		for start < len(data) && (data[start] == ',' || data[start] == ' ' || data[start] == '\t' || data[start] == '\n' || data[start] == '\r') {
+			start++
+			processed = start
+		}
+
+		if start >= len(data) {
+			break
+		}
+	}
+
+	return processed
+}
+
+// Check if data contains complete JSON
+func isCompleteJSON(data []byte, depth int) bool {
+	if len(data) < 10 {
+		return false
+	}
+
+	// Simple check: starts with { and ends with }
+	trimmed := bytes.TrimSpace(data)
+	if len(trimmed) == 0 {
+		return false
+	}
+
+	return trimmed[0] == '{' && trimmed[len(trimmed)-1] == '}'
+}
+
+// Parse complete JSON with gjson
+func parseWithGjson(data []byte, rawDealChan chan struct {
+	DealID  uint64
+	RawDeal json.RawMessage
+}, walletIDs map[string]struct{}, depth int) {
+
+	parsed := gjson.ParseBytes(data)
+
+	// Handle depth wrapping
+	dealsObj := parsed
+	if depth == 2 {
+		dealsObj = parsed.Get("result")
+		if !dealsObj.Exists() {
+			return
+		}
+	}
+
+	// Process all deals
+	dealsObj.ForEach(func(dealIDResult, dealData gjson.Result) bool {
+		dealIDStr := dealIDResult.String()
+		dealID, err := strconv.ParseUint(dealIDStr, 10, 64)
+		if err != nil {
+			return true
+		}
+
+		// Fast client check
+		client := dealData.Get("Proposal.Client").String()
+		if client == "" {
+			return true
+		}
+
+		if _, want := walletIDs[client]; !want {
+			return true
+		}
+
+		// Send to workers
+		rawDealChan <- struct {
+			DealID  uint64
+			RawDeal json.RawMessage
+		}{
+			DealID:  dealID,
+			RawDeal: json.RawMessage(dealData.Raw),
+		}
+
+		return true
+	})
+}
+
+// Find the end of the next complete deal (simple approach)
+func findNextCompleteDeal(data []byte) int {
+	if len(data) < 10 {
+		return -1
+	}
+
+	// Look for pattern: "123":{ ... }
+	braceDepth := 0
+	inString := false
+	escape := false
+	foundColon := false
+
+	for i := 0; i < len(data); i++ {
+		b := data[i]
+
+		if escape {
+			escape = false
+			continue
+		}
+
+		switch b {
+		case '\\':
+			if inString {
+				escape = true
+			}
+		case '"':
+			inString = !inString
+		case ':':
+			if !inString && braceDepth == 0 {
+				foundColon = true
+			}
+		case '{':
+			if !inString && foundColon {
+				braceDepth++
+			}
+		case '}':
+			if !inString && braceDepth > 0 {
+				braceDepth--
+				if braceDepth == 0 {
+					return i + 1 // Found complete deal
+				}
+			}
+		}
+	}
+
+	return -1 // No complete deal found
+}
+
+// Process a single deal chunk
+func processDealChunk(dealData []byte, rawDealChan chan struct {
+	DealID  uint64
+	RawDeal json.RawMessage
+}, walletIDs map[string]struct{}) {
+
+	// Extract ID and JSON from "123":{...}
+	colonPos := bytes.IndexByte(dealData, ':')
+	if colonPos <= 0 {
+		return
+	}
+
+	// Extract ID
+	idPart := bytes.TrimSpace(dealData[:colonPos])
+	idPart = bytes.Trim(idPart, `"`)
+	dealID, err := strconv.ParseUint(string(idPart), 10, 64)
+	if err != nil {
+		return
+	}
+
+	// Extract deal JSON
+	dealJSON := bytes.TrimSpace(dealData[colonPos+1:])
+
+	// Fast client check
+	client := gjson.GetBytes(dealJSON, "Proposal.Client").String()
+	if client == "" {
+		return
+	}
+
+	if _, want := walletIDs[client]; !want {
+		return
+	}
+
+	// Send to workers
+	rawDealChan <- struct {
+		DealID  uint64
+		RawDeal json.RawMessage
+	}{
+		DealID:  dealID,
+		RawDeal: json.RawMessage(dealJSON),
+	}
 }
