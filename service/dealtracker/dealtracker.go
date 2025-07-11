@@ -11,11 +11,6 @@ import (
 	"sync"
 	"time"
 
-	// Add pprof imports
-
-	"net/http/pprof"
-	_ "net/http/pprof"
-
 	"bytes"
 
 	"github.com/cockroachdb/errors"
@@ -361,22 +356,6 @@ func (d *DealTracker) Start(ctx context.Context, exitErr chan<- error) error {
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
 
-	// Start pprof server for performance profiling
-	pprofMux := http.NewServeMux()
-	pprofMux.HandleFunc("/debug/pprof/", pprof.Index)
-	pprofMux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	pprofMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	pprofMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	pprofMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	pprofServer := &http.Server{Addr: ":6060", Handler: pprofMux}
-
-	go func() {
-		Logger.Info("Starting pprof server on :6060")
-		if err := pprofServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			Logger.Warnw("pprof server error", "error", err)
-		}
-	}()
-
 	healthcheckDone := make(chan struct{})
 	go func() {
 		defer close(healthcheckDone)
@@ -426,11 +405,6 @@ func (d *DealTracker) Start(ctx context.Context, exitErr chan<- error) error {
 
 		ctx2, cancel2 := context.WithTimeout(context.Background(), cleanupTimeout)
 		defer cancel2()
-
-		// Shutdown pprof server
-		if err := pprofServer.Shutdown(ctx2); err != nil {
-			Logger.Warnw("failed to shutdown pprof server", "error", err)
-		}
 
 		//nolint:contextcheck
 		err := d.cleanup(ctx2)
