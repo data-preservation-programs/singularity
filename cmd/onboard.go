@@ -409,15 +409,6 @@ func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Con
 		outputStorages = append(outputStorages, storage.Name)
 	}
 
-	// Parse deal HTTP headers if provided
-	var dealHTTPHeaders model.ConfigMap
-	if headersStr := c.String("deal-http-headers"); headersStr != "" {
-		var tempMap map[string]string
-		if err := json.Unmarshal([]byte(headersStr), &tempMap); err != nil {
-			return nil, errors.Wrapf(err, "invalid JSON format for deal-http-headers: %s", headersStr)
-		}
-		dealHTTPHeaders = model.ConfigMap(tempMap)
-	}
 
 	// Create preparation
 	prep, err := dataprep.Default.CreatePreparationHandler(ctx, db, dataprep.CreateRequest{
