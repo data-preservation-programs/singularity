@@ -50,12 +50,13 @@ var OnboardCmd = &cli.Command{
 
 It performs the following steps automatically:
 1. Creates storage connections (if paths provided)
-2. Creates data preparation with deal parameters
+2. Creates data preparation with deal template configuration
 3. Starts scanning immediately
 4. Enables automatic job progression (scan → pack → daggen → deals)
 5. Optionally starts managed workers to process jobs
 
-This is the simplest way to onboard data from source to storage deals.`,
+This is the simplest way to onboard data from source to storage deals.
+Use deal templates to configure deal parameters - individual deal flags are not supported.`,
 	Flags: []cli.Flag{
 		// Data source flags
 		&cli.StringFlag{
@@ -131,6 +132,11 @@ This is the simplest way to onboard data from source to storage deals.`,
 			Name:  "auto-create-deals",
 			Usage: "Enable automatic deal creation after preparation completion",
 			Value: true,
+		},
+		&cli.StringFlag{
+			Name:     "deal-template-id",
+			Usage:    "Deal template ID to use for deal configuration (required when auto-create-deals is enabled). Individual deal flags are not supported - use templates instead.",
+			Category: "Deal Settings",
 		},
 
 		// Worker management
@@ -212,10 +218,6 @@ func onboardAction(c *cli.Context) error {
 		return outputJSONError("input validation failed", err)
 	}
 
-	if !isJSON {
-		fmt.Println("🚀 Starting unified data onboarding...")
-	}
-
 	// Initialize database
 	db, closer, err := database.OpenFromCLI(c)
 	if err != nil {
@@ -224,6 +226,17 @@ func onboardAction(c *cli.Context) error {
 	defer func() { _ = closer.Close() }()
 
 	ctx := c.Context
+
+	// Validate deal template exists if specified
+	if c.Bool("auto-create-deals") {
+		if err := validateDealTemplateExists(ctx, db, c.String("deal-template-id")); err != nil {
+			return outputJSONError("deal template validation failed", err)
+		}
+	}
+
+	if !isJSON {
+		fmt.Println("🚀 Starting unified data onboarding...")
+	}
 
 	// Step 1: Create preparation with deal configuration
 	if !isJSON {
@@ -408,26 +421,15 @@ func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Con
 
 	// Create preparation
 	prep, err := dataprep.Default.CreatePreparationHandler(ctx, db, dataprep.CreateRequest{
-		Name:                c.String("name"),
-		SourceStorages:      sourceStorages,
-		OutputStorages:      outputStorages,
-		MaxSizeStr:          c.String("max-size"),
-		NoDag:               c.Bool("no-dag"),
-		AutoCreateDeals:     c.Bool("auto-create-deals"),
-		DealTemplate:        c.String("deal-template"),
-		DealProvider:        c.String("deal-provider"),
-		DealPricePerGB:      c.Float64("deal-price-per-gb"),
-		DealPricePerGBEpoch: c.Float64("deal-price-per-gb-epoch"),
-		DealPricePerDeal:    c.Float64("deal-price-per-deal"),
-		DealDuration:        c.Duration("deal-duration"),
-		DealStartDelay:      c.Duration("deal-start-delay"),
-		DealVerified:        c.Bool("deal-verified"),
-		DealKeepUnsealed:    c.Bool("deal-keep-unsealed"),
-		DealAnnounceToIPNI:  c.Bool("deal-announce-to-ipni"),
-		DealURLTemplate:     c.String("deal-url-template"),
-		DealHTTPHeaders:     dealHTTPHeaders,
-		WalletValidation:    c.Bool("wallet-validation"),
-		SPValidation:        c.Bool("sp-validation"),
+		Name:             c.String("name"),
+		SourceStorages:   sourceStorages,
+		OutputStorages:   outputStorages,
+		MaxSizeStr:       c.String("max-size"),
+		NoDag:            c.Bool("no-dag"),
+		AutoCreateDeals:  c.Bool("auto-create-deals"),
+		DealTemplate:     c.String("deal-template-id"),
+		WalletValidation: c.Bool("wallet-validation"),
+		SPValidation:     c.Bool("sp-validation"),
 	})
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -912,52 +914,9 @@ func validateOnboardInputs(c *cli.Context) error {
 
 	// Auto-deal validation
 	if c.Bool("auto-create-deals") {
-		dealTemplate := c.String("deal-template")
-
-		// Check if inline deal flags are being used without a template
-		hasInlineDealFlags := (c.IsSet("deal-provider") ||
-			c.IsSet("deal-price-per-gb") ||
-			c.IsSet("deal-price-per-deal") ||
-			c.IsSet("deal-price-per-gb-epoch") ||
-			c.IsSet("deal-duration") ||
-			c.IsSet("deal-start-delay") ||
-			c.IsSet("deal-verified") ||
-			c.IsSet("deal-keep-unsealed") ||
-			c.IsSet("deal-announce-to-ipni") ||
-			c.IsSet("deal-url-template") ||
-			c.IsSet("deal-http-headers"))
-
 		// Deal template is required when auto-create-deals is enabled
-		if dealTemplate == "" {
-			return errors.New("deal template is required when auto-create-deals is enabled (--deal-template)")
-		}
-
-		// Validate template format (basic validation)
-		if len(dealTemplate) == 0 {
-			return errors.New("deal template cannot be empty")
-		}
-
-		// Discourage use of inline deal flags when template is provided
-		if hasInlineDealFlags {
-			return errors.New("inline deal flags are not allowed when using a deal template. Please configure all deal settings in the template instead of using inline flags")
-		}
-
-		// Validate HTTP headers if provided
-		if headersStr := c.String("deal-http-headers"); headersStr != "" {
-			var tempMap map[string]string
-			if err := json.Unmarshal([]byte(headersStr), &tempMap); err != nil {
-				return errors.Wrapf(err, "invalid JSON format for deal-http-headers")
-			}
-
-			// Validate header keys and values
-			for key, value := range tempMap {
-				if key == "" {
-					return errors.New("HTTP header keys cannot be empty")
-				}
-				if value == "" {
-					return errors.New("HTTP header values cannot be empty")
-				}
-			}
+		if c.String("deal-template-id") == "" {
+			return errors.New("deal template ID is required when auto-create-deals is enabled (--deal-template-id)")
 		}
 	}
 
@@ -1254,4 +1213,44 @@ func createStorageIfNotExistWithConfig(ctx context.Context, db *gorm.DB, path, s
 	}
 
 	return storage, nil
+}
+
+// validateDealTemplateExists validates that the deal template ID exists in the database
+// and checks basic fields like provider format, pricing, and duration
+func validateDealTemplateExists(ctx context.Context, db *gorm.DB, templateID string) error {
+	if templateID == "" {
+		return nil // No template specified, validation not needed
+	}
+
+	// Check if template exists by ID or name
+	var template model.DealTemplate
+	err := db.WithContext(ctx).Where("id = ? OR name = ?", templateID, templateID).First(&template).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.Errorf("deal template '%s' not found. Please create the template first using 'singularity deal-schedule-template create'", templateID)
+	}
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Validate basic template fields
+	if template.DealConfig.DealProvider == "" {
+		return errors.Errorf("deal template '%s' has no provider specified", templateID)
+	}
+
+	// Validate provider format (should be like f01000)
+	if len(template.DealConfig.DealProvider) < 4 || template.DealConfig.DealProvider[:1] != "f" {
+		return errors.Errorf("deal template '%s' has invalid provider format '%s' (expected format: f01000)", templateID, template.DealConfig.DealProvider)
+	}
+
+	// Validate duration is set
+	if template.DealConfig.DealDuration <= 0 {
+		return errors.Errorf("deal template '%s' has invalid duration %v (must be > 0)", templateID, template.DealConfig.DealDuration)
+	}
+
+	// Validate pricing is non-negative
+	if template.DealConfig.DealPricePerGb < 0 || template.DealConfig.DealPricePerGbEpoch < 0 || template.DealConfig.DealPricePerDeal < 0 {
+		return errors.Errorf("deal template '%s' has negative pricing values", templateID)
+	}
+
+	return nil
 }
