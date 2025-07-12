@@ -409,7 +409,6 @@ func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Con
 		outputStorages = append(outputStorages, storage.Name)
 	}
 
-
 	// Create preparation
 	prep, err := dataprep.Default.CreatePreparationHandler(ctx, db, dataprep.CreateRequest{
 		Name:             c.String("name"),
