@@ -4,19 +4,27 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/handler/job"
 	storageHandlers "github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/workermanager"
 	"github.com/data-preservation-programs/singularity/service/workflow"
+	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
+	"github.com/gotidy/ptr"
+	"github.com/rclone/rclone/fs"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
@@ -58,12 +66,54 @@ Use deal templates to configure deal parameters - individual deal flags are not 
 		},
 		&cli.StringSliceFlag{
 			Name:     "source",
-			Usage:    "Local source path(s) to onboard",
+			Usage:    "Source path(s) to onboard (local paths or remote URLs like s3://bucket/path)",
 			Required: true,
 		},
 		&cli.StringSliceFlag{
 			Name:  "output",
-			Usage: "Local output path(s) for CAR files (optional)",
+			Usage: "Output path(s) for CAR files (local paths or remote URLs like s3://bucket/path)",
+		},
+
+		// Remote storage configuration
+		&cli.StringFlag{
+			Name:  "source-type",
+			Usage: "Source storage type (local, s3, gcs, azure, etc.)",
+			Value: "local",
+		},
+		&cli.StringFlag{
+			Name:  "source-provider",
+			Usage: "Source storage provider (for s3: aws, minio, wasabi, etc.)",
+		},
+		&cli.StringFlag{
+			Name:  "output-type",
+			Usage: "Output storage type (local, s3, gcs, azure, etc.)",
+			Value: "local",
+		},
+		&cli.StringFlag{
+			Name:  "output-provider",
+			Usage: "Output storage provider",
+		},
+
+		// Storage configuration
+		&cli.StringFlag{
+			Name:     "source-name",
+			Usage:    "Custom name for source storage (auto-generated if not provided)",
+			Category: "Storage Configuration",
+		},
+		&cli.StringFlag{
+			Name:     "output-name",
+			Usage:    "Custom name for output storage (auto-generated if not provided)",
+			Category: "Storage Configuration",
+		},
+		&cli.StringFlag{
+			Name:     "source-config",
+			Usage:    "Source storage configuration in JSON format (key-value pairs)",
+			Category: "Storage Configuration",
+		},
+		&cli.StringFlag{
+			Name:     "output-config",
+			Usage:    "Output storage configuration in JSON format (key-value pairs)",
+			Category: "Storage Configuration",
 		},
 
 		// Preparation settings
@@ -116,12 +166,10 @@ Use deal templates to configure deal parameters - individual deal flags are not 
 		&cli.BoolFlag{
 			Name:  "wallet-validation",
 			Usage: "Enable wallet balance validation",
-			Value: true,
 		},
 		&cli.BoolFlag{
 			Name:  "sp-validation",
 			Usage: "Enable storage provider validation",
-			Value: true,
 		},
 
 		// Output format
@@ -130,191 +178,215 @@ Use deal templates to configure deal parameters - individual deal flags are not 
 			Usage: "Output result in JSON format for automation",
 		},
 	},
-	Action: func(c *cli.Context) error {
-		isJSON := c.Bool("json")
+}
 
-		// Helper function to output JSON error and exit
-		outputJSONError := func(msg string, err error) error {
-			if isJSON {
-				result := OnboardResult{
-					Success: false,
-					Error:   fmt.Sprintf("%s: %v", msg, err),
-				}
-				if data, err := json.Marshal(result); err == nil {
-					fmt.Println(string(data))
-				}
-			}
-			return errors.Wrap(err, msg)
-		}
+// Initialize common flags for the onboard command
+func init() {
+	// Add common deal flags to the onboard command
+	OnboardCmd.Flags = append(OnboardCmd.Flags, cliutil.CommonDealFlags...)
 
-		// Validate CLI inputs before proceeding
-		if err := validateOnboardInputs(c); err != nil {
-			return outputJSONError("input validation failed", err)
-		}
+	// Add common storage client flags to the onboard command
+	OnboardCmd.Flags = append(OnboardCmd.Flags, cliutil.CommonStorageClientFlags...)
 
-		// Initialize database
-		db, closer, err := database.OpenFromCLI(c)
-		if err != nil {
-			return outputJSONError("failed to initialize database", err)
-		}
-		defer func() { _ = closer.Close() }()
+	// Add dynamic storage flags for all supported backends
+	OnboardCmd.Flags = append(OnboardCmd.Flags, generateDynamicStorageFlags()...)
 
-		ctx := c.Context
+	// Set the action function
+	OnboardCmd.Action = onboardAction
+}
 
-		// Validate deal template exists if specified
-		if c.Bool("auto-create-deals") {
-			if err := validateDealTemplateExists(ctx, db, c.String("deal-template-id")); err != nil {
-				return outputJSONError("deal template validation failed", err)
-			}
-		}
+// Action function for the onboard command
+func onboardAction(c *cli.Context) error {
+	isJSON := c.Bool("json")
 
-		if !isJSON {
-			fmt.Println("🚀 Starting unified data onboarding...")
-		}
-
-		// Step 1: Create preparation with deal configuration
-		if !isJSON {
-			fmt.Println("\n📋 Creating data preparation...")
-		}
-		prep, err := createPreparationForOnboarding(ctx, db, c)
-		if err != nil {
-			return outputJSONError("failed to create preparation", err)
-		}
-		if !isJSON {
-			fmt.Printf("✓ Created preparation: %s (ID: %d)\n", prep.Name, prep.ID)
-		}
-
-		// Step 2: Enable workflow orchestration
-		if !isJSON {
-			fmt.Println("\n⚙️  Enabling workflow orchestration...")
-		}
-		workflow.DefaultOrchestrator.SetEnabled(true)
-		if !isJSON {
-			fmt.Println("✓ Automatic job progression enabled (scan → pack → daggen → deals)")
-		} else {
-			// Include orchestration state in JSON output
-			result := OnboardResult{
-				Success: true,
-				// WorkflowOrchestrationEnabled will be set to true in final output
-			}
-			_ = result // Use later in final output
-		}
-
-		// Step 3: Start workers if requested
-		var workerManager *workermanager.WorkerManager
-		workersCount := 0
-		if c.Bool("start-workers") {
-			if !isJSON {
-				fmt.Println("\n👷 Starting managed workers...")
-			}
-			workerManager, err = startManagedWorkers(ctx, db, c.Int("max-workers"))
-			if err != nil {
-				return outputJSONError("failed to start workers", err)
-			}
-			workersCount = c.Int("max-workers")
-			if !isJSON {
-				fmt.Printf("✓ Started %d managed workers\n", workersCount)
-			}
-		}
-
-		// Step 4: Start scanning
-		if !isJSON {
-			fmt.Println("\n🔍 Starting initial scanning...")
-		}
-		err = startScanningForPreparation(ctx, db, prep)
-		if err != nil {
-			return outputJSONError("failed to start scanning", err)
-		}
-		if !isJSON {
-			fmt.Println("✓ Scanning started for all source attachments")
-		}
-
-		// Step 5: Monitor progress if requested
-		if c.Bool("wait-for-completion") {
-			if !isJSON {
-				fmt.Println("\n📊 Monitoring progress...")
-			}
-			err = monitorProgress(ctx, db, prep, c.Duration("timeout"))
-			if err != nil {
-				return outputJSONError("monitoring failed", err)
-			}
-
-			// Only cleanup workers after completion monitoring finishes successfully
-			if workerManager != nil {
-				if !isJSON {
-					fmt.Println("\n🧹 Cleaning up workers...")
-				}
-				err = workerManager.Stop(ctx)
-				if err != nil {
-					if !isJSON {
-						fmt.Printf("⚠ Warning: failed to stop workers cleanly: %v\n", err)
-					}
-				}
-			}
-		} else if workerManager != nil {
-			// When not waiting for completion, leave workers running to process jobs
-			if !isJSON {
-				fmt.Println("\n✅ Workers will continue running to process jobs")
-				fmt.Println("💡 Use --wait-for-completion to monitor progress and stop workers when done")
-			}
-		}
-
-		// Output results
+	// Helper function to output JSON error and exit
+	outputJSONError := func(msg string, err error) error {
 		if isJSON {
-			// Prepare next steps
-			nextSteps := []string{
-				"Monitor progress: singularity prep status " + prep.Name,
-				"Check jobs: singularity job list",
-			}
-			if c.Bool("start-workers") {
-				if c.Bool("wait-for-completion") {
-					nextSteps = append(nextSteps, "Workers have been stopped after completion")
-				} else {
-					nextSteps = append(nextSteps, "Workers are running and will process jobs automatically")
-				}
-			} else {
-				nextSteps = append(nextSteps, "Start workers: singularity run unified")
-			}
-
 			result := OnboardResult{
-				Success:       true,
-				PreparationID: uint32(prep.ID),
-				Name:          prep.Name,
-				SourcePaths:   c.StringSlice("source"),
-				OutputPaths:   c.StringSlice("output"),
-				AutoDeals:     c.Bool("auto-create-deals"),
-				WorkersCount:  workersCount,
-				NextSteps:     nextSteps,
+				Success: false,
+				Error:   fmt.Sprintf("%s: %v", msg, err),
 			}
-			data, err := json.Marshal(result)
+			if data, err := json.Marshal(result); err == nil {
+				fmt.Println(string(data))
+			}
+		}
+		return errors.Wrap(err, msg)
+	}
+
+	// Validate CLI inputs before proceeding
+	if err := validateOnboardInputs(c); err != nil {
+		return outputJSONError("input validation failed", err)
+	}
+
+	// Initialize database
+	db, closer, err := database.OpenFromCLI(c)
+	if err != nil {
+		return outputJSONError("failed to initialize database", err)
+	}
+	defer func() { _ = closer.Close() }()
+
+	ctx := c.Context
+
+	// Validate deal template exists if specified
+	if c.Bool("auto-create-deals") {
+		if err := validateDealTemplateExists(ctx, db, c.String("deal-template-id")); err != nil {
+			return outputJSONError("deal template validation failed", err)
+		}
+	}
+
+	if !isJSON {
+		fmt.Println("🚀 Starting unified data onboarding...")
+	}
+
+	// Step 1: Create preparation with deal configuration
+	if !isJSON {
+		fmt.Println("\n📋 Creating data preparation...")
+	}
+	prep, err := createPreparationForOnboarding(ctx, db, c)
+	if err != nil {
+		return outputJSONError("failed to create preparation", err)
+	}
+	if !isJSON {
+		fmt.Printf("✓ Created preparation: %s (ID: %d)\n", prep.Name, prep.ID)
+	}
+
+	// Step 2: Enable workflow orchestration
+	if !isJSON {
+		fmt.Println("\n⚙️  Enabling workflow orchestration...")
+	}
+	workflow.DefaultOrchestrator.SetEnabled(true)
+	if !isJSON {
+		fmt.Println("✓ Automatic job progression enabled (scan → pack → daggen → deals)")
+	} else {
+		// Include orchestration state in JSON output
+		result := OnboardResult{
+			Success: true,
+			// WorkflowOrchestrationEnabled will be set to true in final output
+		}
+		_ = result // Use later in final output
+	}
+
+	// Step 3: Start workers if requested
+	var workerManager *workermanager.WorkerManager
+	workersCount := 0
+	if c.Bool("start-workers") {
+		if !isJSON {
+			fmt.Println("\n👷 Starting managed workers...")
+		}
+		workerManager, err = startManagedWorkers(ctx, db, c.Int("max-workers"))
+		if err != nil {
+			return outputJSONError("failed to start workers", err)
+		}
+		workersCount = c.Int("max-workers")
+		if !isJSON {
+			fmt.Printf("✓ Started %d managed workers\n", workersCount)
+		}
+	}
+
+	// Step 4: Start scanning
+	if !isJSON {
+		fmt.Println("\n🔍 Starting initial scanning...")
+	}
+	err = startScanningForPreparation(ctx, db, prep)
+	if err != nil {
+		return outputJSONError("failed to start scanning", err)
+	}
+	if !isJSON {
+		fmt.Println("✓ Scanning started for all source attachments")
+	}
+
+	// Step 5: Monitor progress if requested
+	if c.Bool("wait-for-completion") {
+		if !isJSON {
+			fmt.Println("\n📊 Monitoring progress...")
+		}
+		err = monitorProgress(ctx, db, prep, c.Duration("timeout"))
+		if err != nil {
+			return outputJSONError("monitoring failed", err)
+		}
+
+		// Only cleanup workers after completion monitoring finishes successfully
+		if workerManager != nil {
+			if !isJSON {
+				fmt.Println("\n🧹 Cleaning up workers...")
+			}
+			err = workerManager.Stop(ctx)
 			if err != nil {
-				return errors.Wrap(err, "failed to marshal JSON result")
-			}
-			fmt.Println(string(data))
-		} else {
-			if !c.Bool("wait-for-completion") {
-				fmt.Println("\n✅ Onboarding initiated successfully!")
-				fmt.Println("\n📝 Next steps:")
-				fmt.Println("   • Monitor progress: singularity prep status", prep.Name)
-				fmt.Println("   • Check jobs: singularity job list")
-				if c.Bool("start-workers") {
-					fmt.Println("   • Workers are running and will process jobs automatically")
-				} else {
-					fmt.Println("   • Start workers: singularity run unified")
+				if !isJSON {
+					fmt.Printf("⚠ Warning: failed to stop workers cleanly: %v\n", err)
 				}
 			}
 		}
+	} else if workerManager != nil {
+		// When not waiting for completion, leave workers running to process jobs
+		if !isJSON {
+			fmt.Println("\n✅ Workers will continue running to process jobs")
+			fmt.Println("💡 Use --wait-for-completion to monitor progress and stop workers when done")
+		}
+	}
 
-		return nil
-	},
+	// Output results
+	if isJSON {
+		// Prepare next steps
+		nextSteps := []string{
+			"Monitor progress: singularity prep status " + prep.Name,
+			"Check jobs: singularity job list",
+		}
+		if c.Bool("start-workers") {
+			if c.Bool("wait-for-completion") {
+				nextSteps = append(nextSteps, "Workers have been stopped after completion")
+			} else {
+				nextSteps = append(nextSteps, "Workers are running and will process jobs automatically")
+			}
+		} else {
+			nextSteps = append(nextSteps, "Start workers: singularity run unified")
+		}
+
+		result := OnboardResult{
+			Success:       true,
+			PreparationID: uint32(prep.ID),
+			Name:          prep.Name,
+			SourcePaths:   c.StringSlice("source"),
+			OutputPaths:   c.StringSlice("output"),
+			AutoDeals:     c.Bool("auto-create-deals"),
+			WorkersCount:  workersCount,
+			NextSteps:     nextSteps,
+		}
+		data, err := json.Marshal(result)
+		if err != nil {
+			return errors.Wrap(err, "failed to marshal JSON result")
+		}
+		fmt.Println(string(data))
+	} else if !c.Bool("wait-for-completion") {
+		fmt.Println("\n✅ Onboarding initiated successfully!")
+		fmt.Println("\n📝 Next steps:")
+		fmt.Println("   • Monitor progress: singularity prep status", prep.Name)
+		fmt.Println("   • Check jobs: singularity job list")
+		if c.Bool("start-workers") {
+			fmt.Println("   • Workers are running and will process jobs automatically")
+		} else {
+			fmt.Println("   • Start workers: singularity run unified")
+		}
+	}
+
+	return nil
 }
 
 // createPreparationForOnboarding creates a preparation with all onboarding settings
 func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Context) (*model.Preparation, error) {
+	// Log warning for insecure client configurations
+	logInsecureClientConfigWarning(c)
+
 	// Convert source paths to storage names (create if needed)
 	var sourceStorages []string
-	for _, sourcePath := range c.StringSlice("source") {
-		storage, err := createLocalStorageIfNotExist(ctx, db, sourcePath, "source")
+	for i, sourcePath := range c.StringSlice("source") {
+		storageName := c.String("source-name")
+		if storageName == "" {
+			storageName = fmt.Sprintf("source-%s-%d", util.RandomName(), time.Now().Unix())
+		} else if len(c.StringSlice("source")) > 1 {
+			storageName = fmt.Sprintf("%s-%d", storageName, i)
+		}
+		storage, err := createStorageIfNotExistWithConfig(ctx, db, sourcePath, c.String("source-type"), c.String("source-provider"), c, storageName, "source")
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to create source storage for %s", sourcePath)
 		}
@@ -323,8 +395,14 @@ func createPreparationForOnboarding(ctx context.Context, db *gorm.DB, c *cli.Con
 
 	// Convert output paths to storage names (create if needed)
 	var outputStorages []string
-	for _, outputPath := range c.StringSlice("output") {
-		storage, err := createLocalStorageIfNotExist(ctx, db, outputPath, "output")
+	for i, outputPath := range c.StringSlice("output") {
+		storageName := c.String("output-name")
+		if storageName == "" {
+			storageName = fmt.Sprintf("output-%s-%d", util.RandomName(), time.Now().Unix())
+		} else if len(c.StringSlice("output")) > 1 {
+			storageName = fmt.Sprintf("%s-%d", storageName, i)
+		}
+		storage, err := createStorageIfNotExistWithConfig(ctx, db, outputPath, c.String("output-type"), c.String("output-provider"), c, storageName, "output")
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to create output storage for %s", outputPath)
 		}
@@ -537,38 +615,241 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 	return status, false, nil
 }
 
-// Helper function to create local storage if it doesn't exist
-func createLocalStorageIfNotExist(ctx context.Context, db *gorm.DB, path, prefix string) (*model.Storage, error) {
-	// Check if storage already exists for this path
-	var existing model.Storage
-	err := db.WithContext(ctx).Where("type = ? AND path = ?", "local", path).First(&existing).Error
-	if err == nil {
-		return &existing, nil
+// capitalizeFirst capitalizes the first letter of a string
+func capitalizeFirst(s string) string {
+	if s == "" {
+		return ""
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
+}
+
+// generateDynamicStorageFlags creates CLI flags for all supported storage backends
+func generateDynamicStorageFlags() []cli.Flag {
+	var flags []cli.Flag
+	seenFlags := make(map[string]bool)
+
+	// Add flags for each supported backend
+	for _, backend := range storagesystem.Backends {
+		for _, providerOptions := range backend.ProviderOptions {
+			for _, option := range providerOptions.Options {
+				// Convert option name to CLI flag format
+				flagName := strings.ReplaceAll(option.Name, "_", "-")
+
+				// Create flag for each storage type context (source/output)
+				for _, context := range []string{"source", "output"} {
+					fullFlagName := context + "-" + backend.Prefix + "-" + flagName
+
+					// Skip if we've already seen this flag name
+					if seenFlags[fullFlagName] {
+						continue
+					}
+					seenFlags[fullFlagName] = true
+
+					// Create flag based on option type
+					switch (*fs.Option)(&option).Type() {
+					case "bool":
+						flags = append(flags, &cli.BoolFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+						})
+					case "string":
+						flags = append(flags, &cli.StringFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+						})
+					case "int":
+						flags = append(flags, &cli.IntFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+						})
+					case "SizeSuffix":
+						flags = append(flags, &cli.StringFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+						})
+					case "Duration":
+						flags = append(flags, &cli.DurationFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+						})
+					default:
+						flags = append(flags, &cli.StringFlag{
+							Name:     fullFlagName,
+							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
+							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+						})
+					}
+				}
+			}
+		}
 	}
 
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.WithStack(err)
+	return flags
+}
+
+// parseStorageConfig builds storage configuration from CLI flags using dynamic approach
+func parseStorageConfig(c *cli.Context, storageType, storageContext string) map[string]string {
+	config := make(map[string]string)
+
+	// Get backend configuration
+	backend, exists := storagesystem.BackendMap[storageType]
+	if !exists {
+		return config
 	}
 
-	// Generate a unique storage name
-	storageName := fmt.Sprintf("%s-%s-%d", prefix, util.RandomName(), time.Now().Unix())
+	// Parse configuration for all provider options
+	for _, providerOptions := range backend.ProviderOptions {
+		for _, option := range providerOptions.Options {
+			// Convert option name to CLI flag format
+			flagName := strings.ReplaceAll(option.Name, "_", "-")
+			fullFlagName := storageContext + "-" + backend.Prefix + "-" + flagName
 
-	// Use the storage handler to create new storage with proper validation
-	storageHandler := storageHandlers.Default
-	request := storageHandlers.CreateRequest{
-		Name:         storageName,
+			// Check if the flag is set and extract value
+			if c.IsSet(fullFlagName) {
+				switch (*fs.Option)(&option).Type() {
+				case "bool":
+					if c.Bool(fullFlagName) {
+						config[option.Name] = "true"
+					}
+				case "string":
+					if value := c.String(fullFlagName); value != "" {
+						config[option.Name] = value
+					}
+				case "int":
+					config[option.Name] = strconv.Itoa(c.Int(fullFlagName))
+				case "SizeSuffix":
+					if value := c.String(fullFlagName); value != "" {
+						config[option.Name] = value
+					}
+				case "Duration":
+					config[option.Name] = c.Duration(fullFlagName).String()
+				default:
+					if value := c.String(fullFlagName); value != "" {
+						config[option.Name] = value
+					}
+				}
+			}
+		}
+	}
+
+	return config
+}
+
+// getDefaultProvider returns the default provider for a storage type
+func getDefaultProvider(storageType string) string {
+	switch storageType {
+	case "s3":
+		return "aws"
+	case "gcs":
+		return "google"
+	case "local":
+		return "local"
+	default:
+		return ""
+	}
+}
+
+// getProviderDefaults returns default configuration values for a storage provider
+func getProviderDefaults(storageType, provider string) map[string]string {
+	defaults := make(map[string]string)
+
+	// Get backend configuration from storage system
+	backend, exists := storagesystem.BackendMap[storageType]
+	if !exists {
+		return defaults
+	}
+
+	// Find the provider-specific options
+	for _, providerOptions := range backend.ProviderOptions {
+		if providerOptions.Provider == provider {
+			// Extract default values from options
+			for _, option := range providerOptions.Options {
+				if option.Default != nil {
+					switch v := option.Default.(type) {
+					case string:
+						if v != "" {
+							defaults[option.Name] = v
+						}
+					case bool:
+						defaults[option.Name] = strconv.FormatBool(v)
+					case int:
+						defaults[option.Name] = strconv.Itoa(v)
+					}
+				}
+			}
+			break
+		}
+	}
+
+	return defaults
+}
+
+// mergeStorageConfigWithDefaults merges custom config with provider defaults
+func mergeStorageConfigWithDefaults(storageType, provider string, customConfig map[string]string) map[string]string {
+	// Start with provider defaults
+	merged := getProviderDefaults(storageType, provider)
+
+	// Override with custom configuration
+	for key, value := range customConfig {
+		merged[key] = value
+	}
+
+	return merged
+}
+
+// testStorageConnectivity validates storage configuration by testing connectivity
+func testStorageConnectivity(ctx context.Context, storageType, provider, path string, config map[string]string, clientConfig model.ClientConfig) error {
+	if storageType == "local" {
+		// For local storage, just check if the path exists or can be created
+		return validateLocalPath(path)
+	}
+
+	// Create a temporary storage model to test connectivity
+	tempStorage := model.Storage{
+		Name:         "test-connectivity-" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		Type:         storageType,
 		Path:         path,
-		Provider:     "local",
-		Config:       make(map[string]string),
-		ClientConfig: model.ClientConfig{},
+		Config:       config,
+		ClientConfig: clientConfig,
 	}
 
-	storage, err := storageHandler.CreateStorageHandler(ctx, db, "local", request)
+	// Test connectivity using the storage system
+	rclone, err := storagesystem.NewRCloneHandler(ctx, tempStorage)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return errors.Wrapf(err, "failed to create %s storage handler for connectivity test (provider: %s, path: %s)",
+			storageType, provider, path)
 	}
 
-	return storage, nil
+	// Test basic connectivity by listing the root directory
+	_, err = rclone.List(ctx, "")
+	if err != nil {
+		return errors.Wrapf(err, "%s storage connectivity test failed (provider: %s, path: %s): verify credentials and network access",
+			storageType, provider, path)
+	}
+
+	return nil
+}
+
+// validateLocalPath validates local storage path
+func validateLocalPath(path string) error {
+	if path == "" {
+		return errors.New("local storage path cannot be empty")
+	}
+
+	// Check if path exists
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			return errors.Errorf("local storage path does not exist: %s", path)
+		}
+		return errors.Wrapf(err, "failed to access local storage path: %s", path)
+	}
+
+	return nil
 }
 
 // validateOnboardInputs validates CLI inputs for onboard command
@@ -578,14 +859,48 @@ func validateOnboardInputs(c *cli.Context) error {
 		return errors.New("preparation name is required (--name)")
 	}
 
-	// Source validation
+	// Source and output validation
 	sourcePaths := c.StringSlice("source")
 
 	if len(sourcePaths) == 0 {
 		return errors.New("at least one source path is required (--source)")
 	}
 
-	// Output paths are optional - no validation needed
+	// Validate storage type configurations
+	sourceType := c.String("source-type")
+	outputType := c.String("output-type")
+
+	// Validate storage types are supported using BackendMap
+	if err := validateStorageType(sourceType, "source"); err != nil {
+		return err
+	}
+	if err := validateStorageType(outputType, "output"); err != nil {
+		return err
+	}
+
+	// Validate storage configurations dynamically
+	if sourceType != "local" {
+		if err := validateStorageConfigFlags(c, sourceType, "source"); err != nil {
+			return err
+		}
+	}
+	if outputType != "local" {
+		if err := validateStorageConfigFlags(c, outputType, "output"); err != nil {
+			return err
+		}
+	}
+
+	// Validate custom storage configurations if provided
+	if sourceConfig := c.String("source-config"); sourceConfig != "" {
+		if err := validateStorageConfig(sourceConfig, "source"); err != nil {
+			return err
+		}
+	}
+	if outputConfig := c.String("output-config"); outputConfig != "" {
+		if err := validateStorageConfig(outputConfig, "output"); err != nil {
+			return err
+		}
+	}
 
 	// Auto-deal validation
 	if c.Bool("auto-create-deals") {
@@ -608,6 +923,286 @@ func validateOnboardInputs(c *cli.Context) error {
 	}
 
 	return nil
+}
+
+// validateStorageConfigFlags validates storage configuration flags dynamically
+func validateStorageConfigFlags(c *cli.Context, storageType, storageContext string) error {
+	// Get backend configuration
+	backend, exists := storagesystem.BackendMap[storageType]
+	if !exists {
+		return errors.Errorf("unsupported storage type: %s", storageType)
+	}
+
+	// Validate required fields for the storage type
+	for _, providerOptions := range backend.ProviderOptions {
+		for _, option := range providerOptions.Options {
+			// Convert option name to CLI flag format
+			flagName := strings.ReplaceAll(option.Name, "_", "-")
+			fullFlagName := storageContext + "-" + backend.Prefix + "-" + flagName
+
+			// Check if required field is provided
+			if option.Required && !c.IsSet(fullFlagName) {
+				return errors.Errorf("%s %s configuration missing required field: %s", storageContext, storageType, flagName)
+			}
+
+			// Validate field values if set
+			if c.IsSet(fullFlagName) {
+				switch (*fs.Option)(&option).Type() {
+				case "string":
+					if c.String(fullFlagName) == "" {
+						return errors.Errorf("%s %s configuration field %s cannot be empty", storageContext, storageType, flagName)
+					}
+				case "int":
+					if c.Int(fullFlagName) < 0 {
+						return errors.Errorf("%s %s configuration field %s must be non-negative", storageContext, storageType, flagName)
+					}
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// getOnboardClientConfig parses client configuration from CLI flags
+func getOnboardClientConfig(c *cli.Context) (*model.ClientConfig, error) {
+	var config model.ClientConfig
+	if c.IsSet("client-connect-timeout") {
+		config.ConnectTimeout = ptr.Of(c.Duration("client-connect-timeout"))
+	}
+	if c.IsSet("client-timeout") {
+		config.Timeout = ptr.Of(c.Duration("client-timeout"))
+	}
+	if c.IsSet("client-expect-continue-timeout") {
+		config.ExpectContinueTimeout = ptr.Of(c.Duration("client-expect-continue-timeout"))
+	}
+	if c.IsSet("client-insecure-skip-verify") {
+		config.InsecureSkipVerify = ptr.Of(c.Bool("client-insecure-skip-verify"))
+	}
+	if c.IsSet("client-no-gzip") {
+		config.NoGzip = ptr.Of(c.Bool("client-no-gzip"))
+	}
+	if c.IsSet("client-user-agent") {
+		config.UserAgent = ptr.Of(c.String("client-user-agent"))
+	}
+	if c.IsSet("client-ca-cert") {
+		config.CaCert = []string{c.Path("client-ca-cert")}
+	}
+	if c.IsSet("client-cert") {
+		config.ClientCert = ptr.Of(c.Path("client-cert"))
+	}
+	if c.IsSet("client-key") {
+		config.ClientKey = ptr.Of(c.Path("client-key"))
+	}
+	if c.IsSet("client-header") {
+		val := c.StringSlice("client-header")
+
+		headers := make(map[string]string)
+		for _, header := range val {
+			kv := strings.SplitN(header, "=", 2)
+			if len(kv) != 2 {
+				return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid http header: %s", header)
+			}
+			var err error
+			headers[kv[0]], err = url.QueryUnescape(kv[1])
+			if err != nil {
+				return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid http header: %s", header)
+			}
+		}
+		config.Headers = headers
+	}
+	if c.IsSet("client-retry-max") {
+		config.RetryMaxCount = ptr.Of(c.Int("client-retry-max"))
+	}
+	if c.IsSet("client-retry-delay") {
+		config.RetryDelay = ptr.Of(c.Duration("client-retry-delay"))
+	}
+	if c.IsSet("client-retry-backoff") {
+		config.RetryBackoff = ptr.Of(c.Duration("client-retry-backoff"))
+	}
+	if c.IsSet("client-retry-backoff-exp") {
+		config.RetryBackoffExponential = ptr.Of(c.Float64("client-retry-backoff-exp"))
+	}
+	if c.IsSet("client-skip-inaccessible") {
+		config.SkipInaccessibleFile = ptr.Of(c.Bool("client-skip-inaccessible"))
+	}
+	if c.IsSet("client-low-level-retries") {
+		config.LowLevelRetries = ptr.Of(c.Int("client-low-level-retries"))
+	}
+	if c.IsSet("client-use-server-mod-time") {
+		config.UseServerModTime = ptr.Of(c.Bool("client-use-server-mod-time"))
+	}
+	if c.IsSet("client-scan-concurrency") {
+		config.ScanConcurrency = ptr.Of(c.Int("client-scan-concurrency"))
+	}
+	return &config, nil
+}
+
+// validateStorageType validates that a storage type is supported using BackendMap
+func validateStorageType(storageType string, prefix string) error {
+	if storageType == "" {
+		return nil // Allow empty storage type (defaults to local)
+	}
+
+	backend, ok := storagesystem.BackendMap[storageType]
+	if !ok {
+		// Get list of supported storage types for better error message
+		var supportedTypes []string
+		for backendType := range storagesystem.BackendMap {
+			supportedTypes = append(supportedTypes, backendType)
+		}
+		return errors.Errorf("%s storage type '%s' is not supported. Supported types: %s",
+			prefix, storageType, strings.Join(supportedTypes, ", "))
+	}
+
+	// Additional validation - check if backend is properly configured
+	if backend.Prefix != storageType {
+		return errors.Errorf("backend configuration mismatch for storage type '%s'", storageType)
+	}
+
+	return nil
+}
+
+// validateStorageConfig validates that a storage configuration is valid JSON
+func validateStorageConfig(configStr string, prefix string) error {
+	var config map[string]string
+	if err := json.Unmarshal([]byte(configStr), &config); err != nil {
+		return errors.Wrapf(err, "invalid JSON format for %s-config", prefix)
+	}
+
+	// Validate that keys and values are non-empty strings
+	for key, value := range config {
+		if key == "" {
+			return errors.Errorf("%s-config cannot have empty keys", prefix)
+		}
+		if value == "" {
+			return errors.Errorf("%s-config cannot have empty values", prefix)
+		}
+	}
+
+	return nil
+}
+
+// checkDuplicateStorageNames validates that storage names are unique
+func checkDuplicateStorageNames(ctx context.Context, db *gorm.DB, storageName string) error {
+	if storageName == "" {
+		return errors.New("storage name cannot be empty")
+	}
+
+	var existingStorage model.Storage
+	err := db.WithContext(ctx).Where("name = ?", storageName).First(&existingStorage).Error
+	if err == nil {
+		return errors.Errorf("storage with name '%s' already exists (ID: %d, Type: %s)",
+			storageName, existingStorage.ID, existingStorage.Type)
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.Wrapf(err, "database error while checking for duplicate storage name '%s'", storageName)
+	}
+	return nil
+}
+
+// logInsecureClientConfigWarning logs warnings for insecure client configurations
+func logInsecureClientConfigWarning(c *cli.Context) {
+	if c.Bool("client-insecure-skip-verify") {
+		fmt.Printf("⚠️  WARNING: Insecure SSL/TLS configuration detected. Certificate verification is disabled.\n")
+		fmt.Printf("   This may expose your data to man-in-the-middle attacks.\n")
+		fmt.Printf("   Consider using proper certificates in production environments.\n\n")
+	}
+}
+
+// getCustomStorageConfig returns custom storage configuration for the given storage type
+func getCustomStorageConfig(c *cli.Context, storageContext string) map[string]string {
+	var configFlag string
+
+	// Determine which config flag to use based on storage context
+	switch storageContext {
+	case "source":
+		configFlag = c.String("source-config")
+	case "output":
+		configFlag = c.String("output-config")
+	}
+
+	if configFlag == "" {
+		return nil
+	}
+
+	var config map[string]string
+	if err := json.Unmarshal([]byte(configFlag), &config); err != nil {
+		// This should have been caught in validation, but handle gracefully
+		return nil
+	}
+
+	return config
+}
+
+// createStorageIfNotExistWithConfig creates storage with context-aware custom configuration
+func createStorageIfNotExistWithConfig(ctx context.Context, db *gorm.DB, path, storageType, provider string, c *cli.Context, storageName, storageContext string) (*model.Storage, error) {
+	// Check for duplicate storage names first
+	if err := checkDuplicateStorageNames(ctx, db, storageName); err != nil {
+		return nil, err
+	}
+
+	// Validate storage type is supported
+	if err := validateStorageType(storageType, storageContext); err != nil {
+		return nil, err
+	}
+
+	// Build storage configuration using dynamic approach
+	config := parseStorageConfig(c, storageType, storageContext)
+
+	// Merge custom config if provided via JSON config flag
+	if customConfig := getCustomStorageConfig(c, storageContext); customConfig != nil {
+		for key, value := range customConfig {
+			config[key] = value
+		}
+	}
+
+	// Set default provider if not specified
+	if provider == "" {
+		provider = getDefaultProvider(storageType)
+	}
+
+	// Merge with provider defaults - this ensures all provider-specific defaults are applied
+	config = mergeStorageConfigWithDefaults(storageType, provider, config)
+
+	// Check if storage already exists for this path and config
+	var existing model.Storage
+	err := db.WithContext(ctx).Where("type = ? AND path = ?", storageType, path).First(&existing).Error
+	if err == nil {
+		return &existing, nil
+	}
+
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrapf(err, "failed to check existing storage")
+	}
+
+	// Get client configuration from flags
+	clientConfig, err := getOnboardClientConfig(c)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse client configuration")
+	}
+
+	// Test storage connectivity before creating the storage
+	if err := testStorageConnectivity(ctx, storageType, provider, path, config, *clientConfig); err != nil {
+		return nil, errors.Wrapf(err, "storage configuration validation failed")
+	}
+
+	// Use the storage handler to create new storage with proper validation
+	storageHandler := storageHandlers.Default
+	request := storageHandlers.CreateRequest{
+		Name:         storageName,
+		Path:         path,
+		Provider:     provider,
+		Config:       config,
+		ClientConfig: *clientConfig,
+	}
+
+	storage, err := storageHandler.CreateStorageHandler(ctx, db, storageType, request)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create storage '%s'", storageName)
+	}
+
+	return storage, nil
 }
 
 // validateDealTemplateExists validates that the deal template ID exists in the database
