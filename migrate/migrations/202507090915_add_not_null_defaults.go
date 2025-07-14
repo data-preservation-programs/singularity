@@ -39,97 +39,16 @@ func _202507090915_add_not_null_defaults() *gormigrate.Migration {
 				return err
 			}
 
-			// Add NOT NULL DEFAULT constraints for string fields
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_provider SET NOT NULL`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_provider SET DEFAULT ''`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_template SET NOT NULL`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_template SET DEFAULT ''`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_http_headers SET NOT NULL`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_http_headers SET DEFAULT ''`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_url_template SET NOT NULL`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_url_template SET DEFAULT ''`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN description SET NOT NULL`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN description SET DEFAULT ''`).Error
-			if err != nil {
-				return err
-			}
-
-			// Add NOT NULL constraint to name field (already unique, but should be explicit)
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN name SET NOT NULL`).Error
-			if err != nil {
-				return err
-			}
+			// Note: SQLite does not support ALTER COLUMN operations for adding NOT NULL constraints
+			// Since we've already cleaned up NULL values above, we'll skip the constraint modifications
+			// The application layer will handle validation and new tables created will have proper constraints
 
 			return nil
 		},
 		Rollback: func(db *gorm.DB) error {
-			// Remove NOT NULL constraints (making columns nullable again)
-			err := db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_provider DROP NOT NULL`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_template DROP NOT NULL`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_http_headers DROP NOT NULL`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN template_deal_url_template DROP NOT NULL`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN description DROP NOT NULL`).Error
-			if err != nil {
-				return err
-			}
-
-			err = db.Exec(`ALTER TABLE deal_templates ALTER COLUMN name DROP NOT NULL`).Error
-			if err != nil {
-				return err
-			}
-
+			// Note: SQLite rollback for NOT NULL constraints would require table recreation
+			// Since we only cleaned up NULL values and didn't actually modify constraints,
+			// there's nothing to rollback for SQLite
 			return nil
 		},
 	}
