@@ -1,5 +1,16 @@
 # Wallet management
 
+Singularity provides comprehensive wallet management capabilities for Filecoin operations. You can create new wallets, import existing ones, and manage wallet metadata for better organization.
+
+## Wallet Metadata Support
+
+Wallets support optional metadata fields for enhanced organization:
+- **Name**: Human-readable display name
+- **Contact**: Contact information (email, etc.)  
+- **Location**: Geographic location or region
+
+These fields help identify and organize wallets, especially useful for storage providers managing multiple wallets across different regions.
+
 {% code fullWidth="true" %}
 ```
 NAME:

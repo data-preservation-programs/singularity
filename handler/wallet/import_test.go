@@ -29,6 +29,26 @@ func TestImportHandler(t *testing.T) {
 			require.ErrorIs(t, err, handlererror.ErrDuplicateRecord)
 		})
 
+		t.Run("success-with-metadata", func(t *testing.T) {
+			// Clear the database first
+			db.Exec("DELETE FROM wallets")
+			
+			mockClient := testutil.NewMockLotusClient()
+			mockClient.SetResponse("Filecoin.StateLookupID", testutil.TestWalletActorID)
+
+			w, err := Default.ImportHandler(ctx, db, mockClient, ImportRequest{
+				PrivateKey: testutil.TestPrivateKeyHex,
+				Name:       "Test Actor Name",
+				Contact:    "test@example.com",
+				Location:   "Test Location",
+			})
+			require.NoError(t, err)
+			require.Equal(t, testutil.TestWalletAddr, w.Address)
+			require.Equal(t, "Test Actor Name", w.ActorName)
+			require.Equal(t, "test@example.com", w.ContactInfo)
+			require.Equal(t, "Test Location", w.Location)
+		})
+
 		t.Run("invalid key", func(t *testing.T) {
 			mockClient := testutil.NewMockLotusClient()
 			// Mock the RPC call to return "actor not found" for the invalid key

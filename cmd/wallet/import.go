@@ -17,6 +17,20 @@ var ImportCmd = &cli.Command{
 	Name:      "import",
 	Usage:     "Import a wallet from exported private key",
 	ArgsUsage: "[path, or stdin if omitted]",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "name",
+			Usage: "Optional display name",
+		},
+		&cli.StringFlag{
+			Name:  "contact",
+			Usage: "Optional contact information",
+		},
+		&cli.StringFlag{
+			Name:  "location",
+			Usage: "Optional provider location",
+		},
+	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
@@ -48,6 +62,9 @@ var ImportCmd = &cli.Command{
 			lotusClient,
 			wallet.ImportRequest{
 				PrivateKey: privateKey,
+				Name:       c.String("name"),
+				Contact:    c.String("contact"),
+				Location:   c.String("location"),
 			})
 		if err != nil {
 			return errors.WithStack(err)
