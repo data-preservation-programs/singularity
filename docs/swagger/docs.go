@@ -5613,6 +5613,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/wallet/{address}/balance": {
+            "get": {
+                "description": "Retrieves the FIL balance and FIL+ datacap balance for a specific wallet address",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Get wallet FIL and FIL+ balance",
+                "operationId": "GetWalletBalance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/wallet.BalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/wallet/{address}/init": {
             "post": {
                 "produces": [
@@ -6368,6 +6410,13 @@ const docTemplate = `{
                     "description": "AutoCreateDeals enables automatic deal creation after preparation completes",
                     "type": "boolean"
                 },
+                "dealAllowedPieceCids": {
+                    "description": "DealAllowedPieceCIDs specifies which piece CIDs are allowed for this deal config",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "dealAnnounceToIpni": {
                     "description": "DealAnnounceToIpni indicates whether to announce to IPNI",
                     "type": "boolean"
@@ -6376,6 +6425,10 @@ const docTemplate = `{
                     "description": "DealDuration specifies the deal duration (time.Duration for backward compatibility)",
                     "type": "integer"
                 },
+                "dealForce": {
+                    "description": "DealForce indicates whether to force deal creation even if conditions aren't met",
+                    "type": "boolean"
+                },
                 "dealHttpHeaders": {
                     "description": "DealHTTPHeaders contains HTTP headers for deals",
                     "type": "object"
@@ -6383,6 +6436,10 @@ const docTemplate = `{
                 "dealKeepUnsealed": {
                     "description": "DealKeepUnsealed indicates whether to keep unsealed copy",
                     "type": "boolean"
+                },
+                "dealNotes": {
+                    "description": "DealNotes provides additional notes or comments for the deal",
+                    "type": "string"
                 },
                 "dealPricePerDeal": {
                     "description": "DealPricePerDeal specifies the price in FIL per deal",
@@ -6415,6 +6472,36 @@ const docTemplate = `{
                 "dealVerified": {
                     "description": "DealVerified indicates whether deals should be verified",
                     "type": "boolean"
+                },
+                "httpHeaders": {
+                    "description": "HTTP headers as string slice (matching deal schedule create command)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "maxPendingDealNumber": {
+                    "type": "integer"
+                },
+                "maxPendingDealSize": {
+                    "type": "string"
+                },
+                "scheduleCron": {
+                    "description": "Scheduling fields (matching deal schedule create command)",
+                    "type": "string"
+                },
+                "scheduleDealNumber": {
+                    "type": "integer"
+                },
+                "scheduleDealSize": {
+                    "type": "string"
+                },
+                "totalDealNumber": {
+                    "description": "Restriction fields (matching deal schedule create command)",
+                    "type": "integer"
+                },
+                "totalDealSize": {
+                    "type": "string"
                 }
             }
         },
@@ -16742,6 +16829,34 @@ const docTemplate = `{
         },
         "store.PieceReader": {
             "type": "object"
+        },
+        "wallet.BalanceResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "balance": {
+                    "description": "FIL balance in FIL units",
+                    "type": "string"
+                },
+                "balanceAttoFil": {
+                    "description": "Raw balance in attoFIL",
+                    "type": "string"
+                },
+                "dataCap": {
+                    "description": "FIL+ datacap balance",
+                    "type": "string"
+                },
+                "dataCapBytes": {
+                    "description": "Raw datacap in bytes",
+                    "type": "integer"
+                },
+                "error": {
+                    "description": "Error message if any",
+                    "type": "string"
+                }
+            }
         },
         "wallet.CreateRequest": {
             "type": "object",

@@ -7,7 +7,6 @@ package models
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -20,79 +19,79 @@ import (
 // swagger:model dataprep.CreateRequest
 type DataprepCreateRequest struct {
 
-	// AutoCreateDeals - When true, automatically creates deals for packed CAR files. Requires either dealProvider or dealTemplate to be specified.
+	// Auto-deal creation parameters
 	AutoCreateDeals *bool `json:"autoCreateDeals,omitempty"`
 
-	// DealAnnounceToIpni - Whether to announce deals to the InterPlanetary Network Indexer (IPNI) for content discovery
+	// Whether to announce to IPNI
 	DealAnnounceToIpni *bool `json:"dealAnnounceToIpni,omitempty"`
 
-	// DealDuration - Deal duration in epochs (2880 epochs = 1 day, max 1555200 = 540 days). Required when autoCreateDeals is true and not using template.
+	// Deal duration
 	DealDuration int64 `json:"dealDuration,omitempty"`
 
-	// DealHTTPHeaders - Custom HTTP headers to include when making deal proposals (key-value pairs)
+	// HTTP headers for deals
 	DealHTTPHeaders struct {
 		ModelConfigMap
 	} `json:"dealHttpHeaders,omitempty"`
 
-	// DealKeepUnsealed - Whether to keep unsealed copy of the data with the storage provider
+	// Whether to keep unsealed copy
 	DealKeepUnsealed *bool `json:"dealKeepUnsealed,omitempty"`
 
-	// DealPricePerDeal - Price in FIL per deal (flat rate regardless of size)
+	// Price in FIL per deal
 	DealPricePerDeal float64 `json:"dealPricePerDeal,omitempty"`
 
-	// DealPricePerGb - Price in FIL per GiB of data
+	// Price in FIL per GiB
 	DealPricePerGb float64 `json:"dealPricePerGb,omitempty"`
 
-	// DealPricePerGbEpoch - Price in FIL per GiB per epoch (time-based pricing)
+	// Price in FIL per GiB per epoch
 	DealPricePerGbEpoch float64 `json:"dealPricePerGbEpoch,omitempty"`
 
-	// DealProvider - Storage Provider ID (e.g., f01234 or t01234). Required when autoCreateDeals is true and not using template.
+	// Storage Provider ID
 	DealProvider string `json:"dealProvider,omitempty"`
 
-	// DealStartDelay - Delay before deal starts in epochs (0 to 141120 = 49 days)
+	// Deal start delay
 	DealStartDelay int64 `json:"dealStartDelay,omitempty"`
 
-	// DealTemplate - Name or ID of a pre-configured deal template. When specified, template settings override individual deal parameters.
+	// Deal template name or ID to use (optional)
 	DealTemplate string `json:"dealTemplate,omitempty"`
 
-	// DealURLTemplate - URL template for retrieving deal data (can include placeholders)
+	// URL template for deals
 	DealURLTemplate string `json:"dealUrlTemplate,omitempty"`
 
-	// DealVerified - Whether deals should be verified deals (consumes DataCap)
+	// Whether deals should be verified
 	DealVerified *bool `json:"dealVerified,omitempty"`
 
-	// DeleteAfterExport - Whether to delete source files after successful CAR export. Use with caution.
+	// Whether to delete the source files after export
 	DeleteAfterExport *bool `json:"deleteAfterExport,omitempty"`
 
-	// MaxSize - Maximum size of CAR files (e.g., "32G", "1T"). Supports K/M/G/T/P suffixes.
+	// Maximum size of the CAR files to be created
 	MaxSize *string `json:"maxSize,omitempty"`
 
-	// MinPieceSize - Minimum piece size for DAG and remainder pieces (e.g., "256", "1M"). Must be at least 256 bytes.
+	// Minimum piece size for the preparation, applies only to DAG and remainer pieces
 	MinPieceSize *string `json:"minPieceSize,omitempty"`
 
-	// Name - Unique name for this data preparation job
+	// Name of the preparation
 	// Required: true
 	Name *string `json:"name"`
 
-	// NoDag - Disables folder DAG structure maintenance. Improves performance but folders won't have CIDs.
+	// Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.
 	NoDag *bool `json:"noDag,omitempty"`
 
-	// NoInline - Disables inline storage. Saves database space but requires output storage configuration.
+	// Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage.
 	NoInline *bool `json:"noInline,omitempty"`
 
-	// OutputStorages - List of storage system names for CAR file output
+	// Name of Output storage systems to be used for the output
 	OutputStorages []string `json:"outputStorages"`
 
-	// PieceSize - Target piece size for CAR files (e.g., "32G"). Must be power of 2 and at least 256 bytes.
+	// Target piece size of the CAR files used for piece commitment calculation
 	PieceSize string `json:"pieceSize,omitempty"`
 
-	// SourceStorages - List of storage system names containing source data
+	// Name of Source storage systems to be used for the source
 	SourceStorages []string `json:"sourceStorages"`
 
-	// SpValidation - Validates storage provider details before creating deals
+	// Enable storage provider validation
 	SpValidation *bool `json:"spValidation,omitempty"`
 
-	// WalletValidation - Validates wallet balance before creating deals
+	// Enable wallet balance validation
 	WalletValidation *bool `json:"walletValidation,omitempty"`
 }
 
@@ -105,18 +104,6 @@ func (m *DataprepCreateRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateName(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateDealFields(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateFieldDependencies(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSizeFields(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -138,112 +125,6 @@ func (m *DataprepCreateRequest) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *DataprepCreateRequest) validateDealFields(formats strfmt.Registry) error {
-	// Validate deal duration range (2880 epochs = 1 day to 1555200 epochs = 540 days)
-	if m.DealDuration != 0 && (m.DealDuration < 2880 || m.DealDuration > 1555200) {
-		return errors.New(400, "dealDuration must be between 2880 (1 day) and 1555200 (540 days) epochs")
-	}
-
-	// Validate deal start delay (0 to 49 days in epochs)
-	if m.DealStartDelay < 0 || m.DealStartDelay > 141120 {
-		return errors.New(400, "dealStartDelay must be between 0 and 141120 (49 days) epochs")
-	}
-
-	// Validate price fields are non-negative
-	if m.DealPricePerDeal < 0 {
-		return errors.New(400, "dealPricePerDeal must be non-negative")
-	}
-	if m.DealPricePerGb < 0 {
-		return errors.New(400, "dealPricePerGb must be non-negative")
-	}
-	if m.DealPricePerGbEpoch < 0 {
-		return errors.New(400, "dealPricePerGbEpoch must be non-negative")
-	}
-
-	// Validate deal provider format if provided
-	if m.DealProvider != "" && !isValidActorID(m.DealProvider) {
-		return errors.New(400, "dealProvider must be a valid actor ID (e.g., f01234 or t01234)")
-	}
-
-	return nil
-}
-
-func (m *DataprepCreateRequest) validateFieldDependencies(formats strfmt.Registry) error {
-	// If auto-create deals is enabled, certain fields become required
-	if m.AutoCreateDeals != nil && *m.AutoCreateDeals {
-		if m.DealProvider == "" && m.DealTemplate == "" {
-			return errors.New(400, "when autoCreateDeals is true, either dealProvider or dealTemplate must be specified")
-		}
-
-		// If using direct provider (not template), validate required fields
-		if m.DealProvider != "" && m.DealTemplate == "" {
-			if m.DealDuration == 0 {
-				return errors.New(400, "dealDuration is required when autoCreateDeals is true and using direct provider")
-			}
-		}
-	}
-
-	// Validate HTTP headers
-	if len(m.DealHTTPHeaders.ModelConfigMap) > 0 {
-		for key, value := range m.DealHTTPHeaders.ModelConfigMap {
-			if key == "" {
-				return errors.New(400, "HTTP header keys cannot be empty")
-			}
-			if value == "" {
-				return errors.New(400, "HTTP header values cannot be empty")
-			}
-			// Validate header key format
-			if !isValidHTTPHeaderKey(key) {
-				return errors.New(400, fmt.Sprintf("invalid HTTP header key format: %s", key))
-			}
-		}
-	}
-
-	// URL template validation
-	if m.DealURLTemplate != "" {
-		if !isValidURLTemplate(m.DealURLTemplate) {
-			return errors.New(400, "dealUrlTemplate must be a valid URL template")
-		}
-	}
-
-	return nil
-}
-
-func (m *DataprepCreateRequest) validateSizeFields(formats strfmt.Registry) error {
-	// Validate max size if provided
-	if m.MaxSize != nil && *m.MaxSize != "" {
-		if _, err := parseSize(*m.MaxSize); err != nil {
-			return errors.New(400, fmt.Sprintf("invalid maxSize format: %v", err))
-		}
-	}
-
-	// Validate min piece size if provided
-	if m.MinPieceSize != nil && *m.MinPieceSize != "" {
-		size, err := parseSize(*m.MinPieceSize)
-		if err != nil {
-			return errors.New(400, fmt.Sprintf("invalid minPieceSize format: %v", err))
-		}
-		// Must be at least 256 bytes
-		if size < 256 {
-			return errors.New(400, "minPieceSize must be at least 256 bytes")
-		}
-	}
-
-	// Validate piece size if provided
-	if m.PieceSize != "" {
-		size, err := parseSize(m.PieceSize)
-		if err != nil {
-			return errors.New(400, fmt.Sprintf("invalid pieceSize format: %v", err))
-		}
-		// Must be a power of 2 and at least 256 bytes
-		if !isPowerOfTwo(size) || size < 256 {
-			return errors.New(400, "pieceSize must be a power of 2 and at least 256 bytes")
-		}
 	}
 
 	return nil
@@ -284,83 +165,4 @@ func (m *DataprepCreateRequest) UnmarshalBinary(b []byte) error {
 	}
 	*m = res
 	return nil
-}
-
-// Helper functions for validation
-
-func isValidActorID(id string) bool {
-	// Actor IDs must start with 'f' or 't' followed by numbers
-	if len(id) < 2 {
-		return false
-	}
-	if id[0] != 'f' && id[0] != 't' {
-		return false
-	}
-	for i := 1; i < len(id); i++ {
-		if id[i] < '0' || id[i] > '9' {
-			return false
-		}
-	}
-	return true
-}
-
-func isValidHTTPHeaderKey(key string) bool {
-	// HTTP header keys should contain only alphanumeric characters, hyphens, and underscores
-	for _, ch := range key {
-		if !((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') ||
-			(ch >= '0' && ch <= '9') || ch == '-' || ch == '_') {
-			return false
-		}
-	}
-	return true
-}
-
-func isValidURLTemplate(url string) bool {
-	// Basic URL template validation - should start with http:// or https://
-	return len(url) > 7 && (url[:7] == "http://" || (len(url) > 8 && url[:8] == "https://"))
-}
-
-func parseSize(s string) (int64, error) {
-	// Simple size parser - handles suffixes like K, M, G, T, P
-	if len(s) == 0 {
-		return 0, errors.New(400, "empty size string")
-	}
-
-	multiplier := int64(1)
-	numStr := s
-
-	if len(s) > 1 {
-		suffix := s[len(s)-1]
-		switch suffix {
-		case 'K', 'k':
-			multiplier = 1024
-			numStr = s[:len(s)-1]
-		case 'M', 'm':
-			multiplier = 1024 * 1024
-			numStr = s[:len(s)-1]
-		case 'G', 'g':
-			multiplier = 1024 * 1024 * 1024
-			numStr = s[:len(s)-1]
-		case 'T', 't':
-			multiplier = 1024 * 1024 * 1024 * 1024
-			numStr = s[:len(s)-1]
-		case 'P', 'p':
-			multiplier = 1024 * 1024 * 1024 * 1024 * 1024
-			numStr = s[:len(s)-1]
-		}
-	}
-
-	var num int64
-	for _, ch := range numStr {
-		if ch < '0' || ch > '9' {
-			return 0, errors.New(400, fmt.Sprintf("invalid character in size: %c", ch))
-		}
-		num = num*10 + int64(ch-'0')
-	}
-
-	return num * multiplier, nil
-}
-
-func isPowerOfTwo(n int64) bool {
-	return n > 0 && (n&(n-1)) == 0
 }
