@@ -110,11 +110,16 @@ func getDatacapBalance(ctx context.Context, lotusClient jsonrpc.RPCClient, addr 
 		return 0, errors.WithStack(err)
 	}
 	
-	// If result is empty or null, client has no datacap
-	if result == "" {
+	// If result is empty or "null", client has no datacap
+	if result == "" || result == "null" {
 		return 0, nil
 	}
-	
+
+	   // If result is empty or "null", client has no datacap
+	   if result == "" || result == "null" {
+			   return 0, nil
+	   }
+
 	// Parse the datacap balance string
 	datacap, err := strconv.ParseInt(result, 10, 64)
 	if err != nil {
