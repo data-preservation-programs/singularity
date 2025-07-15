@@ -87,6 +87,7 @@ require (
 
 require (
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/rs/zerolog v1.34.0 // indirect
 	github.com/shirou/gopsutil/v3 v3.23.3 // indirect
 	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c // indirect
 )
