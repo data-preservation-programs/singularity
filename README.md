@@ -28,7 +28,7 @@ sudo mv singularity-linux-amd64 /usr/local/bin/singularity
 # Or build from source
 git clone https://github.com/data-preservation-programs/singularity.git
 cd singularity
-go build -o singularity .
+go build -o singularity singularity.go
 ```
 
 ### Basic Usage
