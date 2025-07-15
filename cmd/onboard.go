@@ -182,9 +182,6 @@ Use deal templates to configure deal parameters - individual deal flags are not 
 
 // Initialize common flags for the onboard command
 func init() {
-	// Add common deal flags to the onboard command
-	OnboardCmd.Flags = append(OnboardCmd.Flags, cliutil.CommonDealFlags...)
-
 	// Add common storage client flags to the onboard command
 	OnboardCmd.Flags = append(OnboardCmd.Flags, cliutil.CommonStorageClientFlags...)
 
