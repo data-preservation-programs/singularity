@@ -60,7 +60,10 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 		lvl = logging.LevelWarn
 		sql = "[SLOW!] " + sql
 	}
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) && !strings.Contains(err.Error(), sqlSerializationFailure) {
+	if ctx.Err() != nil {
+		lvl = logging.LevelError
+		logger.Errorw("context error in DB transaction", "ctxErr", ctx.Err(), "sql", sql)
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) && !strings.Contains(err.Error(), sqlSerializationFailure) {
 		lvl = logging.LevelError
 	}
 

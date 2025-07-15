@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -64,7 +65,7 @@ func (DefaultHandler) ImportHandler(
 	err = lotusClient.CallFor(ctx, &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
 		logger.Errorw("failed to lookup state for wallet address", "addr", addr, "err", err)
-		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrap(err, "failed to lookup actor ID"))
+		return nil, fmt.Errorf("failed to lookup state for wallet address %s: %w", addr.String(), err)
 	}
 
 	_, err = address.NewFromString(result)
