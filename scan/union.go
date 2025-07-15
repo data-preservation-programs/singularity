@@ -3,9 +3,11 @@ package scan
 import (
 	"context"
 	"path/filepath"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/storagesystem"
+	"github.com/rs/zerolog/log"
 )
 
 // GetUnionUpstreams enumerates the upstream directories in a union storage configuration
@@ -27,8 +29,18 @@ func GetUpstreamPaths(storage *storagesystem.RCloneHandler, upstreams []string) 
 	paths := make(map[string]string)
 	basePath := storage.Fs().Root()
 
+	// For each upstream, compute its full path
 	for _, upstream := range upstreams {
-		paths[upstream] = filepath.Join(basePath, upstream)
+		// Handle both absolute and relative paths
+		if strings.HasPrefix(upstream, "/") {
+			paths[upstream] = upstream
+		} else {
+			paths[upstream] = filepath.Join(basePath, upstream)
+		}
+		log.Debug().
+			Str("upstream", upstream).
+			Str("fullPath", paths[upstream]).
+			Msg("Mapped upstream to full path")
 	}
 
 	return paths

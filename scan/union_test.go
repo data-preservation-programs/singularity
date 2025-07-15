@@ -117,7 +117,7 @@ func TestGetUpstreamPaths(t *testing.T) {
 		root:      "/mock/root",
 	}
 	handler := &mockHandler{name: "mock", fs: mockFs}
-	
+
 	upstreams := []string{"folder1", "folder2"}
 	paths := GetUpstreamPaths((*storagesystem.RCloneHandler)(unsafe.Pointer(handler)), upstreams)
 	expected := map[string]string{
@@ -125,6 +125,54 @@ func TestGetUpstreamPaths(t *testing.T) {
 		"folder2": filepath.Join("/mock/root", "folder2"),
 	}
 	require.Equal(t, expected, paths)
-	
+}
 
+func TestGetUpstreamPathFromFilePath(t *testing.T) {
+	tests := []struct {
+		name     string
+		filePath string
+		want     string
+	}{
+		{
+			name:     "file in root",
+			filePath: "file.txt",
+			want:     "",
+		},
+		{
+			name:     "file in folder",
+			filePath: "folder1/file.txt",
+			want:     "folder1",
+		},
+		{
+			name:     "file in nested folder",
+			filePath: "folder1/subfolder/file.txt",
+			want:     "folder1",
+		},
+		{
+			name:     "hidden folder",
+			filePath: ".folder/file.txt",
+			want:     ".folder",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getUpstreamPath(tt.filePath)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestUpstreamPathHandling(t *testing.T) {
+	mockFs := &mockUnionFs{
+		upstreams: []string{"/abs/path1", "rel/path2", "folder3"},
+		root:      "/mock/root",
+	}
+	handler := &mockHandler{name: "mock", fs: mockFs}
+
+	paths := GetUpstreamPaths((*storagesystem.RCloneHandler)(unsafe.Pointer(handler)), mockFs.upstreams)
+
+	require.Equal(t, "/abs/path1", paths["/abs/path1"], "absolute paths should be preserved")
+	require.Equal(t, "/mock/root/rel/path2", paths["rel/path2"], "relative paths should be joined with root")
+	require.Equal(t, "/mock/root/folder3", paths["folder3"], "simple paths should be joined with root")
 }
