@@ -14,6 +14,7 @@ func GetMigrations() []*gormigrate.Migration {
 		_202507090900_add_missing_deal_template_fields(),
 		_202507090915_add_not_null_defaults(),
 		_202507091000_add_schedule_fields_to_deal_templates(),
+		_202507091100_add_tracked_wallet_type(),
 		_202507180900_create_deal_state_changes(),
 		_202507180930_create_error_logs(),
 	}

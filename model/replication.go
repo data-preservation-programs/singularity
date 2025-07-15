@@ -149,18 +149,21 @@ type Schedule struct {
 type WalletType string
 
 const (
-	UserWallet WalletType = "UserWallet"
-	SPWallet   WalletType = "SPWallet"
+	UserWallet    WalletType = "UserWallet"
+	SPWallet      WalletType = "SPWallet"
+	TrackedWallet WalletType = "TrackedWallet"
 )
 
 var WalletTypes = []WalletType{
 	UserWallet,
 	SPWallet,
+	TrackedWallet,
 }
 
 var WalletTypeStrings = []string{
 	string(UserWallet),
 	string(SPWallet),
+	string(TrackedWallet),
 }
 
 type WalletID uint
