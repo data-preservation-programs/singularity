@@ -17,6 +17,10 @@ jobs:
       with:
         go-version-file: 'go.mod'
 
+    - name: Build singularity CLI
+      run: |
+        go build -o singularity .
+
     - name: Initialize DB
       run: |
         singularity admin init
