@@ -43,6 +43,13 @@ var CommonDealFlags = []cli.Flag{
 		Usage:    "Whether deals should be verified",
 		Category: "Deal Settings",
 	},
+	// Flag to enable one piece per upstream for union storage preps
+	&cli.BoolFlag{
+		Name:     "one-piece-per-upstream",
+		Usage:    "When using union storage, create one piece per upstream folder (each with its own piece CID)",
+		Category: "Preparation Settings",
+		Value:    false,
+	},
 	&cli.BoolFlag{
 		Name:     "deal-keep-unsealed",
 		Usage:    "Whether to keep unsealed copy of deals",

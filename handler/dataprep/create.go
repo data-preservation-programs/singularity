@@ -45,6 +45,7 @@ type CreateRequest struct {
 	DealURLTemplate     string          `default:""            json:"dealUrlTemplate"`               // URL template for deals
 	WalletValidation    bool            `default:"false"       json:"walletValidation"`              // Enable wallet balance validation
 	SPValidation        bool            `default:"false"       json:"spValidation"`                  // Enable storage provider validation
+	OnePiecePerUpstream bool           `default:"false"       json:"onePiecePerUpstream"`           // When using union storage, create one piece per upstream folder
 }
 
 // ValidateCreateRequest processes and validates the creation request parameters.

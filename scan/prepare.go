@@ -3,12 +3,14 @@ package scan
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/push"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/storagesystem"
 	"gorm.io/gorm"
 )
 
@@ -31,7 +33,54 @@ func PrepareToPackFileRanges(
 	remainingParts []model.FileRange,
 ) (int64, error) {
 	fileRangeSet := push.NewFileRangeSet()
+	var totalSize int64
 
+	// Get storage handler to check if this is a union storage
+	if attachment.Storage == nil {
+		return 0, fmt.Errorf("source attachment has no storage")
+	}
+	handler, err := storagesystem.NewRCloneHandler(ctx, *attachment.Storage)
+	if err == nil {
+		// Check if we can cast the fs to a UnionFS
+		if _, ok := handler.Fs().(interface{ ListUpstreams() []string }); ok {
+			// This is a union storage, and onePiecePerUpstream is set
+			if attachment.Preparation.OnePiecePerUpstream {
+				// Group parts by upstream folder
+				partsByUpstream := make(map[string][]model.FileRange)
+
+				// Scan through all parts and group them by their upstream folder
+				for _, part := range remainingParts {
+					upstreamPath := getUpstreamPath(part.File.Path)
+					partsByUpstream[upstreamPath] = append(partsByUpstream[upstreamPath], part)
+				}
+
+				// Create one piece per upstream folder
+				for _, parts := range partsByUpstream {
+					nextPackJob, err := NextAvailablePackJob(ctx, db, attachment.ID)
+					if err != nil {
+						return 0, fmt.Errorf("finding next available pack job: %w", err)
+					}
+					fileRangeSet.Reset()
+					fileRangeSet.Add(nextPackJob.FileRanges...)
+
+					// Add all parts from this upstream to the piece
+					for _, part := range parts {
+						fileRangeSet.Add(part)
+					}
+
+					// Update the job
+					err = UpdatePackJob(ctx, db, nextPackJob.ID, model.Created, fileRangeSet.FileRangeIDs())
+					if err != nil {
+						return 0, fmt.Errorf("updating pack job: %w", err)
+					}
+					totalSize += fileRangeSet.CarSize()
+				}
+				return totalSize, nil
+			}
+		}
+	}
+
+	// Default behavior - combine parts based on size
 	for len(remainingParts) > 0 {
 		nextPackJob, err := NextAvailablePackJob(ctx, db, attachment.ID)
 		if err != nil {
@@ -58,8 +107,9 @@ func PrepareToPackFileRanges(
 		if err != nil {
 			return 0, fmt.Errorf("updating pack job: %w", err)
 		}
+		totalSize += fileRangeSet.CarSize()
 	}
-	return fileRangeSet.CarSize(), nil
+	return totalSize, nil
 }
 
 func UpdatePackJob(
@@ -116,4 +166,14 @@ func markPackJobsReady(
 	return database.DoRetry(ctx, func() error {
 		return db.Model(&model.Job{}).Where("attachment_id = ? AND state = ?", attachmentID, model.Created).Update("state", model.Ready).Error
 	})
+}
+
+// getUpstreamPath returns the upstream folder path for a given file path.
+// In a union storage, files are mounted under their upstream's root folder.
+func getUpstreamPath(filePath string) string {
+	parts := strings.Split(filePath, "/")
+	if len(parts) > 0 {
+		return parts[0]
+	}
+	return ""
 }

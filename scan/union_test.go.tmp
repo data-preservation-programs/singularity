@@ -1,0 +1,93 @@
+package scan
+
+import (
+	"context"
+	"io"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"github.com/rclone/rclone/fs"
+	"github.com/stretchr/testify/require"
+)
+
+// mockUnionFs implements a mock union filesystem for testing
+type mockUnionFs struct {
+	root      string
+	upstreams []string
+}
+
+func (m *mockUnionFs) ListUpstreams() []string {
+	return m.upstreams
+}
+
+func (m *mockUnionFs) Name() string                                       { return "mock" }
+func (m *mockUnionFs) Root() string                                      { return m.root }
+func (m *mockUnionFs) String() string                                    { return "mock:" + m.root }
+func (m *mockUnionFs) Features() *fs.Features                           { return &fs.Features{} }
+func (m *mockUnionFs) Precision() time.Duration                         { return time.Second }
+func (m *mockUnionFs) NewObject(ctx context.Context, remote string) (fs.Object, error) {
+	return nil, fs.ErrorObjectNotFound
+}
+func (m *mockUnionFs) Put(ctx context.Context, in io.Reader, src fs.ObjectInfo, options ...fs.OpenOption) (fs.Object, error) {
+	return nil, fs.ErrorCantMove
+}
+func (m *mockUnionFs) List(ctx context.Context, dir string) (entries fs.DirEntries, err error) {
+	return nil, fs.ErrorListNotSupported
+}
+
+// mockRCloneHandler implements a mock RCloneHandler for testing
+type mockRCloneHandler struct {
+	fs fs.Fs
+}
+
+func (m *mockRCloneHandler) Fs() fs.Fs {
+	return m.fs
+}
+
+func TestGetUnionUpstreams(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("successful listing", func(t *testing.T) {
+		mockFs := &mockUnionFs{
+			root:      "/test/path",
+			upstreams: []string{"folder1", "folder2", "folder3"},
+		}
+		storage := &mockRCloneHandler{fs: mockFs}
+
+		upstreams, err := GetUnionUpstreams(ctx, storage)
+		require.NoError(t, err)
+		require.Equal(t, mockFs.upstreams, upstreams)
+	})
+
+	t.Run("non-union storage", func(t *testing.T) {
+		mockFs := &mockUnionFs{
+			root:      "/test/path",
+			upstreams: nil, // No upstreams means it's not a union storage
+		}
+		storage := &mockRCloneHandler{fs: mockFs}
+
+		_, err := GetUnionUpstreams(ctx, storage)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "storage is not a union backend")
+	})
+}
+
+func TestGetUpstreamPaths(t *testing.T) {
+	basePath := "/test/path"
+	upstreams := []string{"folder1", "folder2"}
+	mockFs := &mockUnionFs{
+		root:      basePath,
+		upstreams: upstreams,
+	}
+	storage := &mockRCloneHandler{fs: mockFs}
+
+	paths := GetUpstreamPaths(storage, upstreams)
+
+	expected := map[string]string{
+		"folder1": filepath.Join(basePath, "folder1"),
+		"folder2": filepath.Join(basePath, "folder2"),
+	}
+
+	require.Equal(t, expected, paths)
+}

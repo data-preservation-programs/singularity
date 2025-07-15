@@ -25,7 +25,7 @@ var CreateCmd = &cli.Command{
 	Name:     "create",
 	Usage:    "Create a new preparation",
 	Category: "Preparation Management",
-	Flags: []cli.Flag{
+	Flags: append([]cli.Flag{
 		&cli.StringFlag{
 			Name:        "name",
 			Usage:       "The name for the preparation",
@@ -83,83 +83,6 @@ var CreateCmd = &cli.Command{
 			Usage:    "Enable automatic deal schedule creation after preparation completion",
 			Category: "Auto Deal Creation",
 		},
-		&cli.StringFlag{
-			Name:     "deal-template",
-			Usage:    "Name or ID of deal template to use (optional - can specify deal parameters directly instead)",
-			Category: "Auto Deal Creation",
-		},
-		&cli.Float64Flag{
-			Name:     "deal-price-per-gb",
-			Usage:    "Price in FIL per GiB for storage deals",
-			Value:    0.0,
-			Category: "Auto Deal Creation",
-		},
-		&cli.Float64Flag{
-			Name:     "deal-price-per-gb-epoch",
-			Usage:    "Price in FIL per GiB per epoch for storage deals",
-			Value:    0.0,
-			Category: "Auto Deal Creation",
-		},
-		&cli.Float64Flag{
-			Name:     "deal-price-per-deal",
-			Usage:    "Price in FIL per deal for storage deals",
-			Value:    0.0,
-			Category: "Auto Deal Creation",
-		},
-		&cli.DurationFlag{
-			Name:     "deal-duration",
-			Usage:    "Duration for storage deals (e.g., 535 days)",
-			Value:    0,
-			Category: "Auto Deal Creation",
-		},
-		&cli.DurationFlag{
-			Name:     "deal-start-delay",
-			Usage:    "Start delay for storage deals (e.g., 72h)",
-			Value:    0,
-			Category: "Auto Deal Creation",
-		},
-		&cli.BoolFlag{
-			Name:     "deal-verified",
-			Usage:    "Whether deals should be verified",
-			Category: "Auto Deal Creation",
-		},
-		&cli.BoolFlag{
-			Name:     "deal-keep-unsealed",
-			Usage:    "Whether to keep unsealed copy of deals",
-			Category: "Auto Deal Creation",
-		},
-		&cli.BoolFlag{
-			Name:     "deal-announce-to-ipni",
-			Usage:    "Whether to announce deals to IPNI",
-			Category: "Auto Deal Creation",
-		},
-		&cli.StringFlag{
-			Name:     "deal-provider",
-			Usage:    "Storage Provider ID for deals (e.g., f01000)",
-			Category: "Auto Deal Creation",
-		},
-		&cli.StringFlag{
-			Name:     "deal-url-template",
-			Usage:    "URL template for deals",
-			Category: "Auto Deal Creation",
-		},
-		&cli.StringFlag{
-			Name:     "deal-http-headers",
-			Usage:    "HTTP headers for deals in JSON format",
-			Category: "Auto Deal Creation",
-		},
-		&cli.BoolFlag{
-			Name:     "wallet-validation",
-			Usage:    "Enable wallet balance validation before deal creation",
-			Category: "Validation",
-			Value:    true,
-		},
-		&cli.BoolFlag{
-			Name:     "sp-validation",
-			Usage:    "Enable storage provider validation before deal creation",
-			Category: "Validation",
-			Value:    true,
-		},
 		&cli.BoolFlag{
 			Name:     "auto-start",
 			Usage:    "Automatically start scanning after preparation creation",
@@ -170,7 +93,7 @@ var CreateCmd = &cli.Command{
 			Usage:    "Enable automatic job progression (scan → pack → daggen → deals)",
 			Category: "Workflow Automation",
 		},
-	},
+	}, cliutil.CommonDealFlags...),
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
@@ -212,32 +135,33 @@ var CreateCmd = &cli.Command{
 			dealHTTPHeaders = model.ConfigMap(tempMap)
 		}
 
-		prep, err := dataprep.Default.CreatePreparationHandler(c.Context, db, dataprep.CreateRequest{
-			SourceStorages:      sourceStorages,
-			OutputStorages:      outputStorages,
-			MaxSizeStr:          maxSizeStr,
-			PieceSizeStr:        pieceSizeStr,
-			MinPieceSizeStr:     minPieceSizeStr,
-			DeleteAfterExport:   c.Bool("delete-after-export"),
-			Name:                name,
-			NoInline:            c.Bool("no-inline"),
-			NoDag:               c.Bool("no-dag"),
-			AutoCreateDeals:     c.Bool("auto-create-deals"),
-			DealTemplate:        c.String("deal-template"),
-			DealPricePerGB:      c.Float64("deal-price-per-gb"),
-			DealPricePerGBEpoch: c.Float64("deal-price-per-gb-epoch"),
-			DealPricePerDeal:    c.Float64("deal-price-per-deal"),
-			DealDuration:        c.Duration("deal-duration"),
-			DealStartDelay:      c.Duration("deal-start-delay"),
-			DealVerified:        c.Bool("deal-verified"),
-			DealKeepUnsealed:    c.Bool("deal-keep-unsealed"),
-			DealAnnounceToIPNI:  c.Bool("deal-announce-to-ipni"),
-			DealProvider:        c.String("deal-provider"),
-			DealURLTemplate:     c.String("deal-url-template"),
-			DealHTTPHeaders:     dealHTTPHeaders,
-			WalletValidation:    c.Bool("wallet-validation"),
-			SPValidation:        c.Bool("sp-validation"),
-		})
+	   prep, err := dataprep.Default.CreatePreparationHandler(c.Context, db, dataprep.CreateRequest{
+		   SourceStorages:      sourceStorages,
+		   OutputStorages:      outputStorages,
+		   MaxSizeStr:          maxSizeStr,
+		   PieceSizeStr:        pieceSizeStr,
+		   MinPieceSizeStr:     minPieceSizeStr,
+		   DeleteAfterExport:   c.Bool("delete-after-export"),
+		   Name:                name,
+		   NoInline:            c.Bool("no-inline"),
+		   NoDag:               c.Bool("no-dag"),
+		   AutoCreateDeals:     c.Bool("auto-create-deals"),
+		   DealTemplate:        c.String("deal-template"),
+		   DealPricePerGB:      c.Float64("deal-price-per-gb"),
+		   DealPricePerGBEpoch: c.Float64("deal-price-per-gb-epoch"),
+		   DealPricePerDeal:    c.Float64("deal-price-per-deal"),
+		   DealDuration:        c.Duration("deal-duration"),
+		   DealStartDelay:      c.Duration("deal-start-delay"),
+		   DealVerified:        c.Bool("deal-verified"),
+		   DealKeepUnsealed:    c.Bool("deal-keep-unsealed"),
+		   DealAnnounceToIPNI:  c.Bool("deal-announce-to-ipni"),
+		   DealProvider:        c.String("deal-provider"),
+		   DealURLTemplate:     c.String("deal-url-template"),
+		   DealHTTPHeaders:     dealHTTPHeaders,
+		   WalletValidation:    c.Bool("wallet-validation"),
+		   SPValidation:        c.Bool("sp-validation"),
+		   OnePiecePerUpstream: c.Bool("one-piece-per-upstream"),
+	   })
 		if err != nil {
 			return errors.WithStack(err)
 		}

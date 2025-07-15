@@ -141,6 +141,18 @@ singularity deal schedule list
 singularity run unified --max-workers 5
 ```
 
+## ⚡ Data Preparation: Union Storage & One Piece Per Upstream
+
+Singularity supports union storage, allowing you to treat multiple storage locations as a single source. By default, files from all upstreams are combined into pieces based on size. If you want each upstream folder to result in a separate piece (with its own piece CID), use the `--one-piece-per-upstream` flag:
+
+```bash
+singularity prep create --name "my_prep" --source union://path/to/storage --one-piece-per-upstream
+```
+
+- Each upstream folder will produce a unique piece and piece CID.
+- This is useful for workflows that require strict separation of data from different sources.
+- For more details, see [docs/union-storage.md](docs/union-storage.md).
+
 ## 🏗️ Architecture
 
 ### Simplified Architecture

@@ -105,6 +105,11 @@ func (h RCloneHandler) Name() string {
 	return h.name
 }
 
+// Fs returns the underlying rclone filesystem
+func (h *RCloneHandler) Fs() fs.Fs {
+	return h.fs
+}
+
 func (h RCloneHandler) Write(ctx context.Context, path string, in io.Reader) (fs.Object, error) {
 	objInfo := object.NewStaticObjectInfo(path, time.Now(), -1, true, nil, nil)
 	if strings.HasSuffix(path, ".car") {

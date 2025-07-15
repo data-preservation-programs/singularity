@@ -100,6 +100,21 @@ type Preparation struct {
 	Wallets        []Wallet      `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
 	SourceStorages []Storage     `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" table:"expand;header:Source Storages:"`
 	OutputStorages []Storage     `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" table:"expand;header:Output Storages:"`
+
+	// When using union storage, create one piece per upstream folder
+	OnePiecePerUpstream bool `gorm:"default:false"`
+
+	// Total files under this preparation
+	TotalFiles int64 `gorm:"-"`
+
+	// Total size of files under this preparation
+	TotalSize int64 `gorm:"-"`
+
+	// Number of pieces packed under this preparation
+	TotalPieces int64 `gorm:"-"`
+
+	// Generated car files total size
+	TotalCarSize int64 `gorm:"-"`
 }
 
 func (s *Preparation) FindByIDOrName(db *gorm.DB, name string, preloads ...string) error {
