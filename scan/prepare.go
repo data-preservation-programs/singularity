@@ -3,11 +3,13 @@ package scan
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/rs/zerolog/log"
 	"github.com/data-preservation-programs/singularity/pack/push"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/storagesystem"
@@ -42,9 +44,13 @@ func PrepareToPackFileRanges(
 	handler, err := storagesystem.NewRCloneHandler(ctx, *attachment.Storage)
 	if err == nil {
 		// Check if we can cast the fs to a UnionFS
-		if _, ok := handler.Fs().(interface{ ListUpstreams() []string }); ok {
+		if unionFs, ok := handler.Fs().(interface{ ListUpstreams() []string }); ok {
 			// This is a union storage, and onePiecePerUpstream is set
 			if attachment.Preparation.OnePiecePerUpstream {
+				// Get all upstreams first
+				upstreams := unionFs.ListUpstreams()
+				log.Ctx(ctx).Debug().Strs("upstreams", upstreams).Msg("Found upstreams")
+
 				// Group parts by upstream folder
 				partsByUpstream := make(map[string][]model.FileRange)
 
@@ -52,10 +58,19 @@ func PrepareToPackFileRanges(
 				for _, part := range remainingParts {
 					upstreamPath := getUpstreamPath(part.File.Path)
 					partsByUpstream[upstreamPath] = append(partsByUpstream[upstreamPath], part)
+					log.Ctx(ctx).Debug().
+						Str("file", part.File.Path).
+						Str("upstream", upstreamPath).
+						Msg("Grouped file to upstream")
 				}
 
+				log.Ctx(ctx).Debug().
+					Int("upstream_count", len(partsByUpstream)).
+					Interface("parts_by_upstream", partsByUpstream).
+					Msg("Grouped files by upstream")
+
 				// Create one piece per upstream folder
-				for _, parts := range partsByUpstream {
+				for upstreamPath, parts := range partsByUpstream {
 					nextPackJob, err := NextAvailablePackJob(ctx, db, attachment.ID)
 					if err != nil {
 						return 0, fmt.Errorf("finding next available pack job: %w", err)
@@ -74,6 +89,12 @@ func PrepareToPackFileRanges(
 						return 0, fmt.Errorf("updating pack job: %w", err)
 					}
 					totalSize += fileRangeSet.CarSize()
+
+					log.Ctx(ctx).Debug().
+						Str("upstream", upstreamPath).
+						Int("file_count", len(parts)).
+						Int64("piece_size", fileRangeSet.CarSize()).
+						Msg("Created piece for upstream")
 				}
 				return totalSize, nil
 			}
@@ -168,12 +189,21 @@ func markPackJobsReady(
 	})
 }
 
-// getUpstreamPath returns the upstream folder path for a given file path.
-// In a union storage, files are mounted under their upstream's root folder.
+// getUpstreamPath extracts the upstream root path from a file path
 func getUpstreamPath(filePath string) string {
-	parts := strings.Split(filePath, "/")
-	if len(parts) > 0 {
-		return parts[0]
+	// If the file is in root (no path separator) return empty string
+	if !strings.Contains(filePath, string(filepath.Separator)) {
+		return ""
 	}
-	return ""
+	
+	// Split using OS-specific path separator and return first component
+	parts := strings.Split(filePath, string(filepath.Separator))
+	if parts[0] == "" {
+		// Handle paths starting with a separator
+		if len(parts) > 1 {
+			return parts[1]
+		}
+		return ""
+	}
+	return parts[0]
 }
