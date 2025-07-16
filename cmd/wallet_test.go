@@ -74,12 +74,20 @@ func TestWalletImport(t *testing.T) {
 		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 		mockHandler.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
-			ActorID:    "id",
-			Address:    "address",
-			PrivateKey: "private",
+			ActorID:     "id",
+			Address:     "address",
+			PrivateKey:  "private",
+			ActorName:   "Test Actor",
+			ContactInfo: "test@example.com",
+			Location:    "Test Location",
 		}, nil)
 
+		// Test basic import
 		_, _, err = runner.Run(ctx, "singularity wallet import "+testutil.EscapePath(filepath.Join(tmp, "private")))
+		require.NoError(t, err)
+
+		// Test import with metadata flags
+		_, _, err = runner.Run(ctx, "singularity wallet import --name 'Test Actor' --contact 'test@example.com' --location 'Test Location' "+testutil.EscapePath(filepath.Join(tmp, "private")))
 		require.NoError(t, err)
 
 		_, _, err = runner.Run(ctx, "singularity --verbose wallet import "+testutil.EscapePath(filepath.Join(tmp, "private")))
