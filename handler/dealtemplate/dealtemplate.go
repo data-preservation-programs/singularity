@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
@@ -18,19 +20,36 @@ var Default = &Handler{}
 
 // CreateRequest represents the request to create a deal template
 type CreateRequest struct {
-	Name                string          `json:"name"`
-	Description         string          `json:"description"`
-	DealPricePerGB      float64         `json:"dealPricePerGb"`
-	DealPricePerGBEpoch float64         `json:"dealPricePerGbEpoch"`
-	DealPricePerDeal    float64         `json:"dealPricePerDeal"`
-	DealDuration        time.Duration   `json:"dealDuration"`
-	DealStartDelay      time.Duration   `json:"dealStartDelay"`
-	DealVerified        bool            `json:"dealVerified"`
-	DealKeepUnsealed    bool            `json:"dealKeepUnsealed"`
-	DealAnnounceToIPNI  bool            `json:"dealAnnounceToIpni"`
-	DealProvider        string          `json:"dealProvider"`
-	DealHTTPHeaders     model.ConfigMap `json:"dealHttpHeaders"`
-	DealURLTemplate     string          `json:"dealUrlTemplate"`
+	Name                 string            `json:"name"`
+	Description          string            `json:"description"`
+	DealPricePerGB       float64           `json:"dealPricePerGb"`
+	DealPricePerGBEpoch  float64           `json:"dealPricePerGbEpoch"`
+	DealPricePerDeal     float64           `json:"dealPricePerDeal"`
+	DealDuration         time.Duration     `json:"dealDuration"`
+	DealStartDelay       time.Duration     `json:"dealStartDelay"`
+	DealVerified         bool              `json:"dealVerified"`
+	DealKeepUnsealed     bool              `json:"dealKeepUnsealed"`
+	DealAnnounceToIPNI   bool              `json:"dealAnnounceToIpni"`
+	DealProvider         string            `json:"dealProvider"`
+	DealHTTPHeaders      model.ConfigMap   `json:"dealHttpHeaders"`
+	DealURLTemplate      string            `json:"dealUrlTemplate"`
+	DealNotes            string            `json:"dealNotes"`
+	DealForce            bool              `json:"dealForce"`
+	DealAllowedPieceCIDs model.StringSlice `json:"dealAllowedPieceCids"`
+
+	// New scheduling fields (matching deal schedule create command)
+	ScheduleCron       string `json:"scheduleCron"`
+	ScheduleDealNumber int    `json:"scheduleDealNumber"`
+	ScheduleDealSize   string `json:"scheduleDealSize"`
+
+	// New restriction fields (matching deal schedule create command)
+	TotalDealNumber      int    `json:"totalDealNumber"`
+	TotalDealSize        string `json:"totalDealSize"`
+	MaxPendingDealNumber int    `json:"maxPendingDealNumber"`
+	MaxPendingDealSize   string `json:"maxPendingDealSize"`
+
+	// HTTP headers as string slice (matching deal schedule create command)
+	HTTPHeaders model.StringSlice `json:"httpHeaders"`
 }
 
 // CreateHandler creates a new deal template
@@ -47,22 +66,45 @@ func (h *Handler) CreateHandler(ctx context.Context, db *gorm.DB, request Create
 		return nil, errors.WithStack(err)
 	}
 
+	// Validate and deduplicate piece CIDs
+	validatedPieceCIDs, err := h.validateAndDeduplicatePieceCIDs(request.DealAllowedPieceCIDs)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
 	template := model.DealTemplate{
 		Name:        request.Name,
 		Description: request.Description,
 		DealConfig: model.DealConfig{
-			AutoCreateDeals:     true, // Templates are for auto-creation
-			DealPricePerGb:      request.DealPricePerGB,
-			DealPricePerGbEpoch: request.DealPricePerGBEpoch,
-			DealPricePerDeal:    request.DealPricePerDeal,
-			DealDuration:        request.DealDuration,
-			DealStartDelay:      request.DealStartDelay,
-			DealVerified:        request.DealVerified,
-			DealKeepUnsealed:    request.DealKeepUnsealed,
-			DealAnnounceToIpni:  request.DealAnnounceToIPNI,
-			DealProvider:        request.DealProvider,
-			DealHTTPHeaders:     request.DealHTTPHeaders,
-			DealURLTemplate:     request.DealURLTemplate,
+			AutoCreateDeals:      true, // Templates are for auto-creation
+			DealPricePerGb:       request.DealPricePerGB,
+			DealPricePerGbEpoch:  request.DealPricePerGBEpoch,
+			DealPricePerDeal:     request.DealPricePerDeal,
+			DealDuration:         request.DealDuration,
+			DealStartDelay:       request.DealStartDelay,
+			DealVerified:         request.DealVerified,
+			DealKeepUnsealed:     request.DealKeepUnsealed,
+			DealAnnounceToIpni:   request.DealAnnounceToIPNI,
+			DealProvider:         request.DealProvider,
+			DealHTTPHeaders:      request.DealHTTPHeaders,
+			DealURLTemplate:      request.DealURLTemplate,
+			DealNotes:            request.DealNotes,
+			DealForce:            request.DealForce,
+			DealAllowedPieceCIDs: validatedPieceCIDs,
+
+			// New scheduling fields
+			ScheduleCron:       request.ScheduleCron,
+			ScheduleDealNumber: request.ScheduleDealNumber,
+			ScheduleDealSize:   request.ScheduleDealSize,
+
+			// New restriction fields
+			TotalDealNumber:      request.TotalDealNumber,
+			TotalDealSize:        request.TotalDealSize,
+			MaxPendingDealNumber: request.MaxPendingDealNumber,
+			MaxPendingDealSize:   request.MaxPendingDealSize,
+
+			// HTTP headers as string slice
+			HTTPHeaders: request.HTTPHeaders,
 		},
 	}
 
@@ -102,19 +144,36 @@ func (h *Handler) GetHandler(ctx context.Context, db *gorm.DB, idOrName string) 
 
 // UpdateRequest represents the request to update a deal template
 type UpdateRequest struct {
-	Name                *string          `json:"name,omitempty"`
-	Description         *string          `json:"description,omitempty"`
-	DealPricePerGB      *float64         `json:"dealPricePerGb,omitempty"`
-	DealPricePerGBEpoch *float64         `json:"dealPricePerGbEpoch,omitempty"`
-	DealPricePerDeal    *float64         `json:"dealPricePerDeal,omitempty"`
-	DealDuration        *time.Duration   `json:"dealDuration,omitempty"`
-	DealStartDelay      *time.Duration   `json:"dealStartDelay,omitempty"`
-	DealVerified        *bool            `json:"dealVerified,omitempty"`
-	DealKeepUnsealed    *bool            `json:"dealKeepUnsealed,omitempty"`
-	DealAnnounceToIPNI  *bool            `json:"dealAnnounceToIpni,omitempty"`
-	DealProvider        *string          `json:"dealProvider,omitempty"`
-	DealHTTPHeaders     *model.ConfigMap `json:"dealHttpHeaders,omitempty"`
-	DealURLTemplate     *string          `json:"dealUrlTemplate,omitempty"`
+	Name                 *string            `json:"name,omitempty"`
+	Description          *string            `json:"description,omitempty"`
+	DealPricePerGB       *float64           `json:"dealPricePerGb,omitempty"`
+	DealPricePerGBEpoch  *float64           `json:"dealPricePerGbEpoch,omitempty"`
+	DealPricePerDeal     *float64           `json:"dealPricePerDeal,omitempty"`
+	DealDuration         *time.Duration     `json:"dealDuration,omitempty"`
+	DealStartDelay       *time.Duration     `json:"dealStartDelay,omitempty"`
+	DealVerified         *bool              `json:"dealVerified,omitempty"`
+	DealKeepUnsealed     *bool              `json:"dealKeepUnsealed,omitempty"`
+	DealAnnounceToIPNI   *bool              `json:"dealAnnounceToIpni,omitempty"`
+	DealProvider         *string            `json:"dealProvider,omitempty"`
+	DealHTTPHeaders      *model.ConfigMap   `json:"dealHttpHeaders,omitempty"`
+	DealURLTemplate      *string            `json:"dealUrlTemplate,omitempty"`
+	DealNotes            *string            `json:"dealNotes,omitempty"`
+	DealForce            *bool              `json:"dealForce,omitempty"`
+	DealAllowedPieceCIDs *model.StringSlice `json:"dealAllowedPieceCids,omitempty"`
+
+	// New scheduling fields
+	ScheduleCron       *string `json:"scheduleCron,omitempty"`
+	ScheduleDealNumber *int    `json:"scheduleDealNumber,omitempty"`
+	ScheduleDealSize   *string `json:"scheduleDealSize,omitempty"`
+
+	// New restriction fields
+	TotalDealNumber      *int    `json:"totalDealNumber,omitempty"`
+	TotalDealSize        *string `json:"totalDealSize,omitempty"`
+	MaxPendingDealNumber *int    `json:"maxPendingDealNumber,omitempty"`
+	MaxPendingDealSize   *string `json:"maxPendingDealSize,omitempty"`
+
+	// HTTP headers as string slice
+	HTTPHeaders *model.StringSlice `json:"httpHeaders,omitempty"`
 }
 
 // UpdateHandler updates a deal template
@@ -167,6 +226,50 @@ func (h *Handler) UpdateHandler(ctx context.Context, db *gorm.DB, idOrName strin
 	}
 	if request.DealURLTemplate != nil {
 		updates["deal_url_template"] = *request.DealURLTemplate
+	}
+	if request.DealNotes != nil {
+		updates["deal_notes"] = *request.DealNotes
+	}
+	if request.DealForce != nil {
+		updates["deal_force"] = *request.DealForce
+	}
+	if request.DealAllowedPieceCIDs != nil {
+		// Validate and deduplicate piece CIDs
+		validatedPieceCIDs, err := h.validateAndDeduplicatePieceCIDs(*request.DealAllowedPieceCIDs)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		updates["deal_allowed_piece_cids"] = validatedPieceCIDs
+	}
+
+	// Update scheduling fields
+	if request.ScheduleCron != nil {
+		updates["schedule_cron"] = *request.ScheduleCron
+	}
+	if request.ScheduleDealNumber != nil {
+		updates["schedule_deal_number"] = *request.ScheduleDealNumber
+	}
+	if request.ScheduleDealSize != nil {
+		updates["schedule_deal_size"] = *request.ScheduleDealSize
+	}
+
+	// Update restriction fields
+	if request.TotalDealNumber != nil {
+		updates["total_deal_number"] = *request.TotalDealNumber
+	}
+	if request.TotalDealSize != nil {
+		updates["total_deal_size"] = *request.TotalDealSize
+	}
+	if request.MaxPendingDealNumber != nil {
+		updates["max_pending_deal_number"] = *request.MaxPendingDealNumber
+	}
+	if request.MaxPendingDealSize != nil {
+		updates["max_pending_deal_size"] = *request.MaxPendingDealSize
+	}
+
+	// Update HTTP headers
+	if request.HTTPHeaders != nil {
+		updates["http_headers"] = *request.HTTPHeaders
 	}
 
 	if len(updates) == 0 {
@@ -221,4 +324,43 @@ func (h *Handler) ApplyTemplateToPreparation(template *model.DealTemplate, prep 
 
 	logger.Debugf("Applied template %s to preparation %s - template values applied for unset fields only",
 		template.Name, prep.Name)
+}
+
+// validateAndDeduplicatePieceCIDs validates piece CIDs and removes duplicates
+func (h *Handler) validateAndDeduplicatePieceCIDs(pieceCIDs model.StringSlice) (model.StringSlice, error) {
+	if len(pieceCIDs) == 0 {
+		return pieceCIDs, nil
+	}
+
+	seen := make(map[string]bool)
+	var deduplicated model.StringSlice
+
+	for _, pieceCID := range pieceCIDs {
+		// Skip if already seen (deduplication)
+		if seen[pieceCID] {
+			logger.Debugf("Skipping duplicate piece CID: %s", pieceCID)
+			continue
+		}
+
+		// Validate CID format
+		parsed, err := cid.Parse(pieceCID)
+		if err != nil {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid piece CID format '%s': %v", pieceCID, err)
+		}
+
+		// Validate it's a piece commitment (commp) CID
+		if parsed.Type() != cid.FilCommitmentUnsealed {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "piece CID '%s' is not a piece commitment (commp) CID", pieceCID)
+		}
+
+		// Add to seen map and deduplicated list
+		seen[pieceCID] = true
+		deduplicated = append(deduplicated, pieceCID)
+	}
+
+	if len(deduplicated) != len(pieceCIDs) {
+		logger.Infof("Deduplicated piece CIDs: %d original -> %d unique", len(pieceCIDs), len(deduplicated))
+	}
+
+	return deduplicated, nil
 }
