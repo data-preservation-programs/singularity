@@ -11,6 +11,7 @@ The new pure-go implementation of Singularity provides everything you need to on
 - **🚀 Automatic Deal Creation** - Deal schedules created automatically when data preparation completes
 - **📦 Data Preparation** - Efficient scanning, packing, and CAR file generation
 - **🔗 Deal Management** - Comprehensive deal scheduling and tracking
+- **💼 Wallet Management** - Full wallet lifecycle with metadata support for organization
 - **🏪 Storage Integration** - Support for multiple storage backends (local, S3, etc.)
 - **📊 Monitoring & Notifications** - Real-time status updates and error handling
 - **🔧 Flexible Configuration** - Extensive customization options for different workflows

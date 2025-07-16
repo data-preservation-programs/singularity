@@ -1,5 +1,18 @@
 # Wallet management
 
+
+Singularity provides comprehensive wallet management capabilities for Filecoin operations. You can create new wallets, import existing ones, and manage wallet metadata for better organization.
+
+## Wallet Metadata Support
+
+Wallets support optional metadata fields for enhanced organization:
+- **Name**: Human-readable display name
+- **Contact**: Contact information (email, etc.)  
+- **Location**: Geographic location or region
+
+These fields help identify and organize wallets, especially useful for storage providers managing multiple wallets across different regions.
+
+
 Singularity provides comprehensive wallet management capabilities for Filecoin operations. You can create new wallets, import existing ones, and check balances.
 
 ## Balance Information
@@ -9,6 +22,7 @@ The wallet balance command provides real-time FIL and FIL+ datacap balance infor
 - **Raw Balance**: Precise balance in attoFIL for calculations
 - **FIL+ DataCap**: Verified client datacap allowance in GiB
 - **Raw DataCap**: Precise datacap in bytes
+
 {% code fullWidth="true" %}
 ```
 NAME:
