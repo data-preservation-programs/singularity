@@ -29,6 +29,12 @@ type Handler interface {
 		preparation string,
 		wallet string,
 	) (*model.Preparation, error)
+	GetBalanceHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		lotusClient jsonrpc.RPCClient,
+		walletAddress string,
+	) (*BalanceResponse, error)
 	ImportHandler(
 		ctx context.Context,
 		db *gorm.DB,
@@ -86,6 +92,11 @@ func (m *MockWallet) CreateHandler(ctx context.Context, db *gorm.DB, lotusClient
 func (m *MockWallet) DetachHandler(ctx context.Context, db *gorm.DB, preparation string, wallet string) (*model.Preparation, error) {
 	args := m.Called(ctx, db, preparation, wallet)
 	return args.Get(0).(*model.Preparation), args.Error(1)
+}
+
+func (m *MockWallet) GetBalanceHandler(ctx context.Context, db *gorm.DB, lotusClient jsonrpc.RPCClient, walletAddress string) (*BalanceResponse, error) {
+	args := m.Called(ctx, db, lotusClient, walletAddress)
+	return args.Get(0).(*BalanceResponse), args.Error(1)
 }
 
 func (m *MockWallet) ImportHandler(ctx context.Context, db *gorm.DB, lotusClient jsonrpc.RPCClient, request ImportRequest) (*model.Wallet, error) {

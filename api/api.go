@@ -526,6 +526,7 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/wallet/create", s.toEchoHandler(s.walletHandler.CreateHandler))
 	e.POST("/api/wallet", s.toEchoHandler(s.walletHandler.ImportHandler))
 	e.GET("/api/wallet", s.toEchoHandler(s.walletHandler.ListHandler))
+	e.GET("/api/wallet/:address/balance", s.toEchoHandler(s.walletHandler.GetBalanceHandler))
 	e.POST("/api/wallet/:address/init", s.toEchoHandler(s.walletHandler.InitHandler))
 	e.DELETE("/api/wallet/:address", s.toEchoHandler(s.walletHandler.RemoveHandler))
 	e.PATCH("/api/wallet/:address", s.toEchoHandler(s.walletHandler.UpdateHandler))
