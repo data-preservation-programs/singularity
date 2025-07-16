@@ -51,10 +51,10 @@ OPTIONS:
 **Check wallet balance:**
 ```bash
 # Get balance for a specific wallet
-singularity wallet balance f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa
+singularity wallet balance f1abcde7zd3lfsv43aj2kb454ymaqw7debhumjxyz
 
 # Get balance in JSON format
-singularity --json wallet balance f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa
+singularity --json wallet balance f1abcde7zd3lfsv43aj2kb454ymaqw7debhumjxyz
 ```
 
 **Create and manage wallets:**

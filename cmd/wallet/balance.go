@@ -13,12 +13,12 @@ var BalanceCmd = &cli.Command{
 	Name:      "balance",
 	Usage:     "Get wallet balance information",
 	ArgsUsage: "<wallet_address>",
-	Description: `Get FIL balance and FIL+ datacap balance for a specific wallet address.
+Description: `Get FIL balance and FIL+ datacap balance for a specific wallet address.
 This command queries the Lotus network to retrieve current balance information.
 
 Examples:
-  singularity wallet balance f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa
-  singularity wallet balance --json f1abc123...def456
+  singularity wallet balance f1abcde7zd3lfsv43aj2kb454ymaqw7debhumjxyz
+  singularity wallet balance --json f1abcde7zd3lfsv43aj2kb454ymaqw7debhumjxyz
 
 The command returns:
 - FIL balance in human-readable format (e.g., "1.000000 FIL")

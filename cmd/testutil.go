@@ -1,4 +1,3 @@
-//nolint:forcetypeassert
 package cmd
 
 import (
@@ -10,24 +9,68 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
-	"slices"
-
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/fatih/color"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	"github.com/mattn/go-shellwords"
 	"github.com/parnurzeal/gorequest"
 	"github.com/rjNemo/underscore"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/urfave/cli/v2"
 )
+
+// CompareDirectories compares the contents of two directories recursively.
+func CompareDirectories(t *testing.T, dir1, dir2 string) {
+	t.Helper()
+	filesInDir2 := make(map[string]struct{})
+
+	err := filepath.Walk(dir1, func(path1 string, info1 os.FileInfo, err error) error {
+		require.NoError(t, err)
+		relPath := strings.TrimPrefix(path1, dir1)
+		path2 := filepath.Join(dir2, relPath)
+		info2, err := os.Stat(path2)
+		if os.IsNotExist(err) {
+			require.Failf(t, "Missing file or directory in dir2", "File: %s", relPath)
+			return nil
+		}
+		require.NoError(t, err)
+		if !info1.IsDir() {
+			filesInDir2[relPath] = struct{}{}
+		}
+		if info1.IsDir() && info2.IsDir() {
+			return nil
+		}
+		require.Equal(t, info1.Size(), info2.Size(), "Size mismatch for %s", relPath)
+		content1, err := os.ReadFile(filepath.Clean(path1))
+		require.NoError(t, err)
+		content2, err := os.ReadFile(filepath.Clean(path2))
+		require.NoError(t, err)
+		require.True(t, bytes.Equal(content1, content2), "Content mismatch for %s", relPath)
+		return nil
+	})
+	require.NoError(t, err)
+
+	err = filepath.Walk(dir2, func(path2 string, info2 os.FileInfo, err error) error {
+		require.NoError(t, err)
+		relPath := strings.TrimPrefix(path2, dir2)
+		if _, ok := filesInDir2[relPath]; ok || info2.IsDir() {
+			return nil
+		}
+		require.Failf(t, "Extra file or directory in dir2", "File: %s", relPath)
+		return nil
+	})
+	require.NoError(t, err)
+}
 
 type RunnerMode string
 
@@ -42,7 +85,33 @@ type Runner struct {
 	mode RunnerMode
 }
 
-var colorMutex = sync.Mutex{}
+var (
+	removeANSI = regexp.MustCompile(`\x1B\[[0-?]*[ -/]*[@-~]`)
+	timeRegex  = regexp.MustCompile(`\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}`)
+	colorMutex = sync.Mutex{}
+)
+
+// Save writes the captured output to testdata files for inspection.
+func (r *Runner) Save(t *testing.T, tempDirs ...string) {
+	t.Helper()
+	ansi := r.sb.String()
+	if ansi == "" {
+		return
+	}
+	for i, tempDir := range tempDirs {
+		ansi = strings.ReplaceAll(ansi, tempDir, "/tempDir/"+fmt.Sprint(i))
+	}
+	ansi = timeRegex.ReplaceAllString(ansi, "2023-04-05 06:07:08")
+	ansiPath := "testdata/" + t.Name() + ".ansi"
+	err := os.MkdirAll("testdata", 0700)
+	require.NoError(t, err)
+	err = os.WriteFile(ansiPath, []byte(ansi), 0600)
+	require.NoError(t, err)
+	plain := removeANSI.ReplaceAllString(ansi, "")
+	plainPath := "testdata/" + t.Name() + ".txt"
+	err = os.WriteFile(plainPath, []byte(plain), 0600)
+	require.NoError(t, err)
+}
 
 // NewRunner creates a new Runner to capture CLI args
 //
@@ -55,14 +124,21 @@ func NewRunner() *Runner {
 	if color.NoColor {
 		color.NoColor = false
 	}
+	// Always swap in a mock wallet handler for all CLI tests
+	// This ensures all wallet DB operations use the mock, not the real DB
+	mockHandler := new(wallet.MockWallet)
+	// Set up default no-op mocks for all handler methods to avoid nil panics
+	mockHandler.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{}, nil)
+	mockHandler.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{}, nil)
+	mockHandler.On("InitHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{}, nil)
+	mockHandler.On("ListHandler", mock.Anything, mock.Anything).Return([]model.Wallet{}, nil)
+	mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	mockHandler.On("UpdateHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{}, nil)
+	wallet.Default = mockHandler
 	return &Runner{}
 }
 
-func (r *Runner) WithMode(mode RunnerMode) *Runner {
-	r.mode = mode
-	return r
-}
-
+// Run executes the CLI command with the given arguments and captures output.
 func (r *Runner) Run(ctx context.Context, args string) (string, string, error) {
 	if strings.HasPrefix(args, "singularity ") {
 		switch r.mode {
@@ -80,35 +156,6 @@ func (r *Runner) Run(ctx context.Context, args string) (string, string, error) {
 	r.sb.WriteString(stderr)
 	r.sb.WriteString("\n")
 	return out, stderr, err
-}
-
-var removeANSI = regexp.MustCompile(`\x1B\[[0-?]*[ -/]*[@-~]`)
-var timeRegex = regexp.MustCompile(`\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}`)
-
-func (r *Runner) Save(t *testing.T, tempDirs ...string) {
-	t.Helper()
-	t.Helper()
-	ansi := r.sb.String()
-	if ansi == "" {
-		return
-	}
-
-	for i, tempDir := range tempDirs {
-		ansi = strings.ReplaceAll(ansi, tempDir, "/tempDir/"+strconv.Itoa(i))
-	}
-
-	ansi = timeRegex.ReplaceAllString(ansi, "2023-04-05 06:07:08")
-
-	ansiPath := filepath.Join("testdata", t.Name()+".ansi")
-	err := os.MkdirAll(filepath.Dir(ansiPath), 0700)
-	require.NoError(t, err)
-	err = os.WriteFile(ansiPath, []byte(ansi), 0600)
-	require.NoError(t, err)
-
-	plain := removeANSI.ReplaceAllString(ansi, "")
-	plainPath := filepath.Join("testdata", t.Name()+".txt")
-	err = os.WriteFile(plainPath, []byte(plain), 0600)
-	require.NoError(t, err)
 }
 
 var pieceCIDRegex = regexp.MustCompile("baga6ea[0-9a-z]+")
@@ -259,71 +306,6 @@ func Download(ctx context.Context, url string, nThreads int) ([]byte, error) {
 	}
 
 	return result.Bytes(), nil
-}
-
-func CompareDirectories(t *testing.T, dir1, dir2 string) {
-	t.Helper()
-	filesInDir2 := make(map[string]struct{})
-
-	err := filepath.Walk(dir1, func(path1 string, info1 os.FileInfo, err error) error {
-		// Propagate any error
-		require.NoError(t, err)
-
-		// Construct the path to the corresponding file or directory in dir2
-		relPath := strings.TrimPrefix(path1, dir1)
-		path2 := filepath.Join(dir2, relPath)
-
-		// Get info about the file or directory in dir2
-		info2, err := os.Stat(path2)
-		if os.IsNotExist(err) {
-			require.Failf(t, "Missing file or directory in dir2", "File: %s", relPath)
-			return nil
-		}
-		require.NoError(t, err)
-
-		if !info1.IsDir() {
-			filesInDir2[relPath] = struct{}{}
-		}
-
-		// If both are directories, no need to compare content
-		if info1.IsDir() && info2.IsDir() {
-			return nil
-		}
-
-		// Compare file sizes
-		require.Equal(t, info1.Size(), info2.Size(), "Size mismatch for %s", relPath)
-
-		// Compare file content
-		content1, err := os.ReadFile(filepath.Clean(path1))
-		require.NoError(t, err)
-
-		content2, err := os.ReadFile(filepath.Clean(path2))
-		require.NoError(t, err)
-
-		require.True(t, bytes.Equal(content1, content2), "Content mismatch for %s", relPath)
-
-		return nil
-	})
-
-	require.NoError(t, err)
-
-	err = filepath.Walk(dir2, func(path2 string, info2 os.FileInfo, err error) error {
-		// Propagate any error
-		require.NoError(t, err)
-
-		relPath := strings.TrimPrefix(path2, dir2)
-
-		// If we've already checked this file (because it exists in dir1), then skip it
-		if _, ok := filesInDir2[relPath]; ok || info2.IsDir() {
-			return nil
-		}
-
-		// If we get here, it means this file/dir exists in dir2 but not in dir1
-		require.Failf(t, "Extra file or directory in dir2", "File: %s", relPath)
-		return nil
-	})
-
-	require.NoError(t, err)
 }
 
 func runWithCapture(ctx context.Context, args string) (string, string, error) {

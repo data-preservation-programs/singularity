@@ -22,7 +22,7 @@ The command returns detailed balance information:
 
 | Field | Description | Example |
 |-------|-------------|---------|
-| **address** | The wallet address queried | `f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa` |
+| **address** | The wallet address queried | `f1abcde7zd3lfsv43aj2kb454ymaqw7debhumjxyz` |
 | **balance** | FIL balance in human-readable format | `1.000000 FIL` |
 | **balanceAttoFIL** | Raw balance in attoFIL (10^-18 FIL) | `1000000000000000000` |
 | **dataCap** | FIL+ datacap balance in GiB | `1024.50 GiB` |
@@ -35,26 +35,26 @@ The command returns detailed balance information:
 
 ```bash
 # Check balance for a wallet
-singularity wallet balance f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa
+singularity wallet balance f1abcde7zd3lfsv43aj2kb454ymaqw7debhumjxyz
 ```
 
 **Output:**
 ```
 Address                                    Balance       BalanceAttoFIL       DataCap      DataCapBytes   Error  
-f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa  1.000000 FIL  1000000000000000000  1024.50 GiB  1100048498688  <nil>  
+f1abcde7zd3lfsv43aj2kb454ymaqw7debhumjxyz  1.000000 FIL  1000000000000000000  1024.50 GiB  1100048498688  <nil>  
 ```
 
 ### JSON Output
 
 ```bash
 # Get balance in JSON format for programmatic use
-singularity --json wallet balance f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa
+singularity --json wallet balance f1abcde7zd3lfsv43aj2kb454ymaqw7debhumjxyz
 ```
 
 **Output:**
 ```json
 {
-  "address": "f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa",
+  "address": "f1abcde7zd3lfsv43aj2kb454ymaqw7debhumjxyz",
   "balance": "1.000000 FIL",
   "balanceAttoFIL": "1000000000000000000",
   "dataCap": "1024.50 GiB",

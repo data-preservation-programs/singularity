@@ -5,6 +5,7 @@ import (
 	"context"
 
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/mock"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
@@ -56,6 +57,11 @@ type Handler interface {
 		db *gorm.DB,
 		preparation string,
 	) ([]model.Wallet, error)
+	ListWithBalanceHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		lotusClient jsonrpc.RPCClient,
+	) ([]WalletWithBalance, error)
 	RemoveHandler(
 		ctx context.Context,
 		db *gorm.DB,
@@ -119,6 +125,14 @@ func (m *MockWallet) ListAttachedHandler(ctx context.Context, db *gorm.DB, prepa
 	return args.Get(0).([]model.Wallet), args.Error(1)
 }
 
+func (m *MockWallet) ListWithBalanceHandler(ctx context.Context, db *gorm.DB, lotusClient jsonrpc.RPCClient) ([]WalletWithBalance, error) {
+	args := m.Called(ctx, db, lotusClient)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]WalletWithBalance), args.Error(1)
+}
+
 func (m *MockWallet) RemoveHandler(ctx context.Context, db *gorm.DB, address string) error {
 	args := m.Called(ctx, db, address)
 	return args.Error(0)
@@ -127,4 +141,39 @@ func (m *MockWallet) RemoveHandler(ctx context.Context, db *gorm.DB, address str
 func (m *MockWallet) UpdateHandler(ctx context.Context, db *gorm.DB, address string, request UpdateRequest) (*model.Wallet, error) {
 	args := m.Called(ctx, db, address, request)
 	return args.Get(0).(*model.Wallet), args.Error(1)
+}
+
+func (d DefaultHandler) ListWithBalanceHandler(
+	ctx context.Context,
+	db *gorm.DB,
+	lotusClient jsonrpc.RPCClient,
+) ([]WalletWithBalance, error) {
+	db = db.WithContext(ctx)
+	var wallets []model.Wallet
+	err := db.Find(&wallets).Error
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	var result []WalletWithBalance
+	allFailed := true
+	for _, w := range wallets {
+		bal, err := d.GetBalanceHandler(ctx, db, lotusClient, w.Address)
+		wb := WalletWithBalance{Wallet: w}
+		if err == nil && bal != nil {
+			wb.Balance = bal.Balance
+			wb.BalanceAttoFIL = bal.BalanceAttoFIL
+			wb.DataCap = bal.DataCap
+			wb.DataCapBytes = bal.DataCapBytes
+			wb.Error = bal.Error
+			allFailed = false
+		} else if err != nil {
+			errMsg := err.Error()
+			wb.Error = &errMsg
+		}
+		result = append(result, wb)
+	}
+	if allFailed && len(wallets) > 0 {
+		return nil, errors.New("failed to get balance for all wallets")
+	}
+	return result, nil
 }
