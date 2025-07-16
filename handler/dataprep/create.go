@@ -15,6 +15,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
+	"github.com/filecoin-project/go-address"
 	"gorm.io/gorm"
 )
 
@@ -384,20 +385,9 @@ func performWalletValidation(ctx context.Context, db *gorm.DB, preparation *mode
 	for i, wallet := range wallets {
 		walletAddresses[i] = wallet.Address
 
-		// Basic wallet address validation (Filecoin addresses start with 'f' followed by network ID)
-		if !strings.HasPrefix(wallet.Address, "f") || len(wallet.Address) < 3 {
-			invalidWallets = append(invalidWallets, wallet.Address)
-			continue
-		}
-
-		// Validate network ID (should be 1, 2, 3, or 4 for mainnet, testnet, etc.)
-		if len(wallet.Address) < 2 || (wallet.Address[1] != '1' && wallet.Address[1] != '2' && wallet.Address[1] != '3' && wallet.Address[1] != '4') {
-			invalidWallets = append(invalidWallets, wallet.Address)
-			continue
-		}
-
-		// Basic length validation (Filecoin addresses are typically longer)
-		if len(wallet.Address) < 10 {
+		// Validate wallet address using the proper Filecoin address library
+		_, err := address.NewFromString(wallet.Address)
+		if err != nil {
 			invalidWallets = append(invalidWallets, wallet.Address)
 			continue
 		}

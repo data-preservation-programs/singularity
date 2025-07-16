@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -689,54 +688,6 @@ func generateDynamicStorageFlags() []cli.Flag {
 	return flags
 }
 
-// parseStorageConfig builds storage configuration from CLI flags using dynamic approach
-func parseStorageConfig(c *cli.Context, storageType, storageContext string) map[string]string {
-	config := make(map[string]string)
-
-	// Get backend configuration
-	backend, exists := storagesystem.BackendMap[storageType]
-	if !exists {
-		return config
-	}
-
-	// Parse configuration for all provider options
-	for _, providerOptions := range backend.ProviderOptions {
-		for _, option := range providerOptions.Options {
-			// Convert option name to CLI flag format
-			flagName := strings.ReplaceAll(option.Name, "_", "-")
-			fullFlagName := storageContext + "-" + backend.Prefix + "-" + flagName
-
-			// Check if the flag is set and extract value
-			if c.IsSet(fullFlagName) {
-				switch (*fs.Option)(&option).Type() {
-				case "bool":
-					if c.Bool(fullFlagName) {
-						config[option.Name] = "true"
-					}
-				case "string":
-					if value := c.String(fullFlagName); value != "" {
-						config[option.Name] = value
-					}
-				case "int":
-					config[option.Name] = strconv.Itoa(c.Int(fullFlagName))
-				case "SizeSuffix":
-					if value := c.String(fullFlagName); value != "" {
-						config[option.Name] = value
-					}
-				case "Duration":
-					config[option.Name] = c.Duration(fullFlagName).String()
-				default:
-					if value := c.String(fullFlagName); value != "" {
-						config[option.Name] = value
-					}
-				}
-			}
-		}
-	}
-
-	return config
-}
-
 // getDefaultProvider returns the default provider for a storage type
 func getDefaultProvider(storageType string) string {
 	switch storageType {
@@ -749,104 +700,6 @@ func getDefaultProvider(storageType string) string {
 	default:
 		return ""
 	}
-}
-
-// getProviderDefaults returns default configuration values for a storage provider
-func getProviderDefaults(storageType, provider string) map[string]string {
-	defaults := make(map[string]string)
-
-	// Get backend configuration from storage system
-	backend, exists := storagesystem.BackendMap[storageType]
-	if !exists {
-		return defaults
-	}
-
-	// Find the provider-specific options
-	for _, providerOptions := range backend.ProviderOptions {
-		if providerOptions.Provider == provider {
-			// Extract default values from options
-			for _, option := range providerOptions.Options {
-				if option.Default != nil {
-					switch v := option.Default.(type) {
-					case string:
-						if v != "" {
-							defaults[option.Name] = v
-						}
-					case bool:
-						defaults[option.Name] = strconv.FormatBool(v)
-					case int:
-						defaults[option.Name] = strconv.Itoa(v)
-					}
-				}
-			}
-			break
-		}
-	}
-
-	return defaults
-}
-
-// mergeStorageConfigWithDefaults merges custom config with provider defaults
-func mergeStorageConfigWithDefaults(storageType, provider string, customConfig map[string]string) map[string]string {
-	// Start with provider defaults
-	merged := getProviderDefaults(storageType, provider)
-
-	// Override with custom configuration
-	for key, value := range customConfig {
-		merged[key] = value
-	}
-
-	return merged
-}
-
-// testStorageConnectivity validates storage configuration by testing connectivity
-func testStorageConnectivity(ctx context.Context, storageType, provider, path string, config map[string]string, clientConfig model.ClientConfig) error {
-	if storageType == "local" {
-		// For local storage, just check if the path exists or can be created
-		return validateLocalPath(path)
-	}
-
-	// Create a temporary storage model to test connectivity
-	tempStorage := model.Storage{
-		Name:         "test-connectivity-" + strconv.FormatInt(time.Now().UnixNano(), 10),
-		Type:         storageType,
-		Path:         path,
-		Config:       config,
-		ClientConfig: clientConfig,
-	}
-
-	// Test connectivity using the storage system
-	rclone, err := storagesystem.NewRCloneHandler(ctx, tempStorage)
-	if err != nil {
-		return errors.Wrapf(err, "failed to create %s storage handler for connectivity test (provider: %s, path: %s)",
-			storageType, provider, path)
-	}
-
-	// Test basic connectivity by listing the root directory
-	_, err = rclone.List(ctx, "")
-	if err != nil {
-		return errors.Wrapf(err, "%s storage connectivity test failed (provider: %s, path: %s): verify credentials and network access",
-			storageType, provider, path)
-	}
-
-	return nil
-}
-
-// validateLocalPath validates local storage path
-func validateLocalPath(path string) error {
-	if path == "" {
-		return errors.New("local storage path cannot be empty")
-	}
-
-	// Check if path exists
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			return errors.Errorf("local storage path does not exist: %s", path)
-		}
-		return errors.Wrapf(err, "failed to access local storage path: %s", path)
-	}
-
-	return nil
 }
 
 // validateOnboardInputs validates CLI inputs for onboard command
@@ -863,27 +716,19 @@ func validateOnboardInputs(c *cli.Context) error {
 		return errors.New("at least one source path is required (--source)")
 	}
 
-	// Validate storage type configurations
+	// Basic storage type validation - detailed validation is handled by the storage handler
 	sourceType := c.String("source-type")
 	outputType := c.String("output-type")
 
 	// Validate storage types are supported using BackendMap
-	if err := validateStorageType(sourceType, "source"); err != nil {
-		return err
-	}
-	if err := validateStorageType(outputType, "output"); err != nil {
-		return err
-	}
-
-	// Validate storage configurations dynamically
-	if sourceType != "local" {
-		if err := validateStorageConfigFlags(c, sourceType, "source"); err != nil {
-			return err
+	if sourceType != "" && sourceType != "local" {
+		if _, exists := storagesystem.BackendMap[sourceType]; !exists {
+			return errors.Errorf("source storage type '%s' is not supported", sourceType)
 		}
 	}
-	if outputType != "local" {
-		if err := validateStorageConfigFlags(c, outputType, "output"); err != nil {
-			return err
+	if outputType != "" && outputType != "local" {
+		if _, exists := storagesystem.BackendMap[outputType]; !exists {
+			return errors.Errorf("output storage type '%s' is not supported", outputType)
 		}
 	}
 
@@ -917,45 +762,6 @@ func validateOnboardInputs(c *cli.Context) error {
 	// Validate worker count
 	if maxWorkers := c.Int("max-workers"); maxWorkers < 1 {
 		return errors.New("max workers must be at least 1")
-	}
-
-	return nil
-}
-
-// validateStorageConfigFlags validates storage configuration flags dynamically
-func validateStorageConfigFlags(c *cli.Context, storageType, storageContext string) error {
-	// Get backend configuration
-	backend, exists := storagesystem.BackendMap[storageType]
-	if !exists {
-		return errors.Errorf("unsupported storage type: %s", storageType)
-	}
-
-	// Validate required fields for the storage type
-	for _, providerOptions := range backend.ProviderOptions {
-		for _, option := range providerOptions.Options {
-			// Convert option name to CLI flag format
-			flagName := strings.ReplaceAll(option.Name, "_", "-")
-			fullFlagName := storageContext + "-" + backend.Prefix + "-" + flagName
-
-			// Check if required field is provided
-			if option.Required && !c.IsSet(fullFlagName) {
-				return errors.Errorf("%s %s configuration missing required field: %s", storageContext, storageType, flagName)
-			}
-
-			// Validate field values if set
-			if c.IsSet(fullFlagName) {
-				switch (*fs.Option)(&option).Type() {
-				case "string":
-					if c.String(fullFlagName) == "" {
-						return errors.Errorf("%s %s configuration field %s cannot be empty", storageContext, storageType, flagName)
-					}
-				case "int":
-					if c.Int(fullFlagName) < 0 {
-						return errors.Errorf("%s %s configuration field %s must be non-negative", storageContext, storageType, flagName)
-					}
-				}
-			}
-		}
 	}
 
 	return nil
@@ -1035,31 +841,6 @@ func getOnboardClientConfig(c *cli.Context) (*model.ClientConfig, error) {
 	return &config, nil
 }
 
-// validateStorageType validates that a storage type is supported using BackendMap
-func validateStorageType(storageType string, prefix string) error {
-	if storageType == "" {
-		return nil // Allow empty storage type (defaults to local)
-	}
-
-	backend, ok := storagesystem.BackendMap[storageType]
-	if !ok {
-		// Get list of supported storage types for better error message
-		var supportedTypes []string
-		for backendType := range storagesystem.BackendMap {
-			supportedTypes = append(supportedTypes, backendType)
-		}
-		return errors.Errorf("%s storage type '%s' is not supported. Supported types: %s",
-			prefix, storageType, strings.Join(supportedTypes, ", "))
-	}
-
-	// Additional validation - check if backend is properly configured
-	if backend.Prefix != storageType {
-		return errors.Errorf("backend configuration mismatch for storage type '%s'", storageType)
-	}
-
-	return nil
-}
-
 // validateStorageConfig validates that a storage configuration is valid JSON
 func validateStorageConfig(configStr string, prefix string) error {
 	var config map[string]string
@@ -1077,24 +858,6 @@ func validateStorageConfig(configStr string, prefix string) error {
 		}
 	}
 
-	return nil
-}
-
-// checkDuplicateStorageNames validates that storage names are unique
-func checkDuplicateStorageNames(ctx context.Context, db *gorm.DB, storageName string) error {
-	if storageName == "" {
-		return errors.New("storage name cannot be empty")
-	}
-
-	var existingStorage model.Storage
-	err := db.WithContext(ctx).Where("name = ?", storageName).First(&existingStorage).Error
-	if err == nil {
-		return errors.Errorf("storage with name '%s' already exists (ID: %d, Type: %s)",
-			storageName, existingStorage.ID, existingStorage.Type)
-	}
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.Wrapf(err, "database error while checking for duplicate storage name '%s'", storageName)
-	}
 	return nil
 }
 
@@ -1134,18 +897,60 @@ func getCustomStorageConfig(c *cli.Context, storageContext string) map[string]st
 
 // createStorageIfNotExistWithConfig creates storage with context-aware custom configuration
 func createStorageIfNotExistWithConfig(ctx context.Context, db *gorm.DB, path, storageType, provider string, c *cli.Context, storageName, storageContext string) (*model.Storage, error) {
-	// Check for duplicate storage names first
-	if err := checkDuplicateStorageNames(ctx, db, storageName); err != nil {
-		return nil, err
+	// Check if storage already exists for this path and type
+	var existing model.Storage
+	err := db.WithContext(ctx).Where("type = ? AND path = ?", storageType, path).First(&existing).Error
+	if err == nil {
+		return &existing, nil
 	}
 
-	// Validate storage type is supported
-	if err := validateStorageType(storageType, storageContext); err != nil {
-		return nil, err
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrapf(err, "failed to check existing storage")
 	}
 
-	// Build storage configuration using dynamic approach
-	config := parseStorageConfig(c, storageType, storageContext)
+	// Build storage configuration from CLI flags using the same pattern as storage create
+	config := make(map[string]string)
+
+	// Get backend configuration to understand what flags to look for
+	backend, exists := storagesystem.BackendMap[storageType]
+	if !exists {
+		return nil, errors.Errorf("storage type %s is not supported", storageType)
+	}
+
+	// Parse configuration for all provider options with the storageContext prefix
+	for _, providerOptions := range backend.ProviderOptions {
+		for _, option := range providerOptions.Options {
+			// Convert option name to CLI flag format
+			flagName := strings.ReplaceAll(option.Name, "_", "-")
+			fullFlagName := storageContext + "-" + backend.Prefix + "-" + flagName
+
+			// Check if the flag is set and extract value based on type
+			if c.IsSet(fullFlagName) {
+				switch (*fs.Option)(&option).Type() {
+				case "bool":
+					if c.Bool(fullFlagName) {
+						config[option.Name] = "true"
+					}
+				case "string":
+					if value := c.String(fullFlagName); value != "" {
+						config[option.Name] = value
+					}
+				case "int":
+					config[option.Name] = strconv.Itoa(c.Int(fullFlagName))
+				case "SizeSuffix":
+					if value := c.String(fullFlagName); value != "" {
+						config[option.Name] = value
+					}
+				case "Duration":
+					config[option.Name] = c.Duration(fullFlagName).String()
+				default:
+					if value := c.String(fullFlagName); value != "" {
+						config[option.Name] = value
+					}
+				}
+			}
+		}
+	}
 
 	// Merge custom config if provided via JSON config flag
 	if customConfig := getCustomStorageConfig(c, storageContext); customConfig != nil {
@@ -1159,32 +964,13 @@ func createStorageIfNotExistWithConfig(ctx context.Context, db *gorm.DB, path, s
 		provider = getDefaultProvider(storageType)
 	}
 
-	// Merge with provider defaults - this ensures all provider-specific defaults are applied
-	config = mergeStorageConfigWithDefaults(storageType, provider, config)
-
-	// Check if storage already exists for this path and config
-	var existing model.Storage
-	err := db.WithContext(ctx).Where("type = ? AND path = ?", storageType, path).First(&existing).Error
-	if err == nil {
-		return &existing, nil
-	}
-
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(err, "failed to check existing storage")
-	}
-
 	// Get client configuration from flags
 	clientConfig, err := getOnboardClientConfig(c)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to parse client configuration")
 	}
 
-	// Test storage connectivity before creating the storage
-	if err := testStorageConnectivity(ctx, storageType, provider, path, config, *clientConfig); err != nil {
-		return nil, errors.Wrapf(err, "storage configuration validation failed")
-	}
-
-	// Use the storage handler to create new storage with proper validation
+	// Use the storage handler to create new storage - it will handle validation, defaults, and connectivity testing
 	storageHandler := storageHandlers.Default
 	request := storageHandlers.CreateRequest{
 		Name:         storageName,
