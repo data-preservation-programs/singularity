@@ -18,7 +18,7 @@ import (
 var logger = log.Logger("singularity/handler/wallet")
 
 type ImportRequest struct {
-	PrivateKey string `json:"privateKey"` // This is the exported private key from lotus wallet export
+	PrivateKey string `json:"privateKey"`         // This is the exported private key from lotus wallet export
 	Name       string `json:"name,omitempty"`     // Optional display name
 	Contact    string `json:"contact,omitempty"`  // Optional contact information
 	Location   string `json:"location,omitempty"` // Optional location
