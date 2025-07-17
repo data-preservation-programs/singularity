@@ -81,7 +81,7 @@ Use deal templates to configure deal parameters - individual deal flags are not 
 		},
 		&cli.StringFlag{
 			Name:  "source-provider",
-			Usage: "Source storage provider (for s3: aws, minio, wasabi, etc.)",
+			Usage: "Source storage provider (for s3: aws, minio, wasabi, etc.). Will default to the same type as the source-type if left blank",
 		},
 		&cli.StringFlag{
 			Name:  "output-type",
@@ -90,7 +90,7 @@ Use deal templates to configure deal parameters - individual deal flags are not 
 		},
 		&cli.StringFlag{
 			Name:  "output-provider",
-			Usage: "Output storage provider",
+			Usage: "Output storage provider. Will default to the same type as the output-type if left blank",
 		},
 
 		// Storage configuration
