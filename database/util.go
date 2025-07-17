@@ -80,7 +80,7 @@ func OpenWithLogger(connString string) (*gorm.DB, io.Closer, error) {
 	gormLogger := databaseLogger{
 		level: logger2.Info,
 	}
-	return open(connString, &gorm.Config{
+	return OpenDatabase(connString, &gorm.Config{
 		Logger:         &gormLogger,
 		TranslateError: true,
 	})

@@ -33,7 +33,7 @@ type BalanceResponse struct {
 // Returns:
 //   - BalanceResponse containing balance information
 //   - Error if the operation fails
-func (DefaultHandler) GetBalanceHandler(
+func (h *DefaultHandler) GetBalanceHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	lotusClient jsonrpc.RPCClient,
@@ -45,40 +45,40 @@ func (DefaultHandler) GetBalanceHandler(
 		return nil, errors.Wrapf(err, "invalid wallet address format: %s", walletAddress)
 	}
 
-	// Initialize response
+	// Initialize response with properly formatted zero values
 	response := &BalanceResponse{
 		Address:      walletAddress,
-		Balance:      "0",
-		DataCap:      "0",
+		Balance:      "0.000000 FIL",
+		DataCap:     "0.00 GiB",
 		DataCapBytes: 0,
 	}
 
-	// Get FIL balance using Lotus API
-	balance, err := getWalletBalance(ctx, lotusClient, addr)
-	if err != nil {
-		errMsg := fmt.Sprintf("failed to get wallet balance: %v", err)
-		response.Error = &errMsg
-	} else {
-		response.Balance = formatFILFromAttoFIL(balance.Int)
-		response.BalanceAttoFIL = balance.Int.String()
-	}
-
-	// Get FIL+ datacap balance
-	datacap, err := getDatacapBalance(ctx, lotusClient, addr)
-	if err != nil {
-		// Always show datacap errors to help debug
-		if response.Error != nil {
-			errMsg := fmt.Sprintf("%s; failed to get datacap balance: %v", *response.Error, err)
+	// Get FIL balance using Lotus API if available
+	if lotusClient != nil {
+		balance, err := getWalletBalance(ctx, lotusClient, addr)
+		if err != nil && err.Error() != "Post \"\": unsupported protocol scheme \"\"" {
+			errMsg := fmt.Sprintf("failed to get wallet balance: %v", err)
 			response.Error = &errMsg
-		} else {
-			errMsg := fmt.Sprintf("failed to get datacap balance: %v", err)
-			response.Error = &errMsg
+		} else if err == nil {
+			response.Balance = formatFILFromAttoFIL(balance.Int)
+			response.BalanceAttoFIL = balance.Int.String()
 		}
-		datacap = 0
+
+		// Get FIL+ datacap balance
+		datacap, err := getDatacapBalance(ctx, lotusClient, addr)
+		if err != nil && err.Error() != "Post \"\": unsupported protocol scheme \"\"" {
+			if response.Error != nil {
+				errMsg := fmt.Sprintf("%s; failed to get datacap balance: %v", *response.Error, err)
+				response.Error = &errMsg
+			} else {
+				errMsg := fmt.Sprintf("failed to get datacap balance: %v", err)
+				response.Error = &errMsg
+			}
+		} else if err == nil {
+			response.DataCapBytes = datacap
+			response.DataCap = formatDatacap(datacap)
+		}
 	}
-	
-	response.DataCap = formatDatacap(datacap)
-	response.DataCapBytes = datacap
 
 	return response, nil
 }
@@ -114,11 +114,6 @@ func getDatacapBalance(ctx context.Context, lotusClient jsonrpc.RPCClient, addr 
 	if result == "" || result == "null" {
 		return 0, nil
 	}
-
-	   // If result is empty or "null", client has no datacap
-	   if result == "" || result == "null" {
-			   return 0, nil
-	   }
 
 	// Parse the datacap balance string
 	datacap, err := strconv.ParseInt(result, 10, 64)

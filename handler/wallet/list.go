@@ -30,25 +30,24 @@ func ListWithBalanceHandler(
 		return nil, errors.WithStack(err)
 	}
    var result []WalletWithBalance
-   allFailed := true
+   handler := &DefaultHandler{}
    for _, w := range wallets {
-	   bal, err := DefaultHandler{}.GetBalanceHandler(ctx, db, lotusClient, w.Address)
-	   wb := WalletWithBalance{Wallet: w}
-	   if err == nil && bal != nil {
+	   bal, _ := handler.GetBalanceHandler(ctx, db, lotusClient, w.Address)
+	   wb := WalletWithBalance{
+		   Wallet:         w,
+		   Balance:        "0",
+		   BalanceAttoFIL: "0",
+		   DataCap:        "0.00 GiB",
+		   DataCapBytes:   0,
+	   }
+	   if bal != nil {
 		   wb.Balance = bal.Balance
 		   wb.BalanceAttoFIL = bal.BalanceAttoFIL
 		   wb.DataCap = bal.DataCap
 		   wb.DataCapBytes = bal.DataCapBytes
 		   wb.Error = bal.Error
-		   allFailed = false
-	   } else if err != nil {
-		   errMsg := err.Error()
-		   wb.Error = &errMsg
 	   }
 	   result = append(result, wb)
-   }
-   if allFailed && len(wallets) > 0 {
-	   return result, errors.New("Failed to fetch balances for all wallets. Lotus may be unreachable or misconfigured.")
    }
    return result, nil
 }

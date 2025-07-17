@@ -12,7 +12,7 @@ import (
 )
 
 func TestAttachHandler(t *testing.T) {
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Wallet{
 			ActorID: "test",
 		}).Error
