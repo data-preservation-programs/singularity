@@ -16,7 +16,7 @@ import (
 type BalanceResponse struct {
 	Address        string  `json:"address"`
 	Balance        string  `json:"balance"`         // FIL balance in FIL units
-	BalanceAttoFIL string  `json:"balanceAttoFIL"`  // Raw balance in attoFIL
+	BalanceAttoFIL string  `json:"balanceAttoFil"`  // Raw balance in attoFIL
 	DataCap        string  `json:"dataCap"`         // FIL+ datacap balance
 	DataCapBytes   int64   `json:"dataCapBytes"`    // Raw datacap in bytes
 	Error          *string `json:"error,omitempty"` // Error message if any

@@ -1299,7 +1299,7 @@ func showBackendsList(c *cli.Context) error {
 func showBackendHelp(c *cli.Context, backendPrefix string) error {
 	backend, exists := storagesystem.BackendMap[backendPrefix]
 	if !exists {
-		return fmt.Errorf("backend '%s' not found. Use --help-backends to see available backends", backendPrefix)
+		return errors.Wrapf(storagesystem.ErrBackendNotFound, "backend '%s' not found. Use --help-backends to see available backends", backendPrefix)
 	}
 
 	isJSON := c.Bool("json")
@@ -1446,7 +1446,7 @@ func showExamples(c *cli.Context) error {
 }
 
 // showHelpJSON outputs help information in JSON format
-func showHelpJSON(c *cli.Context) error {
+func showHelpJSON(_ *cli.Context) error {
 	type FlagInfo struct {
 		Name         string   `json:"name"`
 		Aliases      []string `json:"aliases,omitempty"`
@@ -1484,13 +1484,13 @@ func showHelpJSON(c *cli.Context) error {
 			flagType = "string"
 		case *cli.BoolFlag:
 			aliases = f.Aliases
-			defaultValue = fmt.Sprintf("%v", f.Value)
+			defaultValue = strconv.FormatBool(f.Value)
 			usage = f.Usage
 			category = f.Category
 			flagType = "bool"
 		case *cli.IntFlag:
 			aliases = f.Aliases
-			defaultValue = fmt.Sprintf("%d", f.Value)
+			defaultValue = strconv.Itoa(f.Value)
 			usage = f.Usage
 			category = f.Category
 			flagType = "int"
