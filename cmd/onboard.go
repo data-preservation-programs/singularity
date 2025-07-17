@@ -708,14 +708,6 @@ func getPreparationStatus(ctx context.Context, db *gorm.DB, prep *model.Preparat
 	return status, false, nil
 }
 
-// capitalizeFirst capitalizes the first letter of a string
-func capitalizeFirst(s string) string {
-	if s == "" {
-		return ""
-	}
-	return strings.ToUpper(s[:1]) + s[1:]
-}
-
 // generateDynamicStorageFlags creates CLI flags for all or specific storage backends
 func generateDynamicStorageFlags() []cli.Flag {
 	// Check for environment variable to show all flags
