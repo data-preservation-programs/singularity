@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -57,23 +59,36 @@ It performs the following steps automatically:
 This is the simplest way to onboard data from source to storage deals.
 Use deal templates to configure deal parameters - individual deal flags are not supported.
 
-EXAMPLES:
-  # Basic local data onboarding
-  singularity onboard --name "my-dataset" --source "/path/to/data" --deal-template-id "1"
+COMMON USAGE PATTERNS:
+  • Basic local data onboarding:
+    singularity onboard --name "my-dataset" --source "/path/to/data" --deal-template-id "1"
 
-  # S3 to local with custom output
-  singularity onboard --name "s3-data" \
-    --source "s3://bucket/data" --source-type "s3" \
-    --output "/mnt/storage/cars" \
-    --deal-template-id "template1"
+  • S3 to local with custom output:
+    singularity onboard --name "s3-data" \
+      --source "s3://bucket/data" --source-type "s3" \
+      --output "/mnt/storage/cars" \
+      --deal-template-id "template1"
 
-  # Multiple sources with monitoring
-  singularity onboard --name "multi-source" \
-    --source "/data1" --source "/data2" \
-    --wait-for-completion --max-workers 5 \
-    --deal-template-id "prod-template"
+  • Multiple sources with monitoring:
+    singularity onboard --name "multi-source" \
+      --source "/data1" --source "/data2" \
+      --wait-for-completion --max-workers 5 \
+      --deal-template-id "prod-template"
 
-For backend-specific options, use --help to see all available flags.`,
+  • Cloud-to-cloud transfer:
+    singularity onboard --name "gcs-to-s3" \
+      --source-type "gcs" --source "gs://source-bucket/data" \
+      --output-type "s3" --output "s3://dest-bucket/cars" \
+      --deal-template-id "cloud-template"
+
+GETTING HELP:
+  • Use --help-examples to see more detailed examples
+  • Use --help-backends to list all available storage backends
+  • Use --help-backend=<type> to see options for specific backends (e.g., s3, gcs)
+  • Use --help-all to see all available flags including backend-specific options
+
+NOTE: By default, only common flags and major cloud provider options are shown.
+      This reduces clutter while covering most use cases.`,
 	Flags: []cli.Flag{
 		// Required Options
 		&cli.StringFlag{
@@ -90,28 +105,34 @@ For backend-specific options, use --help to see all available flags.`,
 			Required: true,
 			Category: "Required Options",
 		},
+		&cli.StringFlag{
+			Name:     "deal-template-id",
+			Aliases:  []string{"t"},
+			Usage:    "Deal template ID to use for deal configuration (required when auto-create-deals is enabled)",
+			Category: "Required Options",
+		},
 
 		// Data Source Configuration
 		&cli.StringFlag{
 			Name:     "source-type",
 			Usage:    "Source storage type (local, s3, gcs, azure, etc.)",
 			Value:    "local",
-			Category: "Data Source",
+			Category: "Data Source Configuration",
 		},
 		&cli.StringFlag{
 			Name:     "source-provider",
 			Usage:    "Source storage provider (for s3: aws, minio, wasabi, etc.)",
-			Category: "Data Source",
+			Category: "Data Source Configuration",
 		},
 		&cli.StringFlag{
 			Name:     "source-name",
 			Usage:    "Custom name for source storage (auto-generated if not provided)",
-			Category: "Data Source",
+			Category: "Data Source Configuration",
 		},
 		&cli.StringFlag{
 			Name:     "source-config",
 			Usage:    "Source storage configuration in JSON format (key-value pairs)",
-			Category: "Data Source",
+			Category: "Data Source Configuration",
 		},
 
 		// Data Output Configuration
@@ -119,28 +140,28 @@ For backend-specific options, use --help to see all available flags.`,
 			Name:     "output",
 			Aliases:  []string{"o"},
 			Usage:    "Output path(s) for CAR files (local paths or remote URLs like s3://bucket/path)",
-			Category: "Data Output",
+			Category: "Data Output Configuration",
 		},
 		&cli.StringFlag{
 			Name:     "output-type",
 			Usage:    "Output storage type (local, s3, gcs, azure, etc.)",
 			Value:    "local",
-			Category: "Data Output",
+			Category: "Data Output Configuration",
 		},
 		&cli.StringFlag{
 			Name:     "output-provider",
 			Usage:    "Output storage provider",
-			Category: "Data Output",
+			Category: "Data Output Configuration",
 		},
 		&cli.StringFlag{
 			Name:     "output-name",
 			Usage:    "Custom name for output storage (auto-generated if not provided)",
-			Category: "Data Output",
+			Category: "Data Output Configuration",
 		},
 		&cli.StringFlag{
 			Name:     "output-config",
 			Usage:    "Output storage configuration in JSON format (key-value pairs)",
-			Category: "Data Output",
+			Category: "Data Output Configuration",
 		},
 
 		// Data Preparation
@@ -163,12 +184,6 @@ For backend-specific options, use --help to see all available flags.`,
 			Value:    true,
 			Category: "Deal Configuration",
 		},
-		&cli.StringFlag{
-			Name:     "deal-template-id",
-			Aliases:  []string{"t"},
-			Usage:    "Deal template ID to use for deal configuration (required when auto-create-deals is enabled)",
-			Category: "Deal Configuration",
-		},
 
 		// Worker Management
 		&cli.BoolFlag{
@@ -189,30 +204,57 @@ For backend-specific options, use --help to see all available flags.`,
 		&cli.BoolFlag{
 			Name:     "wait-for-completion",
 			Usage:    "Wait and monitor until all jobs complete",
-			Category: "Monitoring",
+			Category: "Monitoring & Progress",
 		},
 		&cli.DurationFlag{
 			Name:     "timeout",
 			Usage:    "Timeout for waiting for completion (0 = no timeout)",
 			Value:    0,
-			Category: "Monitoring",
+			Category: "Monitoring & Progress",
 		},
 		&cli.BoolFlag{
 			Name:     "json",
 			Usage:    "Output result in JSON format for automation",
-			Category: "Monitoring",
+			Category: "Output & Formatting",
 		},
 
 		// Validation Options
 		&cli.BoolFlag{
 			Name:     "wallet-validation",
 			Usage:    "Enable wallet balance validation",
-			Category: "Validation",
+			Category: "Validation & Security",
 		},
 		&cli.BoolFlag{
 			Name:     "sp-validation",
 			Usage:    "Enable storage provider validation",
-			Category: "Validation",
+			Category: "Validation & Security",
+		},
+
+		// Help Options
+		&cli.BoolFlag{
+			Name:     "help-all",
+			Usage:    "Show all available options including all backend-specific flags",
+			Category: "Help Options",
+		},
+		&cli.BoolFlag{
+			Name:     "help-backends",
+			Usage:    "List all available storage backends",
+			Category: "Help Options",
+		},
+		&cli.StringFlag{
+			Name:     "help-backend",
+			Usage:    "Show options for specific backend (e.g., s3, gcs, local)",
+			Category: "Help Options",
+		},
+		&cli.BoolFlag{
+			Name:     "help-examples",
+			Usage:    "Show common usage examples",
+			Category: "Help Options",
+		},
+		&cli.BoolFlag{
+			Name:     "help-json",
+			Usage:    "Output help in JSON format for machine processing",
+			Category: "Help Options",
 		},
 	},
 }
@@ -227,10 +269,27 @@ func init() {
 
 	// Set the action function
 	OnboardCmd.Action = onboardAction
+
+	// Set the custom help template
+	OnboardCmd.CustomHelpTemplate = getCustomHelpTemplate()
 }
 
 // Action function for the onboard command
 func onboardAction(c *cli.Context) error {
+	// Handle help flags first
+	if c.Bool("help-backends") {
+		return showBackendsList(c)
+	}
+	if c.String("help-backend") != "" {
+		return showBackendHelp(c, c.String("help-backend"))
+	}
+	if c.Bool("help-examples") {
+		return showExamples(c)
+	}
+	if c.Bool("help-json") {
+		return showHelpJSON(c)
+	}
+
 	isJSON := c.Bool("json")
 
 	// Helper function to output JSON error and exit
@@ -657,13 +716,123 @@ func capitalizeFirst(s string) string {
 	return strings.ToUpper(s[:1]) + s[1:]
 }
 
-// generateDynamicStorageFlags creates CLI flags for all supported storage backends
+// generateDynamicStorageFlags creates CLI flags for all or specific storage backends
 func generateDynamicStorageFlags() []cli.Flag {
+	// Check for environment variable to show all flags
+	showAll := os.Getenv("SINGULARITY_SHOW_ALL_FLAGS") == "true"
+	
+	// Default backends to show (local + common cloud providers)
+	defaultBackends := map[string]bool{
+		"local":     true,
+		"s3":        true,
+		"gcs":       true,
+		"azureblob": true,
+	}
+
+	// If --help-all is intended, show all backends
+	if showAll {
+		return generateAllStorageFlags()
+	}
+
+	// Generate flags for default backends only
+	return generateSelectiveStorageFlags(defaultBackends)
+}
+
+// generateAllStorageFlags creates CLI flags for all supported storage backends
+func generateAllStorageFlags() []cli.Flag {
 	var flags []cli.Flag
 	seenFlags := make(map[string]bool)
 
 	// Add flags for each supported backend
 	for _, backend := range storagesystem.Backends {
+		for _, providerOptions := range backend.ProviderOptions {
+			for _, option := range providerOptions.Options {
+				// Convert option name to CLI flag format
+				flagName := strings.ReplaceAll(option.Name, "_", "-")
+
+				// Create flag for each storage type context (source/output)
+				for _, context := range []string{"source", "output"} {
+					fullFlagName := context + "-" + backend.Prefix + "-" + flagName
+
+					// Skip if we've already seen this flag name
+					if seenFlags[fullFlagName] {
+						continue
+					}
+					seenFlags[fullFlagName] = true
+
+					// Create better category names for backend-specific flags
+					var category string
+					if context == "source" {
+						category = fmt.Sprintf("Source Storage (%s)", strings.ToUpper(backend.Prefix))
+					} else {
+						category = fmt.Sprintf("Output Storage (%s)", strings.ToUpper(backend.Prefix))
+					}
+
+					// Clean up the usage text to be more concise
+					usage := strings.Split(option.Help, "\n")[0]
+					if usage == "" {
+						usage = fmt.Sprintf("%s configuration for %s", option.Name, backend.Name)
+					}
+
+					// Create flag based on option type
+					switch (*fs.Option)(&option).Type() {
+					case "bool":
+						flags = append(flags, &cli.BoolFlag{
+							Name:     fullFlagName,
+							Usage:    usage,
+							Category: category,
+						})
+					case "string":
+						flags = append(flags, &cli.StringFlag{
+							Name:     fullFlagName,
+							Usage:    usage,
+							Category: category,
+						})
+					case "int":
+						flags = append(flags, &cli.IntFlag{
+							Name:     fullFlagName,
+							Usage:    usage,
+							Category: category,
+						})
+					case "SizeSuffix":
+						flags = append(flags, &cli.StringFlag{
+							Name:     fullFlagName,
+							Usage:    usage,
+							Category: category,
+						})
+					case "Duration":
+						flags = append(flags, &cli.DurationFlag{
+							Name:     fullFlagName,
+							Usage:    usage,
+							Category: category,
+						})
+					default:
+						flags = append(flags, &cli.StringFlag{
+							Name:     fullFlagName,
+							Usage:    usage,
+							Category: category,
+						})
+					}
+				}
+			}
+		}
+	}
+
+	return flags
+}
+
+// generateSelectiveStorageFlags creates CLI flags for specific storage backends
+func generateSelectiveStorageFlags(allowedBackends map[string]bool) []cli.Flag {
+	var flags []cli.Flag
+	seenFlags := make(map[string]bool)
+
+	// Add flags for allowed backends only
+	for _, backend := range storagesystem.Backends {
+		// Skip if this backend is not in the allowed list
+		if !allowedBackends[backend.Prefix] {
+			continue
+		}
+
 		for _, providerOptions := range backend.ProviderOptions {
 			for _, option := range providerOptions.Options {
 				// Convert option name to CLI flag format
@@ -1078,4 +1247,346 @@ func validateDealTemplateExists(ctx context.Context, db *gorm.DB, templateID str
 	}
 
 	return nil
+}
+
+// showBackendsList displays all available storage backends
+func showBackendsList(c *cli.Context) error {
+	isJSON := c.Bool("json")
+
+	if isJSON {
+		type BackendInfo struct {
+			Name        string   `json:"name"`
+			Prefix      string   `json:"prefix"`
+			Description string   `json:"description"`
+			Providers   []string `json:"providers"`
+		}
+
+		var backends []BackendInfo
+		for _, backend := range storagesystem.Backends {
+			var providers []string
+			for _, provider := range backend.ProviderOptions {
+				providers = append(providers, provider.Provider)
+			}
+			backends = append(backends, BackendInfo{
+				Name:        backend.Name,
+				Prefix:      backend.Prefix,
+				Description: backend.Description,
+				Providers:   providers,
+			})
+		}
+
+		data, err := json.MarshalIndent(backends, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(data))
+		return nil
+	}
+
+	fmt.Println("Available Storage Backends:")
+	fmt.Println("")
+	for _, backend := range storagesystem.Backends {
+		fmt.Printf("  %-20s %s\n", backend.Prefix, backend.Name)
+		if backend.Description != "" {
+			fmt.Printf("  %-20s %s\n", "", backend.Description)
+		}
+		if len(backend.ProviderOptions) > 0 {
+			var providers []string
+			for _, provider := range backend.ProviderOptions {
+				providers = append(providers, provider.Provider)
+			}
+			fmt.Printf("  %-20s Providers: %s\n", "", strings.Join(providers, ", "))
+		}
+		fmt.Println("")
+	}
+	fmt.Println("Use --help-backend=<prefix> to see specific backend options.")
+	return nil
+}
+
+// showBackendHelp displays help for a specific backend
+func showBackendHelp(c *cli.Context, backendPrefix string) error {
+	backend, exists := storagesystem.BackendMap[backendPrefix]
+	if !exists {
+		return fmt.Errorf("backend '%s' not found. Use --help-backends to see available backends", backendPrefix)
+	}
+
+	isJSON := c.Bool("json")
+
+	if isJSON {
+		type OptionInfo struct {
+			Name         string `json:"name"`
+			Type         string `json:"type"`
+			Help         string `json:"help"`
+			Required     bool   `json:"required"`
+			DefaultValue string `json:"default,omitempty"`
+		}
+
+		type ProviderInfo struct {
+			Provider    string       `json:"provider"`
+			Description string       `json:"description"`
+			Options     []OptionInfo `json:"options"`
+		}
+
+		type BackendHelpInfo struct {
+			Name        string         `json:"name"`
+			Prefix      string         `json:"prefix"`
+			Description string         `json:"description"`
+			Providers   []ProviderInfo `json:"providers"`
+		}
+
+		var providers []ProviderInfo
+		for _, provider := range backend.ProviderOptions {
+			var options []OptionInfo
+			for _, option := range provider.Options {
+				options = append(options, OptionInfo{
+					Name:         option.Name,
+					Type:         (*fs.Option)(&option).Type(),
+					Help:         option.Help,
+					Required:     option.Required,
+					DefaultValue: fmt.Sprintf("%v", option.Default),
+				})
+			}
+			providers = append(providers, ProviderInfo{
+				Provider:    provider.Provider,
+				Description: provider.ProviderDescription,
+				Options:     options,
+			})
+		}
+
+		backendHelp := BackendHelpInfo{
+			Name:        backend.Name,
+			Prefix:      backend.Prefix,
+			Description: backend.Description,
+			Providers:   providers,
+		}
+
+		data, err := json.MarshalIndent(backendHelp, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(data))
+		return nil
+	}
+
+	fmt.Printf("Backend: %s (%s)\n", backend.Name, backend.Prefix)
+	if backend.Description != "" {
+		fmt.Printf("Description: %s\n", backend.Description)
+	}
+	fmt.Println("")
+
+	for _, provider := range backend.ProviderOptions {
+		fmt.Printf("Provider: %s\n", provider.Provider)
+		if provider.ProviderDescription != "" {
+			fmt.Printf("  %s\n", provider.ProviderDescription)
+		}
+		fmt.Println("")
+		fmt.Println("  Options:")
+		for _, option := range provider.Options {
+			flagName := strings.ReplaceAll(option.Name, "_", "-")
+			fmt.Printf("    --source-%s-%s, --output-%s-%s\n", backend.Prefix, flagName, backend.Prefix, flagName)
+			if option.Help != "" {
+				fmt.Printf("      %s\n", strings.Split(option.Help, "\n")[0])
+			}
+			if option.Required {
+				fmt.Printf("      (Required)\n")
+			}
+			if option.Default != nil {
+				fmt.Printf("      Default: %v\n", option.Default)
+			}
+			fmt.Println("")
+		}
+	}
+
+	return nil
+}
+
+// showExamples displays common usage examples
+func showExamples(c *cli.Context) error {
+	isJSON := c.Bool("json")
+
+	examples := []map[string]string{
+		{
+			"title":       "Basic local data onboarding",
+			"description": "Onboard local data to local storage with automatic deal creation",
+			"command":     "singularity onboard --name my-dataset --source /path/to/data --deal-template-id 1",
+		},
+		{
+			"title":       "S3 to local storage",
+			"description": "Onboard data from S3 bucket to local storage",
+			"command":     "singularity onboard --name s3-data --source s3://bucket/data --source-type s3 --source-s3-region us-east-1 --deal-template-id template1",
+		},
+		{
+			"title":       "Multiple sources with monitoring",
+			"description": "Onboard from multiple local sources with progress monitoring",
+			"command":     "singularity onboard --name multi-source --source /data1 --source /data2 --wait-for-completion --max-workers 5 --deal-template-id prod-template",
+		},
+		{
+			"title":       "Google Cloud Storage to S3",
+			"description": "Onboard from GCS bucket to S3 output storage",
+			"command":     "singularity onboard --name gcs-to-s3 --source-type gcs --source gs://source-bucket/data --output-type s3 --output s3://dest-bucket/cars --deal-template-id gcs-template",
+		},
+		{
+			"title":       "Custom configuration with JSON",
+			"description": "Use JSON configuration for complex storage setup",
+			"command":     "singularity onboard --name custom-config --source-type s3 --source s3://bucket/data --source-config '{\"access_key_id\":\"AKIAIOSFODNN7EXAMPLE\",\"secret_access_key\":\"secret\"}' --deal-template-id custom-template",
+		},
+	}
+
+	if isJSON {
+		data, err := json.MarshalIndent(examples, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(data))
+		return nil
+	}
+
+	fmt.Println("Common Usage Examples:")
+	fmt.Println("")
+	for i, example := range examples {
+		fmt.Printf("%d. %s\n", i+1, example["title"])
+		fmt.Printf("   %s\n", example["description"])
+		fmt.Printf("   %s\n", example["command"])
+		fmt.Println("")
+	}
+
+	return nil
+}
+
+// showHelpJSON outputs help information in JSON format
+func showHelpJSON(c *cli.Context) error {
+	type FlagInfo struct {
+		Name         string   `json:"name"`
+		Aliases      []string `json:"aliases,omitempty"`
+		Usage        string   `json:"usage"`
+		Category     string   `json:"category"`
+		Required     bool     `json:"required"`
+		DefaultValue string   `json:"default,omitempty"`
+		Type         string   `json:"type"`
+	}
+
+	type HelpInfo struct {
+		Name        string     `json:"name"`
+		Usage       string     `json:"usage"`
+		Description string     `json:"description"`
+		Flags       []FlagInfo `json:"flags"`
+		Backends    []string   `json:"backends"`
+	}
+
+	var flags []FlagInfo
+	for _, flag := range OnboardCmd.Flags {
+		var aliases []string
+		var defaultValue string
+		var usage string
+		var category string
+		flagType := "string"
+		required := false
+
+		switch f := flag.(type) {
+		case *cli.StringFlag:
+			aliases = f.Aliases
+			defaultValue = f.Value
+			usage = f.Usage
+			category = f.Category
+			required = f.Required
+			flagType = "string"
+		case *cli.BoolFlag:
+			aliases = f.Aliases
+			defaultValue = fmt.Sprintf("%v", f.Value)
+			usage = f.Usage
+			category = f.Category
+			flagType = "bool"
+		case *cli.IntFlag:
+			aliases = f.Aliases
+			defaultValue = fmt.Sprintf("%d", f.Value)
+			usage = f.Usage
+			category = f.Category
+			flagType = "int"
+		case *cli.DurationFlag:
+			aliases = f.Aliases
+			defaultValue = f.Value.String()
+			usage = f.Usage
+			category = f.Category
+			flagType = "duration"
+		case *cli.StringSliceFlag:
+			aliases = f.Aliases
+			if f.Value != nil {
+				defaultValue = strings.Join(f.Value.Value(), ",")
+			}
+			usage = f.Usage
+			category = f.Category
+			required = f.Required
+			flagType = "string[]"
+		case *cli.Float64Flag:
+			aliases = f.Aliases
+			defaultValue = fmt.Sprintf("%f", f.Value)
+			usage = f.Usage
+			category = f.Category
+			flagType = "float64"
+		case *cli.PathFlag:
+			aliases = f.Aliases
+			defaultValue = f.Value
+			usage = f.Usage
+			category = f.Category
+			flagType = "path"
+		}
+
+		flags = append(flags, FlagInfo{
+			Name:         flag.Names()[0],
+			Aliases:      aliases,
+			Usage:        usage,
+			Category:     category,
+			Required:     required,
+			DefaultValue: defaultValue,
+			Type:         flagType,
+		})
+	}
+
+	var backends []string
+	for _, backend := range storagesystem.Backends {
+		backends = append(backends, backend.Prefix)
+	}
+	sort.Strings(backends)
+
+	helpInfo := HelpInfo{
+		Name:        OnboardCmd.Name,
+		Usage:       OnboardCmd.Usage,
+		Description: OnboardCmd.Description,
+		Flags:       flags,
+		Backends:    backends,
+	}
+
+	data, err := json.MarshalIndent(helpInfo, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(data))
+	return nil
+}
+
+// getCustomHelpTemplate returns a custom help template that can conditionally show flags
+func getCustomHelpTemplate() string {
+	return `NAME:
+   {{.HelpName}} - {{.Usage}}
+
+USAGE:
+   {{.HelpName}} [command options] [arguments...]
+
+DESCRIPTION:
+   {{.Description}}
+
+OPTIONS:
+{{range .VisibleFlags}}   {{.}}
+{{end}}
+
+HELP OPTIONS:
+   --help-all             Show all available options including all backend-specific flags
+   --help-backends        List all available storage backends
+   --help-backend=<type>  Show options for specific backend (e.g., s3, gcs, local)
+   --help-examples        Show common usage examples
+   --help-json            Output help in JSON format for machine processing
+
+NOTE: By default, only common flags and flags for 'local' storage are shown.
+      Use --help-all to see all backend-specific flags, or --help-backend=<type> for specific backends.
+`
 }
