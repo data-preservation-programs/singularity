@@ -55,126 +55,164 @@ It performs the following steps automatically:
 5. Optionally starts managed workers to process jobs
 
 This is the simplest way to onboard data from source to storage deals.
-Use deal templates to configure deal parameters - individual deal flags are not supported.`,
+Use deal templates to configure deal parameters - individual deal flags are not supported.
+
+EXAMPLES:
+  # Basic local data onboarding
+  singularity onboard --name "my-dataset" --source "/path/to/data" --deal-template-id "1"
+
+  # S3 to local with custom output
+  singularity onboard --name "s3-data" \
+    --source "s3://bucket/data" --source-type "s3" \
+    --output "/mnt/storage/cars" \
+    --deal-template-id "template1"
+
+  # Multiple sources with monitoring
+  singularity onboard --name "multi-source" \
+    --source "/data1" --source "/data2" \
+    --wait-for-completion --max-workers 5 \
+    --deal-template-id "prod-template"
+
+For backend-specific options, use --help to see all available flags.`,
 	Flags: []cli.Flag{
-		// Data source flags
+		// Required Options
 		&cli.StringFlag{
 			Name:     "name",
+			Aliases:  []string{"n"},
 			Usage:    "Name for the preparation",
 			Required: true,
+			Category: "Required Options",
 		},
 		&cli.StringSliceFlag{
 			Name:     "source",
+			Aliases:  []string{"s"},
 			Usage:    "Source path(s) to onboard (local paths or remote URLs like s3://bucket/path)",
 			Required: true,
-		},
-		&cli.StringSliceFlag{
-			Name:  "output",
-			Usage: "Output path(s) for CAR files (local paths or remote URLs like s3://bucket/path)",
+			Category: "Required Options",
 		},
 
-		// Remote storage configuration
+		// Data Source Configuration
 		&cli.StringFlag{
-			Name:  "source-type",
-			Usage: "Source storage type (local, s3, gcs, azure, etc.)",
-			Value: "local",
+			Name:     "source-type",
+			Usage:    "Source storage type (local, s3, gcs, azure, etc.)",
+			Value:    "local",
+			Category: "Data Source",
 		},
 		&cli.StringFlag{
-			Name:  "source-provider",
-			Usage: "Source storage provider (for s3: aws, minio, wasabi, etc.). Will default to the same type as the source-type if left blank",
+			Name:     "source-provider",
+			Usage:    "Source storage provider (for s3: aws, minio, wasabi, etc.)",
+			Category: "Data Source",
 		},
-		&cli.StringFlag{
-			Name:  "output-type",
-			Usage: "Output storage type (local, s3, gcs, azure, etc.)",
-			Value: "local",
-		},
-		&cli.StringFlag{
-			Name:  "output-provider",
-			Usage: "Output storage provider. Will default to the same type as the output-type if left blank",
-		},
-
-		// Storage configuration
 		&cli.StringFlag{
 			Name:     "source-name",
 			Usage:    "Custom name for source storage (auto-generated if not provided)",
-			Category: "Storage Configuration",
-		},
-		&cli.StringFlag{
-			Name:     "output-name",
-			Usage:    "Custom name for output storage (auto-generated if not provided)",
-			Category: "Storage Configuration",
+			Category: "Data Source",
 		},
 		&cli.StringFlag{
 			Name:     "source-config",
 			Usage:    "Source storage configuration in JSON format (key-value pairs)",
-			Category: "Storage Configuration",
+			Category: "Data Source",
+		},
+
+		// Data Output Configuration
+		&cli.StringSliceFlag{
+			Name:     "output",
+			Aliases:  []string{"o"},
+			Usage:    "Output path(s) for CAR files (local paths or remote URLs like s3://bucket/path)",
+			Category: "Data Output",
+		},
+		&cli.StringFlag{
+			Name:     "output-type",
+			Usage:    "Output storage type (local, s3, gcs, azure, etc.)",
+			Value:    "local",
+			Category: "Data Output",
+		},
+		&cli.StringFlag{
+			Name:     "output-provider",
+			Usage:    "Output storage provider",
+			Category: "Data Output",
+		},
+		&cli.StringFlag{
+			Name:     "output-name",
+			Usage:    "Custom name for output storage (auto-generated if not provided)",
+			Category: "Data Output",
 		},
 		&cli.StringFlag{
 			Name:     "output-config",
 			Usage:    "Output storage configuration in JSON format (key-value pairs)",
-			Category: "Storage Configuration",
+			Category: "Data Output",
 		},
 
-		// Preparation settings
+		// Data Preparation
 		&cli.StringFlag{
-			Name:  "max-size",
-			Usage: "Maximum size of a single CAR file",
-			Value: "31.5GiB",
+			Name:     "max-size",
+			Usage:    "Maximum size of a single CAR file",
+			Value:    "31.5GiB",
+			Category: "Data Preparation",
 		},
 		&cli.BoolFlag{
-			Name:  "no-dag",
-			Usage: "Disable maintaining folder DAG structure",
+			Name:     "no-dag",
+			Usage:    "Disable maintaining folder DAG structure",
+			Category: "Data Preparation",
 		},
 
-		// Deal configuration
+		// Deal Configuration
 		&cli.BoolFlag{
-			Name:  "auto-create-deals",
-			Usage: "Enable automatic deal creation after preparation completion",
-			Value: true,
+			Name:     "auto-create-deals",
+			Usage:    "Enable automatic deal creation after preparation completion",
+			Value:    true,
+			Category: "Deal Configuration",
 		},
 		&cli.StringFlag{
 			Name:     "deal-template-id",
-			Usage:    "Deal template ID to use for deal configuration (required when auto-create-deals is enabled). Individual deal flags are not supported - use templates instead.",
-			Category: "Deal Settings",
+			Aliases:  []string{"t"},
+			Usage:    "Deal template ID to use for deal configuration (required when auto-create-deals is enabled)",
+			Category: "Deal Configuration",
 		},
 
-		// Worker management
+		// Worker Management
 		&cli.BoolFlag{
-			Name:  "start-workers",
-			Usage: "Start managed workers to process jobs automatically",
-			Value: true,
+			Name:     "start-workers",
+			Usage:    "Start managed workers to process jobs automatically",
+			Value:    true,
+			Category: "Worker Management",
 		},
 		&cli.IntFlag{
-			Name:  "max-workers",
-			Usage: "Maximum number of workers to run",
-			Value: 3,
+			Name:     "max-workers",
+			Aliases:  []string{"w"},
+			Usage:    "Maximum number of workers to run",
+			Value:    3,
+			Category: "Worker Management",
 		},
 
-		// Progress monitoring
+		// Monitoring & Progress
 		&cli.BoolFlag{
-			Name:  "wait-for-completion",
-			Usage: "Wait and monitor until all jobs complete",
+			Name:     "wait-for-completion",
+			Usage:    "Wait and monitor until all jobs complete",
+			Category: "Monitoring",
 		},
 		&cli.DurationFlag{
-			Name:  "timeout",
-			Usage: "Timeout for waiting for completion (0 = no timeout)",
-			Value: 0,
+			Name:     "timeout",
+			Usage:    "Timeout for waiting for completion (0 = no timeout)",
+			Value:    0,
+			Category: "Monitoring",
+		},
+		&cli.BoolFlag{
+			Name:     "json",
+			Usage:    "Output result in JSON format for automation",
+			Category: "Monitoring",
 		},
 
-		// Validation
+		// Validation Options
 		&cli.BoolFlag{
-			Name:  "wallet-validation",
-			Usage: "Enable wallet balance validation",
+			Name:     "wallet-validation",
+			Usage:    "Enable wallet balance validation",
+			Category: "Validation",
 		},
 		&cli.BoolFlag{
-			Name:  "sp-validation",
-			Usage: "Enable storage provider validation",
-		},
-
-		// Output format
-		&cli.BoolFlag{
-			Name:  "json",
-			Usage: "Output result in JSON format for automation",
+			Name:     "sp-validation",
+			Usage:    "Enable storage provider validation",
+			Category: "Validation",
 		},
 	},
 }
@@ -641,43 +679,57 @@ func generateDynamicStorageFlags() []cli.Flag {
 					}
 					seenFlags[fullFlagName] = true
 
+					// Create better category names for backend-specific flags
+					var category string
+					if context == "source" {
+						category = fmt.Sprintf("Source Storage (%s)", strings.ToUpper(backend.Prefix))
+					} else {
+						category = fmt.Sprintf("Output Storage (%s)", strings.ToUpper(backend.Prefix))
+					}
+
+					// Clean up the usage text to be more concise
+					usage := strings.Split(option.Help, "\n")[0]
+					if usage == "" {
+						usage = fmt.Sprintf("%s configuration for %s", option.Name, backend.Name)
+					}
+
 					// Create flag based on option type
 					switch (*fs.Option)(&option).Type() {
 					case "bool":
 						flags = append(flags, &cli.BoolFlag{
 							Name:     fullFlagName,
-							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+							Usage:    usage,
+							Category: category,
 						})
 					case "string":
 						flags = append(flags, &cli.StringFlag{
 							Name:     fullFlagName,
-							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+							Usage:    usage,
+							Category: category,
 						})
 					case "int":
 						flags = append(flags, &cli.IntFlag{
 							Name:     fullFlagName,
-							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+							Usage:    usage,
+							Category: category,
 						})
 					case "SizeSuffix":
 						flags = append(flags, &cli.StringFlag{
 							Name:     fullFlagName,
-							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+							Usage:    usage,
+							Category: category,
 						})
 					case "Duration":
 						flags = append(flags, &cli.DurationFlag{
 							Name:     fullFlagName,
-							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+							Usage:    usage,
+							Category: category,
 						})
 					default:
 						flags = append(flags, &cli.StringFlag{
 							Name:     fullFlagName,
-							Usage:    fmt.Sprintf("%s (%s %s)", option.Help, context, backend.Prefix),
-							Category: fmt.Sprintf("%s %s Storage", capitalizeFirst(context), strings.ToUpper(backend.Prefix)),
+							Usage:    usage,
+							Category: category,
 						})
 					}
 				}
