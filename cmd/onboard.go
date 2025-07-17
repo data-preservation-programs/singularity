@@ -720,7 +720,7 @@ func capitalizeFirst(s string) string {
 func generateDynamicStorageFlags() []cli.Flag {
 	// Check for environment variable to show all flags
 	showAll := os.Getenv("SINGULARITY_SHOW_ALL_FLAGS") == "true"
-	
+
 	// Default backends to show (local + common cloud providers)
 	defaultBackends := map[string]bool{
 		"local":     true,
