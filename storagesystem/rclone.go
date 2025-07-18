@@ -26,6 +26,7 @@ var (
 	ErrGetUsageNotSupported = errors.New("The backend does not support getting usage quota")
 	ErrBackendNotSupported  = errors.New("This backend is not supported")
 	ErrMoveNotSupported     = errors.New("The backend does not support moving files")
+	ErrBackendNotFound      = errors.New("backend not found")
 )
 
 type RCloneHandler struct {
