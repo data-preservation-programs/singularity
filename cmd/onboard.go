@@ -20,6 +20,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/job"
 	storageHandlers "github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/service/errorlog"
 	"github.com/data-preservation-programs/singularity/service/workermanager"
 	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/storagesystem"
@@ -338,7 +339,20 @@ func onboardAction(c *cli.Context) error {
 	}
 	defer func() { _ = closer.Close() }()
 
+	// Initialize error logging
+	errorlog.Init(db)
+
 	ctx := c.Context
+
+	// Log onboarding start
+	errorlog.LogOnboardEvent(model.ErrorLevelInfo, "", "onboard_started", 
+		fmt.Sprintf("Onboarding started for preparation: %s", c.String("name")), nil, 
+		map[string]interface{}{
+			"sources": c.StringSlice("source"),
+			"outputs": c.StringSlice("output"),
+			"auto_deals": c.Bool("auto-create-deals"),
+			"deal_template": c.String("deal-template-id"),
+		})
 
 	// Validate deal template exists if specified
 	if c.Bool("auto-create-deals") {
@@ -357,8 +371,23 @@ func onboardAction(c *cli.Context) error {
 	}
 	prep, err := createPreparationForOnboarding(ctx, db, c)
 	if err != nil {
+		errorlog.LogOnboardEvent(model.ErrorLevelError, "", "preparation_creation_failed", 
+			"Failed to create preparation during onboarding", err, 
+			map[string]interface{}{
+				"preparation_name": c.String("name"),
+			})
 		return outputJSONError("failed to create preparation", err)
 	}
+	
+	// Log successful preparation creation
+	prepIDStr := strconv.FormatUint(uint64(prep.ID), 10)
+	errorlog.LogOnboardEvent(model.ErrorLevelInfo, prepIDStr, "preparation_created", 
+		fmt.Sprintf("Preparation created successfully: %s", prep.Name), nil, 
+		map[string]interface{}{
+			"preparation_id": prep.ID,
+			"preparation_name": prep.Name,
+		})
+	
 	if !isJSON {
 		fmt.Printf("✓ Created preparation: %s (ID: %d)\n", prep.Name, prep.ID)
 	}
