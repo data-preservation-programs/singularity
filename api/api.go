@@ -20,6 +20,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/handler/dealtemplate"
+	"github.com/data-preservation-programs/singularity/handler/errorlog"
 	"github.com/data-preservation-programs/singularity/handler/file"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/handler/job"
@@ -32,6 +33,7 @@ import (
 	"github.com/data-preservation-programs/singularity/retriever/endpointfinder"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
+	errorLogService "github.com/data-preservation-programs/singularity/service/errorlog"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/lassie/pkg/lassie"
 	logging "github.com/ipfs/go-log/v2"
@@ -62,6 +64,7 @@ type Server struct {
 	scheduleHandler     schedule.Handler
 	stateChangeHandler  statechange.Handler
 	dealtemplateHandler dealtemplate.Handler
+	errorlogHandler     errorlog.Handler
 }
 
 func Run(c *cli.Context) error {
@@ -121,6 +124,10 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 		endpointfinder.WithErrorLruSize(128),
 		endpointfinder.WithErrorLruTimeout(time.Minute*5),
 	)
+	
+	// Initialize error logging service
+	errorLogService.Init(db)
+	
 	return &Server{
 		db:          db,
 		host:        h,
@@ -144,6 +151,7 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 		scheduleHandler:     &schedule.DefaultHandler{},
 		stateChangeHandler:  &statechange.DefaultHandler{},
 		dealtemplateHandler: &dealtemplate.DefaultHandler{},
+		errorlogHandler:     &errorlog.DefaultHandler{},
 	}, nil
 }
 
@@ -575,4 +583,7 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/file/:id/prepare_to_pack", s.toEchoHandler(s.fileHandler.PrepareToPackFileHandler))
 	e.GET("/api/file/:id/retrieve", s.retrieveFile)
 	e.POST("/api/preparation/:id/source/:name/file", s.toEchoHandler(s.fileHandler.PushFileHandler))
+
+	// Error Logs
+	e.GET("/api/errors", s.toEchoHandler(s.errorlogHandler.ListErrorLogsHandler))
 }
