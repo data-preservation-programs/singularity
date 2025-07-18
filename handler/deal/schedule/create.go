@@ -93,20 +93,20 @@ func (DefaultHandler) CreateHandler(
 	var preparation model.Preparation
 	err := preparation.FindByIDOrName(db, request.Preparation, "Wallets")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		errorlog.LogDealScheduleEvent(model.ErrorLevelError, "", "schedule_preparation_not_found", 
-			"Preparation not found during schedule creation", err, 
+		errorlog.LogDealScheduleEvent(model.ErrorLevelError, "", "schedule_preparation_not_found",
+			"Preparation not found during schedule creation", err,
 			map[string]interface{}{
 				"preparation": request.Preparation,
-				"provider": request.Provider,
+				"provider":    request.Provider,
 			})
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", request.Preparation)
 	}
 	if err != nil {
-		errorlog.LogDealScheduleEvent(model.ErrorLevelError, "", "schedule_preparation_lookup_failed", 
-			"Failed to lookup preparation during schedule creation", err, 
+		errorlog.LogDealScheduleEvent(model.ErrorLevelError, "", "schedule_preparation_lookup_failed",
+			"Failed to lookup preparation during schedule creation", err,
 			map[string]interface{}{
 				"preparation": request.Preparation,
-				"provider": request.Provider,
+				"provider":    request.Provider,
 			})
 		return nil, errors.WithStack(err)
 	}
@@ -212,30 +212,30 @@ func (DefaultHandler) CreateHandler(
 	if err := database.DoRetry(ctx, func() error {
 		return db.Create(&schedule).Error
 	}); err != nil {
-		errorlog.LogDealScheduleEvent(model.ErrorLevelError, "", "schedule_creation_failed", 
-			"Failed to create deal schedule", err, 
+		errorlog.LogDealScheduleEvent(model.ErrorLevelError, "", "schedule_creation_failed",
+			"Failed to create deal schedule", err,
 			map[string]interface{}{
-				"preparation_id": preparation.ID,
+				"preparation_id":   preparation.ID,
 				"preparation_name": preparation.Name,
-				"provider": request.Provider,
-				"verified": request.Verified,
-				"total_deals": request.TotalDealNumber,
+				"provider":         request.Provider,
+				"verified":         request.Verified,
+				"total_deals":      request.TotalDealNumber,
 			})
 		return nil, errors.WithStack(err)
 	}
 
 	// Log successful schedule creation
 	scheduleIDStr := strconv.FormatUint(uint64(schedule.ID), 10)
-	errorlog.LogDealScheduleEvent(model.ErrorLevelInfo, scheduleIDStr, "schedule_created", 
-		"Deal schedule created successfully", nil, 
+	errorlog.LogDealScheduleEvent(model.ErrorLevelInfo, scheduleIDStr, "schedule_created",
+		"Deal schedule created successfully", nil,
 		map[string]interface{}{
-			"schedule_id": schedule.ID,
-			"preparation_id": preparation.ID,
+			"schedule_id":      schedule.ID,
+			"preparation_id":   preparation.ID,
 			"preparation_name": preparation.Name,
-			"provider": request.Provider,
-			"verified": request.Verified,
-			"total_deals": request.TotalDealNumber,
-			"cron_schedule": request.ScheduleCron,
+			"provider":         request.Provider,
+			"verified":         request.Verified,
+			"total_deals":      request.TotalDealNumber,
+			"cron_schedule":    request.ScheduleCron,
 		})
 
 	return &schedule, nil

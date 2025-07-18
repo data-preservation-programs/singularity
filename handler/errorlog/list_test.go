@@ -13,7 +13,7 @@ import (
 
 func TestDefaultHandler_ListErrorLogsHandler(t *testing.T) {
 	db := testutil.TestDB(t)
-	
+
 	// Initialize error logging
 	errorlog.Init(db)
 	defer errorlog.Default.Stop()

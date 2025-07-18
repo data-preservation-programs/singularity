@@ -111,18 +111,18 @@ var ListCmd = &cli.Command{
 
 		// Create response with pagination info
 		response := struct {
-			ErrorLogs    []model.ErrorLog `json:"errorLogs"`
-			Total        int64            `json:"total"`
-			Limit        int              `json:"limit"`
-			Offset       int              `json:"offset"`
-			HasMore      bool             `json:"hasMore"`
+			ErrorLogs     []model.ErrorLog       `json:"errorLogs"`
+			Total         int64                  `json:"total"`
+			Limit         int                    `json:"limit"`
+			Offset        int                    `json:"offset"`
+			HasMore       bool                   `json:"hasMore"`
 			FilterSummary map[string]interface{} `json:"filterSummary,omitempty"`
 		}{
-			ErrorLogs:    logs,
-			Total:        total,
-			Limit:        filters.Limit,
-			Offset:       filters.Offset,
-			HasMore:      int64(filters.Offset+len(logs)) < total,
+			ErrorLogs: logs,
+			Total:     total,
+			Limit:     filters.Limit,
+			Offset:    filters.Offset,
+			HasMore:   int64(filters.Offset+len(logs)) < total,
 		}
 
 		// Add filter summary if verbose mode is enabled

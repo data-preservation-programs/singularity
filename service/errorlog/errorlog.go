@@ -58,7 +58,7 @@ func New(db *gorm.DB) *ErrorLogger {
 // Start begins processing log entries in a background goroutine
 func (el *ErrorLogger) Start() {
 	defer close(el.doneChan)
-	
+
 	for {
 		select {
 		case entry := <-el.logChan:
@@ -252,15 +252,15 @@ func LogDealScheduleEvent(level model.ErrorLevel, scheduleID, eventType, message
 
 // QueryFilters represents filtering options for querying error logs
 type QueryFilters struct {
-	EntityType string             `form:"entity_type" query:"entity_type"`
-	EntityID   string             `form:"entity_id" query:"entity_id"`
-	Component  string             `form:"component" query:"component"`
-	Level      model.ErrorLevel   `form:"level" query:"level"`
-	EventType  string             `form:"event_type" query:"event_type"`
-	StartTime  *time.Time         `form:"start_time" query:"start_time"`
-	EndTime    *time.Time         `form:"end_time" query:"end_time"`
-	Limit      int                `form:"limit" query:"limit"`
-	Offset     int                `form:"offset" query:"offset"`
+	EntityType string           `form:"entity_type" query:"entity_type"`
+	EntityID   string           `form:"entity_id" query:"entity_id"`
+	Component  string           `form:"component" query:"component"`
+	Level      model.ErrorLevel `form:"level" query:"level"`
+	EventType  string           `form:"event_type" query:"event_type"`
+	StartTime  *time.Time       `form:"start_time" query:"start_time"`
+	EndTime    *time.Time       `form:"end_time" query:"end_time"`
+	Limit      int              `form:"limit" query:"limit"`
+	Offset     int              `form:"offset" query:"offset"`
 }
 
 // QueryErrorLogs queries error logs with filtering and pagination
