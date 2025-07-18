@@ -115,6 +115,7 @@ func getDatacapBalance(ctx context.Context, lotusClient jsonrpc.RPCClient, addr 
 		return 0, nil
 	}
 
+
 	// If result is empty or "null", client has no datacap
 	if result == "" || result == "null" {
 		return 0, nil
