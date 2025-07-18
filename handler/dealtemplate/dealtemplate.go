@@ -14,10 +14,6 @@ import (
 
 var logger = log.Logger("dealtemplate")
 
-type Handler struct{}
-
-var Default = &Handler{}
-
 // CreateRequest represents the request to create a deal template
 type CreateRequest struct {
 	Name                 string            `json:"name"`
@@ -53,7 +49,7 @@ type CreateRequest struct {
 }
 
 // CreateHandler creates a new deal template
-func (h *Handler) CreateHandler(ctx context.Context, db *gorm.DB, request CreateRequest) (*model.DealTemplate, error) {
+func (DefaultHandler) CreateHandler(ctx context.Context, db *gorm.DB, request CreateRequest) (*model.DealTemplate, error) {
 	db = db.WithContext(ctx)
 
 	// Check if template with the same name already exists
@@ -67,7 +63,7 @@ func (h *Handler) CreateHandler(ctx context.Context, db *gorm.DB, request Create
 	}
 
 	// Validate and deduplicate piece CIDs
-	validatedPieceCIDs, err := h.validateAndDeduplicatePieceCIDs(request.DealAllowedPieceCIDs)
+	validatedPieceCIDs, err := DefaultHandler{}.validateAndDeduplicatePieceCIDs(request.DealAllowedPieceCIDs)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -117,7 +113,7 @@ func (h *Handler) CreateHandler(ctx context.Context, db *gorm.DB, request Create
 }
 
 // ListHandler lists all deal templates
-func (h *Handler) ListHandler(ctx context.Context, db *gorm.DB) ([]model.DealTemplate, error) {
+func (DefaultHandler) ListHandler(ctx context.Context, db *gorm.DB) ([]model.DealTemplate, error) {
 	db = db.WithContext(ctx)
 
 	var templates []model.DealTemplate
@@ -130,7 +126,7 @@ func (h *Handler) ListHandler(ctx context.Context, db *gorm.DB) ([]model.DealTem
 }
 
 // GetHandler gets a deal template by ID or name
-func (h *Handler) GetHandler(ctx context.Context, db *gorm.DB, idOrName string) (*model.DealTemplate, error) {
+func (DefaultHandler) GetHandler(ctx context.Context, db *gorm.DB, idOrName string) (*model.DealTemplate, error) {
 	db = db.WithContext(ctx)
 
 	var template model.DealTemplate
@@ -177,7 +173,7 @@ type UpdateRequest struct {
 }
 
 // UpdateHandler updates a deal template
-func (h *Handler) UpdateHandler(ctx context.Context, db *gorm.DB, idOrName string, request UpdateRequest) (*model.DealTemplate, error) {
+func (DefaultHandler) UpdateHandler(ctx context.Context, db *gorm.DB, idOrName string, request UpdateRequest) (*model.DealTemplate, error) {
 	db = db.WithContext(ctx)
 
 	var template model.DealTemplate
@@ -235,7 +231,7 @@ func (h *Handler) UpdateHandler(ctx context.Context, db *gorm.DB, idOrName strin
 	}
 	if request.DealAllowedPieceCIDs != nil {
 		// Validate and deduplicate piece CIDs
-		validatedPieceCIDs, err := h.validateAndDeduplicatePieceCIDs(*request.DealAllowedPieceCIDs)
+		validatedPieceCIDs, err := DefaultHandler{}.validateAndDeduplicatePieceCIDs(*request.DealAllowedPieceCIDs)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
@@ -291,7 +287,7 @@ func (h *Handler) UpdateHandler(ctx context.Context, db *gorm.DB, idOrName strin
 }
 
 // DeleteHandler deletes a deal template
-func (h *Handler) DeleteHandler(ctx context.Context, db *gorm.DB, idOrName string) error {
+func (DefaultHandler) DeleteHandler(ctx context.Context, db *gorm.DB, idOrName string) error {
 	db = db.WithContext(ctx)
 
 	var template model.DealTemplate
@@ -311,7 +307,7 @@ func (h *Handler) DeleteHandler(ctx context.Context, db *gorm.DB, idOrName strin
 // ApplyTemplateToPreparation applies deal template parameters to a preparation.
 // Preparation fields take precedence. Template values are only applied to fields that are unset
 // (i.e. zero-value: 0, false, "", or nil). This ensures user-specified values are not overridden.
-func (h *Handler) ApplyTemplateToPreparation(template *model.DealTemplate, prep *model.Preparation) {
+func (DefaultHandler) ApplyTemplateToPreparation(template *model.DealTemplate, prep *model.Preparation) {
 	if template == nil {
 		logger.Debug("No template provided, skipping template application")
 		return
@@ -327,7 +323,7 @@ func (h *Handler) ApplyTemplateToPreparation(template *model.DealTemplate, prep 
 }
 
 // validateAndDeduplicatePieceCIDs validates piece CIDs and removes duplicates
-func (h *Handler) validateAndDeduplicatePieceCIDs(pieceCIDs model.StringSlice) (model.StringSlice, error) {
+func (DefaultHandler) validateAndDeduplicatePieceCIDs(pieceCIDs model.StringSlice) (model.StringSlice, error) {
 	if len(pieceCIDs) == 0 {
 		return pieceCIDs, nil
 	}

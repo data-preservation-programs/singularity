@@ -13,7 +13,7 @@ import (
 
 // TestValidateAndDeduplicatePieceCIDs tests the piece CID validation and deduplication logic
 func TestValidateAndDeduplicatePieceCIDs(t *testing.T) {
-	handler := &Handler{}
+	handler := &DefaultHandler{}
 
 	tests := []struct {
 		name          string
@@ -100,7 +100,7 @@ func TestValidateAndDeduplicatePieceCIDs(t *testing.T) {
 // TestCreateHandler tests the deal template creation functionality
 func TestCreateHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		handler := &Handler{}
+		handler := &DefaultHandler{}
 
 		t.Run("successful creation", func(t *testing.T) {
 			req := CreateRequest{
@@ -216,7 +216,7 @@ func TestCreateHandler(t *testing.T) {
 // TestListHandler tests the deal template listing functionality
 func TestListHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		handler := &Handler{}
+		handler := &DefaultHandler{}
 
 		t.Run("empty list", func(t *testing.T) {
 			templates, err := handler.ListHandler(ctx, db)
@@ -248,7 +248,7 @@ func TestListHandler(t *testing.T) {
 // TestGetHandler tests the deal template retrieval functionality
 func TestGetHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		handler := &Handler{}
+		handler := &DefaultHandler{}
 
 		// Create a test template
 		req := CreateRequest{
@@ -285,7 +285,7 @@ func TestGetHandler(t *testing.T) {
 // TestUpdateHandler tests the deal template update functionality
 func TestUpdateHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		handler := &Handler{}
+		handler := &DefaultHandler{}
 
 		// Create a test template
 		req := CreateRequest{
@@ -441,7 +441,7 @@ func TestUpdateHandler(t *testing.T) {
 // TestDeleteHandler tests the deal template deletion functionality
 func TestDeleteHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		handler := &Handler{}
+		handler := &DefaultHandler{}
 
 		// Create a test template
 		req := CreateRequest{
@@ -469,7 +469,7 @@ func TestDeleteHandler(t *testing.T) {
 
 // TestApplyTemplateToPreparation tests the template application logic
 func TestApplyTemplateToPreparation(t *testing.T) {
-	handler := &Handler{}
+	handler := &DefaultHandler{}
 
 	t.Run("apply template to preparation", func(t *testing.T) {
 		template := &model.DealTemplate{

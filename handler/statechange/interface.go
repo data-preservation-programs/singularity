@@ -13,10 +13,10 @@ import (
 type Handler interface {
 	// GetDealStateChangesHandler retrieves state changes for a specific deal
 	GetDealStateChangesHandler(ctx context.Context, db *gorm.DB, dealID model.DealID) ([]model.DealStateChange, error)
-	
+
 	// ListStateChangesHandler retrieves state changes with filtering and pagination
 	ListStateChangesHandler(ctx context.Context, db *gorm.DB, query model.DealStateChangeQuery) (StateChangeResponse, error)
-	
+
 	// GetStateChangeStatsHandler returns statistics about state changes
 	GetStateChangeStatsHandler(ctx context.Context, db *gorm.DB) (map[string]interface{}, error)
 }
