@@ -22,6 +22,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/file"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/handler/job"
+	"github.com/data-preservation-programs/singularity/handler/statechange"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
@@ -43,21 +44,22 @@ import (
 )
 
 type Server struct {
-	db              *gorm.DB
-	listener        net.Listener
-	lotusClient     jsonrpc.RPCClient
-	dealMaker       replication.DealMaker
-	closer          io.Closer
-	host            host.Host
-	retriever       *retriever.Retriever
-	adminHandler    admin.Handler
-	storageHandler  storage.Handler
-	dataprepHandler dataprep.Handler
-	dealHandler     deal.Handler
-	walletHandler   wallet.Handler
-	fileHandler     file.Handler
-	jobHandler      job.Handler
-	scheduleHandler schedule.Handler
+	db                 *gorm.DB
+	listener           net.Listener
+	lotusClient        jsonrpc.RPCClient
+	dealMaker          replication.DealMaker
+	closer             io.Closer
+	host               host.Host
+	retriever          *retriever.Retriever
+	adminHandler       admin.Handler
+	storageHandler     storage.Handler
+	dataprepHandler    dataprep.Handler
+	dealHandler        deal.Handler
+	walletHandler      wallet.Handler
+	fileHandler        file.Handler
+	jobHandler         job.Handler
+	scheduleHandler    schedule.Handler
+	stateChangeHandler statechange.Handler
 }
 
 func Run(c *cli.Context) error {
@@ -128,16 +130,17 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 			time.Hour,
 			time.Minute*5,
 		),
-		retriever:       retriever.NewRetriever(lassie, endpointFinder),
-		closer:          closer,
-		adminHandler:    &admin.DefaultHandler{},
-		storageHandler:  &storage.DefaultHandler{},
-		dataprepHandler: &dataprep.DefaultHandler{},
-		dealHandler:     &deal.DefaultHandler{},
-		walletHandler:   &wallet.DefaultHandler{},
-		fileHandler:     &file.DefaultHandler{},
-		jobHandler:      &job.DefaultHandler{},
-		scheduleHandler: &schedule.DefaultHandler{},
+		retriever:          retriever.NewRetriever(lassie, endpointFinder),
+		closer:             closer,
+		adminHandler:       &admin.DefaultHandler{},
+		storageHandler:     &storage.DefaultHandler{},
+		dataprepHandler:    &dataprep.DefaultHandler{},
+		dealHandler:        &deal.DefaultHandler{},
+		walletHandler:      &wallet.DefaultHandler{},
+		fileHandler:        &file.DefaultHandler{},
+		jobHandler:         &job.DefaultHandler{},
+		scheduleHandler:    &schedule.DefaultHandler{},
+		stateChangeHandler: &statechange.DefaultHandler{},
 	}, nil
 }
 
@@ -550,6 +553,11 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 
 	// Deal
 	e.POST("/api/deal", s.toEchoHandler(s.dealHandler.ListHandler))
+
+	// State Changes
+	e.GET("/api/deals/:id/state-changes", s.toEchoHandler(s.stateChangeHandler.GetDealStateChangesHandler))
+	e.GET("/api/state-changes", s.toEchoHandler(s.stateChangeHandler.ListStateChangesHandler))
+	e.GET("/api/state-changes/stats", s.toEchoHandler(s.stateChangeHandler.GetStateChangeStatsHandler))
 
 	// File
 	e.GET("/api/file/:id/deals", s.toEchoHandler(s.fileHandler.GetFileDealsHandler))
