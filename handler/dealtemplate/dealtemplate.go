@@ -364,3 +364,66 @@ func (h *Handler) validateAndDeduplicatePieceCIDs(pieceCIDs model.StringSlice) (
 
 	return deduplicated, nil
 }
+
+// @ID CreateDealTemplate
+// @Summary Create a new deal template
+// @Description Create a new deal template with specified configuration
+// @Tags Deal Template
+// @Accept json
+// @Produce json
+// @Param template body CreateRequest true "Deal template configuration"
+// @Success 200 {object} model.DealTemplate
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /deal-template [post]
+func _() {}
+
+// @ID ListDealTemplates
+// @Summary List all deal templates
+// @Description Get a list of all deal templates
+// @Tags Deal Template
+// @Produce json
+// @Success 200 {array} model.DealTemplate
+// @Failure 500 {object} api.HTTPError
+// @Router /deal-template [get]
+func _() {}
+
+// @ID GetDealTemplate
+// @Summary Get a deal template by ID or name
+// @Description Retrieve a specific deal template by its ID or name
+// @Tags Deal Template
+// @Param idOrName path string true "Deal template ID or name"
+// @Produce json
+// @Success 200 {object} model.DealTemplate
+// @Failure 400 {object} api.HTTPError
+// @Failure 404 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /deal-template/{idOrName} [get]
+func _() {}
+
+// @ID UpdateDealTemplate
+// @Summary Update a deal template
+// @Description Update an existing deal template with partial updates (only specified fields are changed)
+// @Tags Deal Template
+// @Accept json
+// @Produce json
+// @Param idOrName path string true "Deal template ID or name"
+// @Param update body UpdateRequest true "Fields to update"
+// @Success 200 {object} model.DealTemplate
+// @Failure 400 {object} api.HTTPError
+// @Failure 404 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /deal-template/{idOrName} [patch]
+func _() {}
+
+// @ID DeleteDealTemplate
+// @Summary Delete a deal template
+// @Description Delete a deal template by ID or name
+// @Tags Deal Template
+// @Param idOrName path string true "Deal template ID or name"
+// @Success 204 "Deal template deleted successfully"
+// @Failure 400 {object} api.HTTPError
+// @Failure 404 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /deal-template/{idOrName} [delete]
+func _() {}

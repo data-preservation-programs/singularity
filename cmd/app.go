@@ -159,6 +159,7 @@ Upgrading:
 				dealtemplate.CreateCmd,
 				dealtemplate.ListCmd,
 				dealtemplate.GetCmd,
+				dealtemplate.UpdateCmd,
 				dealtemplate.DeleteCmd,
 			},
 		},

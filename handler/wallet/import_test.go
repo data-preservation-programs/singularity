@@ -32,7 +32,7 @@ func TestImportHandler(t *testing.T) {
 		t.Run("success-with-metadata", func(t *testing.T) {
 			// Clear the database first
 			db.Exec("DELETE FROM wallets")
-			
+
 			mockClient := testutil.NewMockLotusClient()
 			mockClient.SetResponse("Filecoin.StateLookupID", testutil.TestWalletActorID)
 

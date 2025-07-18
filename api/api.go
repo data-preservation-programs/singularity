@@ -19,6 +19,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/handler/dealtemplate"
 	"github.com/data-preservation-programs/singularity/handler/file"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/handler/job"
@@ -44,22 +45,23 @@ import (
 )
 
 type Server struct {
-	db                 *gorm.DB
-	listener           net.Listener
-	lotusClient        jsonrpc.RPCClient
-	dealMaker          replication.DealMaker
-	closer             io.Closer
-	host               host.Host
-	retriever          *retriever.Retriever
-	adminHandler       admin.Handler
-	storageHandler     storage.Handler
-	dataprepHandler    dataprep.Handler
-	dealHandler        deal.Handler
-	walletHandler      wallet.Handler
-	fileHandler        file.Handler
-	jobHandler         job.Handler
-	scheduleHandler    schedule.Handler
-	stateChangeHandler statechange.Handler
+	db                  *gorm.DB
+	listener            net.Listener
+	lotusClient         jsonrpc.RPCClient
+	dealMaker           replication.DealMaker
+	closer              io.Closer
+	host                host.Host
+	retriever           *retriever.Retriever
+	adminHandler        admin.Handler
+	storageHandler      storage.Handler
+	dataprepHandler     dataprep.Handler
+	dealHandler         deal.Handler
+	walletHandler       wallet.Handler
+	fileHandler         file.Handler
+	jobHandler          job.Handler
+	scheduleHandler     schedule.Handler
+	stateChangeHandler  statechange.Handler
+	dealtemplateHandler dealtemplate.Handler
 }
 
 func Run(c *cli.Context) error {
@@ -139,8 +141,9 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 		walletHandler:      &wallet.DefaultHandler{},
 		fileHandler:        &file.DefaultHandler{},
 		jobHandler:         &job.DefaultHandler{},
-		scheduleHandler:    &schedule.DefaultHandler{},
-		stateChangeHandler: &statechange.DefaultHandler{},
+		scheduleHandler:     &schedule.DefaultHandler{},
+		stateChangeHandler:  &statechange.DefaultHandler{},
+		dealtemplateHandler: &dealtemplate.DefaultHandler{},
 	}, nil
 }
 
@@ -553,6 +556,13 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 
 	// Deal
 	e.POST("/api/deal", s.toEchoHandler(s.dealHandler.ListHandler))
+
+	// Deal Templates
+	e.POST("/api/deal-template", s.toEchoHandler(s.dealtemplateHandler.CreateHandler))
+	e.GET("/api/deal-templates", s.toEchoHandler(s.dealtemplateHandler.ListHandler))
+	e.GET("/api/deal-template/:id", s.toEchoHandler(s.dealtemplateHandler.GetHandler))
+	e.PUT("/api/deal-template/:id", s.toEchoHandler(s.dealtemplateHandler.UpdateHandler))
+	e.DELETE("/api/deal-template/:id", s.toEchoHandler(s.dealtemplateHandler.DeleteHandler))
 
 	// State Changes
 	e.GET("/api/deals/:id/state-changes", s.toEchoHandler(s.stateChangeHandler.GetDealStateChangesHandler))

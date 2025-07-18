@@ -144,6 +144,42 @@ func TestCreateHandler(t *testing.T) {
 			require.Contains(t, err.Error(), "already exists")
 		})
 
+		t.Run("creation with scheduling fields", func(t *testing.T) {
+			req := CreateRequest{
+				Name:               "schedule-template",
+				Description:        "Template with scheduling",
+				ScheduleCron:       "@daily",
+				ScheduleDealNumber: 10,
+				ScheduleDealSize:   "100GiB",
+			}
+
+			template, err := handler.CreateHandler(ctx, db, req)
+			require.NoError(t, err)
+			require.NotNil(t, template)
+			require.Equal(t, "@daily", template.DealConfig.ScheduleCron)
+			require.Equal(t, 10, template.DealConfig.ScheduleDealNumber)
+			require.Equal(t, "100GiB", template.DealConfig.ScheduleDealSize)
+		})
+
+		t.Run("creation with restriction fields", func(t *testing.T) {
+			req := CreateRequest{
+				Name:                 "restrict-template",
+				Description:          "Template with restrictions",
+				TotalDealNumber:      50,
+				TotalDealSize:        "1TiB",
+				MaxPendingDealNumber: 5,
+				MaxPendingDealSize:   "100GiB",
+			}
+
+			template, err := handler.CreateHandler(ctx, db, req)
+			require.NoError(t, err)
+			require.NotNil(t, template)
+			require.Equal(t, 50, template.DealConfig.TotalDealNumber)
+			require.Equal(t, "1TiB", template.DealConfig.TotalDealSize)
+			require.Equal(t, 5, template.DealConfig.MaxPendingDealNumber)
+			require.Equal(t, "100GiB", template.DealConfig.MaxPendingDealSize)
+		})
+
 		// TODO: Enable these tests after running migrations in test environment
 		// These tests require the database schema to include the new columns added in migration 202507091000
 		// t.Run("piece CID validation during creation", func(t *testing.T) {
@@ -271,6 +307,95 @@ func TestUpdateHandler(t *testing.T) {
 			require.NotNil(t, updated)
 			require.Equal(t, "Updated description", updated.Description)
 			require.Equal(t, 0.001, updated.DealConfig.DealPricePerGb) // unchanged
+		})
+
+		t.Run("update multiple fields", func(t *testing.T) {
+			newName := "renamed-template"
+			newPrice := 0.002
+			newDuration := time.Hour * 24 * 180
+			newProvider := "f01001"
+			newVerified := true
+
+			updateReq := UpdateRequest{
+				Name:           &newName,
+				DealPricePerGB: &newPrice,
+				DealDuration:   &newDuration,
+				DealProvider:   &newProvider,
+				DealVerified:   &newVerified,
+			}
+
+			updated, err := handler.UpdateHandler(ctx, db, "update-test-template", updateReq)
+			require.NoError(t, err)
+			require.NotNil(t, updated)
+			require.Equal(t, "renamed-template", updated.Name)
+			require.Equal(t, 0.002, updated.DealConfig.DealPricePerGb)
+			require.Equal(t, time.Hour*24*180, updated.DealConfig.DealDuration)
+			require.Equal(t, "f01001", updated.DealConfig.DealProvider)
+			require.True(t, updated.DealConfig.DealVerified)
+		})
+
+		t.Run("update scheduling fields", func(t *testing.T) {
+			newCron := "@hourly"
+			newDealNum := 25
+			newDealSize := "50GiB"
+
+			updateReq := UpdateRequest{
+				ScheduleCron:       &newCron,
+				ScheduleDealNumber: &newDealNum,
+				ScheduleDealSize:   &newDealSize,
+			}
+
+			updated, err := handler.UpdateHandler(ctx, db, "update-test-template", updateReq)
+			require.NoError(t, err)
+			require.NotNil(t, updated)
+			require.Equal(t, "@hourly", updated.DealConfig.ScheduleCron)
+			require.Equal(t, 25, updated.DealConfig.ScheduleDealNumber)
+			require.Equal(t, "50GiB", updated.DealConfig.ScheduleDealSize)
+		})
+
+		t.Run("update restriction fields", func(t *testing.T) {
+			newTotalNum := 100
+			newTotalSize := "2TiB"
+			newMaxPending := 10
+			newMaxPendingSize := "200GiB"
+
+			updateReq := UpdateRequest{
+				TotalDealNumber:      &newTotalNum,
+				TotalDealSize:        &newTotalSize,
+				MaxPendingDealNumber: &newMaxPending,
+				MaxPendingDealSize:   &newMaxPendingSize,
+			}
+
+			updated, err := handler.UpdateHandler(ctx, db, "update-test-template", updateReq)
+			require.NoError(t, err)
+			require.NotNil(t, updated)
+			require.Equal(t, 100, updated.DealConfig.TotalDealNumber)
+			require.Equal(t, "2TiB", updated.DealConfig.TotalDealSize)
+			require.Equal(t, 10, updated.DealConfig.MaxPendingDealNumber)
+			require.Equal(t, "200GiB", updated.DealConfig.MaxPendingDealSize)
+		})
+
+		t.Run("update by ID", func(t *testing.T) {
+			newDesc := "Updated by ID"
+			updateReq := UpdateRequest{
+				Description: &newDesc,
+			}
+
+			// Use template ID instead of name
+			updated, err := handler.UpdateHandler(ctx, db, "1", updateReq)
+			require.NoError(t, err)
+			require.NotNil(t, updated)
+			require.Equal(t, "Updated by ID", updated.Description)
+		})
+
+		t.Run("update nonexistent template", func(t *testing.T) {
+			newDesc := "This should fail"
+			updateReq := UpdateRequest{
+				Description: &newDesc,
+			}
+
+			_, err := handler.UpdateHandler(ctx, db, "nonexistent-template", updateReq)
+			require.Error(t, err)
 		})
 
 		// TODO: Enable these tests after running migrations in test environment

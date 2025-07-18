@@ -14,6 +14,7 @@ COMMANDS:
      create  Create a new deal template
      list    List all deal templates
      get     Get a deal template by ID or name
+     update  Update an existing deal template
      delete  Delete a deal template by ID or name
 
 OPTIONS:
