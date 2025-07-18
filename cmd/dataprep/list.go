@@ -12,6 +12,12 @@ var ListCmd = &cli.Command{
 	Name:     "list",
 	Usage:    "List all preparations",
 	Category: "Preparation Management",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:  "json",
+			Usage: "Enable JSON output",
+		},
+	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
