@@ -66,7 +66,7 @@ func TestGetDealStateChangesHandler(t *testing.T) {
 		result, err := handler.GetDealStateChangesHandler(ctx, db, deal.ID)
 		require.NoError(t, err)
 		require.Len(t, result, 2)
-		
+
 		// Verify ordering (should be ascending by timestamp)
 		require.Equal(t, model.DealProposed, result[0].NewState)
 		require.Equal(t, model.DealPublished, result[1].NewState)
@@ -100,7 +100,7 @@ func TestListStateChangesHandler(t *testing.T) {
 			Price:         "2000",
 			Verified:      true,
 		}
-		
+
 		err := db.DB.Create(&deal1).Error
 		require.NoError(t, err)
 		err = db.DB.Create(&deal2).Error
@@ -201,7 +201,7 @@ func TestListStateChangesHandler(t *testing.T) {
 
 		// Test time range filtering
 		startTime := baseTime.Add(1 * time.Hour)
-		endTime := baseTime.Add(2 * time.Hour + 30*time.Minute)
+		endTime := baseTime.Add(2*time.Hour + 30*time.Minute)
 		query = model.DealStateChangeQuery{
 			StartTime: &startTime,
 			EndTime:   &endTime,
@@ -262,13 +262,13 @@ func TestGetStateChangeStatsHandler(t *testing.T) {
 		// Test stats retrieval
 		stats, err := handler.GetStateChangeStatsHandler(ctx, db.DB)
 		require.NoError(t, err)
-		
+
 		// Check that we get expected stats structure
 		require.Contains(t, stats, "totalStateChanges")
 		require.Contains(t, stats, "stateDistribution")
 		require.Contains(t, stats, "recentStateChanges24h")
 		require.Contains(t, stats, "topProvidersByStateChanges")
-		
+
 		// Verify basic counts
 		require.Equal(t, int64(2), stats["totalStateChanges"])
 		require.Equal(t, int64(2), stats["recentStateChanges24h"])

@@ -50,7 +50,7 @@ func (m *MockLotusClient) CallRaw(ctx context.Context, request *jsonrpc.RPCReque
 func TestGetBalanceHandler(t *testing.T) {
 	ctx := context.Background()
 	mockClient := new(MockLotusClient)
-	
+
 	// Test valid wallet address with balance and datacap
 	t.Run("Valid wallet with balance and datacap", func(t *testing.T) {
 		// Mock WalletBalance call - using mock.Anything for variadic parameters
@@ -59,28 +59,28 @@ func TestGetBalanceHandler(t *testing.T) {
 			resultPtr := args.Get(1).(*string)
 			*resultPtr = "1000000000000000000" // 1 FIL in attoFIL
 		})
-		
-		// Mock StateVerifiedClientStatus call - using mock.Anything for variadic parameters  
+
+		// Mock StateVerifiedClientStatus call - using mock.Anything for variadic parameters
 		mockClient.On("CallFor", ctx, mock.AnythingOfType("*string"), "Filecoin.StateVerifiedClientStatus", mock.Anything, mock.Anything).
 			Return(nil).Run(func(args mock.Arguments) {
 			resultPtr := args.Get(1).(*string)
 			*resultPtr = "1099511627776" // 1024 GiB in bytes
 		})
-		
+
 		handler := DefaultHandler{}
 		result, err := handler.GetBalanceHandler(ctx, &gorm.DB{}, mockClient, "f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa")
-		
+
 		require.NoError(t, err)
 		assert.Equal(t, "f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa", result.Address)
 		assert.Equal(t, "1.000000 FIL", result.Balance)
 		assert.Equal(t, "1000000000000000000", result.BalanceAttoFIL)
 		assert.Equal(t, "1024.00 GiB", result.DataCap)
 		assert.Equal(t, int64(1099511627776), result.DataCapBytes)
-		
+
 		mockClient.AssertExpectations(t)
 		mockClient.ExpectedCalls = nil
 	})
-	
+
 	// Test wallet with zero balance and no datacap
 	t.Run("Wallet with zero balance and no datacap", func(t *testing.T) {
 		// Mock WalletBalance call
@@ -89,64 +89,64 @@ func TestGetBalanceHandler(t *testing.T) {
 			resultPtr := args.Get(1).(*string)
 			*resultPtr = "0" // 0 FIL
 		})
-		
+
 		// Mock StateVerifiedClientStatus call returning no datacap
 		mockClient.On("CallFor", ctx, mock.AnythingOfType("*string"), "Filecoin.StateVerifiedClientStatus", mock.Anything, mock.Anything).
 			Return(nil).Run(func(args mock.Arguments) {
 			resultPtr := args.Get(1).(*string)
 			*resultPtr = "0" // No datacap
 		})
-		
+
 		handler := DefaultHandler{}
 		result, err := handler.GetBalanceHandler(ctx, &gorm.DB{}, mockClient, "f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa")
-		
+
 		require.NoError(t, err)
 		assert.Equal(t, "f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa", result.Address)
 		assert.Equal(t, "0.000000 FIL", result.Balance)
 		assert.Equal(t, "0", result.BalanceAttoFIL)
 		assert.Equal(t, "0.00 GiB", result.DataCap)
 		assert.Equal(t, int64(0), result.DataCapBytes)
-		
+
 		mockClient.AssertExpectations(t)
 		mockClient.ExpectedCalls = nil
 	})
-	
+
 	// Test invalid wallet address
 	t.Run("Invalid wallet address", func(t *testing.T) {
 		handler := DefaultHandler{}
 		_, err := handler.GetBalanceHandler(ctx, &gorm.DB{}, mockClient, "invalid-address")
-		
+
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "invalid wallet address format")
 	})
-	
+
 	// Test API error handling for balance lookup
 	t.Run("Balance API error", func(t *testing.T) {
 		mockClient.On("CallFor", ctx, mock.AnythingOfType("*string"), "Filecoin.WalletBalance", mock.Anything).
 			Return(assert.AnError)
-		
+
 		// Since the implementation still tries to get datacap even when balance fails, we need to mock this too
 		mockClient.On("CallFor", ctx, mock.AnythingOfType("*string"), "Filecoin.StateVerifiedClientStatus", mock.Anything, mock.Anything).
 			Return(nil).Run(func(args mock.Arguments) {
 			resultPtr := args.Get(1).(*string)
 			*resultPtr = "null"
 		})
-		
+
 		handler := DefaultHandler{}
 		result, err := handler.GetBalanceHandler(ctx, &gorm.DB{}, mockClient, "f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa")
-		
+
 		require.NoError(t, err) // Function should not return error, but include error in response
 		assert.NotNil(t, result.Error)
 		assert.Contains(t, *result.Error, "failed to get wallet balance")
-		
+
 		// Should still have datacap info since that call succeeds
 		assert.Equal(t, "0.00 GiB", result.DataCap)
 		assert.Equal(t, int64(0), result.DataCapBytes)
-		
+
 		mockClient.AssertExpectations(t)
 		mockClient.ExpectedCalls = nil
 	})
-	
+
 	// Test API error handling for datacap lookup
 	t.Run("Datacap API error", func(t *testing.T) {
 		// Mock successful balance call
@@ -155,26 +155,26 @@ func TestGetBalanceHandler(t *testing.T) {
 			resultPtr := args.Get(1).(*string)
 			*resultPtr = "1000000000000000000"
 		})
-		
+
 		// Mock failed datacap call
 		mockClient.On("CallFor", ctx, mock.AnythingOfType("*string"), "Filecoin.StateVerifiedClientStatus", mock.Anything, mock.Anything).
 			Return(assert.AnError)
-		
+
 		handler := DefaultHandler{}
 		result, err := handler.GetBalanceHandler(ctx, &gorm.DB{}, mockClient, "f12syf7zd3lfsv43aj2kb454ymaqw7debhumjnbqa")
-		
+
 		require.NoError(t, err) // Function should not return error, but include error in response
 		assert.NotNil(t, result.Error)
 		assert.Contains(t, *result.Error, "failed to get datacap balance")
-		
+
 		// Should still have balance info since that call succeeds
 		assert.Equal(t, "1.000000 FIL", result.Balance)
 		assert.Equal(t, "1000000000000000000", result.BalanceAttoFIL)
-		
+
 		// Datacap should be zero due to error
 		assert.Equal(t, "0.00 GiB", result.DataCap)
 		assert.Equal(t, int64(0), result.DataCapBytes)
-		
+
 		mockClient.AssertExpectations(t)
 		mockClient.ExpectedCalls = nil
 	})
@@ -193,7 +193,7 @@ func TestFormatFILFromAttoFIL(t *testing.T) {
 		{"Large amount", "10000000000000000000", "10.000000 FIL"},
 		{"Fractional amount", "1500000000000000000", "1.500000 FIL"},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var amount big.Int
@@ -217,7 +217,7 @@ func TestFormatDatacap(t *testing.T) {
 		{"Large datacap", 1099511627776, "1024.00 GiB"}, // 1 TiB
 		{"Fractional GiB", 1610612736, "1.50 GiB"},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			result := formatDatacap(tc.input)

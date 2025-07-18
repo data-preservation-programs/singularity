@@ -32,7 +32,7 @@ import (
 // @Router /api/state-changes [get]
 func (DefaultHandler) ListStateChangesHandler(ctx context.Context, db *gorm.DB, query model.DealStateChangeQuery) (StateChangeResponse, error) {
 	tracker := statetracker.NewStateChangeTracker(db)
-	
+
 	stateChanges, total, err := tracker.GetStateChanges(ctx, query)
 	if err != nil {
 		return StateChangeResponse{}, errors.Wrap(err, "failed to retrieve state changes")
@@ -72,7 +72,7 @@ func (DefaultHandler) GetDealStateChangesHandler(ctx context.Context, db *gorm.D
 	}
 
 	tracker := statetracker.NewStateChangeTracker(db)
-	
+
 	stateChanges, err := tracker.GetStateChangesForDeal(ctx, dealID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to retrieve state changes for deal")
@@ -92,7 +92,7 @@ func (DefaultHandler) GetDealStateChangesHandler(ctx context.Context, db *gorm.D
 // @Router /api/state-changes/stats [get]
 func (DefaultHandler) GetStateChangeStatsHandler(ctx context.Context, db *gorm.DB) (map[string]interface{}, error) {
 	tracker := statetracker.NewStateChangeTracker(db)
-	
+
 	stats, err := tracker.GetStateChangeStats(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to retrieve state change statistics")
