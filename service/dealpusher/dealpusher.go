@@ -13,6 +13,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
+	"github.com/data-preservation-programs/singularity/service/statetracker"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
@@ -47,6 +48,7 @@ type DealPusher struct {
 	sendDealAttempts         uint                                    // Number of attempts for sending a deal.
 	host                     host.Host                               // Libp2p host for making deals.
 	maxReplicas              uint                                    // Maximum number of replicas for each individual PieceCID across all clients and providers.
+	stateTracker             *statetracker.StateChangeTracker        // State change tracker for deal lifecycle events.
 }
 
 type sumResult struct {
@@ -90,6 +92,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 		sendDealAttempts: numAttempts,
 		host:             h,
 		maxReplicas:      maxReplicas,
+		stateTracker:     statetracker.NewStateChangeTracker(db),
 	}, nil
 }
 
@@ -556,6 +559,16 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			err = database.DoRetry(ctx, func() error { return db.Create(dealModel).Error })
 			if err != nil {
 				return model.ScheduleError, errors.Wrap(err, "failed to create deal")
+			}
+
+			// Track the initial state change for the new deal proposal
+			metadata := &statetracker.StateChangeMetadata{
+				Reason:       "Deal proposal created and sent to storage provider",
+				StoragePrice: dealModel.Price,
+			}
+			if err := d.stateTracker.TrackStateChange(ctx, dealModel, nil, dealModel.State, metadata); err != nil {
+				Logger.Warnw("Failed to track initial state change for new deal", "dealID", dealModel.ID, "error", err)
+				// Continue processing even if state tracking fails
 			}
 
 			current.DealSize += car.PieceSize
