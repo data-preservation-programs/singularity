@@ -2,6 +2,7 @@ package dealtemplate
 
 import (
 	"context"
+	"flag"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/handler/dealtemplate"
@@ -23,7 +24,7 @@ func TestValidateUpdateTemplateInputs(t *testing.T) {
 			name: "valid update with positive price",
 			setup: func() *cli.Context {
 				app := &cli.App{}
-				set := cli.NewFlagSet("test", nil)
+				set := flag.NewFlagSet("test", 0)
 
 				// Add the required flags
 				set.Float64("price-per-gb", 0.002, "")
@@ -38,7 +39,7 @@ func TestValidateUpdateTemplateInputs(t *testing.T) {
 			name: "invalid update with negative price",
 			setup: func() *cli.Context {
 				app := &cli.App{}
-				set := cli.NewFlagSet("test", nil)
+				set := flag.NewFlagSet("test", 0)
 
 				set.Float64("price-per-gb", -0.001, "")
 
@@ -53,7 +54,7 @@ func TestValidateUpdateTemplateInputs(t *testing.T) {
 			name: "invalid provider format",
 			setup: func() *cli.Context {
 				app := &cli.App{}
-				set := cli.NewFlagSet("test", nil)
+				set := flag.NewFlagSet("test", 0)
 
 				set.String("provider", "invalid", "")
 
@@ -68,7 +69,7 @@ func TestValidateUpdateTemplateInputs(t *testing.T) {
 			name: "valid provider format",
 			setup: func() *cli.Context {
 				app := &cli.App{}
-				set := cli.NewFlagSet("test", nil)
+				set := flag.NewFlagSet("test", 0)
 
 				set.String("provider", "f01234", "")
 
@@ -82,7 +83,7 @@ func TestValidateUpdateTemplateInputs(t *testing.T) {
 			name: "invalid http header format",
 			setup: func() *cli.Context {
 				app := &cli.App{}
-				set := cli.NewFlagSet("test", nil)
+				set := flag.NewFlagSet("test", 0)
 
 				set.StringSlice("http-header", []string{"invalid-header"}, "")
 
@@ -97,7 +98,7 @@ func TestValidateUpdateTemplateInputs(t *testing.T) {
 			name: "replace-piece-cids without piece CIDs",
 			setup: func() *cli.Context {
 				app := &cli.App{}
-				set := cli.NewFlagSet("test", nil)
+				set := flag.NewFlagSet("test", 0)
 
 				set.Bool("replace-piece-cids", true, "")
 

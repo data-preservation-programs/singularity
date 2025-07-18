@@ -74,7 +74,7 @@ func TestGetDealStateChangesHandler(t *testing.T) {
 }
 
 func TestListStateChangesHandler(t *testing.T) {
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *testutil.TestDB) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		handler := DefaultHandler{}
 
 		// Create test deals
@@ -214,7 +214,7 @@ func TestListStateChangesHandler(t *testing.T) {
 }
 
 func TestGetStateChangeStatsHandler(t *testing.T) {
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *testutil.TestDB) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		handler := DefaultHandler{}
 
 		// Create test deal
