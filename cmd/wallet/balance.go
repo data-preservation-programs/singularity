@@ -36,7 +36,7 @@ If there are issues retrieving either balance, partial results will be shown wit
 		defer func() { _ = closer.Close() }()
 
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
-		
+
 		result, err := wallet.Default.GetBalanceHandler(c.Context, db, lotusClient, c.Args().Get(0))
 		if err != nil {
 			return errors.WithStack(err)

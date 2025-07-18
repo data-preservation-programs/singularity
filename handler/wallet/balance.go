@@ -15,10 +15,10 @@ import (
 
 type BalanceResponse struct {
 	Address        string  `json:"address"`
-	Balance        string  `json:"balance"`        // FIL balance in FIL units
-	BalanceAttoFIL string  `json:"balanceAttoFIL"` // Raw balance in attoFIL
-	DataCap        string  `json:"dataCap"`        // FIL+ datacap balance
-	DataCapBytes   int64   `json:"dataCapBytes"`   // Raw datacap in bytes
+	Balance        string  `json:"balance"`         // FIL balance in FIL units
+	BalanceAttoFIL string  `json:"balanceAttoFil"`  // Raw balance in attoFIL
+	DataCap        string  `json:"dataCap"`         // FIL+ datacap balance
+	DataCapBytes   int64   `json:"dataCapBytes"`    // Raw datacap in bytes
 	Error          *string `json:"error,omitempty"` // Error message if any
 }
 
@@ -76,7 +76,7 @@ func (DefaultHandler) GetBalanceHandler(
 		}
 		datacap = 0
 	}
-	
+
 	response.DataCap = formatDatacap(datacap)
 	response.DataCapBytes = datacap
 
@@ -109,23 +109,18 @@ func getDatacapBalance(ctx context.Context, lotusClient jsonrpc.RPCClient, addr 
 	if err != nil {
 		return 0, errors.WithStack(err)
 	}
-	
+
 	// If result is empty or "null", client has no datacap
 	if result == "" || result == "null" {
 		return 0, nil
 	}
-
-	   // If result is empty or "null", client has no datacap
-	   if result == "" || result == "null" {
-			   return 0, nil
-	   }
 
 	// Parse the datacap balance string
 	datacap, err := strconv.ParseInt(result, 10, 64)
 	if err != nil {
 		return 0, errors.WithStack(err)
 	}
-	
+
 	return datacap, nil
 }
 
@@ -134,10 +129,10 @@ func formatFILFromAttoFIL(attoFIL *big.Int) string {
 	if attoFIL == nil {
 		return "0.000000 FIL"
 	}
-	
+
 	filValue := new(big.Float).SetInt(attoFIL)
 	filValue.Quo(filValue, big.NewFloat(1e18))
-	
+
 	return filValue.Text('f', 6) + " FIL" // 6 decimal places with FIL unit
 }
 
@@ -146,7 +141,7 @@ func formatDatacap(bytes int64) string {
 	if bytes == 0 {
 		return "0.00 GiB"
 	}
-	
+
 	// Convert bytes to GiB for display
 	gib := float64(bytes) / (1024 * 1024 * 1024)
 	return fmt.Sprintf("%.2f GiB", gib)
