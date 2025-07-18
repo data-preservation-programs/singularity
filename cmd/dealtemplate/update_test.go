@@ -85,7 +85,7 @@ func TestValidateUpdateTemplateInputs(t *testing.T) {
 				app := &cli.App{}
 				set := flag.NewFlagSet("test", 0)
 
-				set.StringSlice("http-header", []string{"invalid-header"}, "")
+				set.Var(cli.NewStringSlice("invalid-header"), "http-header", "")
 
 				ctx := cli.NewContext(app, set, nil)
 				ctx.Set("http-header", "invalid-header")

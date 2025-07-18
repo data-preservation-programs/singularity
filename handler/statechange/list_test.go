@@ -101,9 +101,9 @@ func TestListStateChangesHandler(t *testing.T) {
 			Verified:      true,
 		}
 
-		err := db.DB.Create(&deal1).Error
+		err := db.Create(&deal1).Error
 		require.NoError(t, err)
-		err = db.DB.Create(&deal2).Error
+		err = db.Create(&deal2).Error
 		require.NoError(t, err)
 
 		// Create test state changes
@@ -148,13 +148,13 @@ func TestListStateChangesHandler(t *testing.T) {
 		}
 
 		for _, sc := range stateChanges {
-			err = db.DB.Create(&sc).Error
+			err = db.Create(&sc).Error
 			require.NoError(t, err)
 		}
 
 		// Test listing all state changes
 		query := model.DealStateChangeQuery{}
-		result, err := handler.ListStateChangesHandler(ctx, db.DB, query)
+		result, err := handler.ListStateChangesHandler(ctx, db, query)
 		require.NoError(t, err)
 		require.Equal(t, int64(4), result.Total)
 		require.Len(t, result.StateChanges, 4)
@@ -163,7 +163,7 @@ func TestListStateChangesHandler(t *testing.T) {
 		query = model.DealStateChangeQuery{
 			DealID: &deal1.ID,
 		}
-		result, err = handler.ListStateChangesHandler(ctx, db.DB, query)
+		result, err = handler.ListStateChangesHandler(ctx, db, query)
 		require.NoError(t, err)
 		require.Equal(t, int64(2), result.Total)
 		require.Len(t, result.StateChanges, 2)
@@ -173,7 +173,7 @@ func TestListStateChangesHandler(t *testing.T) {
 		query = model.DealStateChangeQuery{
 			State: &state,
 		}
-		result, err = handler.ListStateChangesHandler(ctx, db.DB, query)
+		result, err = handler.ListStateChangesHandler(ctx, db, query)
 		require.NoError(t, err)
 		require.Equal(t, int64(1), result.Total)
 		require.Len(t, result.StateChanges, 1)
@@ -184,7 +184,7 @@ func TestListStateChangesHandler(t *testing.T) {
 		query = model.DealStateChangeQuery{
 			ProviderID: &provider,
 		}
-		result, err = handler.ListStateChangesHandler(ctx, db.DB, query)
+		result, err = handler.ListStateChangesHandler(ctx, db, query)
 		require.NoError(t, err)
 		require.Equal(t, int64(2), result.Total)
 		require.Len(t, result.StateChanges, 2)
@@ -194,7 +194,7 @@ func TestListStateChangesHandler(t *testing.T) {
 		query = model.DealStateChangeQuery{
 			Limit: &limit,
 		}
-		result, err = handler.ListStateChangesHandler(ctx, db.DB, query)
+		result, err = handler.ListStateChangesHandler(ctx, db, query)
 		require.NoError(t, err)
 		require.Equal(t, int64(4), result.Total)
 		require.Len(t, result.StateChanges, 2)
@@ -206,7 +206,7 @@ func TestListStateChangesHandler(t *testing.T) {
 			StartTime: &startTime,
 			EndTime:   &endTime,
 		}
-		result, err = handler.ListStateChangesHandler(ctx, db.DB, query)
+		result, err = handler.ListStateChangesHandler(ctx, db, query)
 		require.NoError(t, err)
 		require.Equal(t, int64(2), result.Total)
 		require.Len(t, result.StateChanges, 2)
@@ -229,7 +229,7 @@ func TestGetStateChangeStatsHandler(t *testing.T) {
 			Price:         "1000",
 			Verified:      false,
 		}
-		err := db.DB.Create(&deal).Error
+		err := db.Create(&deal).Error
 		require.NoError(t, err)
 
 		// Create test state changes
@@ -255,12 +255,12 @@ func TestGetStateChangeStatsHandler(t *testing.T) {
 		}
 
 		for _, sc := range stateChanges {
-			err = db.DB.Create(&sc).Error
+			err = db.Create(&sc).Error
 			require.NoError(t, err)
 		}
 
 		// Test stats retrieval
-		stats, err := handler.GetStateChangeStatsHandler(ctx, db.DB)
+		stats, err := handler.GetStateChangeStatsHandler(ctx, db)
 		require.NoError(t, err)
 
 		// Check that we get expected stats structure
