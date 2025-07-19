@@ -29,6 +29,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/handler/file"
 	"github.com/data-preservation-programs/singularity/handler/job"
+	"github.com/data-preservation-programs/singularity/handler/statechange"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
@@ -201,6 +202,17 @@ func setupMockWallet() wallet.Handler {
 	return m
 }
 
+func setupMockStateChange() statechange.Handler {
+	m := new(statechange.MockStateChange)
+	m.On("GetDealStateChangesHandler", mock.Anything, mock.Anything, mock.Anything).
+		Return([]model.DealStateChange{{}}, nil)
+	m.On("ListStateChangesHandler", mock.Anything, mock.Anything, mock.Anything).
+		Return(statechange.StateChangeResponse{StateChanges: []model.DealStateChange{{}}, Total: 1}, nil)
+	m.On("GetStateChangeStatsHandler", mock.Anything, mock.Anything).
+		Return(map[string]interface{}{"total": 1}, nil)
+	return m
+}
+
 func TestAllAPIs(t *testing.T) {
 	mockAdmin := setupMockAdmin()
 	mockDataPrep := setupMockDataPrep()
@@ -210,6 +222,7 @@ func TestAllAPIs(t *testing.T) {
 	mockFile := setupMockFile()
 	mockJob := setupMockJob()
 	mockSchedule := setupMockSchedule()
+	mockStateChange := setupMockStateChange()
 	mockDealMaker := new(MockDealMaker)
 
 	listener, err := net.Listen("tcp", apiBind)
@@ -220,20 +233,21 @@ func TestAllAPIs(t *testing.T) {
 
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		s := Server{
-			db:              db,
-			listener:        listener,
-			lotusClient:     util.NewLotusClient("", ""),
-			dealMaker:       mockDealMaker,
-			closer:          io.NopCloser(nil),
-			host:            h,
-			adminHandler:    mockAdmin,
-			storageHandler:  mockStorage,
-			dataprepHandler: mockDataPrep,
-			dealHandler:     mockDeal,
-			walletHandler:   mockWallet,
-			fileHandler:     mockFile,
-			jobHandler:      mockJob,
-			scheduleHandler: mockSchedule,
+			db:                 db,
+			listener:           listener,
+			lotusClient:        util.NewLotusClient("", ""),
+			dealMaker:          mockDealMaker,
+			closer:             io.NopCloser(nil),
+			host:               h,
+			adminHandler:       mockAdmin,
+			storageHandler:     mockStorage,
+			dataprepHandler:    mockDataPrep,
+			dealHandler:        mockDeal,
+			walletHandler:      mockWallet,
+			fileHandler:        mockFile,
+			jobHandler:         mockJob,
+			scheduleHandler:    mockSchedule,
+			stateChangeHandler: mockStateChange,
 		}
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
