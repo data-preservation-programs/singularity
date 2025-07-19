@@ -294,7 +294,6 @@ func init() {
 	OnboardCmd.SkipFlagParsing = false
 }
 
-
 // Action function for the onboard command
 func onboardAction(c *cli.Context) error {
 	// Check for special help flags first
