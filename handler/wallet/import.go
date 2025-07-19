@@ -18,7 +18,10 @@ import (
 var logger = log.Logger("singularity/handler/wallet")
 
 type ImportRequest struct {
-	PrivateKey string `json:"privateKey"` // This is the exported private key from lotus wallet export
+	PrivateKey string `json:"privateKey"`         // This is the exported private key from lotus wallet export
+	Name       string `json:"name,omitempty"`     // Optional display name
+	Contact    string `json:"contact,omitempty"`  // Optional contact information
+	Location   string `json:"location,omitempty"` // Optional location
 }
 
 // @ID ImportWallet
@@ -73,9 +76,12 @@ func (DefaultHandler) ImportHandler(
 	}
 
 	wallet := model.Wallet{
-		ActorID:    result,
-		Address:    result[:1] + addr.String()[1:],
-		PrivateKey: request.PrivateKey,
+		ActorID:     result,
+		Address:     result[:1] + addr.String()[1:],
+		PrivateKey:  request.PrivateKey,
+		ActorName:   request.Name,
+		ContactInfo: request.Contact,
+		Location:    request.Location,
 	}
 
 	err = database.DoRetry(ctx, func() error {

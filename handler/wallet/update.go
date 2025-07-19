@@ -11,9 +11,9 @@ import (
 )
 
 type UpdateRequest struct {
-	Name     *string `json:"actorName,omitempty"`   // Name is readable label for the wallet
-	Contact  *string `json:"contactInfo,omitempty"` // Contact is optional email for SP wallets
-	Location *string `json:"location,omitempty"`    // Location is optional region, country for SP wallets
+	Name     *string `json:"name,omitempty"`     // Name is readable label for the wallet
+	Contact  *string `json:"contact,omitempty"`  // Contact is optional email for SP wallets
+	Location *string `json:"location,omitempty"` // Location is optional region, country for SP wallets
 }
 
 // @ID UpdateWallet

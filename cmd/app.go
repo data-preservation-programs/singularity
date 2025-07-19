@@ -181,6 +181,7 @@ Upgrading:
 			Category: "Operations",
 			Usage:    "Wallet management",
 			Subcommands: []*cli.Command{
+				wallet.BalanceCmd,
 				wallet.CreateCmd,
 				wallet.ImportCmd,
 				wallet.InitCmd,
