@@ -294,45 +294,6 @@ func init() {
 	OnboardCmd.SkipFlagParsing = false
 }
 
-// Before action function to handle help flags
-func onboardBeforeAction(c *cli.Context) error {
-	// Check raw OS arguments for help flags before CLI framework processes them
-	args := os.Args
-
-	for _, arg := range args {
-		if arg == "--help-backends" {
-			return showBackendsList(c)
-		}
-		if arg == "--help-examples" {
-			return showExamples(c)
-		}
-		if arg == "--help-json" {
-			return showHelpJSON(c)
-		}
-		if strings.HasPrefix(arg, "--help-backend=") {
-			backend := strings.TrimPrefix(arg, "--help-backend=")
-			return showBackendHelp(c, backend)
-		}
-	}
-
-	// Also check if help flags are set (for cases where they do parse)
-	if c.Bool("help-backends") {
-		return showBackendsList(c)
-	}
-	if c.String("help-backend") != "" {
-		return showBackendHelp(c, c.String("help-backend"))
-	}
-	if c.Bool("help-examples") {
-		return showExamples(c)
-	}
-	if c.Bool("help-json") {
-		return showHelpJSON(c)
-	}
-
-	// Continue with normal validation if no help flags found
-	return nil
-}
-
 // Action function for the onboard command
 func onboardAction(c *cli.Context) error {
 	// Check for special help flags first
@@ -1364,7 +1325,7 @@ func showBackendHelp(c *cli.Context, backendPrefix string) error {
 	isJSON := c.Bool("json")
 
 	if isJSON {
-		return showBackendHelpJSON(c, backend)
+		return showBackendHelpJSON(backend)
 	}
 
 	// Show command usage and description
@@ -1431,7 +1392,7 @@ func showBackendHelp(c *cli.Context, backendPrefix string) error {
 }
 
 // showBackendHelpJSON displays backend help in JSON format
-func showBackendHelpJSON(c *cli.Context, backend storagesystem.Backend) error {
+func showBackendHelpJSON(backend storagesystem.Backend) error {
 	type OptionInfo struct {
 		Name         string `json:"name"`
 		Type         string `json:"type"`
@@ -1565,7 +1526,7 @@ func formatFlagUsage(flag cli.Flag) string {
 	if len(names) > 1 {
 		nameStr = fmt.Sprintf("--%s, -%s", names[0], names[1])
 	} else {
-		nameStr = fmt.Sprintf("--%s", names[0])
+		nameStr = "--" + names[0]
 	}
 
 	return fmt.Sprintf("%-30s %s", nameStr, usage)
