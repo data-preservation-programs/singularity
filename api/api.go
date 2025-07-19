@@ -212,6 +212,16 @@ func (s *Server) Start(ctx context.Context, exitErr chan<- error) error {
 	//nolint:contextcheck
 	s.setupRoutes(e)
 
+	// Register dataset-worker management API
+	// Pass the DB handle to the Echo context for dataset-worker jobs endpoint
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Set("db", s.db)
+			return next(c)
+		}
+	})
+	RegisterDatasetWorkerAPI(e)
+
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "OK")
