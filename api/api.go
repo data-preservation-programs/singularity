@@ -124,10 +124,10 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 		endpointfinder.WithErrorLruSize(128),
 		endpointfinder.WithErrorLruTimeout(time.Minute*5),
 	)
-	
+
 	// Initialize error logging service
 	errorLogService.Init(db)
-	
+
 	return &Server{
 		db:          db,
 		host:        h,

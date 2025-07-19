@@ -17,7 +17,7 @@ import (
 
 func TestListCmd_Basic(t *testing.T) {
 	db := testutil.TestDB(t)
-	
+
 	// Create test data
 	testTime := time.Now()
 	testLogs := []model.ErrorLog{
@@ -101,7 +101,7 @@ func TestListCmd_Basic(t *testing.T) {
 
 func TestListCmd_Filtering(t *testing.T) {
 	db := testutil.TestDB(t)
-	
+
 	// Create test data
 	testLogs := []model.ErrorLog{
 		{
