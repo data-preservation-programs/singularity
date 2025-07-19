@@ -134,7 +134,7 @@ func (t *StateChangeTracker) RecoverMissingStateChanges(ctx context.Context) err
 		metadata := &StateChangeMetadata{
 			Reason: "Recovery - initial state recorded during system restart",
 		}
-		
+
 		err = t.TrackStateChangeWithDetails(
 			ctx,
 			deal.ID,
@@ -155,11 +155,11 @@ func (t *StateChangeTracker) RecoverMissingStateChanges(ctx context.Context) err
 
 	// Get deals where the current state doesn't match the latest recorded state change
 	var inconsistentDeals []struct {
-		DealID             model.DealID    `json:"dealId"`
-		CurrentState       model.DealState `json:"currentState"`
-		LastRecordedState  model.DealState `json:"lastRecordedState"`
-		Provider           string          `json:"provider"`
-		ClientActorID      string          `json:"clientActorId"`
+		DealID            model.DealID    `json:"dealId"`
+		CurrentState      model.DealState `json:"currentState"`
+		LastRecordedState model.DealState `json:"lastRecordedState"`
+		Provider          string          `json:"provider"`
+		ClientActorID     string          `json:"clientActorId"`
 	}
 
 	err = db.Raw(`
@@ -186,10 +186,10 @@ func (t *StateChangeTracker) RecoverMissingStateChanges(ctx context.Context) err
 	// Create state change records for inconsistent deals
 	for _, deal := range inconsistentDeals {
 		metadata := &StateChangeMetadata{
-			Reason: fmt.Sprintf("Recovery - state changed from %s to %s during system downtime", 
+			Reason: fmt.Sprintf("Recovery - state changed from %s to %s during system downtime",
 				deal.LastRecordedState, deal.CurrentState),
 		}
-		
+
 		err = t.TrackStateChangeWithDetails(
 			ctx,
 			deal.DealID,
@@ -202,15 +202,15 @@ func (t *StateChangeTracker) RecoverMissingStateChanges(ctx context.Context) err
 			metadata,
 		)
 		if err != nil {
-			Logger.Errorw("Failed to create recovery state change for inconsistent deal", 
+			Logger.Errorw("Failed to create recovery state change for inconsistent deal",
 				"dealId", deal.DealID, "error", err)
 			// Continue with other deals even if one fails
 			continue
 		}
 	}
 
-	Logger.Infow("Completed recovery of missing state changes", 
-		"newRecords", len(dealsWithoutChanges), 
+	Logger.Infow("Completed recovery of missing state changes",
+		"newRecords", len(dealsWithoutChanges),
 		"inconsistentFixed", len(inconsistentDeals))
 
 	return nil

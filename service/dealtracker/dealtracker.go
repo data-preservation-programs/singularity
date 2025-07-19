@@ -649,7 +649,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	
+
 	if len(expiredDeals) > 0 {
 		// Update deals to expired state
 		result := db.Model(&model.Deal{}).
@@ -689,7 +689,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	
+
 	if len(expiredProposals) > 0 {
 		// Update proposals to expired state
 		result := db.Model(&model.Deal{}).
