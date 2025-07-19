@@ -346,7 +346,7 @@ func onboardAction(c *cli.Context) error {
 
 	// Log onboarding start
 	errorlog.LogOnboardEvent(model.ErrorLevelInfo, "", "onboard_started",
-		fmt.Sprintf("Onboarding started for preparation: %s", c.String("name")), nil,
+		"Onboarding started for preparation: "+c.String("name"), nil,
 		map[string]interface{}{
 			"sources":       c.StringSlice("source"),
 			"outputs":       c.StringSlice("output"),
@@ -382,7 +382,7 @@ func onboardAction(c *cli.Context) error {
 	// Log successful preparation creation
 	prepIDStr := strconv.FormatUint(uint64(prep.ID), 10)
 	errorlog.LogOnboardEvent(model.ErrorLevelInfo, prepIDStr, "preparation_created",
-		fmt.Sprintf("Preparation created successfully: %s", prep.Name), nil,
+		"Preparation created successfully: "+prep.Name, nil,
 		map[string]interface{}{
 			"preparation_id":   prep.ID,
 			"preparation_name": prep.Name,
@@ -1354,7 +1354,7 @@ func showBackendHelp(c *cli.Context, backendPrefix string) error {
 	isJSON := c.Bool("json")
 
 	if isJSON {
-		return showBackendHelpJSON(c, backend)
+		return showBackendHelpJSON(backend)
 	}
 
 	// Show command usage and description
@@ -1421,7 +1421,7 @@ func showBackendHelp(c *cli.Context, backendPrefix string) error {
 }
 
 // showBackendHelpJSON displays backend help in JSON format
-func showBackendHelpJSON(_ *cli.Context, backend storagesystem.Backend) error {
+func showBackendHelpJSON(backend storagesystem.Backend) error {
 	type OptionInfo struct {
 		Name         string `json:"name"`
 		Type         string `json:"type"`
