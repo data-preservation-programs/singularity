@@ -105,4 +105,3 @@ func _202507210939_fix_deal_state_changes_fk() *gormigrate.Migration {
 		},
 	}
 }
-
