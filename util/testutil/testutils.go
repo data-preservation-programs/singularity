@@ -23,6 +23,11 @@ import (
 
 const pattern = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
+func init() {
+	// Seed math/rand with current time to ensure randomness across test runs
+	rand2.Seed(time.Now().UnixNano())
+}
+
 func GenerateFixedBytes(length int) []byte {
 	patternLen := len(pattern)
 	result := make([]byte, length)
@@ -34,8 +39,13 @@ func GenerateFixedBytes(length int) []byte {
 
 func GenerateRandomBytes(n int) []byte {
 	b := make([]byte, n)
-	//nolint:errcheck
-	_, _ = rand.Read(b)
+	read, err := rand.Read(b)
+	if err != nil || read != n {
+		// Fallback to math/rand if crypto/rand fails
+		for i := range b {
+			b[i] = byte(rand2.Intn(256))
+		}
+	}
 	return b
 }
 

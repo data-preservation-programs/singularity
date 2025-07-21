@@ -29,6 +29,7 @@ var Tables = []any{
 	&Car{},
 	&CarBlock{},
 	&Deal{},
+	&DealStateChange{},
 	&Schedule{},
 	&Wallet{},
 }
