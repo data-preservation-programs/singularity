@@ -14,7 +14,7 @@ type DealStateChange struct {
 	DealID        DealID    `gorm:"index;not null"                           json:"dealId"         table:"verbose"` // Internal singularity deal ID
 	PreviousState DealState `gorm:"size:50;index"                            json:"previousState"  table:"verbose"` // Previous deal state (nullable for initial state)
 	NewState      DealState `gorm:"size:50;index;not null"                   json:"newState"       table:"verbose"` // New deal state
-	Timestamp     time.Time `gorm:"index;not null;default:CURRENT_TIMESTAMP" json:"timestamp"      table:"verbose;format:2006-01-02 15:04:05"`
+	Timestamp     time.Time `gorm:"index;not null" json:"timestamp"      table:"verbose;format:2006-01-02 15:04:05"`
 	EpochHeight   *int32    `gorm:"index"                                    json:"epochHeight"    table:"verbose"` // Filecoin epoch when change occurred
 	SectorID      *string   `gorm:"size:100;index"                           json:"sectorId"       table:"verbose"` // Storage provider sector ID
 	ProviderID    string    `gorm:"size:20;index"                            json:"providerId"     table:"verbose"` // Storage provider ID
