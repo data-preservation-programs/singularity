@@ -23,11 +23,6 @@ import (
 
 const pattern = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-func init() {
-	// Seed math/rand with current time to ensure randomness across test runs
-	rand2.Seed(time.Now().UnixNano())
-}
-
 func GenerateFixedBytes(length int) []byte {
 	patternLen := len(pattern)
 	result := make([]byte, length)
