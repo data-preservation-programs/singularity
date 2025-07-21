@@ -191,43 +191,43 @@ func (DefaultHandler) UpdateHandler(ctx context.Context, db *gorm.DB, idOrName s
 		updates["description"] = *request.Description
 	}
 	if request.DealPricePerGB != nil {
-		updates["deal_price_per_gb"] = *request.DealPricePerGB
+		updates["template_deal_price_per_gb"] = *request.DealPricePerGB
 	}
 	if request.DealPricePerGBEpoch != nil {
-		updates["deal_price_per_gb_epoch"] = *request.DealPricePerGBEpoch
+		updates["template_deal_price_per_gb_epoch"] = *request.DealPricePerGBEpoch
 	}
 	if request.DealPricePerDeal != nil {
-		updates["deal_price_per_deal"] = *request.DealPricePerDeal
+		updates["template_deal_price_per_deal"] = *request.DealPricePerDeal
 	}
 	if request.DealDuration != nil {
-		updates["deal_duration"] = *request.DealDuration
+		updates["template_deal_duration"] = *request.DealDuration
 	}
 	if request.DealStartDelay != nil {
-		updates["deal_start_delay"] = *request.DealStartDelay
+		updates["template_deal_start_delay"] = *request.DealStartDelay
 	}
 	if request.DealVerified != nil {
-		updates["deal_verified"] = *request.DealVerified
+		updates["template_deal_verified"] = *request.DealVerified
 	}
 	if request.DealKeepUnsealed != nil {
-		updates["deal_keep_unsealed"] = *request.DealKeepUnsealed
+		updates["template_deal_keep_unsealed"] = *request.DealKeepUnsealed
 	}
 	if request.DealAnnounceToIPNI != nil {
-		updates["deal_announce_to_ipni"] = *request.DealAnnounceToIPNI
+		updates["template_deal_announce_to_ipni"] = *request.DealAnnounceToIPNI
 	}
 	if request.DealProvider != nil {
-		updates["deal_provider"] = *request.DealProvider
+		updates["template_deal_provider"] = *request.DealProvider
 	}
 	if request.DealHTTPHeaders != nil {
-		updates["deal_http_headers"] = *request.DealHTTPHeaders
+		updates["template_deal_http_headers"] = *request.DealHTTPHeaders
 	}
 	if request.DealURLTemplate != nil {
-		updates["deal_url_template"] = *request.DealURLTemplate
+		updates["template_deal_url_template"] = *request.DealURLTemplate
 	}
 	if request.DealNotes != nil {
-		updates["deal_notes"] = *request.DealNotes
+		updates["template_deal_notes"] = *request.DealNotes
 	}
 	if request.DealForce != nil {
-		updates["deal_force"] = *request.DealForce
+		updates["template_deal_force"] = *request.DealForce
 	}
 	if request.DealAllowedPieceCIDs != nil {
 		// Validate and deduplicate piece CIDs
@@ -235,37 +235,37 @@ func (DefaultHandler) UpdateHandler(ctx context.Context, db *gorm.DB, idOrName s
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		updates["deal_allowed_piece_cids"] = validatedPieceCIDs
+		updates["template_deal_allowed_piece_cids"] = validatedPieceCIDs
 	}
 
 	// Update scheduling fields
 	if request.ScheduleCron != nil {
-		updates["schedule_cron"] = *request.ScheduleCron
+		updates["template_schedule_cron"] = *request.ScheduleCron
 	}
 	if request.ScheduleDealNumber != nil {
-		updates["schedule_deal_number"] = *request.ScheduleDealNumber
+		updates["template_schedule_deal_number"] = *request.ScheduleDealNumber
 	}
 	if request.ScheduleDealSize != nil {
-		updates["schedule_deal_size"] = *request.ScheduleDealSize
+		updates["template_schedule_deal_size"] = *request.ScheduleDealSize
 	}
 
 	// Update restriction fields
 	if request.TotalDealNumber != nil {
-		updates["total_deal_number"] = *request.TotalDealNumber
+		updates["template_total_deal_number"] = *request.TotalDealNumber
 	}
 	if request.TotalDealSize != nil {
-		updates["total_deal_size"] = *request.TotalDealSize
+		updates["template_total_deal_size"] = *request.TotalDealSize
 	}
 	if request.MaxPendingDealNumber != nil {
-		updates["max_pending_deal_number"] = *request.MaxPendingDealNumber
+		updates["template_max_pending_deal_number"] = *request.MaxPendingDealNumber
 	}
 	if request.MaxPendingDealSize != nil {
-		updates["max_pending_deal_size"] = *request.MaxPendingDealSize
+		updates["template_max_pending_deal_size"] = *request.MaxPendingDealSize
 	}
 
 	// Update HTTP headers
 	if request.HTTPHeaders != nil {
-		updates["http_headers"] = *request.HTTPHeaders
+		updates["template_http_headers"] = *request.HTTPHeaders
 	}
 
 	if len(updates) == 0 {
