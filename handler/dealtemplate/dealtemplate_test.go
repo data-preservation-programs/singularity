@@ -345,7 +345,8 @@ func TestUpdateHandler(t *testing.T) {
 				ScheduleDealSize:   &newDealSize,
 			}
 
-			updated, err := handler.UpdateHandler(ctx, db, "update-test-template", updateReq)
+			// Use the renamed template name from previous test
+			updated, err := handler.UpdateHandler(ctx, db, "renamed-template", updateReq)
 			require.NoError(t, err)
 			require.NotNil(t, updated)
 			require.Equal(t, "@hourly", updated.DealConfig.ScheduleCron)
@@ -366,7 +367,8 @@ func TestUpdateHandler(t *testing.T) {
 				MaxPendingDealSize:   &newMaxPendingSize,
 			}
 
-			updated, err := handler.UpdateHandler(ctx, db, "update-test-template", updateReq)
+			// Use the renamed template name from previous test
+			updated, err := handler.UpdateHandler(ctx, db, "renamed-template", updateReq)
 			require.NoError(t, err)
 			require.NotNil(t, updated)
 			require.Equal(t, 100, updated.DealConfig.TotalDealNumber)
@@ -430,7 +432,8 @@ func TestUpdateHandler(t *testing.T) {
 		t.Run("empty update", func(t *testing.T) {
 			updateReq := UpdateRequest{} // no fields to update
 
-			updated, err := handler.UpdateHandler(ctx, db, "update-test-template", updateReq)
+			// Use the renamed template name from previous test
+			updated, err := handler.UpdateHandler(ctx, db, "renamed-template", updateReq)
 			require.NoError(t, err)
 			require.NotNil(t, updated)
 			require.Equal(t, created.ID, updated.ID)

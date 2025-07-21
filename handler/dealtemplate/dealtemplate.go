@@ -277,8 +277,9 @@ func (DefaultHandler) UpdateHandler(ctx context.Context, db *gorm.DB, idOrName s
 		return nil, errors.WithStack(err)
 	}
 
-	// Reload the template to get updated values
-	err = template.FindByIDOrName(db, idOrName)
+	// Reload the template to get updated values using the ID
+	// We use the ID because the name might have been changed
+	err = db.First(&template, template.ID).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
