@@ -39,12 +39,10 @@ func GenerateFixedBytes(length int) []byte {
 
 func GenerateRandomBytes(n int) []byte {
 	b := make([]byte, n)
-	read, err := rand.Read(b)
-	if err != nil || read != n {
-		// Fallback to math/rand if crypto/rand fails
-		for i := range b {
-			b[i] = byte(rand2.Intn(256))
-		}
+	_, err := rand.Read(b)
+	if err != nil {
+		// In tests, crypto/rand should always work
+		panic("crypto/rand failed in test environment: " + err.Error())
 	}
 	return b
 }
