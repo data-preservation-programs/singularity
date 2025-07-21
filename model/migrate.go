@@ -92,13 +92,21 @@ func _init(db *gorm.DB) error {
 	} else {
 		logger.Info("Auto migrating tables in clean database")
 		// This is a brand new database, run automigrate script on current schema
-		err := db.AutoMigrate(Tables...)
-		if err != nil {
-			return errors.Wrap(err, "failed to auto migrate")
+		// First, create tables without foreign keys to avoid cyclic dependencies
+		db2 := db.Session(&gorm.Session{})
+		db2.Config.DisableForeignKeyConstraintWhenMigrating = true
+		if err := db2.AutoMigrate(Tables...); err != nil {
+			return errors.Wrap(err, "failed to auto migrate tables")
+		}
+
+		// Then, create foreign keys
+		logger.Info("Creating foreign key constraints")
+		if err := db.AutoMigrate(Tables...); err != nil {
+			return errors.Wrap(err, "failed to create foreign keys")
 		}
 
 		logger.Debug("Creating instance id")
-		err = db.Clauses(clause.OnConflict{
+		err := db.Clauses(clause.OnConflict{
 			DoNothing: true,
 		}).Create(&Global{Key: "instance_id", Value: uuid.NewString()}).Error
 		if err != nil {
