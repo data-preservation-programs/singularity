@@ -22,7 +22,7 @@ type DealStateChange struct {
 	Metadata      string    `gorm:"type:TEXT"                                json:"metadata"       table:"verbose"` // Additional metadata as JSON
 
 	// Associations
-	Deal *Deal `gorm:"foreignKey:DealID;constraint:OnDelete:CASCADE" json:"deal,omitempty" swaggerignore:"true" table:"expand"`
+	Deal *Deal `gorm:"foreignKey:DealID;references:ID;constraint:OnDelete:CASCADE" json:"deal,omitempty" swaggerignore:"true" table:"expand"`
 }
 
 // DealStateChangeQuery represents query parameters for filtering deal state changes
