@@ -29,6 +29,7 @@ func TestMigrateDataset(t *testing.T) {
 	if err != nil {
 		t.Log(err)
 		t.Skip("Skipping test because MongoDB is not available")
+		return
 	}
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		flagSet := flag.NewFlagSet("", 0)

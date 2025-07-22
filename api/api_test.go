@@ -28,6 +28,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/handler/dealtemplate"
+	"github.com/data-preservation-programs/singularity/handler/errorlog"
 	"github.com/data-preservation-programs/singularity/handler/file"
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/statechange"
@@ -238,6 +239,7 @@ func TestAllAPIs(t *testing.T) {
 			scheduleHandler:     mockSchedule,
 			stateChangeHandler:  &statechange.DefaultHandler{},
 			dealtemplateHandler: &dealtemplate.DefaultHandler{},
+			errorlogHandler:     &errorlog.DefaultHandler{},
 		}
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()

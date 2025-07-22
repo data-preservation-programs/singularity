@@ -32,6 +32,7 @@ var Tables = []any{
 	&Wallet{},
 	&Deal{},
 	&DealStateChange{},
+	&ErrorLog{},
 }
 
 var logger = logging.Logger("model")

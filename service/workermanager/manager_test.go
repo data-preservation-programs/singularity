@@ -375,13 +375,18 @@ func TestWorkerManager_StopAllWorkers(t *testing.T) {
 
 func TestWorkerManager_EnsureMinimumWorkers(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		// Insert required global state for analytics to work
+		global := model.Global{Key: "instance_id", Value: "test-instance-id"}
+		err := db.Where("key = ?", "instance_id").FirstOrCreate(&global).Error
+		require.NoError(t, err)
+
 		config := DefaultManagerConfig()
 		config.MinWorkers = 2
 		manager := NewWorkerManager(db, config)
 
 		// This will likely fail due to missing worker dependencies
 		// but we test that it doesn't panic
-		err := manager.ensureMinimumWorkers(ctx)
+		err = manager.ensureMinimumWorkers(ctx)
 		_ = err // Ignore error as we're testing the logic, not full functionality
 
 		// Wait for workers to be registered, then clean up
