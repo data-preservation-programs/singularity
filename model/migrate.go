@@ -4,6 +4,9 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 
+	// For registering DealProofTracking in migrations
+	"github.com/data-preservation-programs/singularity/service/dealprooftracker"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/migrate/migrations"
 	"github.com/go-gormigrate/gormigrate/v2"
@@ -31,6 +34,8 @@ var Tables = []any{
 	&Deal{},
 	&Schedule{},
 	&Wallet{},
+	// --- Added for dealprooftracker ---
+	&dealprooftracker.DealProofTracking{},
 }
 
 var logger = logging.Logger("model")

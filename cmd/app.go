@@ -1,236 +1,240 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io"
-	"os"
-	"os/exec"
-	"strings"
+	   "bytes"
+	   "encoding/json"
+	   "fmt"
+	   "io"
+	   "os"
+	   "os/exec"
+	   "strings"
 
-	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/cmd/admin"
-	"github.com/data-preservation-programs/singularity/cmd/cliutil"
-	"github.com/data-preservation-programs/singularity/cmd/dataprep"
-	"github.com/data-preservation-programs/singularity/cmd/deal"
-	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
-	"github.com/data-preservation-programs/singularity/cmd/dealtemplate"
-	"github.com/data-preservation-programs/singularity/cmd/ez"
-	"github.com/data-preservation-programs/singularity/cmd/run"
-	"github.com/data-preservation-programs/singularity/cmd/storage"
-	"github.com/data-preservation-programs/singularity/cmd/tool"
-	"github.com/data-preservation-programs/singularity/cmd/wallet"
-	"github.com/filecoin-project/go-address"
-	"github.com/ipfs/go-log/v2"
-	"github.com/rclone/rclone/lib/terminal"
-	"github.com/urfave/cli/v2"
+	   "github.com/cockroachdb/errors"
+	   "github.com/data-preservation-programs/singularity/cmd/admin"
+	   "github.com/data-preservation-programs/singularity/cmd/cliutil"
+	   "github.com/data-preservation-programs/singularity/cmd/dataprep"
+	   "github.com/data-preservation-programs/singularity/cmd/deal"
+	   "github.com/data-preservation-programs/singularity/cmd/deal/schedule"
+	   "github.com/data-preservation-programs/singularity/cmd/dealtemplate"
+	   "github.com/data-preservation-programs/singularity/cmd/ez"
+	   "github.com/data-preservation-programs/singularity/cmd/run"
+	   "github.com/data-preservation-programs/singularity/cmd/storage"
+	   "github.com/data-preservation-programs/singularity/cmd/tool"
+	   "github.com/data-preservation-programs/singularity/cmd/wallet"
+	   "github.com/data-preservation-programs/singularity/service/dealprooftracker"
+	   "github.com/filecoin-project/go-address"
+	   "github.com/ipfs/go-log/v2"
+	   "github.com/rclone/rclone/lib/terminal"
+	   "github.com/urfave/cli/v2"
 )
 
 var logger = log.Logger("singularity/cmd")
 
+// Static CLI registration with dealproof appended
 var App = &cli.App{
-	Name:  "singularity",
-	Usage: "A tool for large-scale clients with PB-scale data onboarding to Filecoin network",
-	Description: `Database Backend Support:
+	   Name:  "singularity",
+	   Usage: "A tool for large-scale clients with PB-scale data onboarding to Filecoin network",
+	   Description: `Database Backend Support:
   Singularity supports multiple database backend: sqlite3, postgres, mysql5.7+
   Use '--database-connection-string' or $DATABASE_CONNECTION_STRING to specify the database connection string.
-    Example for postgres  - postgres://user:pass@example.com:5432/dbname
-    Example for mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?parseTime=true
-    Example for sqlite3   - sqlite:/absolute/path/to/database.db
-                or        - sqlite:relative/path/to/database.db
+	Example for postgres  - postgres://user:pass@example.com:5432/dbname
+	Example for mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?parseTime=true
+	Example for sqlite3   - sqlite:/absolute/path/to/database.db
+				or        - sqlite:relative/path/to/database.db
 
 Network Support:
   Default settings in Singularity are for Mainnet. You may set below environment values for other network:
-    For Calibration network:
-      * Set LOTUS_API to https://api.calibration.node.glif.io/rpc/v1
-      * Set MARKET_DEAL_URL to https://marketdeals-calibration.s3.amazonaws.com/StateMarketDeals.json.zst
-      * Set LOTUS_TEST to 1
-    For all other networks:
-      * Set LOTUS_API to your network's Lotus API endpoint
-      * Set MARKET_DEAL_URL to empty string
-      * Set LOTUS_TEST to 0 or 1 based on whether the network address starts with 'f' or 't'
-    Switching between different networks with the same database instance is not recommended.
+	For Calibration network:
+	  * Set LOTUS_API to https://api.calibration.node.glif.io/rpc/v1
+	  * Set MARKET_DEAL_URL to https://marketdeals-calibration.s3.amazonaws.com/StateMarketDeals.json.zst
+	  * Set LOTUS_TEST to 1
+	For all other networks:
+	  * Set LOTUS_API to your network's Lotus API endpoint
+	  * Set MARKET_DEAL_URL to empty string
+	  * Set LOTUS_TEST to 0 or 1 based on whether the network address starts with 'f' or 't'
+	Switching between different networks with the same database instance is not recommended.
 
 Logging:
   Singularity uses go-log for logging and can be controlled by below environment variables:
-    * GOLOG_LOG_LEVEL  - example values: debug, info, warn, error, dpanic, panic, fatal
-    * GOLOG_LOG_FMT    - example values: color, nocolor, json
-    * More details can be found at https://github.com/ipfs/go-log
+	* GOLOG_LOG_LEVEL  - example values: debug, info, warn, error, dpanic, panic, fatal
+	* GOLOG_LOG_FMT    - example values: color, nocolor, json
+	* More details can be found at https://github.com/ipfs/go-log
 
 Upgrading:
   Within each minor version upgrade, use "singularity admin init" to upgrade the database schema.
   For major version upgrade, please refer to the release notes for upgrade instructions.
 `,
-	EnableBashCompletion: true,
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:        "database-connection-string",
-			Usage:       "Connection string to the database",
-			DefaultText: "sqlite:" + "./singularity.db",
-			Value:       "sqlite:" + "./singularity.db",
-			EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
-		},
-		&cli.BoolFlag{
-			Name:  "json",
-			Usage: "Enable JSON output",
-			Value: false,
-		},
-		&cli.BoolFlag{
-			Name:  "verbose",
-			Usage: "Enable verbose output. This will print more columns for the result as well as full error trace",
-			Value: false,
-		},
-		&cli.StringFlag{
-			Name:     "lotus-api",
-			Category: "Lotus",
-			Usage:    "Lotus RPC API endpoint",
-			Value:    "https://api.node.glif.io/rpc/v1",
-			EnvVars:  []string{"LOTUS_API"},
-		},
-		&cli.StringFlag{
-			Name:     "lotus-token",
-			Category: "Lotus",
-			Usage:    "Lotus RPC API token",
-			Value:    "",
-			EnvVars:  []string{"LOTUS_TOKEN"},
-		},
-		&cli.BoolFlag{
-			Name:     "lotus-test",
-			Category: "Lotus",
-			Usage:    "Whether the runtime environment is using Testnet.",
-			EnvVars:  []string{"LOTUS_TEST"},
-		},
-	},
-	Before: func(c *cli.Context) error {
-		if c.Bool("lotus-test") {
-			address.CurrentNetwork = address.Testnet
-			logger.Infow("Current network is set to Testnet")
-		} else {
-			address.CurrentNetwork = address.Mainnet
-		}
-		return nil
-	},
-	Commands: []*cli.Command{
-		OnboardCmd,
-		ez.PrepCmd,
-		VersionCmd,
-		{
-			Name:     "admin",
-			Usage:    "Admin commands",
-			Category: "Operations",
-			Subcommands: []*cli.Command{
-				admin.InitCmd,
-				admin.ResetCmd,
-				admin.MigrateCmd,
-				admin.MigrateDatasetCmd,
-				admin.MigrateScheduleCmd,
-			},
-		},
-		DownloadCmd,
-		tool.ExtractCarCmd,
-		{
-			Name:     "deal",
-			Usage:    "Replication / Deal making management",
-			Category: "Operations",
-			Subcommands: []*cli.Command{
-				{
-					Name:  "schedule",
-					Usage: "Schedule deals",
-					Subcommands: []*cli.Command{
-						schedule.CreateCmd,
-						schedule.ListCmd,
-						schedule.UpdateCmd,
-						schedule.PauseCmd,
-						schedule.ResumeCmd,
-						schedule.RemoveCmd,
-					},
-				},
-				deal.SendManualCmd,
-				deal.ListCmd,
-			},
-		},
-		{
-			Name:     "deal-schedule-template",
-			Aliases:  []string{"dst"},
-			Usage:    "Deal schedule template management",
-			Category: "Operations",
-			Subcommands: []*cli.Command{
-				dealtemplate.CreateCmd,
-				dealtemplate.ListCmd,
-				dealtemplate.GetCmd,
-				dealtemplate.DeleteCmd,
-			},
-		},
-		{
-			Name:     "run",
-			Category: "Daemons",
-			Usage:    "run different singularity components",
-			Subcommands: []*cli.Command{
-				run.APICmd,
-				run.DatasetWorkerCmd,
-				run.ContentProviderCmd,
-				run.DealTrackerCmd,
-				run.DealPusherCmd,
-				run.DownloadServerCmd,
-				run.UnifiedServiceCmd,
-			},
-		},
-		{
-			Name:     "wallet",
-			Category: "Operations",
-			Usage:    "Wallet management",
-			Subcommands: []*cli.Command{
-				wallet.BalanceCmd,
-				wallet.CreateCmd,
-				wallet.ImportCmd,
-				wallet.InitCmd,
-				wallet.ListCmd,
-				wallet.RemoveCmd,
-				wallet.UpdateCmd,
-			},
-		},
-		{
-			Name:     "storage",
-			Category: "Operations",
-			Usage:    "Create and manage storage system connections",
-			Subcommands: []*cli.Command{
-				storage.CreateCmd,
-				storage.ExploreCmd,
-				storage.ListCmd,
-				storage.RemoveCmd,
-				storage.UpdateCmd,
-				storage.RenameCmd,
-			},
-		},
-		{
-			Name:     "prep",
-			Category: "Operations",
-			Usage:    "Create and manage dataset preparations",
-			Subcommands: []*cli.Command{
-				dataprep.CreateCmd,
-				dataprep.ListCmd,
-				dataprep.StatusCmd,
-				dataprep.RenameCmd,
-				dataprep.AttachSourceCmd,
-				dataprep.AttachOutputCmd,
-				dataprep.DetachOutputCmd,
-				dataprep.StartScanCmd,
-				dataprep.PauseScanCmd,
-				dataprep.StartPackCmd,
-				dataprep.PausePackCmd,
-				dataprep.StartDagGenCmd,
-				dataprep.PauseDagGenCmd,
-				dataprep.ListPiecesCmd,
-				dataprep.AddPieceCmd,
-				dataprep.ExploreCmd,
-				dataprep.AttachWalletCmd,
-				dataprep.ListWalletsCmd,
-				dataprep.DetachWalletCmd,
-				dataprep.RemoveCmd,
-			},
-		},
-	},
+	   EnableBashCompletion: true,
+	   Flags: []cli.Flag{
+			   &cli.StringFlag{
+					   Name:        "database-connection-string",
+					   Usage:       "Connection string to the database",
+					   DefaultText: "sqlite:" + "./singularity.db",
+					   Value:       "sqlite:" + "./singularity.db",
+					   EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
+			   },
+			   &cli.BoolFlag{
+					   Name:  "json",
+					   Usage: "Enable JSON output",
+					   Value: false,
+			   },
+			   &cli.BoolFlag{
+					   Name:  "verbose",
+					   Usage: "Enable verbose output. This will print more columns for the result as well as full error trace",
+					   Value: false,
+			   },
+			   &cli.StringFlag{
+					   Name:     "lotus-api",
+					   Category: "Lotus",
+					   Usage:    "Lotus RPC API endpoint",
+					   Value:    "https://api.node.glif.io/rpc/v1",
+					   EnvVars:  []string{"LOTUS_API"},
+			   },
+			   &cli.StringFlag{
+					   Name:     "lotus-token",
+					   Category: "Lotus",
+					   Usage:    "Lotus RPC API token",
+					   Value:    "",
+					   EnvVars:  []string{"LOTUS_TOKEN"},
+			   },
+			   &cli.BoolFlag{
+					   Name:     "lotus-test",
+					   Category: "Lotus",
+					   Usage:    "Whether the runtime environment is using Testnet.",
+					   EnvVars:  []string{"LOTUS_TEST"},
+			   },
+	   },
+	   Before: func(c *cli.Context) error {
+			   if c.Bool("lotus-test") {
+					   address.CurrentNetwork = address.Testnet
+					   logger.Infow("Current network is set to Testnet")
+			   } else {
+					   address.CurrentNetwork = address.Mainnet
+			   }
+			   return nil
+	   },
+	   Commands: []*cli.Command{
+			   OnboardCmd,
+			   ez.PrepCmd,
+			   VersionCmd,
+			   {
+					   Name:     "admin",
+					   Usage:    "Admin commands",
+					   Category: "Operations",
+					   Subcommands: []*cli.Command{
+							   admin.InitCmd,
+							   admin.ResetCmd,
+							   admin.MigrateCmd,
+							   admin.MigrateDatasetCmd,
+							   admin.MigrateScheduleCmd,
+					   },
+			   },
+			   DownloadCmd,
+			   tool.ExtractCarCmd,
+			   {
+					   Name:     "deal",
+					   Usage:    "Replication / Deal making management",
+					   Category: "Operations",
+					   Subcommands: []*cli.Command{
+							   {
+									   Name:  "schedule",
+									   Usage: "Schedule deals",
+									   Subcommands: []*cli.Command{
+											   schedule.CreateCmd,
+											   schedule.ListCmd,
+											   schedule.UpdateCmd,
+											   schedule.PauseCmd,
+											   schedule.ResumeCmd,
+											   schedule.RemoveCmd,
+									   },
+							   },
+							   deal.SendManualCmd,
+							   deal.ListCmd,
+					   },
+			   },
+			   {
+					   Name:     "deal-schedule-template",
+					   Aliases:  []string{"dst"},
+					   Usage:    "Deal schedule template management",
+					   Category: "Operations",
+					   Subcommands: []*cli.Command{
+							   dealtemplate.CreateCmd,
+							   dealtemplate.ListCmd,
+							   dealtemplate.GetCmd,
+							   dealtemplate.DeleteCmd,
+					   },
+			   },
+			   {
+					   Name:     "run",
+					   Category: "Daemons",
+					   Usage:    "run different singularity components",
+					   Subcommands: []*cli.Command{
+							   run.APICmd,
+							   run.DatasetWorkerCmd,
+							   run.ContentProviderCmd,
+							   run.DealTrackerCmd,
+							   run.DealPusherCmd,
+							   run.DownloadServerCmd,
+							   run.UnifiedServiceCmd,
+					   },
+			   },
+			   {
+					   Name:     "wallet",
+					   Category: "Operations",
+					   Usage:    "Wallet management",
+					   Subcommands: []*cli.Command{
+							   wallet.BalanceCmd,
+							   wallet.CreateCmd,
+							   wallet.ImportCmd,
+							   wallet.InitCmd,
+							   wallet.ListCmd,
+							   wallet.RemoveCmd,
+							   wallet.UpdateCmd,
+					   },
+			   },
+			   {
+					   Name:     "storage",
+					   Category: "Operations",
+					   Usage:    "Create and manage storage system connections",
+					   Subcommands: []*cli.Command{
+							   storage.CreateCmd,
+							   storage.ExploreCmd,
+							   storage.ListCmd,
+							   storage.RemoveCmd,
+							   storage.UpdateCmd,
+							   storage.RenameCmd,
+					   },
+			   },
+			   {
+					   Name:     "prep",
+					   Category: "Operations",
+					   Usage:    "Create and manage dataset preparations",
+					   Subcommands: []*cli.Command{
+							   dataprep.CreateCmd,
+							   dataprep.ListCmd,
+							   dataprep.StatusCmd,
+							   dataprep.RenameCmd,
+							   dataprep.AttachSourceCmd,
+							   dataprep.AttachOutputCmd,
+							   dataprep.DetachOutputCmd,
+							   dataprep.StartScanCmd,
+							   dataprep.PauseScanCmd,
+							   dataprep.StartPackCmd,
+							   dataprep.PausePackCmd,
+							   dataprep.StartDagGenCmd,
+							   dataprep.PauseDagGenCmd,
+							   dataprep.ListPiecesCmd,
+							   dataprep.AddPieceCmd,
+							   dataprep.ExploreCmd,
+							   dataprep.AttachWalletCmd,
+							   dataprep.ListWalletsCmd,
+							   dataprep.DetachWalletCmd,
+							   dataprep.RemoveCmd,
+					   },
+			   },
+			   // Deal proof tracker command
+			   dealprooftracker.CLICommands(),
+	   },
 }
 
 var originalHelpPrinter = cli.HelpPrinter
