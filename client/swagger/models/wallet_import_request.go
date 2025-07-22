@@ -17,6 +17,15 @@ import (
 // swagger:model wallet.ImportRequest
 type WalletImportRequest struct {
 
+	// Optional contact information
+	Contact string `json:"contact,omitempty"`
+
+	// Optional location
+	Location string `json:"location,omitempty"`
+
+	// Optional display name
+	Name string `json:"name,omitempty"`
+
 	// This is the exported private key from lotus wallet export
 	PrivateKey string `json:"privateKey,omitempty"`
 }

@@ -1,19 +1,19 @@
-# Deal Templates
+# Deal Schedule Templates
 
-Deal templates are reusable configurations that store deal parameters for data preparation workflows. They simplify the process of creating preparations with consistent deal settings and reduce the need to specify deal parameters manually each time.
+Deal schedule templates are reusable configurations that store deal parameters for data preparation workflows. They simplify the process of creating preparations with consistent deal settings and reduce the need to specify deal parameters manually each time.
 
 ## Overview
 
-Deal templates allow you to:
+Deal schedule templates allow you to:
 - Define and store a complete set of deal parameters once
 - Reuse the same deal configuration across multiple preparations
 - Ensure consistency in deal pricing and settings
 - Simplify the onboarding process for new users
 - Maintain organization-wide deal standards
 
-## Creating Deal Templates
+## Creating Deal Schedule Templates
 
-Use the `singularity deal-template create` command to create a new deal template:
+Use the `singularity deal-schedule-template create` command to create a new deal schedule template:
 
 ```bash
 singularity deal-template create \
@@ -50,43 +50,43 @@ singularity deal-template create \
 
 ### List Templates
 ```bash
-# List all deal templates
-singularity deal-template list
+# List all deal schedule templates
+singularity deal-schedule-template list
 
 # Output as JSON
-singularity deal-template list --json
+singularity deal-schedule-template list --json
 ```
 
 ### View Template Details
 ```bash
 # View specific template
-singularity deal-template get standard-archive
+singularity deal-schedule-template get standard-archive
 
 # View by ID
-singularity deal-template get 1
+singularity deal-schedule-template get 1
 ```
 
 ### Delete Templates
 ```bash
 # Delete by name
-singularity deal-template delete standard-archive
+singularity deal-schedule-template delete standard-archive
 
 # Delete by ID  
-singularity deal-template delete 1
+singularity deal-schedule-template delete 1
 ```
 
-## Using Deal Templates
+## Using Deal Schedule Templates
 
 ### In Preparation Creation
 
-Apply a deal template when creating a preparation:
+Apply a deal schedule template when creating a preparation:
 
 ```bash
 singularity prep create \
   --name "my-dataset" \
   --source /path/to/data \
   --auto-create-deals \
-  --deal-template standard-archive
+  --deal-schedule-template standard-archive
 ```
 
 ### Override Template Values
@@ -98,7 +98,7 @@ singularity prep create \
   --name "my-dataset" \
   --source /path/to/data \
   --auto-create-deals \
-  --deal-template standard-archive \
+  --deal-schedule-template standard-archive \
   --deal-price-per-gb 0.0000000002  # Override template price
 ```
 
@@ -206,7 +206,7 @@ singularity deal-template create --name "workflow-standard" --deal-verified --de
 # Use in automated preparation
 singularity prep create \
   --source /data/dataset1 \
-  --deal-template workflow-standard \
+  --deal-schedule-template workflow-standard \
   --auto-create-deals \
   --auto-start \
   --auto-progress

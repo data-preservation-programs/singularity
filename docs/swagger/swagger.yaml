@@ -287,6 +287,137 @@ definitions:
         description: Whether the deal should be verified
         type: boolean
     type: object
+  dealtemplate.CreateRequest:
+    properties:
+      dealAllowedPieceCids:
+        items:
+          type: string
+        type: array
+      dealAnnounceToIpni:
+        type: boolean
+      dealDuration:
+        $ref: '#/definitions/time.Duration'
+      dealForce:
+        type: boolean
+      dealHttpHeaders:
+        $ref: '#/definitions/model.ConfigMap'
+      dealKeepUnsealed:
+        type: boolean
+      dealNotes:
+        type: string
+      dealPricePerDeal:
+        type: number
+      dealPricePerGb:
+        type: number
+      dealPricePerGbEpoch:
+        type: number
+      dealProvider:
+        type: string
+      dealStartDelay:
+        $ref: '#/definitions/time.Duration'
+      dealUrlTemplate:
+        type: string
+      dealVerified:
+        type: boolean
+      description:
+        type: string
+      httpHeaders:
+        description: HTTP headers as string slice (matching deal schedule create command)
+        items:
+          type: string
+        type: array
+      maxPendingDealNumber:
+        type: integer
+      maxPendingDealSize:
+        type: string
+      name:
+        type: string
+      scheduleCron:
+        description: New scheduling fields (matching deal schedule create command)
+        type: string
+      scheduleDealNumber:
+        type: integer
+      scheduleDealSize:
+        type: string
+      totalDealNumber:
+        description: New restriction fields (matching deal schedule create command)
+        type: integer
+      totalDealSize:
+        type: string
+    type: object
+  dealtemplate.UpdateRequest:
+    properties:
+      dealAllowedPieceCids:
+        items:
+          type: string
+        type: array
+      dealAnnounceToIpni:
+        type: boolean
+      dealDuration:
+        $ref: '#/definitions/time.Duration'
+      dealForce:
+        type: boolean
+      dealHttpHeaders:
+        $ref: '#/definitions/model.ConfigMap'
+      dealKeepUnsealed:
+        type: boolean
+      dealNotes:
+        type: string
+      dealPricePerDeal:
+        type: number
+      dealPricePerGb:
+        type: number
+      dealPricePerGbEpoch:
+        type: number
+      dealProvider:
+        type: string
+      dealStartDelay:
+        $ref: '#/definitions/time.Duration'
+      dealUrlTemplate:
+        type: string
+      dealVerified:
+        type: boolean
+      description:
+        type: string
+      httpHeaders:
+        description: HTTP headers as string slice
+        items:
+          type: string
+        type: array
+      maxPendingDealNumber:
+        type: integer
+      maxPendingDealSize:
+        type: string
+      name:
+        type: string
+      scheduleCron:
+        description: New scheduling fields
+        type: string
+      scheduleDealNumber:
+        type: integer
+      scheduleDealSize:
+        type: string
+      totalDealNumber:
+        description: New restriction fields
+        type: integer
+      totalDealSize:
+        type: string
+    type: object
+  errorlog.ErrorLogsResponse:
+    properties:
+      errorLogs:
+        items:
+          $ref: '#/definitions/model.ErrorLog'
+        type: array
+      hasMore:
+        type: boolean
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
   file.DealsForFileRange:
     properties:
       deals:
@@ -477,6 +608,12 @@ definitions:
         description: AutoCreateDeals enables automatic deal creation after preparation
           completes
         type: boolean
+      dealAllowedPieceCids:
+        description: DealAllowedPieceCIDs specifies which piece CIDs are allowed for
+          this deal config
+        items:
+          type: string
+        type: array
       dealAnnounceToIpni:
         description: DealAnnounceToIpni indicates whether to announce to IPNI
         type: boolean
@@ -484,12 +621,19 @@ definitions:
         description: DealDuration specifies the deal duration (time.Duration for backward
           compatibility)
         type: integer
+      dealForce:
+        description: DealForce indicates whether to force deal creation even if conditions
+          aren't met
+        type: boolean
       dealHttpHeaders:
         description: DealHTTPHeaders contains HTTP headers for deals
         type: object
       dealKeepUnsealed:
         description: DealKeepUnsealed indicates whether to keep unsealed copy
         type: boolean
+      dealNotes:
+        description: DealNotes provides additional notes or comments for the deal
+        type: string
       dealPricePerDeal:
         description: DealPricePerDeal specifies the price in FIL per deal
         type: number
@@ -515,6 +659,27 @@ definitions:
       dealVerified:
         description: DealVerified indicates whether deals should be verified
         type: boolean
+      httpHeaders:
+        description: HTTP headers as string slice (matching deal schedule create command)
+        items:
+          type: string
+        type: array
+      maxPendingDealNumber:
+        type: integer
+      maxPendingDealSize:
+        type: string
+      scheduleCron:
+        description: Scheduling fields (matching deal schedule create command)
+        type: string
+      scheduleDealNumber:
+        type: integer
+      scheduleDealSize:
+        type: string
+      totalDealNumber:
+        description: Restriction fields (matching deal schedule create command)
+        type: integer
+      totalDealSize:
+        type: string
     type: object
   model.DealState:
     enum:
@@ -536,6 +701,107 @@ definitions:
     - DealRejected
     - DealSlashed
     - DealErrored
+  model.DealStateChange:
+    properties:
+      clientAddress:
+        description: Client wallet address
+        type: string
+      dealId:
+        description: Internal singularity deal ID
+        type: integer
+      epochHeight:
+        description: Filecoin epoch when change occurred
+        type: integer
+      id:
+        type: integer
+      metadata:
+        description: Additional metadata as JSON
+        type: string
+      newState:
+        allOf:
+        - $ref: '#/definitions/model.DealState'
+        description: New deal state
+      previousState:
+        allOf:
+        - $ref: '#/definitions/model.DealState'
+        description: Previous deal state (nullable for initial state)
+      providerId:
+        description: Storage provider ID
+        type: string
+      sectorId:
+        description: Storage provider sector ID
+        type: string
+      timestamp:
+        type: string
+    type: object
+  model.DealTemplate:
+    properties:
+      createdAt:
+        type: string
+      dealConfig:
+        allOf:
+        - $ref: '#/definitions/model.DealConfig'
+        description: Deal Parameters (encapsulated in DealConfig struct)
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  model.ErrorLevel:
+    enum:
+    - info
+    - warning
+    - error
+    - critical
+    type: string
+    x-enum-varnames:
+    - ErrorLevelInfo
+    - ErrorLevelWarning
+    - ErrorLevelError
+    - ErrorLevelCritical
+  model.ErrorLog:
+    properties:
+      component:
+        description: Component that generated the error (onboard, deal_schedule, etc.)
+        type: string
+      createdAt:
+        type: string
+      entityId:
+        description: ID of the associated entity
+        type: string
+      entityType:
+        description: Type of entity (deal, preparation, schedule, etc.)
+        type: string
+      eventType:
+        description: Type of event (creation, processing, error, etc.)
+        type: string
+      id:
+        type: integer
+      level:
+        allOf:
+        - $ref: '#/definitions/model.ErrorLevel'
+        description: Error level (info, warning, error, critical)
+      message:
+        description: Human-readable error message
+        type: string
+      metadata:
+        allOf:
+        - $ref: '#/definitions/model.ConfigMap'
+        description: Additional context as JSON
+      sessionId:
+        description: Optional session identifier
+        type: string
+      stackTrace:
+        description: Stack trace if available
+        type: string
+      userId:
+        description: Optional user identifier
+        type: string
+    type: object
   model.File:
     properties:
       attachmentId:
@@ -991,6 +1257,19 @@ definitions:
         default: true
         description: Whether the deal should be verified
         type: boolean
+    type: object
+  statechange.StateChangeResponse:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      stateChanges:
+        items:
+          $ref: '#/definitions/model.DealStateChange'
+        type: array
+      total:
+        type: integer
     type: object
   storage.DirEntry:
     properties:
@@ -8323,6 +8602,46 @@ definitions:
     type: object
   store.PieceReader:
     type: object
+  time.Duration:
+    enum:
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    type: integer
+    x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+  wallet.BalanceResponse:
+    properties:
+      address:
+        type: string
+      balance:
+        description: FIL balance in FIL units
+        type: string
+      balanceAttoFil:
+        description: Raw balance in attoFIL
+        type: string
+      dataCap:
+        description: FIL+ datacap balance
+        type: string
+      dataCapBytes:
+        description: Raw datacap in bytes
+        type: integer
+      error:
+        description: Error message if any
+        type: string
+    type: object
   wallet.CreateRequest:
     properties:
       actorId:
@@ -8343,20 +8662,29 @@ definitions:
     type: object
   wallet.ImportRequest:
     properties:
+      contact:
+        description: Optional contact information
+        type: string
+      location:
+        description: Optional location
+        type: string
+      name:
+        description: Optional display name
+        type: string
       privateKey:
         description: This is the exported private key from lotus wallet export
         type: string
     type: object
   wallet.UpdateRequest:
     properties:
-      actorName:
-        description: Name is readable label for the wallet
-        type: string
-      contactInfo:
+      contact:
         description: Contact is optional email for SP wallets
         type: string
       location:
         description: Location is optional region, country for SP wallets
+        type: string
+      name:
+        description: Name is readable label for the wallet
         type: string
     type: object
 externalDocs:
@@ -8375,6 +8703,213 @@ info:
   title: Singularity API
   version: beta
 paths:
+  /api/deals/{id}/state-changes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all state changes for a specific deal ordered by timestamp
+      operationId: GetDealStateChanges
+      parameters:
+      - description: Deal ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.DealStateChange'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Get state changes for a specific deal
+      tags:
+      - State Changes
+  /api/errors:
+    get:
+      consumes:
+      - application/json
+      operationId: ListErrorLogs
+      parameters:
+      - description: Filter by entity type (e.g., deal, preparation, schedule)
+        in: query
+        name: entity_type
+        type: string
+      - description: Filter by entity ID
+        in: query
+        name: entity_id
+        type: string
+      - description: Filter by component (e.g., onboard, deal_schedule)
+        in: query
+        name: component
+        type: string
+      - description: Filter by error level (info, warning, error, critical)
+        in: query
+        name: level
+        type: string
+      - description: Filter by event type
+        in: query
+        name: event_type
+        type: string
+      - description: Filter logs after this time (RFC3339 format)
+        in: query
+        name: start_time
+        type: string
+      - description: Filter logs before this time (RFC3339 format)
+        in: query
+        name: end_time
+        type: string
+      - description: 'Maximum number of logs to return (default: 50, max: 1000)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Number of logs to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/errorlog.ErrorLogsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: List error logs with filtering and pagination
+      tags:
+      - Error Logs
+  /api/state-changes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of deal state changes with optional filtering by
+        deal ID, state, provider, client, and time range. Supports pagination and
+        sorting.
+      operationId: ListStateChanges
+      parameters:
+      - description: Filter by deal ID
+        in: query
+        name: dealId
+        type: string
+      - description: Filter by new state
+        enum:
+        - proposed
+        - published
+        - active
+        - expired
+        - proposal_expired
+        - rejected
+        - slashed
+        - error
+        in: query
+        name: state
+        type: string
+      - description: Filter by storage provider ID
+        in: query
+        name: providerId
+        type: string
+      - description: Filter by client wallet address
+        in: query
+        name: clientAddress
+        type: string
+      - description: Filter changes after this time (RFC3339 format)
+        in: query
+        name: startTime
+        type: string
+      - description: Filter changes before this time (RFC3339 format)
+        in: query
+        name: endTime
+        type: string
+      - default: 0
+        description: Number of records to skip for pagination
+        in: query
+        name: offset
+        type: integer
+      - default: 100
+        description: Maximum number of records to return
+        in: query
+        name: limit
+        type: integer
+      - default: timestamp
+        description: Field to sort by
+        enum:
+        - timestamp
+        - dealId
+        - newState
+        - providerId
+        - clientAddress
+        in: query
+        name: orderBy
+        type: string
+      - default: desc
+        description: Sort order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/statechange.StateChangeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: List all deal state changes with filtering and pagination
+      tags:
+      - State Changes
+  /api/state-changes/stats:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve various statistics about deal state changes including
+        total counts, distribution by state, and recent activity
+      operationId: GetStateChangeStats
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Get statistics about deal state changes
+      tags:
+      - State Changes
   /deal:
     post:
       consumes:
@@ -8408,6 +8943,155 @@ paths:
       summary: List all deals
       tags:
       - Deal
+  /deal-template:
+    get:
+      description: Get a list of all deal templates
+      operationId: ListDealTemplates
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.DealTemplate'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: List all deal templates
+      tags:
+      - Deal Template
+    post:
+      consumes:
+      - application/json
+      description: Create a new deal template with specified configuration
+      operationId: CreateDealTemplate
+      parameters:
+      - description: Deal template configuration
+        in: body
+        name: template
+        required: true
+        schema:
+          $ref: '#/definitions/dealtemplate.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.DealTemplate'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create a new deal template
+      tags:
+      - Deal Template
+  /deal-template/{idOrName}:
+    delete:
+      description: Delete a deal template by ID or name
+      operationId: DeleteDealTemplate
+      parameters:
+      - description: Deal template ID or name
+        in: path
+        name: idOrName
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Deal template deleted successfully
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Delete a deal template
+      tags:
+      - Deal Template
+    get:
+      description: Retrieve a specific deal template by its ID or name
+      operationId: GetDealTemplate
+      parameters:
+      - description: Deal template ID or name
+        in: path
+        name: idOrName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.DealTemplate'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Get a deal template by ID or name
+      tags:
+      - Deal Template
+    patch:
+      consumes:
+      - application/json
+      description: Update an existing deal template with partial updates (only specified
+        fields are changed)
+      operationId: UpdateDealTemplate
+      parameters:
+      - description: Deal template ID or name
+        in: path
+        name: idOrName
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: update
+        required: true
+        schema:
+          $ref: '#/definitions/dealtemplate.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.DealTemplate'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Update a deal template
+      tags:
+      - Deal Template
   /file/{id}:
     get:
       consumes:
@@ -12021,6 +12705,35 @@ paths:
           schema:
             $ref: '#/definitions/api.HTTPError'
       summary: Remove a wallet
+      tags:
+      - Wallet
+  /wallet/{address}/balance:
+    get:
+      description: Retrieves the FIL balance and FIL+ datacap balance for a specific
+        wallet address
+      operationId: GetWalletBalance
+      parameters:
+      - description: Wallet address
+        in: path
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/wallet.BalanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Get wallet FIL and FIL+ balance
       tags:
       - Wallet
   /wallet/{address}/init:

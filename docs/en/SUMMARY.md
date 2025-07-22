@@ -25,7 +25,7 @@
 ## Deal Making <a href="#deal-making" id="deal-making"></a>
 
 * [Create a deal schedule](deal-making/create-a-deal-schedule.md)
-* [Deal Templates](deal-templates.md)
+* [Deal Schedule Templates](deal-schedule-templates.md)
 
 ## Topics <a href="#topics" id="topics"></a>
 
@@ -61,11 +61,12 @@
     * [Remove](cli-reference/deal/schedule/remove.md)
   * [Send Manual](cli-reference/deal/send-manual.md)
   * [List](cli-reference/deal/list.md)
-* [Deal Template](cli-reference/deal-template/README.md)
-  * [Create](cli-reference/deal-template/create.md)
-  * [List](cli-reference/deal-template/list.md)
-  * [Get](cli-reference/deal-template/get.md)
-  * [Delete](cli-reference/deal-template/delete.md)
+* [Deal Schedule Template](cli-reference/deal-schedule-template/README.md)
+  * [Create](cli-reference/deal-schedule-template/create.md)
+  * [List](cli-reference/deal-schedule-template/list.md)
+  * [Get](cli-reference/deal-schedule-template/get.md)
+  * [Update](cli-reference/deal-schedule-template/update.md)
+  * [Delete](cli-reference/deal-schedule-template/delete.md)
 * [Run](cli-reference/run/README.md)
   * [Api](cli-reference/run/api.md)
   * [Dataset Worker](cli-reference/run/dataset-worker.md)
@@ -75,6 +76,7 @@
   * [Download Server](cli-reference/run/download-server.md)
   * [Unified](cli-reference/run/unified.md)
 * [Wallet](cli-reference/wallet/README.md)
+  * [Balance](cli-reference/wallet/balance.md)
   * [Create](cli-reference/wallet/create.md)
   * [Import](cli-reference/wallet/import.md)
   * [Init](cli-reference/wallet/init.md)
@@ -263,6 +265,9 @@
   * [List Wallets](cli-reference/prep/list-wallets.md)
   * [Detach Wallet](cli-reference/prep/detach-wallet.md)
   * [Remove](cli-reference/prep/remove.md)
+* [Error](cli-reference/error/README.md)
+  * [Log](cli-reference/error/log/README.md)
+    * [List](cli-reference/error/log/list.md)
 
 <!-- cli end -->
 
@@ -271,11 +276,14 @@
 
 * [Admin](web-api-reference/admin.md)
 * [Deal Schedule](web-api-reference/deal-schedule.md)
+* [Deal Template](web-api-reference/deal-template.md)
 * [Deal](web-api-reference/deal.md)
+* [Error Logs](web-api-reference/error-logs.md)
 * [File](web-api-reference/file.md)
 * [Job](web-api-reference/job.md)
 * [Piece](web-api-reference/piece.md)
 * [Preparation](web-api-reference/preparation.md)
+* [State Changes](web-api-reference/state-changes.md)
 * [Storage](web-api-reference/storage.md)
 * [Wallet Association](web-api-reference/wallet-association.md)
 * [Wallet](web-api-reference/wallet.md)

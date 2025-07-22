@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity deal-template get - Get a deal template by ID or name
+   singularity deal-schedule-template get - Get a deal template by ID or name
 
 USAGE:
-   singularity deal-template get [command options] <template_id_or_name>
+   singularity deal-schedule-template get [command options] <template_id_or_name>
 
 CATEGORY:
    Deal Template Management
