@@ -22,6 +22,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/file"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/handler/job"
+	"github.com/data-preservation-programs/singularity/handler/proof"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
@@ -58,6 +59,7 @@ type Server struct {
 	fileHandler     file.Handler
 	jobHandler      job.Handler
 	scheduleHandler schedule.Handler
+	proofHandler    proof.Handler
 }
 
 func Run(c *cli.Context) error {
@@ -138,6 +140,7 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 		fileHandler:     &file.DefaultHandler{},
 		jobHandler:      &job.DefaultHandler{},
 		scheduleHandler: &schedule.DefaultHandler{},
+		proofHandler:    &proof.DefaultHandler{},
 	}, nil
 }
 
@@ -556,4 +559,12 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/file/:id/prepare_to_pack", s.toEchoHandler(s.fileHandler.PrepareToPackFileHandler))
 	e.GET("/api/file/:id/retrieve", s.retrieveFile)
 	e.POST("/api/preparation/:id/source/:name/file", s.toEchoHandler(s.fileHandler.PushFileHandler))
+
+	// Proof
+	e.GET("/api/proof", s.toEchoHandler(func(ctx context.Context, db *gorm.DB, request proof.ListProofRequest) ([]model.Proof, error) {
+		return s.proofHandler.ListHandler(ctx, db, request)
+	}))
+	e.POST("/api/proof/sync", s.toEchoHandler(func(ctx context.Context, db *gorm.DB, request proof.SyncProofRequest) error {
+		return s.proofHandler.SyncHandler(ctx, db, s.lotusClient, request)
+	}))
 }

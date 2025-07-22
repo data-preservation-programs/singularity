@@ -109,6 +109,36 @@ func (d Deal) Key() string {
 	return fmt.Sprintf("%s-%s-%s-%d-%d", d.ClientActorID, d.Provider, d.PieceCID.String(), d.StartEpoch, d.EndEpoch)
 }
 
+type ProofType string
+
+const (
+	ProofOfReplication ProofType = "replication"
+	ProofOfSpacetime   ProofType = "spacetime"
+)
+
+type Proof struct {
+	ID        uint64    `gorm:"primaryKey" json:"id"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	// Link to existing deal
+	DealID *uint64 `gorm:"index" json:"dealId"`
+	Deal   *Deal   `gorm:"foreignKey:DealID;constraint:OnDelete:CASCADE" json:"deal,omitempty"`
+
+	// Proof details
+	ProofType ProofType `gorm:"index" json:"proofType"`
+	MessageID string    `gorm:"index" json:"messageId"` // Message CID
+	BlockCID  string    `gorm:"index" json:"blockCid"`  // Block CID where proof was included
+	Height    int64     `gorm:"index" json:"height"`    // Block height
+	Method    string    `json:"method"`                 // Proof method/algorithm
+	Verified  bool      `json:"verified"`               // Whether proof was successfully verified
+
+	// Metadata
+	SectorID *uint64 `json:"sectorId"`
+	Provider string  `gorm:"index" json:"provider"` // Storage Provider ID
+	ErrorMsg string  `json:"errorMessage,omitempty"`
+}
+
 type ScheduleID uint32
 
 type Schedule struct {

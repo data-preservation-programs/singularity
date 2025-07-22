@@ -17,6 +17,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
 	"github.com/data-preservation-programs/singularity/cmd/dealtemplate"
 	"github.com/data-preservation-programs/singularity/cmd/ez"
+	"github.com/data-preservation-programs/singularity/cmd/proof"
 	"github.com/data-preservation-programs/singularity/cmd/run"
 	"github.com/data-preservation-programs/singularity/cmd/storage"
 	"github.com/data-preservation-programs/singularity/cmd/tool"
@@ -159,6 +160,15 @@ Upgrading:
 				dealtemplate.ListCmd,
 				dealtemplate.GetCmd,
 				dealtemplate.DeleteCmd,
+			},
+		},
+		{
+			Name:     "proof",
+			Usage:    "Proof management",
+			Category: "Operations",
+			Subcommands: []*cli.Command{
+				proof.ListCmd,
+				proof.SyncCmd,
 			},
 		},
 		{
