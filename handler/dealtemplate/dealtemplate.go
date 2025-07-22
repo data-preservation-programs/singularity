@@ -372,7 +372,7 @@ func (DefaultHandler) validateAndDeduplicatePieceCIDs(pieceCIDs model.StringSlic
 // @Success 200 {object} model.DealTemplate
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /deal-template [post]
+// @Router /deal-schedule-template [post]
 func _() {}
 
 // @ID ListDealTemplates
@@ -382,7 +382,7 @@ func _() {}
 // @Produce json
 // @Success 200 {array} model.DealTemplate
 // @Failure 500 {object} api.HTTPError
-// @Router /deal-template [get]
+// @Router /deal-schedule-template [get]
 func _() {}
 
 // @ID GetDealTemplate
@@ -395,7 +395,7 @@ func _() {}
 // @Failure 400 {object} api.HTTPError
 // @Failure 404 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /deal-template/{idOrName} [get]
+// @Router /deal-schedule-template/{idOrName} [get]
 func _() {}
 
 // @ID UpdateDealTemplate
@@ -410,7 +410,7 @@ func _() {}
 // @Failure 400 {object} api.HTTPError
 // @Failure 404 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /deal-template/{idOrName} [patch]
+// @Router /deal-schedule-template/{idOrName} [patch]
 func _() {}
 
 // @ID DeleteDealTemplate
@@ -422,5 +422,5 @@ func _() {}
 // @Failure 400 {object} api.HTTPError
 // @Failure 404 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /deal-template/{idOrName} [delete]
+// @Router /deal-schedule-template/{idOrName} [delete]
 func _() {}

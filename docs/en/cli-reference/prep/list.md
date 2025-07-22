@@ -12,6 +12,7 @@ CATEGORY:
    Preparation Management
 
 OPTIONS:
+   --json      Enable JSON output (default: false)
    --help, -h  show help
 ```
 {% endcode %}

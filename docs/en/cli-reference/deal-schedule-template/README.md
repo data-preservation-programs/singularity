@@ -1,18 +1,18 @@
-# Deal template management
+# Deal schedule template management
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity deal-template - Deal template management
+   singularity deal-schedule-template - Deal schedule template management
 
 USAGE:
-   singularity deal-template command [command options]
+   singularity deal-schedule-template command [command options]
 
 COMMANDS:
+   create   Create a new deal template with unified flags and defaults
    help, h  Shows a list of commands or help for one command
    Deal Template Management:
-     create  Create a new deal template
-     list    List all deal templates
+     list    List all deal templates as pretty-printed JSON
      get     Get a deal template by ID or name
      update  Update an existing deal template
      delete  Delete a deal template by ID or name

@@ -13,10 +13,12 @@ import (
 	"github.com/data-preservation-programs/singularity/client/swagger/http/admin"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal_schedule"
+	"github.com/data-preservation-programs/singularity/client/swagger/http/deal_template"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/file"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/job"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/piece"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/preparation"
+	"github.com/data-preservation-programs/singularity/client/swagger/http/state_changes"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/storage"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/wallet"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/wallet_association"
@@ -67,10 +69,12 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Singularit
 	cli.Admin = admin.New(transport, formats)
 	cli.Deal = deal.New(transport, formats)
 	cli.DealSchedule = deal_schedule.New(transport, formats)
+	cli.DealTemplate = deal_template.New(transport, formats)
 	cli.File = file.New(transport, formats)
 	cli.Job = job.New(transport, formats)
 	cli.Piece = piece.New(transport, formats)
 	cli.Preparation = preparation.New(transport, formats)
+	cli.StateChanges = state_changes.New(transport, formats)
 	cli.Storage = storage.New(transport, formats)
 	cli.Wallet = wallet.New(transport, formats)
 	cli.WalletAssociation = wallet_association.New(transport, formats)
@@ -124,6 +128,8 @@ type SingularityAPI struct {
 
 	DealSchedule deal_schedule.ClientService
 
+	DealTemplate deal_template.ClientService
+
 	File file.ClientService
 
 	Job job.ClientService
@@ -131,6 +137,8 @@ type SingularityAPI struct {
 	Piece piece.ClientService
 
 	Preparation preparation.ClientService
+
+	StateChanges state_changes.ClientService
 
 	Storage storage.ClientService
 
@@ -147,10 +155,12 @@ func (c *SingularityAPI) SetTransport(transport runtime.ClientTransport) {
 	c.Admin.SetTransport(transport)
 	c.Deal.SetTransport(transport)
 	c.DealSchedule.SetTransport(transport)
+	c.DealTemplate.SetTransport(transport)
 	c.File.SetTransport(transport)
 	c.Job.SetTransport(transport)
 	c.Piece.SetTransport(transport)
 	c.Preparation.SetTransport(transport)
+	c.StateChanges.SetTransport(transport)
 	c.Storage.SetTransport(transport)
 	c.Wallet.SetTransport(transport)
 	c.WalletAssociation.SetTransport(transport)

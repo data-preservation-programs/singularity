@@ -557,12 +557,12 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	// Deal
 	e.POST("/api/deal", s.toEchoHandler(s.dealHandler.ListHandler))
 
-	// Deal Templates
-	e.POST("/api/deal-template", s.toEchoHandler(s.dealtemplateHandler.CreateHandler))
-	e.GET("/api/deal-templates", s.toEchoHandler(s.dealtemplateHandler.ListHandler))
-	e.GET("/api/deal-template/:id", s.toEchoHandler(s.dealtemplateHandler.GetHandler))
-	e.PUT("/api/deal-template/:id", s.toEchoHandler(s.dealtemplateHandler.UpdateHandler))
-	e.DELETE("/api/deal-template/:id", s.toEchoHandler(s.dealtemplateHandler.DeleteHandler))
+	// Deal Schedule Templates
+	e.POST("/api/deal-schedule-template", s.toEchoHandler(s.dealtemplateHandler.CreateHandler))
+	e.GET("/api/deal-schedule-templates", s.toEchoHandler(s.dealtemplateHandler.ListHandler))
+	e.GET("/api/deal-schedule-template/:id", s.toEchoHandler(s.dealtemplateHandler.GetHandler))
+	e.PUT("/api/deal-schedule-template/:id", s.toEchoHandler(s.dealtemplateHandler.UpdateHandler))
+	e.DELETE("/api/deal-schedule-template/:id", s.toEchoHandler(s.dealtemplateHandler.DeleteHandler))
 
 	// State Changes
 	e.GET("/api/deals/:id/state-changes", s.toEchoHandler(s.stateChangeHandler.GetDealStateChangesHandler))

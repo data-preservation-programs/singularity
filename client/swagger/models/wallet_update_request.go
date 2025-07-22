@@ -17,14 +17,14 @@ import (
 // swagger:model wallet.UpdateRequest
 type WalletUpdateRequest struct {
 
-	// Name is readable label for the wallet
-	ActorName string `json:"actorName,omitempty"`
-
 	// Contact is optional email for SP wallets
-	ContactInfo string `json:"contactInfo,omitempty"`
+	Contact string `json:"contact,omitempty"`
 
 	// Location is optional region, country for SP wallets
 	Location string `json:"location,omitempty"`
+
+	// Name is readable label for the wallet
+	Name string `json:"name,omitempty"`
 }
 
 // Validate validates this wallet update request

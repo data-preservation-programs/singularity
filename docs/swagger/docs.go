@@ -28,6 +28,214 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/deals/{id}/state-changes": {
+            "get": {
+                "description": "Retrieve all state changes for a specific deal ordered by timestamp",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "State Changes"
+                ],
+                "summary": "Get state changes for a specific deal",
+                "operationId": "GetDealStateChanges",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Deal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.DealStateChange"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/state-changes": {
+            "get": {
+                "description": "Retrieve a list of deal state changes with optional filtering by deal ID, state, provider, client, and time range. Supports pagination and sorting.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "State Changes"
+                ],
+                "summary": "List all deal state changes with filtering and pagination",
+                "operationId": "ListStateChanges",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by deal ID",
+                        "name": "dealId",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "proposed",
+                            "published",
+                            "active",
+                            "expired",
+                            "proposal_expired",
+                            "rejected",
+                            "slashed",
+                            "error"
+                        ],
+                        "type": "string",
+                        "description": "Filter by new state",
+                        "name": "state",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by storage provider ID",
+                        "name": "providerId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by client wallet address",
+                        "name": "clientAddress",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter changes after this time (RFC3339 format)",
+                        "name": "startTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter changes before this time (RFC3339 format)",
+                        "name": "endTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Number of records to skip for pagination",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 100,
+                        "description": "Maximum number of records to return",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "timestamp",
+                            "dealId",
+                            "newState",
+                            "providerId",
+                            "clientAddress"
+                        ],
+                        "type": "string",
+                        "default": "timestamp",
+                        "description": "Field to sort by",
+                        "name": "orderBy",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort order",
+                        "name": "order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/statechange.StateChangeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/state-changes/stats": {
+            "get": {
+                "description": "Retrieve various statistics about deal state changes including total counts, distribution by state, and recent activity",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "State Changes"
+                ],
+                "summary": "Get statistics about deal state changes",
+                "operationId": "GetStateChangeStats",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/deal": {
             "post": {
                 "description": "List all deals",
@@ -65,6 +273,227 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/deal-schedule-template": {
+            "get": {
+                "description": "Get a list of all deal templates",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Template"
+                ],
+                "summary": "List all deal templates",
+                "operationId": "ListDealTemplates",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.DealTemplate"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new deal template with specified configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Template"
+                ],
+                "summary": "Create a new deal template",
+                "operationId": "CreateDealTemplate",
+                "parameters": [
+                    {
+                        "description": "Deal template configuration",
+                        "name": "template",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dealtemplate.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.DealTemplate"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/deal-schedule-template/{idOrName}": {
+            "get": {
+                "description": "Retrieve a specific deal template by its ID or name",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Template"
+                ],
+                "summary": "Get a deal template by ID or name",
+                "operationId": "GetDealTemplate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deal template ID or name",
+                        "name": "idOrName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.DealTemplate"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a deal template by ID or name",
+                "tags": [
+                    "Deal Template"
+                ],
+                "summary": "Delete a deal template",
+                "operationId": "DeleteDealTemplate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deal template ID or name",
+                        "name": "idOrName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deal template deleted successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update an existing deal template with partial updates (only specified fields are changed)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Template"
+                ],
+                "summary": "Update a deal template",
+                "operationId": "UpdateDealTemplate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deal template ID or name",
+                        "name": "idOrName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "update",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dealtemplate.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.DealTemplate"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/api.HTTPError"
                         }
@@ -5613,6 +6042,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/wallet/{address}/balance": {
+            "get": {
+                "description": "Retrieves the FIL balance and FIL+ datacap balance for a specific wallet address",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Get wallet FIL and FIL+ balance",
+                "operationId": "GetWalletBalance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/wallet.BalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/wallet/{address}/init": {
             "post": {
                 "produces": [
@@ -6101,6 +6572,178 @@ const docTemplate = `{
                 }
             }
         },
+        "dealtemplate.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "dealAllowedPieceCids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "dealAnnounceToIpni": {
+                    "type": "boolean"
+                },
+                "dealDuration": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "dealForce": {
+                    "type": "boolean"
+                },
+                "dealHttpHeaders": {
+                    "$ref": "#/definitions/model.ConfigMap"
+                },
+                "dealKeepUnsealed": {
+                    "type": "boolean"
+                },
+                "dealNotes": {
+                    "type": "string"
+                },
+                "dealPricePerDeal": {
+                    "type": "number"
+                },
+                "dealPricePerGb": {
+                    "type": "number"
+                },
+                "dealPricePerGbEpoch": {
+                    "type": "number"
+                },
+                "dealProvider": {
+                    "type": "string"
+                },
+                "dealStartDelay": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "dealUrlTemplate": {
+                    "type": "string"
+                },
+                "dealVerified": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "httpHeaders": {
+                    "description": "HTTP headers as string slice (matching deal schedule create command)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "maxPendingDealNumber": {
+                    "type": "integer"
+                },
+                "maxPendingDealSize": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "scheduleCron": {
+                    "description": "New scheduling fields (matching deal schedule create command)",
+                    "type": "string"
+                },
+                "scheduleDealNumber": {
+                    "type": "integer"
+                },
+                "scheduleDealSize": {
+                    "type": "string"
+                },
+                "totalDealNumber": {
+                    "description": "New restriction fields (matching deal schedule create command)",
+                    "type": "integer"
+                },
+                "totalDealSize": {
+                    "type": "string"
+                }
+            }
+        },
+        "dealtemplate.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "dealAllowedPieceCids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "dealAnnounceToIpni": {
+                    "type": "boolean"
+                },
+                "dealDuration": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "dealForce": {
+                    "type": "boolean"
+                },
+                "dealHttpHeaders": {
+                    "$ref": "#/definitions/model.ConfigMap"
+                },
+                "dealKeepUnsealed": {
+                    "type": "boolean"
+                },
+                "dealNotes": {
+                    "type": "string"
+                },
+                "dealPricePerDeal": {
+                    "type": "number"
+                },
+                "dealPricePerGb": {
+                    "type": "number"
+                },
+                "dealPricePerGbEpoch": {
+                    "type": "number"
+                },
+                "dealProvider": {
+                    "type": "string"
+                },
+                "dealStartDelay": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "dealUrlTemplate": {
+                    "type": "string"
+                },
+                "dealVerified": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "httpHeaders": {
+                    "description": "HTTP headers as string slice",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "maxPendingDealNumber": {
+                    "type": "integer"
+                },
+                "maxPendingDealSize": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "scheduleCron": {
+                    "description": "New scheduling fields",
+                    "type": "string"
+                },
+                "scheduleDealNumber": {
+                    "type": "integer"
+                },
+                "scheduleDealSize": {
+                    "type": "string"
+                },
+                "totalDealNumber": {
+                    "description": "New restriction fields",
+                    "type": "integer"
+                },
+                "totalDealSize": {
+                    "type": "string"
+                }
+            }
+        },
         "file.DealsForFileRange": {
             "type": "object",
             "properties": {
@@ -6368,6 +7011,13 @@ const docTemplate = `{
                     "description": "AutoCreateDeals enables automatic deal creation after preparation completes",
                     "type": "boolean"
                 },
+                "dealAllowedPieceCids": {
+                    "description": "DealAllowedPieceCIDs specifies which piece CIDs are allowed for this deal config",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "dealAnnounceToIpni": {
                     "description": "DealAnnounceToIpni indicates whether to announce to IPNI",
                     "type": "boolean"
@@ -6376,6 +7026,10 @@ const docTemplate = `{
                     "description": "DealDuration specifies the deal duration (time.Duration for backward compatibility)",
                     "type": "integer"
                 },
+                "dealForce": {
+                    "description": "DealForce indicates whether to force deal creation even if conditions aren't met",
+                    "type": "boolean"
+                },
                 "dealHttpHeaders": {
                     "description": "DealHTTPHeaders contains HTTP headers for deals",
                     "type": "object"
@@ -6383,6 +7037,10 @@ const docTemplate = `{
                 "dealKeepUnsealed": {
                     "description": "DealKeepUnsealed indicates whether to keep unsealed copy",
                     "type": "boolean"
+                },
+                "dealNotes": {
+                    "description": "DealNotes provides additional notes or comments for the deal",
+                    "type": "string"
                 },
                 "dealPricePerDeal": {
                     "description": "DealPricePerDeal specifies the price in FIL per deal",
@@ -6415,6 +7073,36 @@ const docTemplate = `{
                 "dealVerified": {
                     "description": "DealVerified indicates whether deals should be verified",
                     "type": "boolean"
+                },
+                "httpHeaders": {
+                    "description": "HTTP headers as string slice (matching deal schedule create command)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "maxPendingDealNumber": {
+                    "type": "integer"
+                },
+                "maxPendingDealSize": {
+                    "type": "string"
+                },
+                "scheduleCron": {
+                    "description": "Scheduling fields (matching deal schedule create command)",
+                    "type": "string"
+                },
+                "scheduleDealNumber": {
+                    "type": "integer"
+                },
+                "scheduleDealSize": {
+                    "type": "string"
+                },
+                "totalDealNumber": {
+                    "description": "Restriction fields (matching deal schedule create command)",
+                    "type": "integer"
+                },
+                "totalDealSize": {
+                    "type": "string"
                 }
             }
         },
@@ -6440,6 +7128,85 @@ const docTemplate = `{
                 "DealSlashed",
                 "DealErrored"
             ]
+        },
+        "model.DealStateChange": {
+            "type": "object",
+            "properties": {
+                "clientAddress": {
+                    "description": "Client wallet address",
+                    "type": "string"
+                },
+                "dealId": {
+                    "description": "Internal singularity deal ID",
+                    "type": "integer"
+                },
+                "epochHeight": {
+                    "description": "Filecoin epoch when change occurred",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "metadata": {
+                    "description": "Additional metadata as JSON",
+                    "type": "string"
+                },
+                "newState": {
+                    "description": "New deal state",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.DealState"
+                        }
+                    ]
+                },
+                "previousState": {
+                    "description": "Previous deal state (nullable for initial state)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.DealState"
+                        }
+                    ]
+                },
+                "providerId": {
+                    "description": "Storage provider ID",
+                    "type": "string"
+                },
+                "sectorId": {
+                    "description": "Storage provider sector ID",
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.DealTemplate": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "dealConfig": {
+                    "description": "Deal Parameters (encapsulated in DealConfig struct)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.DealConfig"
+                        }
+                    ]
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
         },
         "model.File": {
             "type": "object",
@@ -7066,6 +7833,26 @@ const docTemplate = `{
                     "description": "Whether the deal should be verified",
                     "type": "boolean",
                     "default": true
+                }
+            }
+        },
+        "statechange.StateChangeResponse": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "stateChanges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DealStateChange"
+                    }
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -16743,6 +17530,57 @@ const docTemplate = `{
         "store.PieceReader": {
             "type": "object"
         },
+        "time.Duration": {
+            "type": "integer",
+            "enum": [
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000
+            ],
+            "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour"
+            ]
+        },
+        "wallet.BalanceResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "balance": {
+                    "description": "FIL balance in FIL units",
+                    "type": "string"
+                },
+                "balanceAttoFil": {
+                    "description": "Raw balance in attoFIL",
+                    "type": "string"
+                },
+                "dataCap": {
+                    "description": "FIL+ datacap balance",
+                    "type": "string"
+                },
+                "dataCapBytes": {
+                    "description": "Raw datacap in bytes",
+                    "type": "integer"
+                },
+                "error": {
+                    "description": "Error message if any",
+                    "type": "string"
+                }
+            }
+        },
         "wallet.CreateRequest": {
             "type": "object",
             "properties": {
@@ -16772,6 +17610,18 @@ const docTemplate = `{
         "wallet.ImportRequest": {
             "type": "object",
             "properties": {
+                "contact": {
+                    "description": "Optional contact information",
+                    "type": "string"
+                },
+                "location": {
+                    "description": "Optional location",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Optional display name",
+                    "type": "string"
+                },
                 "privateKey": {
                     "description": "This is the exported private key from lotus wallet export",
                     "type": "string"
@@ -16781,16 +17631,16 @@ const docTemplate = `{
         "wallet.UpdateRequest": {
             "type": "object",
             "properties": {
-                "actorName": {
-                    "description": "Name is readable label for the wallet",
-                    "type": "string"
-                },
-                "contactInfo": {
+                "contact": {
                     "description": "Contact is optional email for SP wallets",
                     "type": "string"
                 },
                 "location": {
                     "description": "Location is optional region, country for SP wallets",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name is readable label for the wallet",
                     "type": "string"
                 }
             }
