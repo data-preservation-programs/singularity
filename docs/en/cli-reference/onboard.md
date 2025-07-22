@@ -29,26 +29,26 @@ The onboard command supports all 40+ storage backends available in the storage c
 
 COMMON USAGE PATTERNS:
   • Basic local data onboarding:
-    singularity onboard --name "my-dataset" --source "/path/to/data" --deal-schedule-template-id "1"
+    singularity onboard --name "my-dataset" --source "/path/to/data" --deal-template-id "1"
 
   • S3 to local with custom output:
     singularity onboard --name "s3-data" \
       --source "s3://bucket/data" --source-type "s3" \
       --source-s3-region us-east-1 --source-s3-access-key-id "key" \
       --output "/mnt/storage/cars" \
-      --deal-schedule-template-id "template1"
+      --deal-template-id "template1"
 
   • Multiple sources with monitoring:
     singularity onboard --name "multi-source" \
       --source "/data1" --source "/data2" \
       --wait-for-completion --max-workers 5 \
-      --deal-schedule-template-id "prod-template"
+      --deal-template-id "prod-template"
 
   • Cloud-to-cloud transfer:
     singularity onboard --name "gcs-to-s3" \
       --source-type "gcs" --source "gs://source-bucket/data" \
       --output-type "s3" --output "s3://dest-bucket/cars" \
-      --deal-schedule-template-id "cloud-template"
+      --deal-template-id "cloud-template"
 
 GETTING HELP:
   • Use --help-examples to see more detailed examples
@@ -70,7 +70,7 @@ NOTE: All backends supported by 'storage create' are also supported by 'onboard'
 OPTIONS:
    --name value, -n value                                 Name for the preparation
    --source value, -s value [ --source value, -s value ]  Source path(s) to onboard (local paths or remote URLs like s3://bucket/path)
-   --deal-schedule-template-id value, -t value                     Deal template ID to use for deal configuration (required when auto-create-deals is enabled)
+   --deal-template-id value, -t value                     Deal template ID to use for deal configuration (required when auto-create-deals is enabled)
    --source-type value                                    Source storage type (local, s3, gcs, azure, etc.) (default: "local")
    --source-provider value                                Source storage provider (for s3: aws, minio, wasabi, etc.)
    --source-name value                                    Custom name for source storage (auto-generated if not provided)
