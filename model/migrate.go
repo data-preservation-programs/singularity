@@ -31,6 +31,8 @@ var Tables = []any{
 	&Deal{},
 	&Schedule{},
 	&Wallet{},
+	&DealProof{},
+	&ProofVerification{},
 }
 
 var logger = logging.Logger("model")

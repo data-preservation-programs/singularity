@@ -115,6 +115,7 @@ Upgrading:
 		OnboardCmd,
 		ez.PrepCmd,
 		VersionCmd,
+		ProofCmd,
 		{
 			Name:     "admin",
 			Usage:    "Admin commands",
