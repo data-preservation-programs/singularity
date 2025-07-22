@@ -26,7 +26,7 @@ The most efficient way to onboard data with reusable deal configurations:
 
 ```bash
 # First, create a deal template (one-time setup)
-./singularity deal-template create \
+./singularity deal-schedule-template create \
   --name "standard-archive" \
   --description "Standard archival storage with 18-month retention" \
   --deal-price-per-gb 0.0000000001 \
@@ -43,7 +43,7 @@ The most efficient way to onboard data with reusable deal configurations:
   --source "/path/to/your/data" \
   --output "/path/to/output" \
   --auto-create-deals \
-  --deal-template "standard-archive" \
+  --deal-schedule-template "standard-archive" \
   --auto-start \
   --auto-progress
 ```
@@ -89,7 +89,7 @@ echo
 echo "📋 Step 1: Creating deal templates for reuse..."
 
 # Create enterprise template
-./singularity deal-template create \
+./singularity deal-schedule-template create \
   --name "enterprise-tier" \
   --description "Enterprise-grade storage with 3-year retention" \
   --deal-duration 1095days \
@@ -100,7 +100,7 @@ echo "📋 Step 1: Creating deal templates for reuse..."
   --deal-start-delay 72h
 
 # Create research template  
-./singularity deal-template create \
+./singularity deal-schedule-template create \
   --name "research-archive" \
   --description "Long-term research data archive" \
   --deal-duration 1460days \
@@ -113,7 +113,7 @@ echo
 
 # List templates
 echo "📋 Available deal templates:"
-./singularity deal-template list
+./singularity deal-schedule-template list
 echo
 
 echo "🚀 Step 2: Onboarding data using templates..."
@@ -134,7 +134,7 @@ echo "Creating enterprise dataset with template..."
   --source "./demo-data" \
   --output "./demo-output" \
   --auto-create-deals \
-  --deal-template "enterprise-tier" \
+  --deal-schedule-template "enterprise-tier" \
   --auto-start \
   --auto-progress
 
@@ -144,7 +144,7 @@ echo "Creating research dataset with template override..."
   --name "research-dataset" \
   --source "./demo-data" \
   --auto-create-deals \
-  --deal-template "research-archive" \
+  --deal-schedule-template "research-archive" \
   --deal-provider "f01000" \
   --auto-start \
   --auto-progress
@@ -162,13 +162,13 @@ Manage your deal templates for reuse across projects:
 
 ```bash
 # List all templates
-./singularity deal-template list
+./singularity deal-schedule-template list
 
 # View template details
-./singularity deal-template get enterprise-tier
+./singularity deal-schedule-template get enterprise-tier
 
 # Create additional templates for different use cases
-./singularity deal-template create \
+./singularity deal-schedule-template create \
   --name "budget-tier" \
   --description "Cost-effective storage for non-critical data" \
   --deal-duration 365days \
@@ -176,7 +176,7 @@ Manage your deal templates for reuse across projects:
   --deal-start-delay 168h
 
 # Delete templates when no longer needed
-./singularity deal-template delete old-template
+./singularity deal-schedule-template delete old-template
 ```
 
 ## Manual Monitoring
@@ -191,7 +191,7 @@ Monitor your preparations and deal creation:
 ./singularity deal schedule list
 
 # View specific template details
-./singularity deal-template get enterprise-tier
+./singularity deal-schedule-template get enterprise-tier
 
 # View schedules for this preparation via API
 curl http://localhost:7005/api/preparation/my-dataset/schedules
@@ -226,7 +226,7 @@ When the demo completes successfully, you should see:
   --source "/path/to/source2" \
   --output "/path/to/output" \
   --auto-create-deals \
-  --deal-template "enterprise-tier" \
+  --deal-schedule-template "enterprise-tier" \
   --wallet-validation \
   --sp-validation \
   --auto-start \
@@ -244,14 +244,14 @@ When the demo completes successfully, you should see:
   --name "custom-deals-dataset" \
   --source "/path/to/data" \
   --auto-create-deals \
-  --deal-template "research-archive" \
+  --deal-schedule-template "research-archive" \
   --deal-provider "f01000" \
   --deal-verified=false \
   --deal-price-per-gb 0.0000000005
 
 # Multiple templates for different tiers
-./singularity deal-template create --name "hot-storage" --deal-duration 180days --deal-price-per-gb 0.0000000005
-./singularity deal-template create --name "cold-archive" --deal-duration 1460days --deal-price-per-gb 0.0000000001
+./singularity deal-schedule-template create --name "hot-storage" --deal-duration 180days --deal-price-per-gb 0.0000000005
+./singularity deal-schedule-template create --name "cold-archive" --deal-duration 1460days --deal-price-per-gb 0.0000000001
 ```
 
 ## Troubleshooting
@@ -264,10 +264,10 @@ When the demo completes successfully, you should see:
 ./singularity deal schedule list
 
 # View available deal templates
-./singularity deal-template list
+./singularity deal-schedule-template list
 
 # Check specific template configuration
-./singularity deal-template get <template-name>
+./singularity deal-schedule-template get <template-name>
 
 # Check worker status (if using separate terminals)
 ./singularity run unified --dry-run

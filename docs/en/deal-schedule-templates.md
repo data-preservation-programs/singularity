@@ -1,4 +1,4 @@
-# Deal Templates
+# Deal Schedule Templates
 
 Deal templates are reusable configurations that store deal parameters for data preparation workflows. They simplify the process of creating preparations with consistent deal settings and reduce the need to specify deal parameters manually each time.
 
@@ -13,10 +13,10 @@ Deal templates allow you to:
 
 ## Creating Deal Templates
 
-Use the `singularity deal-template create` command to create a new deal template:
+Use the `singularity deal-schedule-template create` command to create a new deal template:
 
 ```bash
-singularity deal-template create \
+singularity deal-schedule-template create \
   --name "standard-archive" \
   --description "Standard archival storage deals" \
   --deal-price-per-gb 0.0000000001 \
@@ -51,28 +51,28 @@ singularity deal-template create \
 ### List Templates
 ```bash
 # List all deal templates
-singularity deal-template list
+singularity deal-schedule-template list
 
 # Output as JSON
-singularity deal-template list --json
+singularity deal-schedule-template list --json
 ```
 
 ### View Template Details
 ```bash
 # View specific template
-singularity deal-template get standard-archive
+singularity deal-schedule-template get standard-archive
 
 # View by ID
-singularity deal-template get 1
+singularity deal-schedule-template get 1
 ```
 
 ### Delete Templates
 ```bash
 # Delete by name
-singularity deal-template delete standard-archive
+singularity deal-schedule-template delete standard-archive
 
 # Delete by ID  
-singularity deal-template delete 1
+singularity deal-schedule-template delete 1
 ```
 
 ## Using Deal Templates
@@ -142,9 +142,9 @@ Example:
 ### Template Organization
 ```bash
 # Create templates for different use cases
-singularity deal-template create --name "hot-storage" --deal-duration 180days --deal-price-per-gb 0.0000000005
-singularity deal-template create --name "cold-archive" --deal-duration 1460days --deal-price-per-gb 0.0000000001
-singularity deal-template create --name "research-tier" --deal-verified --deal-duration 1095days
+singularity deal-schedule-template create --name "hot-storage" --deal-duration 180days --deal-price-per-gb 0.0000000005
+singularity deal-schedule-template create --name "cold-archive" --deal-duration 1460days --deal-price-per-gb 0.0000000001
+singularity deal-schedule-template create --name "research-tier" --deal-verified --deal-duration 1095days
 ```
 
 ### Parameter Guidelines
@@ -162,7 +162,7 @@ singularity deal-template create --name "research-tier" --deal-verified --deal-d
 
 ### Enterprise Template
 ```bash
-singularity deal-template create \
+singularity deal-schedule-template create \
   --name "enterprise-standard" \
   --description "Enterprise-grade storage with 3-year retention" \
   --deal-duration 1095days \
@@ -175,7 +175,7 @@ singularity deal-template create \
 
 ### Research Archive Template
 ```bash
-singularity deal-template create \
+singularity deal-schedule-template create \
   --name "research-archive" \
   --description "Long-term research data archive with datacap" \
   --deal-duration 1460days \
@@ -187,7 +187,7 @@ singularity deal-template create \
 
 ### Budget Storage Template
 ```bash
-singularity deal-template create \
+singularity deal-schedule-template create \
   --name "budget-tier" \
   --description "Cost-effective storage for non-critical data" \
   --deal-duration 365days \
@@ -201,7 +201,7 @@ Deal templates integrate seamlessly with Singularity's automated workflows:
 
 ```bash
 # Create template
-singularity deal-template create --name "workflow-standard" --deal-verified --deal-duration 1095days
+singularity deal-schedule-template create --name "workflow-standard" --deal-verified --deal-duration 1095days
 
 # Use in automated preparation
 singularity prep create \

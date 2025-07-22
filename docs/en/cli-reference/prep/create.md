@@ -49,8 +49,8 @@ OPTIONS:
 
    Validation
 
-   --sp-validation      Enable storage provider validation before deal creation (default: false)
-   --wallet-validation  Enable wallet balance validation before deal creation (default: false)
+   --sp-validation      Enable storage provider validation before deal creation (default: true)
+   --wallet-validation  Enable wallet balance validation before deal creation (default: true)
 
    Workflow Automation
 

@@ -16,6 +16,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
+	"github.com/data-preservation-programs/singularity/service/statetracker"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/google/uuid"
@@ -92,13 +93,14 @@ func (c CloserFunc) Close() error {
 var Logger = log.Logger("dealtracker")
 
 type DealTracker struct {
-	workerID    uuid.UUID
-	dbNoContext *gorm.DB
-	interval    time.Duration
-	dealZstURL  string
-	lotusURL    string
-	lotusToken  string
-	once        bool
+	workerID     uuid.UUID
+	dbNoContext  *gorm.DB
+	interval     time.Duration
+	dealZstURL   string
+	lotusURL     string
+	lotusToken   string
+	once         bool
+	stateTracker *statetracker.StateChangeTracker
 }
 
 func NewDealTracker(
@@ -110,13 +112,14 @@ func NewDealTracker(
 	once bool,
 ) DealTracker {
 	return DealTracker{
-		workerID:    uuid.New(),
-		dbNoContext: db,
-		interval:    interval,
-		dealZstURL:  dealZstURL,
-		lotusURL:    lotusURL,
-		lotusToken:  lotusToken,
-		once:        once,
+		workerID:     uuid.New(),
+		dbNoContext:  db,
+		interval:     interval,
+		dealZstURL:   dealZstURL,
+		lotusURL:     lotusURL,
+		lotusToken:   lotusToken,
+		once:         once,
+		stateTracker: statetracker.NewStateChangeTracker(db),
 	}
 }
 
@@ -399,6 +402,12 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		return nil
 	}
 
+	// Recover any missing state changes from service restarts
+	if err := d.stateTracker.RecoverMissingStateChanges(ctx); err != nil {
+		Logger.Warnw("Failed to recover missing state changes", "error", err)
+		// Continue processing even if recovery fails
+	}
+
 	headTime, err := util.GetLotusHeadTime(ctx, d.lotusURL, d.lotusToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get lotus head time from %s", d.lotusURL)
@@ -501,6 +510,27 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			if err != nil {
 				return errors.WithStack(err)
 			}
+
+			// Track the state change
+			metadata := &statetracker.StateChangeMetadata{
+				Reason:          "Chain state update detected",
+				ActivationEpoch: &deal.State.SectorStartEpoch,
+			}
+			if err := d.stateTracker.TrackStateChangeWithDetails(
+				ctx,
+				model.DealID(dealID), // Convert uint64 to DealID
+				&current,
+				newState,
+				&deal.State.LastUpdatedEpoch,
+				nil, // No sector ID available from chain data
+				deal.Proposal.Provider,
+				deal.Proposal.Client,
+				metadata,
+			); err != nil {
+				Logger.Warnw("Failed to track state change", "dealID", dealID, "error", err)
+				// Continue processing even if state tracking fails
+			}
+
 			updated++
 			return nil
 		}
@@ -523,6 +553,27 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			if err != nil {
 				return errors.WithStack(err)
 			}
+
+			// Track the state change for the matched deal
+			metadata := &statetracker.StateChangeMetadata{
+				Reason:          "Deal matched on-chain",
+				ActivationEpoch: &deal.State.SectorStartEpoch,
+			}
+			if err := d.stateTracker.TrackStateChangeWithDetails(
+				ctx,
+				f.ID,
+				nil, // Unknown previous state for matched deals
+				newState,
+				&deal.State.LastUpdatedEpoch,
+				nil, // No sector ID available from chain data
+				deal.Proposal.Provider,
+				deal.Proposal.Client,
+				metadata,
+			); err != nil {
+				Logger.Warnw("Failed to track state change for matched deal", "dealID", f.ID, "error", err)
+				// Continue processing even if state tracking fails
+			}
+
 			updated++
 			unknownDeals[dealKey] = unknownDeals[dealKey][1:]
 			if len(unknownDeals[dealKey]) == 0 {
@@ -541,8 +592,9 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			return errors.Wrapf(err, "failed to find wallet for client %s", deal.Proposal.Client)
 		}
 
+		var createdDeal model.Deal
 		err = database.DoRetry(ctx, func() error {
-			return db.Create(&model.Deal{
+			createdDeal = model.Deal{
 				DealID:           &dealID,
 				State:            newState,
 				ClientID:         &wallet.ID,
@@ -556,11 +608,34 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 				Price:            deal.Proposal.StoragePricePerEpoch,
 				Verified:         deal.Proposal.VerifiedDeal,
 				LastVerifiedAt:   lastVerifiedAt,
-			}).Error
+			}
+			return db.Create(&createdDeal).Error
 		})
 		if err != nil {
 			return errors.WithStack(err)
 		}
+
+		// Track the initial state for the new external deal
+		metadata := &statetracker.StateChangeMetadata{
+			Reason:          "External deal discovered on-chain",
+			ActivationEpoch: &deal.State.SectorStartEpoch,
+			StoragePrice:    deal.Proposal.StoragePricePerEpoch,
+		}
+		if err := d.stateTracker.TrackStateChangeWithDetails(
+			ctx,
+			createdDeal.ID,
+			nil, // No previous state for new deals
+			newState,
+			&deal.State.LastUpdatedEpoch,
+			nil, // No sector ID available from chain data
+			deal.Proposal.Provider,
+			deal.Proposal.Client,
+			metadata,
+		); err != nil {
+			Logger.Warnw("Failed to track state change for new external deal", "dealID", createdDeal.ID, "error", err)
+			// Continue processing even if state tracking fails
+		}
+
 		inserted++
 		return nil
 	})
@@ -568,23 +643,85 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		return errors.WithStack(err)
 	}
 
-	// Mark all expired active deals as expired
-	result := db.Model(&model.Deal{}).
-		Where("end_epoch < ? AND state = 'active'", lastEpoch).
-		Update("state", model.DealExpired)
-	if result.Error != nil {
+	// Mark all expired active deals as expired and track state changes
+	var expiredDeals []model.Deal
+	err = db.Where("end_epoch < ? AND state = 'active'", lastEpoch).Find(&expiredDeals).Error
+	if err != nil {
 		return errors.WithStack(err)
 	}
-	Logger.Infof("marked %d deals as expired", result.RowsAffected)
 
-	// Mark all expired deal proposals
-	result = db.Model(&model.Deal{}).
-		Where("state in ('proposed', 'published') AND start_epoch < ?", lastEpoch).
-		Update("state", model.DealProposalExpired)
-	if result.Error != nil {
+	if len(expiredDeals) > 0 {
+		// Update deals to expired state
+		result := db.Model(&model.Deal{}).
+			Where("end_epoch < ? AND state = 'active'", lastEpoch).
+			Update("state", model.DealExpired)
+		if result.Error != nil {
+			return errors.WithStack(result.Error)
+		}
+		Logger.Infof("marked %d deals as expired", result.RowsAffected)
+
+		// Track state changes for all expired deals
+		for _, deal := range expiredDeals {
+			metadata := &statetracker.StateChangeMetadata{
+				Reason:          "Deal expired - end epoch reached",
+				ExpirationEpoch: &deal.EndEpoch,
+			}
+			if err := d.stateTracker.TrackStateChangeWithDetails(
+				ctx,
+				deal.ID,
+				&deal.State, // Previous state was active
+				model.DealExpired,
+				&lastEpoch,
+				nil, // No sector ID available
+				deal.Provider,
+				deal.ClientActorID,
+				metadata,
+			); err != nil {
+				Logger.Warnw("Failed to track expiration state change", "dealID", deal.ID, "error", err)
+				// Continue with other deals even if one fails
+			}
+		}
+	}
+
+	// Mark all expired deal proposals and track state changes
+	var expiredProposals []model.Deal
+	err = db.Where("state in ('proposed', 'published') AND start_epoch < ?", lastEpoch).Find(&expiredProposals).Error
+	if err != nil {
 		return errors.WithStack(err)
 	}
-	Logger.Infof("marked %d deal as proposal_expired", result.RowsAffected)
+
+	if len(expiredProposals) > 0 {
+		// Update proposals to expired state
+		result := db.Model(&model.Deal{}).
+			Where("state in ('proposed', 'published') AND start_epoch < ?", lastEpoch).
+			Update("state", model.DealProposalExpired)
+		if result.Error != nil {
+			return errors.WithStack(result.Error)
+		}
+		Logger.Infof("marked %d deal as proposal_expired", result.RowsAffected)
+
+		// Track state changes for all expired proposals
+		for _, deal := range expiredProposals {
+			metadata := &statetracker.StateChangeMetadata{
+				Reason:          "Deal proposal expired - start epoch reached without activation",
+				ExpirationEpoch: &deal.StartEpoch,
+			}
+			if err := d.stateTracker.TrackStateChangeWithDetails(
+				ctx,
+				deal.ID,
+				&deal.State, // Previous state was proposed or published
+				model.DealProposalExpired,
+				&lastEpoch,
+				nil, // No sector ID available
+				deal.Provider,
+				deal.ClientActorID,
+				metadata,
+			); err != nil {
+				Logger.Warnw("Failed to track proposal expiration state change", "dealID", deal.ID, "error", err)
+				// Continue with other deals even if one fails
+			}
+		}
+	}
 
 	return nil
 }
