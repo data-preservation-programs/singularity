@@ -6,6 +6,8 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -105,6 +107,8 @@ type CreateRequest struct {
 	// For SPWallet creation
 	Address string `json:"address,omitempty"`
 	ActorID string `json:"actorId,omitempty"`
+	// For TrackedWallet creation
+	TrackOnly bool `json:"trackOnly,omitempty"`
 	// Optional fields for adding details to Wallet
 	Name     string `json:"name,omitempty"`
 	Contact  string `json:"contact,omitempty"`
@@ -156,12 +160,15 @@ func (DefaultHandler) CreateHandler(
 	hasKeyType := request.KeyType != ""
 	hasAddress := request.Address != ""
 	hasActorID := request.ActorID != ""
+	isTrackOnly := request.TrackOnly
 
 	// Validate that only one wallet type is specified
 	switch {
-	case !hasKeyType && !hasAddress && !hasActorID:
+	case isTrackOnly && (!hasActorID || hasAddress || hasKeyType):
+		return nil, errors.New("TrackedWallet requires only ActorID (no private key or address)")
+	case !hasKeyType && !hasAddress && !hasActorID && !isTrackOnly:
 		return nil, errors.New("must specify either KeyType (for UserWallet) or Address/ActorID (for SPWallet)")
-	case !hasKeyType && (!hasAddress || !hasActorID):
+	case !hasKeyType && !isTrackOnly && (!hasAddress || !hasActorID):
 		return nil, errors.New("must specify both Address and ActorID (for SPWallet)")
 	case hasKeyType && (hasAddress || hasActorID):
 		return nil, errors.New("cannot specify both KeyType (for UserWallet) and Address/ActorID (for SPWallet) - please specify parameters for one wallet type")
@@ -180,6 +187,37 @@ func (DefaultHandler) CreateHandler(
 			Address:    address,
 			PrivateKey: privateKey,
 			WalletType: model.UserWallet,
+		}
+	} else if isTrackOnly {
+		// Create TrackedWallet: resolve ActorID to address using Lotus API
+		if len(request.ActorID) < 2 || (request.ActorID[:2] != "f0" && request.ActorID[:2] != "t0") {
+			return nil, errors.Wrap(handlererror.ErrInvalidParameter, "ActorID must start with f0 or t0")
+		}
+
+		var addr string
+		err := lotusClient.CallFor(ctx, &addr, "Filecoin.StateAccountKey", request.ActorID, nil)
+		if err != nil {
+			// Check for specific error types to provide better user guidance
+			errMsg := err.Error()
+			if strings.Contains(errMsg, "actor code is not account: storageminer") {
+				return nil, errors.Wrap(handlererror.ErrInvalidParameter,
+					fmt.Sprintf("ActorID %s is a storage provider, not a client wallet. Wallet tracking is for client wallets that make deals, not storage providers.", request.ActorID))
+			}
+			if strings.Contains(errMsg, "actor code is not account") {
+				return nil, errors.Wrap(handlererror.ErrInvalidParameter,
+					fmt.Sprintf("ActorID %s is not a client wallet. Wallet tracking is only for client/account actors that make deals.", request.ActorID))
+			}
+			if strings.Contains(errMsg, "actor not found") || strings.Contains(errMsg, "failed to find actor") {
+				return nil, errors.Wrap(handlererror.ErrInvalidParameter,
+					fmt.Sprintf("ActorID %s does not exist on the network.", request.ActorID))
+			}
+			return nil, errors.Wrap(err, "failed to resolve actor ID to address")
+		}
+
+		wallet = model.Wallet{
+			ActorID:    request.ActorID,
+			Address:    addr,
+			WalletType: model.TrackedWallet,
 		}
 	} else {
 		// Validate the address and actor ID with Lotus
