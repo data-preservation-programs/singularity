@@ -186,6 +186,7 @@ Upgrading:
 				wallet.BalanceCmd,
 				wallet.CreateCmd,
 				wallet.ImportCmd,
+				wallet.TrackCmd,
 				wallet.InitCmd,
 				wallet.ListCmd,
 				wallet.RemoveCmd,
