@@ -20,6 +20,22 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// categorizeError determines the appropriate deal state and reason based on error message
+func categorizeError(errorMessage string) (model.DealState, string) {
+	switch {
+	case strings.Contains(errorMessage, "deal rejected"):
+		return model.DealRejected, "Deal rejected by storage provider"
+	case strings.Contains(errorMessage, "no supported protocols"):
+		return model.DealErrored, "No supported storage protocols found"
+	case strings.Contains(errorMessage, "context deadline exceeded") || strings.Contains(errorMessage, "timeout"):
+		return model.DealErrored, "Network timeout during deal negotiation"
+	case strings.Contains(errorMessage, "connection refused") || strings.Contains(errorMessage, "network"):
+		return model.DealErrored, "Network connection failure"
+	default:
+		return model.DealErrored, "General deal creation error"
+	}
+}
+
 var SendManualCmd = &cli.Command{
 	Name:  "send-manual",
 	Usage: "Send a manual deal proposal to boost or legacy market",
@@ -201,22 +217,7 @@ Notes:
 				var reason string
 
 				// Determine the appropriate state and reason based on error type
-				if strings.Contains(err.Error(), "deal rejected") {
-					dealState = model.DealRejected
-					reason = "Deal rejected by storage provider"
-				} else if strings.Contains(err.Error(), "no supported protocols") {
-					dealState = model.DealErrored
-					reason = "No supported storage protocols found"
-				} else if strings.Contains(err.Error(), "context deadline exceeded") || strings.Contains(err.Error(), "timeout") {
-					dealState = model.DealErrored
-					reason = "Network timeout during deal negotiation"
-				} else if strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "network") {
-					dealState = model.DealErrored
-					reason = "Network connection failure"
-				} else {
-					dealState = model.DealErrored
-					reason = "General deal creation error"
-				}
+				dealState, reason = categorizeError(err.Error())
 
 				// Get wallet for deal record
 				var wallet model.Wallet

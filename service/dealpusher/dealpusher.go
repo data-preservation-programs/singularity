@@ -68,6 +68,22 @@ func (c cronLogger) Error(err error, msg string, keysAndValues ...any) {
 	Logger.Errorw(msg, keysAndValues...)
 }
 
+// categorizeError determines the appropriate deal state and reason based on error message
+func categorizeError(errorMessage string) (model.DealState, string) {
+	switch {
+	case strings.Contains(errorMessage, "deal rejected"):
+		return model.DealRejected, "Deal rejected by storage provider"
+	case strings.Contains(errorMessage, "no supported protocols"):
+		return model.DealErrored, "No supported storage protocols found"
+	case strings.Contains(errorMessage, "context deadline exceeded") || strings.Contains(errorMessage, "timeout"):
+		return model.DealErrored, "Network timeout during deal negotiation"
+	case strings.Contains(errorMessage, "connection refused") || strings.Contains(errorMessage, "network"):
+		return model.DealErrored, "Network connection failure"
+	default:
+		return model.DealErrored, "General deal creation error"
+	}
+}
+
 func NewDealPusher(db *gorm.DB, lotusURL string,
 	lotusToken string, numAttempts uint, maxReplicas uint,
 ) (*DealPusher, error) {
@@ -555,22 +571,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				var reason string
 
 				// Determine the appropriate state and reason based on error type
-				if strings.Contains(err.Error(), "deal rejected") {
-					dealState = model.DealRejected
-					reason = "Deal rejected by storage provider"
-				} else if strings.Contains(err.Error(), "no supported protocols") {
-					dealState = model.DealErrored
-					reason = "No supported storage protocols found"
-				} else if strings.Contains(err.Error(), "context deadline exceeded") || strings.Contains(err.Error(), "timeout") {
-					dealState = model.DealErrored
-					reason = "Network timeout during deal negotiation"
-				} else if strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "network") {
-					dealState = model.DealErrored
-					reason = "Network connection failure"
-				} else {
-					dealState = model.DealErrored
-					reason = "General deal creation error"
-				}
+				dealState, reason = categorizeError(err.Error())
 
 				// Create a deal record for the failed attempt to track it
 				failedDeal = &model.Deal{
