@@ -21,8 +21,8 @@ type DealStateChange struct {
 	ClientAddress string    `gorm:"size:86;index"                            json:"clientAddress"  table:"verbose"` // Client wallet address
 	Metadata      string    `gorm:"type:TEXT"                                json:"metadata"       table:"verbose"` // Additional metadata as JSON
 
-	// Associations - constraint disabled to prevent GORM auto-creation, handled manually in migration
-	Deal *Deal `gorm:"foreignKey:DealID;references:ID;constraint:-" json:"deal,omitempty" swaggerignore:"true" table:"expand"`
+	// Associations - constraint disabled to prevent GORM auto-creation
+	Deal *Deal `gorm:"foreignKey:DealID;references:ID;constraint:OnDelete:CASCADE" json:"deal,omitempty" swaggerignore:"true" table:"expand"`
 }
 
 // DealStateChangeQuery represents query parameters for filtering deal state changes
