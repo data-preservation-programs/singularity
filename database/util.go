@@ -68,11 +68,11 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 	// lvl = logging.LevelError
 	switch lvl {
 	case logging.LevelDebug:
-		logger.Debugw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
+		logger.Debugw("database operation", "sql", sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
 	case logging.LevelWarn:
-		logger.Warnw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
+		logger.Warnw("database operation", "sql", sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
 	case logging.LevelError:
-		logger.Errorw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
+		logger.Errorw("database operation", "sql", sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
 	}
 }
 
