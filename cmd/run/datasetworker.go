@@ -1,6 +1,7 @@
 package run
 
 import (
+	"strings"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -55,6 +56,18 @@ var DatasetWorkerCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
+		concurrency := c.Int("concurrency")
+
+		// Check if using SQLite with high concurrency
+		connString := c.String("database-connection-string")
+		if connString == "" {
+			connString = "sqlite:singularity.db"
+		}
+
+		if strings.HasPrefix(connString, "sqlite:") && concurrency > 1 {
+			return errors.New("SQLite does not support high concurrency. Please use concurrency=1 with SQLite or switch to PostgreSQL/MySQL for concurrent operations")
+		}
+
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return errors.WithStack(err)
@@ -63,7 +76,7 @@ var DatasetWorkerCmd = &cli.Command{
 		worker := datasetworker.NewWorker(
 			db,
 			datasetworker.Config{
-				Concurrency:    c.Int("concurrency"),
+				Concurrency:    concurrency,
 				EnableScan:     c.Bool("enable-scan"),
 				EnablePack:     c.Bool("enable-pack"),
 				EnableDag:      c.Bool("enable-dag"),

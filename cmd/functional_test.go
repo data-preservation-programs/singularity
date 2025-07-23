@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/testutil"
@@ -490,6 +491,9 @@ func TestDataPrep(t *testing.T) {
 
 func TestNoDuplicatedOutput(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		// Disable workflow orchestrator to prevent automatic job progression in tests
+		workflow.DefaultOrchestrator.SetEnabled(false)
+
 		source := t.TempDir()
 		output := t.TempDir()
 		// create file of different sizes
@@ -513,13 +517,47 @@ func TestNoDuplicatedOutput(t *testing.T) {
 		// run the dataset worker. If multiple workers try to work on the same
 		// job, then this will return fail because a previous worker will have
 		// removed files.
-		_, _, err = runner.Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true --concurrency=8")
+		// Use concurrency=1 for SQLite to avoid database locking issues
+		concurrency := "8"
+		if strings.Contains(t.Name(), "sqlite") {
+			concurrency = "1"
+		}
+		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity run dataset-worker --exit-on-complete=true --exit-on-error=true --concurrency=%s", concurrency))
 		require.NoError(t, err)
+
+		// Debug: Check database for jobs and pieces
+		var jobs []model.Job
+		err = db.Find(&jobs).Error
+		require.NoError(t, err)
+		t.Logf("Found %d jobs in database:", len(jobs))
+		for i, job := range jobs {
+			t.Logf("  Job [%d] ID=%d Type=%s State=%s", i+1, job.ID, job.Type, job.State)
+		}
+
+		var cars []model.Car
+		err = db.Find(&cars).Error
+		require.NoError(t, err)
+		t.Logf("Found %d cars in database:", len(cars))
+		for i, car := range cars {
+			t.Logf("  Car [%d] ID=%d PieceCID=%s PieceSize=%d", i+1, car.ID, car.PieceCID, car.PieceSize)
+		}
 
 		// Check output to make sure is has some CAR files
 		entries, err := os.ReadDir(output)
 		require.NoError(t, err)
 		require.NotEmpty(t, entries)
+
+		// Debug: print actual files found
+		t.Logf("Found %d files in output directory:", len(entries))
+		for i, entry := range entries {
+			t.Logf("  [%d] %s (size: %d)", i+1, entry.Name(), func() int64 {
+				if info, err := entry.Info(); err == nil {
+					return info.Size()
+				}
+				return -1
+			}())
+		}
+
 		require.Equal(t, 3, len(entries))
 
 		// Explore should still work even the directory does not have CID

@@ -26,14 +26,14 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 	db := w.dbNoContext.WithContext(ctx)
 
 	txOpts := &sql.TxOptions{
-		Isolation: sql.LevelSerializable,
+		Isolation: sql.LevelReadCommitted,
 	}
 	var job model.Job
 	for _, jobType := range typesOrdered {
 		err := database.DoRetry(ctx, func() error {
 			return db.Transaction(func(db *gorm.DB) error {
 				err := db.Preload("Attachment.Preparation.OutputStorages").Preload("Attachment.Storage").
-					Where("type = ? AND state = ? OR (state = ? AND worker_id is null)", jobType, model.Ready, model.Processing).
+					Where("type = ? AND (state = ? OR (state = ? AND worker_id is null))", jobType, model.Ready, model.Processing).
 					First(&job).Error
 				if err != nil {
 					if errors.Is(err, gorm.ErrRecordNotFound) {
