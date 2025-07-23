@@ -12,6 +12,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/service/statetracker"
 	"github.com/data-preservation-programs/singularity/util"
@@ -546,7 +547,61 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return errors.WithStack(err)
 			}, retry.Attempts(d.sendDealAttempts), retry.Delay(time.Second),
 				retry.DelayType(retry.FixedDelay), retry.Context(ctx))
+
+			// Handle deal failures by creating a deal record and tracking the error state
 			if err != nil {
+				var failedDeal *model.Deal
+				var dealState model.DealState
+				var reason string
+
+				// Determine the appropriate state and reason based on error type
+				if strings.Contains(err.Error(), "deal rejected") {
+					dealState = model.DealRejected
+					reason = "Deal rejected by storage provider"
+				} else if strings.Contains(err.Error(), "no supported protocols") {
+					dealState = model.DealErrored
+					reason = "No supported storage protocols found"
+				} else if strings.Contains(err.Error(), "context deadline exceeded") || strings.Contains(err.Error(), "timeout") {
+					dealState = model.DealErrored
+					reason = "Network timeout during deal negotiation"
+				} else if strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "network") {
+					dealState = model.DealErrored
+					reason = "Network connection failure"
+				} else {
+					dealState = model.DealErrored
+					reason = "General deal creation error"
+				}
+
+				// Create a deal record for the failed attempt to track it
+				failedDeal = &model.Deal{
+					State:         dealState,
+					ClientActorID: walletObj.ActorID,
+					Provider:      schedule.Provider,
+					PieceCID:      car.PieceCID,
+					PieceSize:     car.PieceSize,
+					StartEpoch:    int32(epochutil.TimeToEpoch(time.Now().Add(schedule.StartDelay))),
+					EndEpoch:      int32(epochutil.TimeToEpoch(time.Now().Add(schedule.StartDelay + schedule.Duration))),
+					Price:         "0", // No price for failed deals
+					Verified:      schedule.Verified,
+					ErrorMessage:  err.Error(),
+					ScheduleID:    &schedule.ID,
+					ClientID:      &walletObj.ID,
+				}
+
+				// Save the failed deal record
+				if dbErr := database.DoRetry(ctx, func() error { return db.Create(failedDeal).Error }); dbErr != nil {
+					Logger.Warnw("Failed to save failed deal record", "error", dbErr, "provider", schedule.Provider, "state", dealState)
+				} else {
+					// Track the failure state change
+					metadata := &statetracker.StateChangeMetadata{
+						Reason: reason,
+						Error:  err.Error(),
+					}
+					if trackErr := d.stateTracker.TrackStateChange(ctx, failedDeal, nil, dealState, metadata); trackErr != nil {
+						Logger.Warnw("Failed to track failure state change", "dealID", failedDeal.ID, "error", trackErr)
+					}
+					Logger.Infow("Tracked deal failure", "dealID", failedDeal.ID, "provider", schedule.Provider, "state", dealState, "reason", reason)
+				}
 				return "", errors.Wrap(err, "failed to send deal")
 			}
 
