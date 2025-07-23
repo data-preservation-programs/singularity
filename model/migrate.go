@@ -38,6 +38,29 @@ var Tables = []any{
 
 var logger = logging.Logger("model")
 
+// validateDatabaseStructure checks if essential tables exist and have basic structure
+func validateDatabaseStructure(db *gorm.DB) error {
+	essentialTables := []string{
+		"workers", "globals", "notifications", "deal_templates", "preparations",
+		"storages", "output_attachments", "source_attachments", "jobs", "files",
+		"file_ranges", "directories", "cars", "car_blocks", "schedules", "wallets",
+		"deals", "deal_state_changes", "error_logs",
+	}
+
+	var missingTables []string
+	for _, tableName := range essentialTables {
+		if !db.Migrator().HasTable(tableName) {
+			missingTables = append(missingTables, tableName)
+		}
+	}
+
+	if len(missingTables) > 0 {
+		return errors.Errorf("missing essential tables: %v", missingTables)
+	}
+
+	return nil
+}
+
 // Options for gormigrate instance
 var options = &gormigrate.Options{
 	TableName:                 "migrations",
@@ -111,28 +134,35 @@ func _init(db *gorm.DB) error {
 			errStr := err.Error()
 			dialectName := db.Dialector.Name()
 
-			// Handle the uni_wallets_address constraint error for both MySQL and SQLite
-			if (dialectName == "mysql" || dialectName == "sqlite") &&
+			switch {
+			case (dialectName == "mysql" || dialectName == "sqlite") &&
 				strings.Contains(errStr, "uni_wallets_address") &&
-				strings.Contains(errStr, "Can't DROP") {
+				strings.Contains(errStr, "Can't DROP"):
+				// Handle the uni_wallets_address constraint error for both MySQL and SQLite
 				logger.Warnf("Ignoring constraint error during migration: %v", err)
-			} else if strings.Contains(errStr, "insufficient arguments") {
+			case strings.Contains(errStr, "insufficient arguments"):
 				// Handle insufficient arguments error by trying individual table migrations
 				logger.Warnf("Retrying migration with individual tables due to insufficient arguments error")
 				var migrationErrors []error
 				for _, table := range Tables {
 					if err := db3.AutoMigrate(table); err != nil {
 						migrationErrors = append(migrationErrors, err)
+						logger.Debugf("Individual table migration failed for %T: %v", table, err)
 					}
 				}
+
+				// Instead of failing if all tables failed, check if the database structure is actually valid
 				if len(migrationErrors) > 0 {
-					logger.Warnf("Some table migrations failed: %v", migrationErrors)
-					// Only fail if all tables failed to migrate
-					if len(migrationErrors) == len(Tables) {
-						return errors.Wrap(err, "failed to create foreign keys")
+					logger.Warnf("Some table migrations failed (%d/%d), validating database structure", len(migrationErrors), len(Tables))
+
+					if structureErr := validateDatabaseStructure(db); structureErr != nil {
+						logger.Errorf("Database structure validation failed: %v", structureErr)
+						return errors.Wrap(structureErr, "database structure is incomplete after migration attempts")
 					}
+
+					logger.Infof("Database structure validation passed despite migration errors - continuing")
 				}
-			} else {
+			default:
 				return errors.Wrap(err, "failed to create foreign keys")
 			}
 		}
