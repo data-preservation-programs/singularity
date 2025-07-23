@@ -8,7 +8,6 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/push"
 	"github.com/data-preservation-programs/singularity/storagesystem"
-	"github.com/rclone/rclone/fs"
 	"gorm.io/gorm"
 )
 

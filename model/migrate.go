@@ -102,9 +102,9 @@ func _init(db *gorm.DB) error {
 
 		// Then, create foreign keys
 		logger.Info("Creating foreign key constraints")
-		// Use a separate session with IgnoreConstraintsWhenMigrating to avoid constraint conflicts
+		// Use a separate session with DisableForeignKeyConstraintWhenMigrating to avoid constraint conflicts
 		db3 := db.Session(&gorm.Session{})
-		db3.Config.IgnoreConstraintsWhenMigrating = true
+		db3.Config.DisableForeignKeyConstraintWhenMigrating = true
 		if err := db3.AutoMigrate(Tables...); err != nil {
 			return errors.Wrap(err, "failed to create foreign keys")
 		}
