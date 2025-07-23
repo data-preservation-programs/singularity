@@ -37,7 +37,9 @@ func _202507230901_fix_foreign_key_constraints() *gormigrate.Migration {
 						tx.Exec("CREATE TEMPORARY TABLE deals_backup AS SELECT * FROM deals")
 
 						// Drop the problematic table
-						tx.Migrator().DropTable("deals")
+						if err := tx.Migrator().DropTable("deals"); err != nil {
+							return err
+						}
 
 						// Create clean deals table
 						createDealsSQL := `
@@ -95,7 +97,9 @@ func _202507230901_fix_foreign_key_constraints() *gormigrate.Migration {
 				if needsConstraint {
 					// Recreate deal_state_changes with correct constraint
 					tx.Exec("CREATE TEMPORARY TABLE deal_state_changes_backup AS SELECT * FROM deal_state_changes")
-					tx.Migrator().DropTable("deal_state_changes")
+					if err := tx.Migrator().DropTable("deal_state_changes"); err != nil {
+						return err
+					}
 
 					createStateChangesSQL := `
 						CREATE TABLE deal_state_changes (
