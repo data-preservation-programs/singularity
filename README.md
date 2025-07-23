@@ -142,6 +142,48 @@ singularity deal schedule list
 singularity run unified --max-workers 5
 ```
 
+### Error Logging
+
+Singularity automatically logs errors and events during operations. View and query error logs to troubleshoot issues:
+
+```bash
+# List recent error logs
+singularity error log list
+
+# Filter by component and level
+singularity error log list --component onboard --level error
+
+# Find errors for specific preparation
+singularity error log list --entity-type preparation --entity-id 123
+
+# View only critical errors
+singularity error log list --level critical
+
+# Check deal scheduling issues
+singularity error log list --component deal_schedule --level warning
+
+# Query logs from the last hour
+singularity error log list --start-time $(date -d '1 hour ago' -Iseconds)
+
+# Paginate through results
+singularity error log list --limit 20 --offset 40
+
+# Export logs as JSON for analysis
+singularity error log list --json --component onboard > error_logs.json
+```
+
+**Error Levels:**
+- **info**: General information and successful operations
+- **warning**: Non-critical issues that should be monitored
+- **error**: Failures that need attention but don't stop operations
+- **critical**: Severe failures requiring immediate action
+
+**Common Components:**
+- **onboard**: Data scanning, preparation, and CAR file generation
+- **deal_schedule**: Deal creation and scheduling operations
+- **pack**: Data packing and piece generation
+- **daggen**: DAG generation from packed data
+
 ## 🏗️ Architecture
 
 ### Simplified Architecture

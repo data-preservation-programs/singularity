@@ -11,7 +11,7 @@ import (
 // This table tracks all changes to deal states for comprehensive auditing
 type DealStateChange struct {
 	ID            uint64    `gorm:"primaryKey;autoIncrement"                  json:"id"`
-	DealID        DealID    `gorm:"index;not null"                           json:"dealId"`        // Deal ID (internal singularity ID)
+	DealID        uint64    `gorm:"index;not null"                           json:"dealId"`        // Deal ID (internal singularity ID)
 	PreviousState string    `gorm:"size:50;index"                            json:"previousState"` // Previous deal state
 	NewState      string    `gorm:"size:50;index;not null"                   json:"newState"`      // New deal state
 	Timestamp     time.Time `gorm:"index;not null;default:CURRENT_TIMESTAMP" json:"timestamp"`     // When the state change occurred
@@ -28,9 +28,17 @@ func _202507180900_create_deal_state_changes() *gormigrate.Migration {
 		ID: "202507180900",
 		Migrate: func(tx *gorm.DB) error {
 			// Create the deal_state_changes table
-			return tx.AutoMigrate(&DealStateChange{})
+			err := tx.AutoMigrate(&DealStateChange{})
+			if err != nil {
+				return err
+			}
+
+			// Add foreign key constraint from deal_state_changes.deal_id to deals.id
+			return tx.Exec("ALTER TABLE deal_state_changes ADD CONSTRAINT fk_deal_state_changes_deal FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE").Error
 		},
 		Rollback: func(tx *gorm.DB) error {
+			// Drop foreign key constraint first if it exists
+			tx.Exec("ALTER TABLE deal_state_changes DROP FOREIGN KEY IF EXISTS fk_deal_state_changes_deal")
 			return tx.Migrator().DropTable(&DealStateChange{})
 		},
 	}

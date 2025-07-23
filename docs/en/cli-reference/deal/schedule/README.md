@@ -9,7 +9,7 @@ USAGE:
    singularity deal schedule command [command options]
 
 COMMANDS:
-   create   Create a schedule to send out deals to a storage provider
+   create   Create a schedule to send out deals to a storage provider with unified flags and defaults
    list     List all deal making schedules
    update   Update an existing schedule
    pause    Pause a specific schedule

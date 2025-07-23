@@ -27,6 +27,8 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/handler/dealtemplate"
+	"github.com/data-preservation-programs/singularity/handler/errorlog"
 	"github.com/data-preservation-programs/singularity/handler/file"
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/statechange"
@@ -233,21 +235,23 @@ func TestAllAPIs(t *testing.T) {
 
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		s := Server{
-			db:                 db,
-			listener:           listener,
-			lotusClient:        util.NewLotusClient("", ""),
-			dealMaker:          mockDealMaker,
-			closer:             io.NopCloser(nil),
-			host:               h,
-			adminHandler:       mockAdmin,
-			storageHandler:     mockStorage,
-			dataprepHandler:    mockDataPrep,
-			dealHandler:        mockDeal,
-			walletHandler:      mockWallet,
-			fileHandler:        mockFile,
-			jobHandler:         mockJob,
-			scheduleHandler:    mockSchedule,
-			stateChangeHandler: mockStateChange,
+			db:                  db,
+			listener:            listener,
+			lotusClient:         util.NewLotusClient("", ""),
+			dealMaker:           mockDealMaker,
+			closer:              io.NopCloser(nil),
+			host:                h,
+			adminHandler:        mockAdmin,
+			storageHandler:      mockStorage,
+			dataprepHandler:     mockDataPrep,
+			dealHandler:         mockDeal,
+			walletHandler:       mockWallet,
+			fileHandler:         mockFile,
+			jobHandler:          mockJob,
+			scheduleHandler:     mockSchedule,
+			stateChangeHandler:  mockStateChange,
+			dealtemplateHandler: &dealtemplate.DefaultHandler{},
+			errorlogHandler:     &errorlog.DefaultHandler{},
 		}
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()

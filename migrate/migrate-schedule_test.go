@@ -23,6 +23,7 @@ func TestMigrateSchedule_DatasetNotExist(t *testing.T) {
 	if err != nil {
 		t.Log(err)
 		t.Skip("Skipping test because MongoDB is not available")
+		return
 	}
 	defer os.Remove("1.txt") // Clean up the test file
 

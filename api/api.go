@@ -19,6 +19,8 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/handler/dealtemplate"
+	"github.com/data-preservation-programs/singularity/handler/errorlog"
 	"github.com/data-preservation-programs/singularity/handler/file"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/handler/job"
@@ -31,6 +33,7 @@ import (
 	"github.com/data-preservation-programs/singularity/retriever/endpointfinder"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
+	errorLogService "github.com/data-preservation-programs/singularity/service/errorlog"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/lassie/pkg/lassie"
 	logging "github.com/ipfs/go-log/v2"
@@ -44,22 +47,24 @@ import (
 )
 
 type Server struct {
-	db                 *gorm.DB
-	listener           net.Listener
-	lotusClient        jsonrpc.RPCClient
-	dealMaker          replication.DealMaker
-	closer             io.Closer
-	host               host.Host
-	retriever          *retriever.Retriever
-	adminHandler       admin.Handler
-	storageHandler     storage.Handler
-	dataprepHandler    dataprep.Handler
-	dealHandler        deal.Handler
-	walletHandler      wallet.Handler
-	fileHandler        file.Handler
-	jobHandler         job.Handler
-	scheduleHandler    schedule.Handler
-	stateChangeHandler statechange.Handler
+	db                  *gorm.DB
+	listener            net.Listener
+	lotusClient         jsonrpc.RPCClient
+	dealMaker           replication.DealMaker
+	closer              io.Closer
+	host                host.Host
+	retriever           *retriever.Retriever
+	adminHandler        admin.Handler
+	storageHandler      storage.Handler
+	dataprepHandler     dataprep.Handler
+	dealHandler         deal.Handler
+	walletHandler       wallet.Handler
+	fileHandler         file.Handler
+	jobHandler          job.Handler
+	scheduleHandler     schedule.Handler
+	stateChangeHandler  statechange.Handler
+	dealtemplateHandler dealtemplate.Handler
+	errorlogHandler     errorlog.Handler
 }
 
 func Run(c *cli.Context) error {
@@ -119,6 +124,10 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 		endpointfinder.WithErrorLruSize(128),
 		endpointfinder.WithErrorLruTimeout(time.Minute*5),
 	)
+
+	// Initialize error logging service
+	errorLogService.Init(db)
+
 	return &Server{
 		db:          db,
 		host:        h,
@@ -130,17 +139,19 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 			time.Hour,
 			time.Minute*5,
 		),
-		retriever:          retriever.NewRetriever(lassie, endpointFinder),
-		closer:             closer,
-		adminHandler:       &admin.DefaultHandler{},
-		storageHandler:     &storage.DefaultHandler{},
-		dataprepHandler:    &dataprep.DefaultHandler{},
-		dealHandler:        &deal.DefaultHandler{},
-		walletHandler:      &wallet.DefaultHandler{},
-		fileHandler:        &file.DefaultHandler{},
-		jobHandler:         &job.DefaultHandler{},
-		scheduleHandler:    &schedule.DefaultHandler{},
-		stateChangeHandler: &statechange.DefaultHandler{},
+		retriever:           retriever.NewRetriever(lassie, endpointFinder),
+		closer:              closer,
+		adminHandler:        &admin.DefaultHandler{},
+		storageHandler:      &storage.DefaultHandler{},
+		dataprepHandler:     &dataprep.DefaultHandler{},
+		dealHandler:         &deal.DefaultHandler{},
+		walletHandler:       &wallet.DefaultHandler{},
+		fileHandler:         &file.DefaultHandler{},
+		jobHandler:          &job.DefaultHandler{},
+		scheduleHandler:     &schedule.DefaultHandler{},
+		stateChangeHandler:  &statechange.DefaultHandler{},
+		dealtemplateHandler: &dealtemplate.DefaultHandler{},
+		errorlogHandler:     &errorlog.DefaultHandler{},
 	}, nil
 }
 
@@ -554,6 +565,13 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	// Deal
 	e.POST("/api/deal", s.toEchoHandler(s.dealHandler.ListHandler))
 
+	// Deal Schedule Templates
+	e.POST("/api/deal-schedule-template", s.toEchoHandler(s.dealtemplateHandler.CreateHandler))
+	e.GET("/api/deal-schedule-templates", s.toEchoHandler(s.dealtemplateHandler.ListHandler))
+	e.GET("/api/deal-schedule-template/:id", s.toEchoHandler(s.dealtemplateHandler.GetHandler))
+	e.PUT("/api/deal-schedule-template/:id", s.toEchoHandler(s.dealtemplateHandler.UpdateHandler))
+	e.DELETE("/api/deal-schedule-template/:id", s.toEchoHandler(s.dealtemplateHandler.DeleteHandler))
+
 	// State Changes
 	e.GET("/api/deals/:id/state-changes", s.toEchoHandler(s.stateChangeHandler.GetDealStateChangesHandler))
 	e.GET("/api/state-changes", s.toEchoHandler(s.stateChangeHandler.ListStateChangesHandler))
@@ -565,4 +583,7 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/file/:id/prepare_to_pack", s.toEchoHandler(s.fileHandler.PrepareToPackFileHandler))
 	e.GET("/api/file/:id/retrieve", s.retrieveFile)
 	e.POST("/api/preparation/:id/source/:name/file", s.toEchoHandler(s.fileHandler.PushFileHandler))
+
+	// Error Logs
+	e.GET("/api/errors", s.toEchoHandler(s.errorlogHandler.ListErrorLogsHandler))
 }

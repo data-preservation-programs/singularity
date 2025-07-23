@@ -16,6 +16,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/deal"
 	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
 	"github.com/data-preservation-programs/singularity/cmd/dealtemplate"
+	"github.com/data-preservation-programs/singularity/cmd/errorlog"
 	"github.com/data-preservation-programs/singularity/cmd/ez"
 	"github.com/data-preservation-programs/singularity/cmd/run"
 	"github.com/data-preservation-programs/singularity/cmd/storage"
@@ -159,6 +160,7 @@ Upgrading:
 				dealtemplate.CreateCmd,
 				dealtemplate.ListCmd,
 				dealtemplate.GetCmd,
+				dealtemplate.UpdateCmd,
 				dealtemplate.DeleteCmd,
 			},
 		},
@@ -228,6 +230,20 @@ Upgrading:
 				dataprep.ListWalletsCmd,
 				dataprep.DetachWalletCmd,
 				dataprep.RemoveCmd,
+			},
+		},
+		{
+			Name:     "error",
+			Category: "Operations",
+			Usage:    "Error log management",
+			Subcommands: []*cli.Command{
+				{
+					Name:  "log",
+					Usage: "Error log operations",
+					Subcommands: []*cli.Command{
+						errorlog.ListCmd,
+					},
+				},
 			},
 		},
 	},

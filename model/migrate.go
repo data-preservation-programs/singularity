@@ -28,10 +28,11 @@ var Tables = []any{
 	&Directory{},
 	&Car{},
 	&CarBlock{},
-	&Deal{},
-	&DealStateChange{},
 	&Schedule{},
 	&Wallet{},
+	&Deal{},
+	&DealStateChange{},
+	&ErrorLog{},
 }
 
 var logger = logging.Logger("model")
