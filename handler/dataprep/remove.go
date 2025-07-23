@@ -9,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 )
