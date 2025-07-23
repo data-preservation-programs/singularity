@@ -107,12 +107,31 @@ func _init(db *gorm.DB) error {
 		db3 := db.Session(&gorm.Session{})
 		db3.Config.DisableForeignKeyConstraintWhenMigrating = false
 		if err := db3.AutoMigrate(Tables...); err != nil {
-			// Check if this is the specific MySQL constraint error we can ignore
+			// Check if this is the specific constraint error we can ignore
 			errStr := err.Error()
-			if db.Dialector.Name() == "mysql" &&
+			dialectName := db.Dialector.Name()
+
+			// Handle the uni_wallets_address constraint error for both MySQL and SQLite
+			if (dialectName == "mysql" || dialectName == "sqlite") &&
 				strings.Contains(errStr, "uni_wallets_address") &&
 				strings.Contains(errStr, "Can't DROP") {
-				logger.Warnf("Ignoring MySQL constraint error during migration: %v", err)
+				logger.Warnf("Ignoring constraint error during migration: %v", err)
+			} else if strings.Contains(errStr, "insufficient arguments") {
+				// Handle insufficient arguments error by trying individual table migrations
+				logger.Warnf("Retrying migration with individual tables due to insufficient arguments error")
+				var migrationErrors []error
+				for _, table := range Tables {
+					if err := db3.AutoMigrate(table); err != nil {
+						migrationErrors = append(migrationErrors, err)
+					}
+				}
+				if len(migrationErrors) > 0 {
+					logger.Warnf("Some table migrations failed: %v", migrationErrors)
+					// Only fail if all tables failed to migrate
+					if len(migrationErrors) == len(Tables) {
+						return errors.Wrap(err, "failed to create foreign keys")
+					}
+				}
 			} else {
 				return errors.Wrap(err, "failed to create foreign keys")
 			}
