@@ -21,8 +21,9 @@ type DealStateChange struct {
 	ClientAddress string    `gorm:"size:86;index"                            json:"clientAddress"  table:"verbose"` // Client wallet address
 	Metadata      string    `gorm:"type:TEXT"                                json:"metadata"       table:"verbose"` // Additional metadata as JSON
 
-	// Associations
-	Deal *Deal `gorm:"foreignKey:DealID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE;association_autoupdate:false;association_autocreate:false" json:"deal,omitempty" swaggerignore:"true" table:"expand"`
+	// Associations - completely disabled to prevent GORM from auto-creating backwards foreign key constraints
+	// Foreign key constraint is manually created in migration 202507230901_fix_foreign_key_constraints
+	Deal *Deal `gorm:"-:all" json:"deal,omitempty" swaggerignore:"true" table:"expand"`
 }
 
 // DealStateChangeQuery represents query parameters for filtering deal state changes
@@ -74,27 +75,27 @@ func GetDealStateChanges(db *gorm.DB, query DealStateChangeQuery) ([]DealStateCh
 
 	// Apply filters
 	if query.DealID != nil {
-		baseQuery = baseQuery.Where("deal_id = ?", *query.DealID)
+		baseQuery = baseQuery.Where("deal_state_changes.deal_id = ?", *query.DealID)
 	}
 
 	if query.State != nil {
-		baseQuery = baseQuery.Where("new_state = ?", *query.State)
+		baseQuery = baseQuery.Where("deal_state_changes.new_state = ?", *query.State)
 	}
 
 	if query.ProviderID != nil {
-		baseQuery = baseQuery.Where("provider_id = ?", *query.ProviderID)
+		baseQuery = baseQuery.Where("deal_state_changes.provider_id = ?", *query.ProviderID)
 	}
 
 	if query.ClientAddress != nil {
-		baseQuery = baseQuery.Where("client_address = ?", *query.ClientAddress)
+		baseQuery = baseQuery.Where("deal_state_changes.client_address = ?", *query.ClientAddress)
 	}
 
 	if query.StartTime != nil {
-		baseQuery = baseQuery.Where("timestamp >= ?", *query.StartTime)
+		baseQuery = baseQuery.Where("deal_state_changes.timestamp >= ?", *query.StartTime)
 	}
 
 	if query.EndTime != nil {
-		baseQuery = baseQuery.Where("timestamp <= ?", *query.EndTime)
+		baseQuery = baseQuery.Where("deal_state_changes.timestamp <= ?", *query.EndTime)
 	}
 
 	// Get total count
@@ -103,9 +104,9 @@ func GetDealStateChanges(db *gorm.DB, query DealStateChangeQuery) ([]DealStateCh
 	}
 
 	// Apply sorting
-	orderBy := "timestamp"
+	orderBy := "deal_state_changes.timestamp"
 	if query.OrderBy != nil {
-		orderBy = *query.OrderBy
+		orderBy = "deal_state_changes." + *query.OrderBy
 	}
 
 	order := "DESC"
@@ -127,17 +128,20 @@ func GetDealStateChanges(db *gorm.DB, query DealStateChangeQuery) ([]DealStateCh
 		baseQuery = baseQuery.Limit(100)
 	}
 
-	// Preload deal information
-	err := baseQuery.Preload("Deal").Find(&changes).Error
+	// Join with deals table to get deal information
+	err := baseQuery.Joins("LEFT JOIN deals ON deal_state_changes.deal_id = deals.id").
+		Select("deal_state_changes.*, deals.*").
+		Find(&changes).Error
 	return changes, total, err
 }
 
 // GetDealStateChangesByDealID retrieves all state changes for a specific deal
 func GetDealStateChangesByDealID(db *gorm.DB, dealID DealID) ([]DealStateChange, error) {
 	var changes []DealStateChange
-	err := db.Where("deal_id = ?", dealID).
-		Order("timestamp ASC").
-		Preload("Deal").
+	err := db.Where("deal_state_changes.deal_id = ?", dealID).
+		Joins("LEFT JOIN deals ON deal_state_changes.deal_id = deals.id").
+		Select("deal_state_changes.*, deals.*").
+		Order("deal_state_changes.timestamp ASC").
 		Find(&changes).Error
 	return changes, err
 }

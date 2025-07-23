@@ -11,7 +11,7 @@ import (
 // This table tracks all changes to deal states for comprehensive auditing
 type DealStateChange struct {
 	ID            uint64    `gorm:"primaryKey;autoIncrement"                  json:"id"`
-	DealID        uint64    `gorm:"index;not null"                           json:"dealId"`        // Deal ID (internal singularity ID)
+	DealID        DealID    `gorm:"index;not null"                           json:"dealId"`        // Deal ID (internal singularity ID)
 	PreviousState string    `gorm:"size:50;index"                            json:"previousState"` // Previous deal state
 	NewState      string    `gorm:"size:50;index;not null"                   json:"newState"`      // New deal state
 	Timestamp     time.Time `gorm:"index;not null;default:CURRENT_TIMESTAMP" json:"timestamp"`     // When the state change occurred
