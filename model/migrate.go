@@ -3,6 +3,7 @@ package model
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/migrate/migrations"
@@ -102,11 +103,19 @@ func _init(db *gorm.DB) error {
 
 		// Then, create foreign keys
 		logger.Info("Creating foreign key constraints")
-		// Use a separate session with DisableForeignKeyConstraintWhenMigrating to avoid constraint conflicts
+		// Use a separate session with DisableForeignKeyConstraintWhenMigrating set to false to create foreign keys
 		db3 := db.Session(&gorm.Session{})
-		db3.Config.DisableForeignKeyConstraintWhenMigrating = true
+		db3.Config.DisableForeignKeyConstraintWhenMigrating = false
 		if err := db3.AutoMigrate(Tables...); err != nil {
-			return errors.Wrap(err, "failed to create foreign keys")
+			// Check if this is the specific MySQL constraint error we can ignore
+			errStr := err.Error()
+			if db.Dialector.Name() == "mysql" &&
+				strings.Contains(errStr, "uni_wallets_address") &&
+				strings.Contains(errStr, "Can't DROP") {
+				logger.Warnf("Ignoring MySQL constraint error during migration: %v", err)
+			} else {
+				return errors.Wrap(err, "failed to create foreign keys")
+			}
 		}
 
 		logger.Debug("Creating instance id")
