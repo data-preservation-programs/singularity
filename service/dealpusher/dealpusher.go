@@ -566,7 +566,6 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 
 			// Handle deal failures by creating a deal record and tracking the error state
 			if err != nil {
-
 				// Create context metadata for enhanced error categorization
 
 				var failedDeal *model.Deal

@@ -549,16 +549,16 @@ func TestTrackStateChangeWithEnhancedMetadata(t *testing.T) {
 		assert.Equal(t, int64(1024*1024*512), *retrievedMetadata.MemoryUsage)
 		assert.Equal(t, int64(1024*1024*1024*10), *retrievedMetadata.DiskSpaceUsed)
 		assert.Equal(t, "healthy", retrievedMetadata.DatabaseHealth)
-			   assert.Equal(t, "value1", retrievedMetadata.AdditionalFields["custom_field1"])
-			   // Accept both int and float64 for custom_field2
-			   switch v := retrievedMetadata.AdditionalFields["custom_field2"].(type) {
-			   case float64:
-					   assert.Equal(t, float64(42), v)
-			   case int:
-					   assert.Equal(t, 42, v)
-			   default:
-					   t.Errorf("custom_field2 has unexpected type: %T", v)
-			   }
-			   assert.Equal(t, true, retrievedMetadata.AdditionalFields["custom_field3"])
+		assert.Equal(t, "value1", retrievedMetadata.AdditionalFields["custom_field1"])
+		// Accept both int and float64 for custom_field2
+		switch v := retrievedMetadata.AdditionalFields["custom_field2"].(type) {
+		case float64:
+			assert.Equal(t, float64(42), v)
+		case int:
+			assert.Equal(t, 42, v)
+		default:
+			t.Errorf("custom_field2 has unexpected type: %T", v)
+		}
+		assert.Equal(t, true, retrievedMetadata.AdditionalFields["custom_field3"])
 	})
 }
