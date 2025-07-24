@@ -27,18 +27,10 @@ func _202507180900_create_deal_state_changes() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202507180900",
 		Migrate: func(tx *gorm.DB) error {
-			// Create the deal_state_changes table
-			err := tx.AutoMigrate(&DealStateChange{})
-			if err != nil {
-				return err
-			}
-
-			// Add foreign key constraint from deal_state_changes.deal_id to deals.id
-			return tx.Exec("ALTER TABLE deal_state_changes ADD CONSTRAINT fk_deal_state_changes_deal FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE").Error
+			// Create the deal_state_changes table - GORM will handle constraints via model definition
+			return tx.AutoMigrate(&DealStateChange{})
 		},
 		Rollback: func(tx *gorm.DB) error {
-			// Drop foreign key constraint first if it exists
-			tx.Exec("ALTER TABLE deal_state_changes DROP FOREIGN KEY IF EXISTS fk_deal_state_changes_deal")
 			return tx.Migrator().DropTable(&DealStateChange{})
 		},
 	}

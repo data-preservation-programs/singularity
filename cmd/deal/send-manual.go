@@ -2,17 +2,39 @@ package deal
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
+	"github.com/data-preservation-programs/singularity/service/statetracker"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/dustin/go-humanize"
+	"github.com/ipfs/go-cid"
 	"github.com/urfave/cli/v2"
 )
+
+// categorizeError determines the appropriate deal state and reason based on error message
+func categorizeError(errorMessage string) (model.DealState, string) {
+	switch {
+	case strings.Contains(errorMessage, "deal rejected"):
+		return model.DealRejected, "Deal rejected by storage provider"
+	case strings.Contains(errorMessage, "no supported protocols"):
+		return model.DealErrored, "No supported storage protocols found"
+	case strings.Contains(errorMessage, "context deadline exceeded") || strings.Contains(errorMessage, "timeout"):
+		return model.DealErrored, "Network timeout during deal negotiation"
+	case strings.Contains(errorMessage, "connection refused") || strings.Contains(errorMessage, "network"):
+		return model.DealErrored, "Network connection failure"
+	default:
+		return model.DealErrored, "General deal creation error"
+	}
+}
 
 var SendManualCmd = &cli.Command{
 	Name:  "send-manual",
@@ -182,10 +204,64 @@ Notes:
 			10*timeout,
 			timeout,
 		)
+		// Initialize state tracker for deal lifecycle tracking
+		stateTracker := statetracker.NewStateChangeTracker(db)
+
 		dealModel, err := deal.Default.SendManualHandler(ctx, db, dealMaker, proposal)
+
+		// Handle deal failures with state tracking (similar to dealpusher pattern)
 		if err != nil {
+			if c.Bool("save") {
+				// Create a deal record for the failed attempt to track it
+				var dealState model.DealState
+				var reason string
+
+				// Determine the appropriate state and reason based on error type
+				dealState, reason = categorizeError(err.Error())
+
+				// Get wallet for deal record
+				var wallet model.Wallet
+				if walletErr := wallet.FindByIDOrAddr(db, proposal.ClientAddress); walletErr == nil {
+					// Create failed deal record with proper structure
+					failedDeal := &model.Deal{
+						State:         dealState,
+						ClientActorID: wallet.ActorID,
+						Provider:      proposal.ProviderID,
+						PieceCID:      model.CID{}, // Will be set from proposal if valid
+						PieceSize:     0,           // Will be set from proposal if valid
+						StartEpoch:    int32(epochutil.TimeToEpoch(time.Now())),
+						EndEpoch:      int32(epochutil.TimeToEpoch(time.Now().Add(24 * time.Hour))),
+						Price:         "0", // No price for failed deals
+						Verified:      proposal.Verified,
+						ErrorMessage:  err.Error(),
+						ClientID:      &wallet.ID,
+					}
+
+					// Try to parse piece info if possible
+					if pieceCID, parseErr := cid.Parse(proposal.PieceCID); parseErr == nil {
+						failedDeal.PieceCID = model.CID(pieceCID)
+						if pieceSize, sizeErr := humanize.ParseBytes(proposal.PieceSize); sizeErr == nil {
+							failedDeal.PieceSize = int64(pieceSize)
+						}
+					}
+
+					// Save the failed deal record
+					if dbErr := database.DoRetry(ctx, func() error { return db.Create(failedDeal).Error }); dbErr == nil {
+						// Track the failure state change
+						metadata := &statetracker.StateChangeMetadata{
+							Reason: reason,
+							Error:  err.Error(),
+						}
+						if trackErr := stateTracker.TrackStateChange(ctx, failedDeal, nil, dealState, metadata); trackErr == nil {
+							fmt.Printf("Tracked deal failure with ID: %d, state: %s, reason: %s\n", failedDeal.ID, dealState, reason)
+						}
+					}
+				}
+			}
 			return errors.WithStack(err)
 		}
+
+		// Handle successful deal creation
 		if c.Bool("save") {
 			db = db.WithContext(ctx)
 			err = database.DoRetry(ctx, func() error {
@@ -193,6 +269,15 @@ Notes:
 			})
 			if err != nil {
 				return errors.WithStack(err)
+			}
+
+			// Track successful deal proposal creation
+			metadata := &statetracker.StateChangeMetadata{
+				Reason:       "Manual deal proposal created and sent to storage provider",
+				StoragePrice: dealModel.Price,
+			}
+			if trackErr := stateTracker.TrackStateChange(ctx, dealModel, nil, dealModel.State, metadata); trackErr != nil {
+				fmt.Printf("Warning: Failed to track deal state change: %v\n", trackErr)
 			}
 		}
 		cliutil.Print(c, dealModel)

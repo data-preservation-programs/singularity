@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestTrackStateChange_Fixed(t *testing.T) {
+func TestTrackStateChange(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		tracker := NewStateChangeTracker(db)
 
@@ -62,11 +62,63 @@ func TestTrackStateChange_Fixed(t *testing.T) {
 	})
 }
 
-func TestGetStateChangeStats_Fixed(t *testing.T) {
+func TestTrackStateChangeWithPreviousState(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		tracker := NewStateChangeTracker(db)
 
-		// Create test deals
+		// Create a test deal
+		deal := &model.Deal{
+			State:         model.DealActive,
+			Provider:      "f01234",
+			ClientActorID: "f01000",
+			PieceCID:      model.CID{},
+			PieceSize:     1024,
+			StartEpoch:    100,
+			EndEpoch:      200,
+			Price:         "1000",
+			Verified:      false,
+		}
+		err := db.Create(deal).Error
+		require.NoError(t, err)
+
+		// Track state change from proposed to active
+		previousState := model.DealProposed
+		metadata := &StateChangeMetadata{
+			Reason:          "Deal activated",
+			ActivationEpoch: int32Ptr(150),
+		}
+
+		err = tracker.TrackStateChange(ctx, deal, &previousState, model.DealActive, metadata)
+		require.NoError(t, err)
+
+		// Verify the state change was recorded
+		var stateChanges []model.DealStateChange
+		err = db.Where("deal_id = ?", deal.ID).Find(&stateChanges).Error
+		require.NoError(t, err)
+		require.Len(t, stateChanges, 1)
+
+		sc := stateChanges[0]
+		require.Equal(t, deal.ID, sc.DealID)
+		require.Equal(t, model.DealProposed, sc.PreviousState)
+		require.Equal(t, model.DealActive, sc.NewState)
+		require.Equal(t, deal.Provider, sc.ProviderID)
+		require.Equal(t, deal.ClientActorID, sc.ClientAddress)
+
+		// Verify metadata
+		var savedMetadata StateChangeMetadata
+		err = json.Unmarshal([]byte(sc.Metadata), &savedMetadata)
+		require.NoError(t, err)
+		require.Equal(t, "Deal activated", savedMetadata.Reason)
+		require.NotNil(t, savedMetadata.ActivationEpoch)
+		require.Equal(t, int32(150), *savedMetadata.ActivationEpoch)
+	})
+}
+
+func TestGetStateChangeStats(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		tracker := NewStateChangeTracker(db)
+
+		// Create test deal
 		deal := &model.Deal{
 			State:         model.DealActive,
 			Provider:      "f01234",
@@ -132,4 +184,59 @@ func TestGetStateChangeStats_Fixed(t *testing.T) {
 		require.Equal(t, "f01234", topProviders[0].ProviderID)
 		require.Equal(t, int64(2), topProviders[0].Count)
 	})
+}
+
+func TestRecoverMissingStateChanges(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		tracker := NewStateChangeTracker(db)
+
+		// Create a deal without any state change records
+		deal := &model.Deal{
+			State:         model.DealProposed,
+			Provider:      "f01234",
+			ClientActorID: "f01000",
+			PieceCID:      model.CID{},
+			PieceSize:     1024,
+			StartEpoch:    100,
+			EndEpoch:      200,
+			Price:         "1000",
+			Verified:      false,
+		}
+		err := db.Create(deal).Error
+		require.NoError(t, err)
+
+		// Verify no state changes exist initially
+		var initialChanges []model.DealStateChange
+		err = db.Where("deal_id = ?", deal.ID).Find(&initialChanges).Error
+		require.NoError(t, err)
+		require.Len(t, initialChanges, 0)
+
+		// Run recovery
+		err = tracker.RecoverMissingStateChanges(ctx)
+		require.NoError(t, err)
+
+		// Verify a recovery state change was created
+		var recoveredChanges []model.DealStateChange
+		err = db.Where("deal_id = ?", deal.ID).Find(&recoveredChanges).Error
+		require.NoError(t, err)
+		require.Len(t, recoveredChanges, 1)
+
+		rc := recoveredChanges[0]
+		require.Equal(t, deal.ID, rc.DealID)
+		require.Equal(t, model.DealState(""), rc.PreviousState) // No previous state for initial record
+		require.Equal(t, model.DealProposed, rc.NewState)
+		require.Equal(t, deal.Provider, rc.ProviderID)
+		require.Equal(t, deal.ClientActorID, rc.ClientAddress)
+
+		// Verify recovery metadata
+		var metadata StateChangeMetadata
+		err = json.Unmarshal([]byte(rc.Metadata), &metadata)
+		require.NoError(t, err)
+		require.Contains(t, metadata.Reason, "Recovery")
+	})
+}
+
+// Helper function to create int32 pointer
+func int32Ptr(i int32) *int32 {
+	return &i
 }

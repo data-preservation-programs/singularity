@@ -21,8 +21,7 @@ type DealStateChange struct {
 	ClientAddress string    `gorm:"size:86;index"                            json:"clientAddress"  table:"verbose"` // Client wallet address
 	Metadata      string    `gorm:"type:TEXT"                                json:"metadata"       table:"verbose"` // Additional metadata as JSON
 
-	// Associations - constraint disabled to prevent GORM auto-creation, handled manually in migration
-	Deal *Deal `gorm:"foreignKey:DealID;references:ID;constraint:-" json:"deal,omitempty" swaggerignore:"true" table:"expand"`
+	// Deal association - loaded manually to avoid constraint issues during migrations
 }
 
 // DealStateChangeQuery represents query parameters for filtering deal state changes
@@ -127,8 +126,8 @@ func GetDealStateChanges(db *gorm.DB, query DealStateChangeQuery) ([]DealStateCh
 		baseQuery = baseQuery.Limit(100)
 	}
 
-	// Preload deal information
-	err := baseQuery.Preload("Deal").Find(&changes).Error
+	// Find state changes
+	err := baseQuery.Find(&changes).Error
 	return changes, total, err
 }
 
@@ -137,7 +136,6 @@ func GetDealStateChangesByDealID(db *gorm.DB, dealID DealID) ([]DealStateChange,
 	var changes []DealStateChange
 	err := db.Where("deal_id = ?", dealID).
 		Order("timestamp ASC").
-		Preload("Deal").
 		Find(&changes).Error
 	return changes, err
 }

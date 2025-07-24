@@ -12,6 +12,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/service/statetracker"
 	"github.com/data-preservation-programs/singularity/util"
@@ -65,6 +66,22 @@ func (c cronLogger) Info(msg string, keysAndValues ...any) {
 func (c cronLogger) Error(err error, msg string, keysAndValues ...any) {
 	keysAndValues = append(keysAndValues, "err", err)
 	Logger.Errorw(msg, keysAndValues...)
+}
+
+// categorizeError determines the appropriate deal state and reason based on error message
+func categorizeError(errorMessage string) (model.DealState, string) {
+	switch {
+	case strings.Contains(errorMessage, "deal rejected"):
+		return model.DealRejected, "Deal rejected by storage provider"
+	case strings.Contains(errorMessage, "no supported protocols"):
+		return model.DealErrored, "No supported storage protocols found"
+	case strings.Contains(errorMessage, "context deadline exceeded") || strings.Contains(errorMessage, "timeout"):
+		return model.DealErrored, "Network timeout during deal negotiation"
+	case strings.Contains(errorMessage, "connection refused") || strings.Contains(errorMessage, "network"):
+		return model.DealErrored, "Network connection failure"
+	default:
+		return model.DealErrored, "General deal creation error"
+	}
 }
 
 func NewDealPusher(db *gorm.DB, lotusURL string,
@@ -546,7 +563,46 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return errors.WithStack(err)
 			}, retry.Attempts(d.sendDealAttempts), retry.Delay(time.Second),
 				retry.DelayType(retry.FixedDelay), retry.Context(ctx))
+
+			// Handle deal failures by creating a deal record and tracking the error state
 			if err != nil {
+				var failedDeal *model.Deal
+				var dealState model.DealState
+				var reason string
+
+				// Determine the appropriate state and reason based on error type
+				dealState, reason = categorizeError(err.Error())
+
+				// Create a deal record for the failed attempt to track it
+				failedDeal = &model.Deal{
+					State:         dealState,
+					ClientActorID: walletObj.ActorID,
+					Provider:      schedule.Provider,
+					PieceCID:      car.PieceCID,
+					PieceSize:     car.PieceSize,
+					StartEpoch:    int32(epochutil.TimeToEpoch(time.Now().Add(schedule.StartDelay))),
+					EndEpoch:      int32(epochutil.TimeToEpoch(time.Now().Add(schedule.StartDelay + schedule.Duration))),
+					Price:         "0", // No price for failed deals
+					Verified:      schedule.Verified,
+					ErrorMessage:  err.Error(),
+					ScheduleID:    &schedule.ID,
+					ClientID:      &walletObj.ID,
+				}
+
+				// Save the failed deal record
+				if dbErr := database.DoRetry(ctx, func() error { return db.Create(failedDeal).Error }); dbErr != nil {
+					Logger.Warnw("Failed to save failed deal record", "error", dbErr, "provider", schedule.Provider, "state", dealState)
+				} else {
+					// Track the failure state change
+					metadata := &statetracker.StateChangeMetadata{
+						Reason: reason,
+						Error:  err.Error(),
+					}
+					if trackErr := d.stateTracker.TrackStateChange(ctx, failedDeal, nil, dealState, metadata); trackErr != nil {
+						Logger.Warnw("Failed to track failure state change", "dealID", failedDeal.ID, "error", trackErr)
+					}
+					Logger.Infow("Tracked deal failure", "dealID", failedDeal.ID, "provider", schedule.Provider, "state", dealState, "reason", reason)
+				}
 				return "", errors.Wrap(err, "failed to send deal")
 			}
 
