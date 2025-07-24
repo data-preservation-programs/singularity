@@ -21,7 +21,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-
 var SendManualCmd = &cli.Command{
 	Name:  "send-manual",
 	Usage: "Send a manual deal proposal to boost or legacy market",

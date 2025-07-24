@@ -24,47 +24,47 @@ type StateChangeTracker struct {
 // StateChangeMetadata represents additional metadata that can be stored with a state change
 type StateChangeMetadata struct {
 	// Basic state change information
-	Reason           string            `json:"reason,omitempty"`           // Reason for the state change
-	Error            string            `json:"error,omitempty"`            // Error message if applicable
-	TransactionID    string            `json:"transactionId,omitempty"`    // On-chain transaction ID
-	PublishCID       string            `json:"publishCid,omitempty"`       // Message CID for deal publication
-	
+	Reason        string `json:"reason,omitempty"`        // Reason for the state change
+	Error         string `json:"error,omitempty"`         // Error message if applicable
+	TransactionID string `json:"transactionId,omitempty"` // On-chain transaction ID
+	PublishCID    string `json:"publishCid,omitempty"`    // Message CID for deal publication
+
 	// Deal lifecycle epochs
-	ActivationEpoch  *int32            `json:"activationEpoch,omitempty"`  // Epoch when deal was activated
-	ExpirationEpoch  *int32            `json:"expirationEpoch,omitempty"`  // Epoch when deal expires
-	SlashingEpoch    *int32            `json:"slashingEpoch,omitempty"`    // Epoch when deal was slashed
-	
+	ActivationEpoch *int32 `json:"activationEpoch,omitempty"` // Epoch when deal was activated
+	ExpirationEpoch *int32 `json:"expirationEpoch,omitempty"` // Epoch when deal expires
+	SlashingEpoch   *int32 `json:"slashingEpoch,omitempty"`   // Epoch when deal was slashed
+
 	// Deal pricing and terms
-	StoragePrice     string            `json:"storagePrice,omitempty"`     // Storage price per epoch
-	
+	StoragePrice string `json:"storagePrice,omitempty"` // Storage price per epoch
+
 	// Enhanced error categorization fields
-	ErrorCategory    string            `json:"errorCategory,omitempty"`    // Categorized error type (e.g., "network_timeout", "deal_rejected")
-	ErrorSeverity    string            `json:"errorSeverity,omitempty"`    // Error severity level (critical, high, medium, low)
-	ErrorRetryable   *bool             `json:"errorRetryable,omitempty"`   // Whether the error is retryable
-	
+	ErrorCategory  string `json:"errorCategory,omitempty"`  // Categorized error type (e.g., "network_timeout", "deal_rejected")
+	ErrorSeverity  string `json:"errorSeverity,omitempty"`  // Error severity level (critical, high, medium, low)
+	ErrorRetryable *bool  `json:"errorRetryable,omitempty"` // Whether the error is retryable
+
 	// Network-related error metadata
-	NetworkEndpoint  string            `json:"networkEndpoint,omitempty"`  // Network endpoint that failed
-	NetworkLatency   *int64            `json:"networkLatency,omitempty"`   // Network latency in milliseconds
-	DNSResolution    string            `json:"dnsResolution,omitempty"`    // DNS resolution details
-	
+	NetworkEndpoint string `json:"networkEndpoint,omitempty"` // Network endpoint that failed
+	NetworkLatency  *int64 `json:"networkLatency,omitempty"`  // Network latency in milliseconds
+	DNSResolution   string `json:"dnsResolution,omitempty"`   // DNS resolution details
+
 	// Provider-related error metadata
-	ProviderVersion  string            `json:"providerVersion,omitempty"`  // Storage provider version
-	ProviderRegion   string            `json:"providerRegion,omitempty"`   // Storage provider region
-	
+	ProviderVersion string `json:"providerVersion,omitempty"` // Storage provider version
+	ProviderRegion  string `json:"providerRegion,omitempty"`  // Storage provider region
+
 	// Deal-related error metadata
-	ProposalID       string            `json:"proposalId,omitempty"`       // Deal proposal ID
-	AttemptNumber    *int              `json:"attemptNumber,omitempty"`    // Retry attempt number
-	LastAttemptTime  *time.Time        `json:"lastAttemptTime,omitempty"`  // Timestamp of last attempt
-	
+	ProposalID      string     `json:"proposalId,omitempty"`      // Deal proposal ID
+	AttemptNumber   *int       `json:"attemptNumber,omitempty"`   // Retry attempt number
+	LastAttemptTime *time.Time `json:"lastAttemptTime,omitempty"` // Timestamp of last attempt
+
 	// Client-related error metadata
-	WalletBalance    string            `json:"walletBalance,omitempty"`    // Client wallet balance at time of error
-	
+	WalletBalance string `json:"walletBalance,omitempty"` // Client wallet balance at time of error
+
 	// System-related error metadata
-	SystemLoad       *float64          `json:"systemLoad,omitempty"`       // System load at time of error
-	MemoryUsage      *int64            `json:"memoryUsage,omitempty"`      // Memory usage in bytes
-	DiskSpaceUsed    *int64            `json:"diskSpaceUsed,omitempty"`    // Disk space used in bytes
-	DatabaseHealth   string            `json:"databaseHealth,omitempty"`   // Database health status
-	
+	SystemLoad     *float64 `json:"systemLoad,omitempty"`     // System load at time of error
+	MemoryUsage    *int64   `json:"memoryUsage,omitempty"`    // Memory usage in bytes
+	DiskSpaceUsed  *int64   `json:"diskSpaceUsed,omitempty"`  // Disk space used in bytes
+	DatabaseHealth string   `json:"databaseHealth,omitempty"` // Database health status
+
 	// Flexible additional fields for future extensibility
 	AdditionalFields map[string]interface{} `json:"additionalFields,omitempty"` // Any additional custom fields
 }
@@ -83,7 +83,7 @@ func CreateErrorMetadata(categorization *errorcategorization.ErrorCategorization
 			Reason: reason,
 		}
 	}
-	
+
 	metadata := &StateChangeMetadata{
 		Reason:           reason,
 		Error:            "",
@@ -92,7 +92,7 @@ func CreateErrorMetadata(categorization *errorcategorization.ErrorCategorization
 		ErrorRetryable:   &categorization.Retryable,
 		AdditionalFields: make(map[string]interface{}),
 	}
-	
+
 	// Copy error-specific metadata if available
 	if categorization.Metadata != nil {
 		if categorization.Metadata.NetworkEndpoint != "" {
@@ -140,7 +140,7 @@ func CreateErrorMetadata(categorization *errorcategorization.ErrorCategorization
 			}
 		}
 	}
-	
+
 	return metadata
 }
 
@@ -148,11 +148,11 @@ func CreateErrorMetadata(categorization *errorcategorization.ErrorCategorization
 func (t *StateChangeTracker) TrackErrorStateChange(ctx context.Context, deal *model.Deal, previousState *model.DealState, errorMessage string, contextMetadata *errorcategorization.ErrorMetadata) error {
 	// Categorize the error
 	categorization := errorcategorization.CategorizeErrorWithContext(errorMessage, contextMetadata)
-	
+
 	// Create metadata from categorization
 	metadata := CreateErrorMetadata(categorization, categorization.Description)
 	metadata.Error = errorMessage
-	
+
 	// Use the categorized deal state
 	return t.TrackStateChange(ctx, deal, previousState, categorization.DealState, metadata)
 }

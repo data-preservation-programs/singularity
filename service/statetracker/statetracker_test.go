@@ -319,14 +319,14 @@ func TestTrackErrorStateChange(t *testing.T) {
 		// Test error state change tracking
 		errorMessage := "connection timeout during negotiation"
 		contextMetadata := &errorcategorization.ErrorMetadata{
-			NetworkEndpoint:  "tcp://192.168.1.100:8080",
-			NetworkLatency:   func() *int64 { latency := int64(500); return &latency }(),
-			ProviderID:       "f01234",
-			ProviderVersion:  "1.2.3",
-			AttemptNumber:    func() *int { attempt := 1; return &attempt }(),
-			LastAttemptTime:  func() *time.Time { t := time.Now(); return &t }(),
-			ClientAddress:    "f3abc123",
-			WalletBalance:    "1000",
+			NetworkEndpoint: "tcp://192.168.1.100:8080",
+			NetworkLatency:  func() *int64 { latency := int64(500); return &latency }(),
+			ProviderID:      "f01234",
+			ProviderVersion: "1.2.3",
+			AttemptNumber:   func() *int { attempt := 1; return &attempt }(),
+			LastAttemptTime: func() *time.Time { t := time.Now(); return &t }(),
+			ClientAddress:   "f3abc123",
+			WalletBalance:   "1000",
 			CustomFields: map[string]interface{}{
 				"retry_count": 1,
 				"endpoint":    "boost",
@@ -491,24 +491,24 @@ func TestTrackStateChangeWithEnhancedMetadata(t *testing.T) {
 		// Create enhanced metadata
 		now := time.Now()
 		metadata := &StateChangeMetadata{
-			Reason:           "Deal successfully negotiated",
-			TransactionID:    "bafy123456",
-			PublishCID:       "bafy789012",
-			StoragePrice:     "100",
-			ErrorCategory:    "",
-			ErrorSeverity:    "",
-			NetworkEndpoint:  "tcp://provider.com:8080",
-			NetworkLatency:   func() *int64 { latency := int64(200); return &latency }(),
-			ProviderVersion:  "1.2.3",
-			ProviderRegion:   "us-west-1",
-			ProposalID:       "prop-123",
-			AttemptNumber:    func() *int { attempt := 1; return &attempt }(),
-			LastAttemptTime:  &now,
-			WalletBalance:    "5000",
-			SystemLoad:       func() *float64 { load := 0.75; return &load }(),
-			MemoryUsage:      func() *int64 { mem := int64(1024 * 1024 * 512); return &mem }(), // 512MB
-			DiskSpaceUsed:    func() *int64 { disk := int64(1024 * 1024 * 1024 * 10); return &disk }(), // 10GB
-			DatabaseHealth:   "healthy",
+			Reason:          "Deal successfully negotiated",
+			TransactionID:   "bafy123456",
+			PublishCID:      "bafy789012",
+			StoragePrice:    "100",
+			ErrorCategory:   "",
+			ErrorSeverity:   "",
+			NetworkEndpoint: "tcp://provider.com:8080",
+			NetworkLatency:  func() *int64 { latency := int64(200); return &latency }(),
+			ProviderVersion: "1.2.3",
+			ProviderRegion:  "us-west-1",
+			ProposalID:      "prop-123",
+			AttemptNumber:   func() *int { attempt := 1; return &attempt }(),
+			LastAttemptTime: &now,
+			WalletBalance:   "5000",
+			SystemLoad:      func() *float64 { load := 0.75; return &load }(),
+			MemoryUsage:     func() *int64 { mem := int64(1024 * 1024 * 512); return &mem }(),         // 512MB
+			DiskSpaceUsed:   func() *int64 { disk := int64(1024 * 1024 * 1024 * 10); return &disk }(), // 10GB
+			DatabaseHealth:  "healthy",
 			AdditionalFields: map[string]interface{}{
 				"custom_field1": "value1",
 				"custom_field2": 42,
