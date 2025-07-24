@@ -2,7 +2,6 @@ package errorcategorization
 
 import (
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/data-preservation-programs/singularity/model"

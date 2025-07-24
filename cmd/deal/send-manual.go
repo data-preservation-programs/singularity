@@ -3,7 +3,6 @@ package deal
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/cockroachdb/errors"
