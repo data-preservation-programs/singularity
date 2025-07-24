@@ -176,7 +176,8 @@ func (DefaultHandler) CreateHandler(
 
 	var wallet model.Wallet
 
-	if hasKeyType {
+	switch {
+	case hasKeyType:
 		// Create UserWallet: generate a new keypair
 		privateKey, address, err := GenerateKey(request.KeyType)
 		if err != nil {
@@ -188,7 +189,7 @@ func (DefaultHandler) CreateHandler(
 			PrivateKey: privateKey,
 			WalletType: model.UserWallet,
 		}
-	} else if isTrackOnly {
+	case isTrackOnly:
 		// Create TrackedWallet: resolve ActorID to address using Lotus API
 		if len(request.ActorID) < 2 || (request.ActorID[:2] != "f0" && request.ActorID[:2] != "t0") {
 			return nil, errors.Wrap(handlererror.ErrInvalidParameter, "ActorID must start with f0 or t0")
@@ -219,7 +220,7 @@ func (DefaultHandler) CreateHandler(
 			Address:    addr,
 			WalletType: model.TrackedWallet,
 		}
-	} else {
+	default:
 		// Validate the address and actor ID with Lotus
 		addr, err := address.NewFromString(request.Address)
 		if err != nil {

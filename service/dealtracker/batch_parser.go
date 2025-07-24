@@ -32,55 +32,6 @@ func NewBatchParser(walletIDs map[string]struct{}, batchSize int) *BatchParser {
 	}
 }
 
-// shouldProcessDeal quickly checks if a deal should be processed based on client ID
-func (p *BatchParser) shouldProcessDeal(data []byte) bool {
-	// Fast client check using gjson
-	result := gjson.GetBytes(data, "Proposal.Client")
-	if !result.Exists() {
-		return false
-	}
-
-	client := result.String()
-	_, want := p.walletIDs[client]
-	return want
-}
-
-// extractClientFromRawJSON quickly extracts the client ID from raw JSON without full parsing
-func (p *BatchParser) extractClientFromRawJSON(data []byte) (string, bool) {
-	// Use gjson for fast client extraction from raw JSON
-	result := gjson.GetBytes(data, "Proposal.Client")
-	if !result.Exists() {
-		return "", false
-	}
-
-	client := result.String()
-	if client == "" {
-		return "", false
-	}
-
-	_, want := p.walletIDs[client]
-	return client, want
-}
-
-// parseDeal parses a full deal from raw JSON data
-func (p *BatchParser) parseDeal(data []byte) (*ParsedDeal, error) {
-	dealID, err := strconv.ParseUint(gjson.GetBytes(data, "DealID").String(), 10, 64)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse deal ID from raw data")
-	}
-
-	var deal Deal
-	err = json.Unmarshal(data, &deal)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to decode deal")
-	}
-
-	return &ParsedDeal{
-		DealID: dealID,
-		Deal:   deal,
-	}, nil
-}
-
 // ParseStream processes a stream of raw JSON deal data and returns batches of parsed deals that match our wallets
 func (p *BatchParser) ParseStream(ctx context.Context, dealStream <-chan []byte) (<-chan []ParsedDeal, error) {
 	batches := make(chan []ParsedDeal, 2) // Small buffer for batches
@@ -142,4 +93,36 @@ func (p *BatchParser) ParseStream(ctx context.Context, dealStream <-chan []byte)
 	}()
 
 	return batches, nil
+}
+
+// shouldProcessDeal quickly checks if a deal should be processed based on client ID
+func (p *BatchParser) shouldProcessDeal(data []byte) bool {
+	// Fast client check using gjson
+	result := gjson.GetBytes(data, "Proposal.Client")
+	if !result.Exists() {
+		return false
+	}
+
+	client := result.String()
+	_, want := p.walletIDs[client]
+	return want
+}
+
+// parseDeal parses a full deal from raw JSON data
+func (p *BatchParser) parseDeal(data []byte) (*ParsedDeal, error) {
+	dealID, err := strconv.ParseUint(gjson.GetBytes(data, "DealID").String(), 10, 64)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse deal ID from raw data")
+	}
+
+	var deal Deal
+	err = json.Unmarshal(data, &deal)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decode deal")
+	}
+
+	return &ParsedDeal{
+		DealID: dealID,
+		Deal:   deal,
+	}, nil
 }

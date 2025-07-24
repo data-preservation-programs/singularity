@@ -48,6 +48,20 @@ func (d Deal) Key() string {
 		d.Proposal.PieceCID.Root, d.Proposal.StartEpoch, d.Proposal.EndEpoch)
 }
 
+// GetState determines the current state of a deal based on on-chain data and current time.
+//
+// The state determination follows this priority order:
+//  1. SLASHED: If SlashEpoch > 0, the deal has been slashed by the network
+//  2. PROPOSAL_EXPIRED: If SectorStartEpoch < 0 AND StartEpoch has passed, the deal proposal expired
+//  3. PUBLISHED: If SectorStartEpoch < 0 AND StartEpoch hasn't passed, the deal is published but not active
+//  4. EXPIRED: If SectorStartEpoch >= 0 AND EndEpoch has passed, the deal has naturally expired
+//  5. ACTIVE: If SectorStartEpoch >= 0 AND EndEpoch hasn't passed, the deal is actively storing data
+//
+// Parameters:
+//   - headTime: Current blockchain head time for epoch-based comparisons
+//
+// Returns:
+//   - model.DealState: The determined state of the deal
 func (d Deal) GetState(headTime time.Time) model.DealState {
 	if d.State.SlashEpoch > 0 {
 		return model.DealSlashed
@@ -592,6 +606,10 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 				Reason:          "Chain state update detected",
 				ActivationEpoch: &deal.State.SectorStartEpoch,
 			}
+			// Add slashing epoch if deal was slashed
+			if newState == model.DealSlashed && deal.State.SlashEpoch > 0 {
+				metadata.SlashingEpoch = &deal.State.SlashEpoch
+			}
 			if err := d.stateTracker.TrackStateChangeWithDetails(
 				ctx,
 				model.DealID(dealID), // Convert uint64 to DealID
@@ -634,6 +652,10 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			metadata := &statetracker.StateChangeMetadata{
 				Reason:          "Deal matched on-chain",
 				ActivationEpoch: &deal.State.SectorStartEpoch,
+			}
+			// Add slashing epoch if deal was slashed
+			if newState == model.DealSlashed && deal.State.SlashEpoch > 0 {
+				metadata.SlashingEpoch = &deal.State.SlashEpoch
 			}
 			if err := d.stateTracker.TrackStateChangeWithDetails(
 				ctx,
@@ -696,6 +718,10 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			Reason:          "External deal discovered on-chain",
 			ActivationEpoch: &deal.State.SectorStartEpoch,
 			StoragePrice:    deal.Proposal.StoragePricePerEpoch,
+		}
+		// Add slashing epoch if deal was slashed
+		if newState == model.DealSlashed && deal.State.SlashEpoch > 0 {
+			metadata.SlashingEpoch = &deal.State.SlashEpoch
 		}
 		if err := d.stateTracker.TrackStateChangeWithDetails(
 			ctx,
@@ -807,7 +833,11 @@ func (d *DealTracker) trackDeal(ctx context.Context, walletIDs map[string]struct
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer closer.Close()
+	defer func() {
+		if err := closer.Close(); err != nil {
+			Logger.Errorw("failed to close deal stream", "error", err)
+		}
+	}()
 
 	// Start the download stats logger
 	countingCtx, cancel := context.WithCancel(ctx)
@@ -866,23 +896,14 @@ func (d *DealTracker) dealStateStreamCustom(ctx context.Context, walletIDs map[s
 	return DealStateStreamFromHTTPRequest(req, 2, false, walletIDs)
 }
 
-// Helper function for max
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 // Find and process complete deal objects, return bytes processed
 func findAndProcessCompleteDeals(data []byte, rawDealChan chan struct {
 	DealID  uint64
 	RawDeal json.RawMessage
 }, walletIDs map[string]struct{}, depth int) int {
-
 	// If data is small enough, just parse with gjson
 	if len(data) < 8*1024*1024 { // Less than 8MB
-		if isCompleteJSON(data, depth) {
+		if isCompleteJSON(data) {
 			parseWithGjson(data, rawDealChan, walletIDs, depth)
 			return len(data)
 		}
@@ -926,7 +947,7 @@ func findAndProcessCompleteDeals(data []byte, rawDealChan chan struct {
 }
 
 // Check if data contains complete JSON
-func isCompleteJSON(data []byte, depth int) bool {
+func isCompleteJSON(data []byte) bool {
 	if len(data) < 10 {
 		return false
 	}
@@ -945,7 +966,6 @@ func parseWithGjson(data []byte, rawDealChan chan struct {
 	DealID  uint64
 	RawDeal json.RawMessage
 }, walletIDs map[string]struct{}, depth int) {
-
 	parsed := gjson.ParseBytes(data)
 
 	// Handle depth wrapping
@@ -1041,7 +1061,6 @@ func processDealChunk(dealData []byte, rawDealChan chan struct {
 	DealID  uint64
 	RawDeal json.RawMessage
 }, walletIDs map[string]struct{}) {
-
 	// Extract ID and JSON from "123":{...}
 	colonPos := bytes.IndexByte(dealData, ':')
 	if colonPos <= 0 {
