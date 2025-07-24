@@ -23,7 +23,6 @@ type StateChangeTracker struct {
 
 // StateChangeMetadata represents additional metadata that can be stored with a state change
 type StateChangeMetadata struct {
-
 	// Basic state change information
 	Reason        string `json:"reason,omitempty"`        // Reason for the state change
 	Error         string `json:"error,omitempty"`         // Error message if applicable

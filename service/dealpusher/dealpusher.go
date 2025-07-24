@@ -16,7 +16,6 @@ import (
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/service/statetracker"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/data-preservation-programs/singularity/util/errorcategorization"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
@@ -567,25 +566,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 
 			// Handle deal failures by creating a deal record and tracking the error state
 			if err != nil {
-
 				// Create context metadata for enhanced error categorization
-				contextMetadata := &errorcategorization.ErrorMetadata{
-					ProviderID:    schedule.Provider,
-					PieceCID:      car.PieceCID.String(),
-					PieceSize:     &car.PieceSize,
-					DealPrice:     "0", // No price for failed deals
-					ClientAddress: walletObj.ActorID,
-					StartEpoch: func() *int32 {
-						epoch := int32(epochutil.TimeToEpoch(time.Now().Add(schedule.StartDelay)))
-						return &epoch
-					}(),
-					EndEpoch: func() *int32 {
-						epoch := int32(epochutil.TimeToEpoch(time.Now().Add(schedule.StartDelay + schedule.Duration)))
-						return &epoch
-					}(),
-					AttemptNumber:   func() *int { attempt := int(d.sendDealAttempts); return &attempt }(),
-					LastAttemptTime: func() *time.Time { t := time.Now(); return &t }(),
-				}
 
 				var failedDeal *model.Deal
 				var dealState model.DealState

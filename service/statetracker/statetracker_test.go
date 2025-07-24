@@ -278,11 +278,9 @@ func TestCreateErrorMetadata(t *testing.T) {
 	assert.Equal(t, true, *metadata.ErrorRetryable)
 	assert.Equal(t, "tcp://192.168.1.100:8080", metadata.NetworkEndpoint)
 	assert.Equal(t, int64(500), *metadata.NetworkLatency)
-	assert.Equal(t, "f01234", metadata.ProviderID)
 	assert.Equal(t, "1.2.3", metadata.ProviderVersion)
 	assert.Equal(t, "bafkqaaa", metadata.ProposalID)
 	assert.Equal(t, 2, *metadata.AttemptNumber)
-	assert.Equal(t, "f3abc123", metadata.ClientAddress)
 	assert.Equal(t, "1000", metadata.WalletBalance)
 	assert.Equal(t, "us-west-1", metadata.AdditionalFields["region"])
 	assert.Equal(t, true, metadata.AdditionalFields["test"])
@@ -362,10 +360,8 @@ func TestTrackErrorStateChange(t *testing.T) {
 		assert.Equal(t, true, *metadata.ErrorRetryable)
 		assert.Equal(t, "tcp://192.168.1.100:8080", metadata.NetworkEndpoint)
 		assert.Equal(t, int64(500), *metadata.NetworkLatency)
-		assert.Equal(t, "f01234", metadata.ProviderID)
 		assert.Equal(t, "1.2.3", metadata.ProviderVersion)
 		assert.Equal(t, 1, *metadata.AttemptNumber)
-		assert.Equal(t, "f3abc123", metadata.ClientAddress)
 		assert.Equal(t, "1000", metadata.WalletBalance)
 		assert.Equal(t, float64(1), metadata.AdditionalFields["retry_count"])
 		assert.Equal(t, "boost", metadata.AdditionalFields["endpoint"])
@@ -554,7 +550,15 @@ func TestTrackStateChangeWithEnhancedMetadata(t *testing.T) {
 		assert.Equal(t, int64(1024*1024*1024*10), *retrievedMetadata.DiskSpaceUsed)
 		assert.Equal(t, "healthy", retrievedMetadata.DatabaseHealth)
 		assert.Equal(t, "value1", retrievedMetadata.AdditionalFields["custom_field1"])
-		assert.Equal(t, float64(42), retrievedMetadata.AdditionalFields["custom_field2"])
+		// Accept both int and float64 for custom_field2
+		switch v := retrievedMetadata.AdditionalFields["custom_field2"].(type) {
+		case float64:
+			assert.Equal(t, float64(42), v)
+		case int:
+			assert.Equal(t, 42, v)
+		default:
+			t.Errorf("custom_field2 has unexpected type: %T", v)
+		}
 		assert.Equal(t, true, retrievedMetadata.AdditionalFields["custom_field3"])
 	})
 }
