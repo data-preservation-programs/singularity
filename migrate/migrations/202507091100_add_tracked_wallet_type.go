@@ -9,11 +9,6 @@ import (
 
 func _202507091100_add_tracked_wallet_type() *gormigrate.Migration {
 	type WalletType string
-	const (
-		UserWallet    WalletType = "UserWallet"
-		SPWallet      WalletType = "SPWallet"
-		TrackedWallet WalletType = "TrackedWallet"
-	)
 
 	type Wallet struct {
 		ID               uint       `gorm:"primaryKey"           json:"id"`
