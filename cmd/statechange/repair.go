@@ -123,7 +123,7 @@ Valid states: proposed, published, active, expired, proposal_expired, rejected, 
 				tracker := statetracker.NewStateChangeTracker(db)
 				metadata := &statetracker.StateChangeMetadata{
 					Reason: c.String("reason"),
-					AdditionalFields: map[string]string{
+					AdditionalFields: map[string]interface{}{
 						"operationType": "manual_force_transition",
 						"operator":      "cli",
 					},
@@ -255,7 +255,7 @@ This allows the system to retry operations that may have failed temporarily.`,
 				for _, deal := range deals {
 					metadata := &statetracker.StateChangeMetadata{
 						Reason: "Manual error state reset",
-						AdditionalFields: map[string]string{
+						AdditionalFields: map[string]interface{}{
 							"operationType": "error_state_reset",
 							"operator":      "cli",
 						},
