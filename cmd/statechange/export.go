@@ -35,7 +35,7 @@ func exportStateChanges(stateChanges []model.DealStateChange, format, outputPath
 
 // exportToCSV exports state changes to a CSV file
 func exportToCSV(stateChanges []model.DealStateChange, outputPath string) (err error) {
-	file, err := os.Create(outputPath)
+	file, err := os.Create(outputPath) // #nosec G304 -- path is validated in exportStateChanges
 	if err != nil {
 		return errors.Wrap(err, "failed to create CSV file")
 	}
@@ -89,7 +89,7 @@ func exportToCSV(stateChanges []model.DealStateChange, outputPath string) (err e
 
 // exportToJSON exports state changes to a JSON file
 func exportToJSON(stateChanges []model.DealStateChange, outputPath string) (err error) {
-	file, err := os.Create(outputPath)
+	file, err := os.Create(outputPath) // #nosec G304 -- path is validated in exportStateChanges
 	if err != nil {
 		return errors.Wrap(err, "failed to create JSON file")
 	}
