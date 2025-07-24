@@ -833,7 +833,11 @@ func (d *DealTracker) trackDeal(ctx context.Context, walletIDs map[string]struct
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer closer.Close()
+	defer func() {
+		if err := closer.Close(); err != nil {
+			Logger.Errorw("failed to close deal stream", "error", err)
+		}
+	}()
 
 	// Start the download stats logger
 	countingCtx, cancel := context.WithCancel(ctx)
@@ -892,23 +896,14 @@ func (d *DealTracker) dealStateStreamCustom(ctx context.Context, walletIDs map[s
 	return DealStateStreamFromHTTPRequest(req, 2, false, walletIDs)
 }
 
-// Helper function for max
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 // Find and process complete deal objects, return bytes processed
 func findAndProcessCompleteDeals(data []byte, rawDealChan chan struct {
 	DealID  uint64
 	RawDeal json.RawMessage
 }, walletIDs map[string]struct{}, depth int) int {
-
 	// If data is small enough, just parse with gjson
 	if len(data) < 8*1024*1024 { // Less than 8MB
-		if isCompleteJSON(data, depth) {
+		if isCompleteJSON(data) {
 			parseWithGjson(data, rawDealChan, walletIDs, depth)
 			return len(data)
 		}
@@ -952,7 +947,7 @@ func findAndProcessCompleteDeals(data []byte, rawDealChan chan struct {
 }
 
 // Check if data contains complete JSON
-func isCompleteJSON(data []byte, depth int) bool {
+func isCompleteJSON(data []byte) bool {
 	if len(data) < 10 {
 		return false
 	}
@@ -971,7 +966,6 @@ func parseWithGjson(data []byte, rawDealChan chan struct {
 	DealID  uint64
 	RawDeal json.RawMessage
 }, walletIDs map[string]struct{}, depth int) {
-
 	parsed := gjson.ParseBytes(data)
 
 	// Handle depth wrapping
@@ -1067,7 +1061,6 @@ func processDealChunk(dealData []byte, rawDealChan chan struct {
 	DealID  uint64
 	RawDeal json.RawMessage
 }, walletIDs map[string]struct{}) {
-
 	// Extract ID and JSON from "123":{...}
 	colonPos := bytes.IndexByte(dealData, ':')
 	if colonPos <= 0 {
