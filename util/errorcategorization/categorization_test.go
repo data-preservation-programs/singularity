@@ -291,7 +291,7 @@ func TestCategorizeError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result := CategorizeError(tt.errorMessage)
 			require.NotNil(t, result)
-			
+
 			assert.Equal(t, tt.expectedCategory, result.Category)
 			assert.Equal(t, tt.expectedDealState, result.DealState)
 			assert.Equal(t, tt.expectedSeverity, result.Severity)
@@ -307,19 +307,19 @@ func TestCategorizeErrorWithContext(t *testing.T) {
 	now := time.Now()
 	pieceSize := int64(1024)
 	attemptNum := 3
-	
+
 	contextMetadata := &ErrorMetadata{
-		NetworkEndpoint:  "tcp://192.168.1.100:8080",
-		NetworkLatency:   func() *int64 { latency := int64(500); return &latency }(),
-		ProviderID:       "f01234",
-		ProviderVersion:  "1.2.3",
-		PieceCID:         "bafkqaaa",
-		PieceSize:        &pieceSize,
-		DealPrice:        "100",
-		AttemptNumber:    &attemptNum,
-		LastAttemptTime:  &now,
-		ClientAddress:    "f3abc123",
-		WalletBalance:    "1000",
+		NetworkEndpoint: "tcp://192.168.1.100:8080",
+		NetworkLatency:  func() *int64 { latency := int64(500); return &latency }(),
+		ProviderID:      "f01234",
+		ProviderVersion: "1.2.3",
+		PieceCID:        "bafkqaaa",
+		PieceSize:       &pieceSize,
+		DealPrice:       "100",
+		AttemptNumber:   &attemptNum,
+		LastAttemptTime: &now,
+		ClientAddress:   "f3abc123",
+		WalletBalance:   "1000",
 		CustomFields: map[string]interface{}{
 			"region": "us-west-1",
 			"zone":   "us-west-1a",
@@ -328,13 +328,13 @@ func TestCategorizeErrorWithContext(t *testing.T) {
 
 	result := CategorizeErrorWithContext(errorMessage, contextMetadata)
 	require.NotNil(t, result)
-	
+
 	// Verify basic categorization
 	assert.Equal(t, NetworkTimeout, result.Category)
 	assert.Equal(t, model.DealErrored, result.DealState)
 	assert.Equal(t, SeverityMedium, result.Severity)
 	assert.True(t, result.Retryable)
-	
+
 	// Verify metadata is properly merged
 	require.NotNil(t, result.Metadata)
 	assert.Equal(t, "tcp://192.168.1.100:8080", result.Metadata.NetworkEndpoint)
@@ -354,10 +354,10 @@ func TestCategorizeErrorWithContext(t *testing.T) {
 
 func TestCategorizeErrorWithNilContext(t *testing.T) {
 	errorMessage := "deal rejected by storage provider"
-	
+
 	result := CategorizeErrorWithContext(errorMessage, nil)
 	require.NotNil(t, result)
-	
+
 	assert.Equal(t, DealRejectedByProvider, result.Category)
 	assert.Equal(t, model.DealRejected, result.DealState)
 	assert.Equal(t, SeverityHigh, result.Severity)
@@ -367,7 +367,7 @@ func TestCategorizeErrorWithNilContext(t *testing.T) {
 
 func TestIsRetryableError(t *testing.T) {
 	tests := []struct {
-		category         ErrorCategory
+		category          ErrorCategory
 		expectedRetryable bool
 	}{
 		{NetworkTimeout, true},
@@ -424,10 +424,10 @@ func TestGetErrorSeverity(t *testing.T) {
 
 func TestGetSupportedCategories(t *testing.T) {
 	categories := GetSupportedCategories()
-	
+
 	// Verify we have a reasonable number of categories
 	assert.Greater(t, len(categories), 10)
-	
+
 	// Verify some expected categories are present
 	expectedCategories := []ErrorCategory{
 		NetworkTimeout,
@@ -440,7 +440,7 @@ func TestGetSupportedCategories(t *testing.T) {
 		SystemDatabaseError,
 		UnknownError,
 	}
-	
+
 	for _, expected := range expectedCategories {
 		found := false
 		for _, category := range categories {
@@ -455,19 +455,19 @@ func TestGetSupportedCategories(t *testing.T) {
 
 func TestErrorPatternsCoverage(t *testing.T) {
 	// Test that our error patterns have good coverage
-	
+
 	// Test case-insensitive matching
 	result := CategorizeError("DEAL REJECTED BY PROVIDER")
 	assert.Equal(t, DealRejectedByProvider, result.Category)
-	
+
 	// Test partial matches
 	result = CategorizeError("error: connection refused by remote host")
 	assert.Equal(t, NetworkConnectionError, result.Category)
-	
+
 	// Test multiple keywords
 	result = CategorizeError("timeout occurred during network operation")
 	assert.Equal(t, NetworkTimeout, result.Category)
-	
+
 	// Test complex error messages
 	result = CategorizeError("failed to establish connection: no route to host 192.168.1.1")
 	assert.Equal(t, NetworkConnectionError, result.Category)
@@ -476,7 +476,7 @@ func TestErrorPatternsCoverage(t *testing.T) {
 func TestErrorCategorizationFields(t *testing.T) {
 	result := CategorizeError("connection timeout")
 	require.NotNil(t, result)
-	
+
 	// Test all required fields are present
 	assert.NotEmpty(t, result.Category)
 	assert.NotEmpty(t, result.DealState)
@@ -488,7 +488,7 @@ func TestErrorCategorizationFields(t *testing.T) {
 // Benchmark tests for performance
 func BenchmarkCategorizeError(b *testing.B) {
 	errorMessage := "connection timeout during deal negotiation"
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = CategorizeError(errorMessage)
@@ -502,7 +502,7 @@ func BenchmarkCategorizeErrorWithContext(b *testing.B) {
 		PieceCID:      "bafkqaaa",
 		ClientAddress: "f3abc123",
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = CategorizeErrorWithContext(errorMessage, contextMetadata)

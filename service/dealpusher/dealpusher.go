@@ -69,7 +69,6 @@ func (c cronLogger) Error(err error, msg string, keysAndValues ...any) {
 	Logger.Errorw(msg, keysAndValues...)
 }
 
-
 func NewDealPusher(db *gorm.DB, lotusURL string,
 	lotusToken string, numAttempts uint, maxReplicas uint,
 ) (*DealPusher, error) {
@@ -554,13 +553,19 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			if err != nil {
 				// Create context metadata for enhanced error categorization
 				contextMetadata := &errorcategorization.ErrorMetadata{
-					ProviderID:      schedule.Provider,
-					PieceCID:        car.PieceCID.String(),
-					PieceSize:       &car.PieceSize,
-					DealPrice:       "0", // No price for failed deals
-					ClientAddress:   walletObj.ActorID,
-					StartEpoch:      func() *int32 { epoch := int32(epochutil.TimeToEpoch(time.Now().Add(schedule.StartDelay))); return &epoch }(),
-					EndEpoch:        func() *int32 { epoch := int32(epochutil.TimeToEpoch(time.Now().Add(schedule.StartDelay + schedule.Duration))); return &epoch }(),
+					ProviderID:    schedule.Provider,
+					PieceCID:      car.PieceCID.String(),
+					PieceSize:     &car.PieceSize,
+					DealPrice:     "0", // No price for failed deals
+					ClientAddress: walletObj.ActorID,
+					StartEpoch: func() *int32 {
+						epoch := int32(epochutil.TimeToEpoch(time.Now().Add(schedule.StartDelay)))
+						return &epoch
+					}(),
+					EndEpoch: func() *int32 {
+						epoch := int32(epochutil.TimeToEpoch(time.Now().Add(schedule.StartDelay + schedule.Duration)))
+						return &epoch
+					}(),
 					AttemptNumber:   func() *int { attempt := int(d.sendDealAttempts); return &attempt }(),
 					LastAttemptTime: func() *time.Time { t := time.Now(); return &t }(),
 				}

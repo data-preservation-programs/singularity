@@ -26,21 +26,21 @@ const (
 	DealDuplicateProposal  ErrorCategory = "deal_duplicate_proposal"
 
 	// Storage provider errors
-	ProviderUnavailable    ErrorCategory = "provider_unavailable"
-	ProviderCapacityFull   ErrorCategory = "provider_capacity_full"
-	ProviderConfigError    ErrorCategory = "provider_config_error"
-	ProviderVersionError   ErrorCategory = "provider_version_error"
+	ProviderUnavailable  ErrorCategory = "provider_unavailable"
+	ProviderCapacityFull ErrorCategory = "provider_capacity_full"
+	ProviderConfigError  ErrorCategory = "provider_config_error"
+	ProviderVersionError ErrorCategory = "provider_version_error"
 
 	// Client/wallet errors
-	ClientInsufficientFunds ErrorCategory = "client_insufficient_funds"
-	ClientInvalidAddress    ErrorCategory = "client_invalid_address"
+	ClientInsufficientFunds   ErrorCategory = "client_insufficient_funds"
+	ClientInvalidAddress      ErrorCategory = "client_invalid_address"
 	ClientAuthenticationError ErrorCategory = "client_authentication_error"
 
 	// Data/piece errors
-	PieceNotFound       ErrorCategory = "piece_not_found"
-	PieceCorrupted      ErrorCategory = "piece_corrupted"
-	PieceInvalidCID     ErrorCategory = "piece_invalid_cid"
-	PieceInvalidSize    ErrorCategory = "piece_invalid_size"
+	PieceNotFound    ErrorCategory = "piece_not_found"
+	PieceCorrupted   ErrorCategory = "piece_corrupted"
+	PieceInvalidCID  ErrorCategory = "piece_invalid_cid"
+	PieceInvalidSize ErrorCategory = "piece_invalid_size"
 
 	// System/internal errors
 	SystemDatabaseError ErrorCategory = "system_database_error"
@@ -74,12 +74,12 @@ const (
 
 // ErrorCategorization holds the result of error categorization
 type ErrorCategorization struct {
-	Category     ErrorCategory           `json:"category"`
-	DealState    model.DealState         `json:"dealState"`
-	Description  string                  `json:"description"`
-	Severity     ErrorSeverity           `json:"severity"`
-	Retryable    bool                    `json:"retryable"`
-	Metadata     *ErrorMetadata          `json:"metadata,omitempty"`
+	Category    ErrorCategory   `json:"category"`
+	DealState   model.DealState `json:"dealState"`
+	Description string          `json:"description"`
+	Severity    ErrorSeverity   `json:"severity"`
+	Retryable   bool            `json:"retryable"`
+	Metadata    *ErrorMetadata  `json:"metadata,omitempty"`
 }
 
 // ErrorMetadata holds additional metadata about the error
@@ -95,15 +95,15 @@ type ErrorMetadata struct {
 	ProviderRegion  string `json:"providerRegion,omitempty"`
 
 	// Deal-related metadata
-	ProposalID       string    `json:"proposalId,omitempty"`
-	PieceCID         string    `json:"pieceCid,omitempty"`
-	PieceSize        *int64    `json:"pieceSize,omitempty"`
-	DealPrice        string    `json:"dealPrice,omitempty"`
-	DealDuration     *int64    `json:"dealDuration,omitempty"` // in epochs
-	StartEpoch       *int32    `json:"startEpoch,omitempty"`
-	EndEpoch         *int32    `json:"endEpoch,omitempty"`
-	AttemptNumber    *int      `json:"attemptNumber,omitempty"`
-	LastAttemptTime  *time.Time `json:"lastAttemptTime,omitempty"`
+	ProposalID      string     `json:"proposalId,omitempty"`
+	PieceCID        string     `json:"pieceCid,omitempty"`
+	PieceSize       *int64     `json:"pieceSize,omitempty"`
+	DealPrice       string     `json:"dealPrice,omitempty"`
+	DealDuration    *int64     `json:"dealDuration,omitempty"` // in epochs
+	StartEpoch      *int32     `json:"startEpoch,omitempty"`
+	EndEpoch        *int32     `json:"endEpoch,omitempty"`
+	AttemptNumber   *int       `json:"attemptNumber,omitempty"`
+	LastAttemptTime *time.Time `json:"lastAttemptTime,omitempty"`
 
 	// Client-related metadata
 	ClientAddress string `json:"clientAddress,omitempty"`
@@ -111,7 +111,7 @@ type ErrorMetadata struct {
 
 	// System-related metadata
 	SystemLoad     *float64 `json:"systemLoad,omitempty"`
-	MemoryUsage    *int64   `json:"memoryUsage,omitempty"` // in bytes
+	MemoryUsage    *int64   `json:"memoryUsage,omitempty"`   // in bytes
 	DiskSpaceUsed  *int64   `json:"diskSpaceUsed,omitempty"` // in bytes
 	DatabaseHealth string   `json:"databaseHealth,omitempty"`
 
@@ -386,13 +386,13 @@ func CategorizeError(errorMessage string) *ErrorCategorization {
 // CategorizeErrorWithContext analyzes an error message with additional context information
 func CategorizeErrorWithContext(errorMessage string, contextMetadata *ErrorMetadata) *ErrorCategorization {
 	categorization := CategorizeError(errorMessage)
-	
+
 	// Merge context metadata with the base metadata
 	if contextMetadata != nil {
 		if categorization.Metadata == nil {
 			categorization.Metadata = &ErrorMetadata{}
 		}
-		
+
 		// Merge fields from contextMetadata
 		if contextMetadata.NetworkEndpoint != "" {
 			categorization.Metadata.NetworkEndpoint = contextMetadata.NetworkEndpoint
@@ -443,7 +443,7 @@ func CategorizeErrorWithContext(errorMessage string, contextMetadata *ErrorMetad
 			categorization.Metadata.CustomFields = contextMetadata.CustomFields
 		}
 	}
-	
+
 	return categorization
 }
 
@@ -471,13 +471,13 @@ func GetErrorSeverity(category ErrorCategory) ErrorSeverity {
 func GetSupportedCategories() []ErrorCategory {
 	categories := make([]ErrorCategory, 0, len(errorPatterns))
 	seen := make(map[ErrorCategory]bool)
-	
+
 	for _, pattern := range errorPatterns {
 		if !seen[pattern.Category] {
 			categories = append(categories, pattern.Category)
 			seen[pattern.Category] = true
 		}
 	}
-	
+
 	return categories
 }
