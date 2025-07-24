@@ -176,11 +176,11 @@ var ListCmd = &cli.Command{
 			}
 
 			cliutil.Print(c, map[string]interface{}{
-				"message":     "State changes exported successfully",
-				"format":      exportFormat,
-				"outputPath":  outputPath,
-				"totalCount":  len(response.StateChanges),
-				"totalInDB":   response.Total,
+				"message":    "State changes exported successfully",
+				"format":     exportFormat,
+				"outputPath": outputPath,
+				"totalCount": len(response.StateChanges),
+				"totalInDB":  response.Total,
 			})
 			return nil
 		}

@@ -61,10 +61,10 @@ Valid states: proposed, published, active, expired, proposal_expired, rejected, 
 
 				newState := model.DealState(newStateStr)
 				validStates := []model.DealState{
-					"proposed", "published", "active", "expired", 
+					"proposed", "published", "active", "expired",
 					"proposal_expired", "rejected", "slashed", "error",
 				}
-				
+
 				valid := false
 				for _, validState := range validStates {
 					if newState == validState {
@@ -339,9 +339,9 @@ This helps maintain database consistency and reduce storage usage.`,
 
 				if c.Bool("dry-run") {
 					cliutil.Print(c, map[string]interface{}{
-						"message":      "DRY RUN: Would delete orphaned state changes",
-						"orphanCount":  len(orphanedChanges),
-						"orphanedIds":  extractStateChangeIds(orphanedChanges),
+						"message":     "DRY RUN: Would delete orphaned state changes",
+						"orphanCount": len(orphanedChanges),
+						"orphanedIds": extractStateChangeIds(orphanedChanges),
 					})
 					return nil
 				}
@@ -358,8 +358,8 @@ This helps maintain database consistency and reduce storage usage.`,
 				}
 
 				cliutil.Print(c, map[string]interface{}{
-					"message":       "Orphaned state changes cleaned up successfully",
-					"deletedCount":  len(orphanedChanges),
+					"message":      "Orphaned state changes cleaned up successfully",
+					"deletedCount": len(orphanedChanges),
 				})
 				return nil
 			},
