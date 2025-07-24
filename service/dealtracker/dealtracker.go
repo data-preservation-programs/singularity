@@ -48,6 +48,20 @@ func (d Deal) Key() string {
 		d.Proposal.PieceCID.Root, d.Proposal.StartEpoch, d.Proposal.EndEpoch)
 }
 
+// GetState determines the current state of a deal based on on-chain data and current time.
+//
+// The state determination follows this priority order:
+//  1. SLASHED: If SlashEpoch > 0, the deal has been slashed by the network
+//  2. PROPOSAL_EXPIRED: If SectorStartEpoch < 0 AND StartEpoch has passed, the deal proposal expired
+//  3. PUBLISHED: If SectorStartEpoch < 0 AND StartEpoch hasn't passed, the deal is published but not active
+//  4. EXPIRED: If SectorStartEpoch >= 0 AND EndEpoch has passed, the deal has naturally expired
+//  5. ACTIVE: If SectorStartEpoch >= 0 AND EndEpoch hasn't passed, the deal is actively storing data
+//
+// Parameters:
+//   - headTime: Current blockchain head time for epoch-based comparisons
+//
+// Returns:
+//   - model.DealState: The determined state of the deal
 func (d Deal) GetState(headTime time.Time) model.DealState {
 	if d.State.SlashEpoch > 0 {
 		return model.DealSlashed
@@ -592,6 +606,10 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 				Reason:          "Chain state update detected",
 				ActivationEpoch: &deal.State.SectorStartEpoch,
 			}
+			// Add slashing epoch if deal was slashed
+			if newState == model.DealSlashed && deal.State.SlashEpoch > 0 {
+				metadata.SlashingEpoch = &deal.State.SlashEpoch
+			}
 			if err := d.stateTracker.TrackStateChangeWithDetails(
 				ctx,
 				model.DealID(dealID), // Convert uint64 to DealID
@@ -634,6 +652,10 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			metadata := &statetracker.StateChangeMetadata{
 				Reason:          "Deal matched on-chain",
 				ActivationEpoch: &deal.State.SectorStartEpoch,
+			}
+			// Add slashing epoch if deal was slashed
+			if newState == model.DealSlashed && deal.State.SlashEpoch > 0 {
+				metadata.SlashingEpoch = &deal.State.SlashEpoch
 			}
 			if err := d.stateTracker.TrackStateChangeWithDetails(
 				ctx,
@@ -696,6 +718,10 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			Reason:          "External deal discovered on-chain",
 			ActivationEpoch: &deal.State.SectorStartEpoch,
 			StoragePrice:    deal.Proposal.StoragePricePerEpoch,
+		}
+		// Add slashing epoch if deal was slashed
+		if newState == model.DealSlashed && deal.State.SlashEpoch > 0 {
+			metadata.SlashingEpoch = &deal.State.SlashEpoch
 		}
 		if err := d.stateTracker.TrackStateChangeWithDetails(
 			ctx,
