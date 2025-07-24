@@ -587,11 +587,48 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 				return errors.WithStack(err)
 			}
 
-			// Track the state change
-			metadata := &statetracker.StateChangeMetadata{
-				Reason:          "Chain state update detected",
+			// Track the state change with enhanced metadata
+			dealInfo := &statetracker.DealInfo{
+				StoragePrice:    deal.Proposal.StoragePricePerEpoch,
+				PieceSize:       deal.Proposal.PieceSize,
+				VerifiedDeal:    deal.Proposal.VerifiedDeal,
 				ActivationEpoch: &deal.State.SectorStartEpoch,
 			}
+			if deal.State.SlashEpoch > 0 {
+				dealInfo.SlashingEpoch = &deal.State.SlashEpoch
+			}
+
+			reason := "Chain state update detected"
+			if current != newState {
+				reason = fmt.Sprintf("Deal state transition: %s → %s", current, newState)
+				// Add special handling for critical transitions
+				switch newState {
+				case model.DealSlashed:
+					reason = fmt.Sprintf("Deal slashed at epoch %d", deal.State.SlashEpoch)
+					Logger.Warnw("Deal slashed detected", 
+						"dealID", dealID, 
+						"provider", deal.Proposal.Provider,
+						"client", deal.Proposal.Client,
+						"slashEpoch", deal.State.SlashEpoch,
+						"pieceCID", deal.Proposal.PieceCID.Root)
+				case model.DealExpired:
+					reason = fmt.Sprintf("Deal expired at epoch %d", deal.Proposal.EndEpoch)
+					Logger.Infow("Deal expiration detected",
+						"dealID", dealID,
+						"provider", deal.Proposal.Provider,
+						"client", deal.Proposal.Client,
+						"endEpoch", deal.Proposal.EndEpoch)
+				case model.DealActive:
+					reason = fmt.Sprintf("Deal activated at epoch %d", deal.State.SectorStartEpoch)
+					Logger.Infow("Deal activation detected",
+						"dealID", dealID,
+						"provider", deal.Proposal.Provider,
+						"client", deal.Proposal.Client,
+						"sectorStartEpoch", deal.State.SectorStartEpoch)
+				}
+			}
+
+			metadata := statetracker.CreateEnhancedMetadata(reason, nil, dealInfo)
 			if err := d.stateTracker.TrackStateChangeWithDetails(
 				ctx,
 				model.DealID(dealID), // Convert uint64 to DealID
@@ -630,11 +667,19 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 				return errors.WithStack(err)
 			}
 
-			// Track the state change for the matched deal
-			metadata := &statetracker.StateChangeMetadata{
-				Reason:          "Deal matched on-chain",
+			// Track the state change for the matched deal with enhanced metadata
+			dealInfo := &statetracker.DealInfo{
+				StoragePrice:    deal.Proposal.StoragePricePerEpoch,
+				PieceSize:       deal.Proposal.PieceSize,
+				VerifiedDeal:    deal.Proposal.VerifiedDeal,
 				ActivationEpoch: &deal.State.SectorStartEpoch,
 			}
+			if deal.State.SlashEpoch > 0 {
+				dealInfo.SlashingEpoch = &deal.State.SlashEpoch
+			}
+
+			reason := fmt.Sprintf("Deal matched on-chain with state: %s", newState)
+			metadata := statetracker.CreateEnhancedMetadata(reason, nil, dealInfo)
 			if err := d.stateTracker.TrackStateChangeWithDetails(
 				ctx,
 				f.ID,
@@ -691,12 +736,19 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			return errors.WithStack(err)
 		}
 
-		// Track the initial state for the new external deal
-		metadata := &statetracker.StateChangeMetadata{
-			Reason:          "External deal discovered on-chain",
-			ActivationEpoch: &deal.State.SectorStartEpoch,
+		// Track the initial state for the new external deal with enhanced metadata
+		dealInfo := &statetracker.DealInfo{
 			StoragePrice:    deal.Proposal.StoragePricePerEpoch,
+			PieceSize:       deal.Proposal.PieceSize,
+			VerifiedDeal:    deal.Proposal.VerifiedDeal,
+			ActivationEpoch: &deal.State.SectorStartEpoch,
 		}
+		if deal.State.SlashEpoch > 0 {
+			dealInfo.SlashingEpoch = &deal.State.SlashEpoch
+		}
+
+		reason := fmt.Sprintf("External deal discovered on-chain with state: %s", newState)
+		metadata := statetracker.CreateEnhancedMetadata(reason, nil, dealInfo)
 		if err := d.stateTracker.TrackStateChangeWithDetails(
 			ctx,
 			createdDeal.ID,
@@ -736,12 +788,28 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		}
 		Logger.Infof("marked %d deals as expired", result.RowsAffected)
 
-		// Track state changes for all expired deals
+		// Track state changes for all expired deals with enhanced metadata and special handling
 		for _, deal := range expiredDeals {
-			metadata := &statetracker.StateChangeMetadata{
-				Reason:          "Deal expired - end epoch reached",
+			// Log deal expiration with detailed information
+			Logger.Infow("Processing expired deal",
+				"dealID", deal.ID,
+				"provider", deal.Provider,
+				"client", deal.ClientActorID,
+				"pieceCID", deal.PieceCID.String(),
+				"pieceSize", deal.PieceSize,
+				"endEpoch", deal.EndEpoch,
+				"currentEpoch", lastEpoch)
+
+			dealInfo := &statetracker.DealInfo{
+				StoragePrice:    deal.Price,
+				PieceSize:       deal.PieceSize,
+				VerifiedDeal:    deal.Verified,
 				ExpirationEpoch: &deal.EndEpoch,
 			}
+
+			reason := fmt.Sprintf("Deal expired naturally - end epoch %d reached at current epoch %d", deal.EndEpoch, lastEpoch)
+			metadata := statetracker.CreateEnhancedMetadata(reason, nil, dealInfo)
+			
 			if err := d.stateTracker.TrackStateChangeWithDetails(
 				ctx,
 				deal.ID,
@@ -776,12 +844,29 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		}
 		Logger.Infof("marked %d deal as proposal_expired", result.RowsAffected)
 
-		// Track state changes for all expired proposals
+		// Track state changes for all expired proposals with enhanced metadata and special handling
 		for _, deal := range expiredProposals {
-			metadata := &statetracker.StateChangeMetadata{
-				Reason:          "Deal proposal expired - start epoch reached without activation",
+			// Log proposal expiration with detailed information
+			Logger.Warnw("Processing expired deal proposal",
+				"dealID", deal.ID,
+				"provider", deal.Provider,
+				"client", deal.ClientActorID,
+				"pieceCID", deal.PieceCID.String(),
+				"pieceSize", deal.PieceSize,
+				"startEpoch", deal.StartEpoch,
+				"currentEpoch", lastEpoch,
+				"previousState", deal.State)
+
+			dealInfo := &statetracker.DealInfo{
+				StoragePrice:    deal.Price,
+				PieceSize:       deal.PieceSize,
+				VerifiedDeal:    deal.Verified,
 				ExpirationEpoch: &deal.StartEpoch,
 			}
+
+			reason := fmt.Sprintf("Deal proposal expired - start epoch %d reached without activation at current epoch %d", deal.StartEpoch, lastEpoch)
+			metadata := statetracker.CreateEnhancedMetadata(reason, nil, dealInfo)
+			
 			if err := d.stateTracker.TrackStateChangeWithDetails(
 				ctx,
 				deal.ID,
