@@ -69,6 +69,22 @@ func (c cronLogger) Error(err error, msg string, keysAndValues ...any) {
 	Logger.Errorw(msg, keysAndValues...)
 }
 
+// categorizeError determines the appropriate deal state and reason based on error message
+func categorizeError(errorMessage string) (model.DealState, string) {
+	switch {
+	case strings.Contains(errorMessage, "deal rejected"):
+		return model.DealRejected, "Deal rejected by storage provider"
+	case strings.Contains(errorMessage, "no supported protocols"):
+		return model.DealErrored, "No supported storage protocols found"
+	case strings.Contains(errorMessage, "context deadline exceeded") || strings.Contains(errorMessage, "timeout"):
+		return model.DealErrored, "Network timeout during deal negotiation"
+	case strings.Contains(errorMessage, "connection refused") || strings.Contains(errorMessage, "network"):
+		return model.DealErrored, "Network connection failure"
+	default:
+		return model.DealErrored, "General deal creation error"
+	}
+}
+
 func NewDealPusher(db *gorm.DB, lotusURL string,
 	lotusToken string, numAttempts uint, maxReplicas uint,
 ) (*DealPusher, error) {
@@ -551,6 +567,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 
 			// Handle deal failures by creating a deal record and tracking the error state
 			if err != nil {
+
 				// Create context metadata for enhanced error categorization
 				contextMetadata := &errorcategorization.ErrorMetadata{
 					ProviderID:    schedule.Provider,
@@ -570,12 +587,16 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 					LastAttemptTime: func() *time.Time { t := time.Now(); return &t }(),
 				}
 
-				// Categorize the error with context
-				categorization := errorcategorization.CategorizeErrorWithContext(err.Error(), contextMetadata)
+				var failedDeal *model.Deal
+				var dealState model.DealState
+				var reason string
+
+				// Determine the appropriate state and reason based on error type
+				dealState, reason = categorizeError(err.Error())
 
 				// Create a deal record for the failed attempt to track it
-				failedDeal := &model.Deal{
-					State:         categorization.DealState,
+				failedDeal = &model.Deal{
+					State:         dealState,
 					ClientActorID: walletObj.ActorID,
 					Provider:      schedule.Provider,
 					PieceCID:      car.PieceCID,
@@ -591,21 +612,17 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 
 				// Save the failed deal record
 				if dbErr := database.DoRetry(ctx, func() error { return db.Create(failedDeal).Error }); dbErr != nil {
-					Logger.Warnw("Failed to save failed deal record", "error", dbErr, "provider", schedule.Provider, "state", categorization.DealState, "category", categorization.Category)
+					Logger.Warnw("Failed to save failed deal record", "error", dbErr, "provider", schedule.Provider, "state", dealState)
 				} else {
-					// Track the failure state change using the enhanced error tracking
-					if trackErr := d.stateTracker.TrackErrorStateChange(ctx, failedDeal, nil, err.Error(), contextMetadata); trackErr != nil {
-						Logger.Warnw("Failed to track failure state change", "dealID", failedDeal.ID, "error", trackErr)
-					} else {
-						Logger.Infow("Tracked deal failure with enhanced categorization",
-							"dealID", failedDeal.ID,
-							"provider", schedule.Provider,
-							"state", categorization.DealState,
-							"category", categorization.Category,
-							"severity", categorization.Severity,
-							"retryable", categorization.Retryable,
-						)
+					// Track the failure state change
+					metadata := &statetracker.StateChangeMetadata{
+						Reason: reason,
+						Error:  err.Error(),
 					}
+					if trackErr := d.stateTracker.TrackStateChange(ctx, failedDeal, nil, dealState, metadata); trackErr != nil {
+						Logger.Warnw("Failed to track failure state change", "dealID", failedDeal.ID, "error", trackErr)
+					}
+					Logger.Infow("Tracked deal failure", "dealID", failedDeal.ID, "provider", schedule.Provider, "state", dealState, "reason", reason)
 				}
 				return "", errors.Wrap(err, "failed to send deal")
 			}
