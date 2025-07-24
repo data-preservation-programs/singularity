@@ -15,26 +15,12 @@ import (
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/service/statetracker"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util/errorcategorization"
 	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-cid"
 	"github.com/urfave/cli/v2"
 )
 
-// categorizeError determines the appropriate deal state and reason based on error message
-func categorizeError(errorMessage string) (model.DealState, string) {
-	switch {
-	case strings.Contains(errorMessage, "deal rejected"):
-		return model.DealRejected, "Deal rejected by storage provider"
-	case strings.Contains(errorMessage, "no supported protocols"):
-		return model.DealErrored, "No supported storage protocols found"
-	case strings.Contains(errorMessage, "context deadline exceeded") || strings.Contains(errorMessage, "timeout"):
-		return model.DealErrored, "Network timeout during deal negotiation"
-	case strings.Contains(errorMessage, "connection refused") || strings.Contains(errorMessage, "network"):
-		return model.DealErrored, "Network connection failure"
-	default:
-		return model.DealErrored, "General deal creation error"
-	}
-}
 
 var SendManualCmd = &cli.Command{
 	Name:  "send-manual",
@@ -212,19 +198,32 @@ Notes:
 		// Handle deal failures with state tracking (similar to dealpusher pattern)
 		if err != nil {
 			if c.Bool("save") {
-				// Create a deal record for the failed attempt to track it
-				var dealState model.DealState
-				var reason string
+				// Create context metadata for enhanced error categorization
+				contextMetadata := &errorcategorization.ErrorMetadata{
+					ProviderID:      proposal.ProviderID,
+					PieceCID:        proposal.PieceCID,
+					ClientAddress:   proposal.ClientAddress,
+					StartEpoch:      func() *int32 { epoch := int32(epochutil.TimeToEpoch(time.Now())); return &epoch }(),
+					EndEpoch:        func() *int32 { epoch := int32(epochutil.TimeToEpoch(time.Now().Add(24 * time.Hour))); return &epoch }(),
+					AttemptNumber:   func() *int { attempt := 1; return &attempt }(),
+					LastAttemptTime: func() *time.Time { t := time.Now(); return &t }(),
+				}
 
-				// Determine the appropriate state and reason based on error type
-				dealState, reason = categorizeError(err.Error())
+				// Try to parse piece size for metadata
+				if pieceSize, sizeErr := humanize.ParseBytes(proposal.PieceSize); sizeErr == nil {
+					size := int64(pieceSize)
+					contextMetadata.PieceSize = &size
+				}
+
+				// Categorize the error with context
+				categorization := errorcategorization.CategorizeErrorWithContext(err.Error(), contextMetadata)
 
 				// Get wallet for deal record
 				var wallet model.Wallet
 				if walletErr := wallet.FindByIDOrAddr(db, proposal.ClientAddress); walletErr == nil {
 					// Create failed deal record with proper structure
 					failedDeal := &model.Deal{
-						State:         dealState,
+						State:         categorization.DealState,
 						ClientActorID: wallet.ActorID,
 						Provider:      proposal.ProviderID,
 						PieceCID:      model.CID{}, // Will be set from proposal if valid
@@ -247,13 +246,10 @@ Notes:
 
 					// Save the failed deal record
 					if dbErr := database.DoRetry(ctx, func() error { return db.Create(failedDeal).Error }); dbErr == nil {
-						// Track the failure state change
-						metadata := &statetracker.StateChangeMetadata{
-							Reason: reason,
-							Error:  err.Error(),
-						}
-						if trackErr := stateTracker.TrackStateChange(ctx, failedDeal, nil, dealState, metadata); trackErr == nil {
-							fmt.Printf("Tracked deal failure with ID: %d, state: %s, reason: %s\n", failedDeal.ID, dealState, reason)
+						// Track the failure state change using enhanced error tracking
+						if trackErr := stateTracker.TrackErrorStateChange(ctx, failedDeal, nil, err.Error(), contextMetadata); trackErr == nil {
+							fmt.Printf("Tracked deal failure with enhanced categorization - ID: %d, state: %s, category: %s, severity: %s, retryable: %t\n",
+								failedDeal.ID, categorization.DealState, categorization.Category, categorization.Severity, categorization.Retryable)
 						}
 					}
 				}
