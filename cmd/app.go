@@ -19,6 +19,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/errorlog"
 	"github.com/data-preservation-programs/singularity/cmd/ez"
 	"github.com/data-preservation-programs/singularity/cmd/run"
+	"github.com/data-preservation-programs/singularity/cmd/statechange"
 	"github.com/data-preservation-programs/singularity/cmd/storage"
 	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
@@ -245,6 +246,22 @@ Upgrading:
 						errorlog.ListCmd,
 					},
 				},
+			},
+		},
+		{
+			Name:     "state",
+			Category: "Operations",
+			Usage:    "Deal state management and monitoring",
+			Description: `Comprehensive deal state management tools including:
+- View and filter deal state changes
+- Export state history to CSV/JSON
+- Manual recovery and repair operations
+- State change statistics and analytics`,
+			Subcommands: []*cli.Command{
+				statechange.ListCmd,
+				statechange.GetCmd,
+				statechange.StatsCmd,
+				statechange.RepairCmd,
 			},
 		},
 	},
