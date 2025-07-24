@@ -68,17 +68,6 @@ type StateChangeMetadata struct {
 
 	// Flexible additional fields for future extensibility
 	AdditionalFields map[string]interface{} `json:"additionalFields,omitempty"` // Any additional custom fields
-
-	Reason           string            `json:"reason,omitempty"`           // Reason for the state change
-	Error            string            `json:"error,omitempty"`            // Error message if applicable
-	TransactionID    string            `json:"transactionId,omitempty"`    // On-chain transaction ID
-	PublishCID       string            `json:"publishCid,omitempty"`       // Message CID for deal publication
-	ActivationEpoch  *int32            `json:"activationEpoch,omitempty"`  // Epoch when deal was activated
-	ExpirationEpoch  *int32            `json:"expirationEpoch,omitempty"`  // Epoch when deal expires
-	SlashingEpoch    *int32            `json:"slashingEpoch,omitempty"`    // Epoch when deal was slashed
-	StoragePrice     string            `json:"storagePrice,omitempty"`     // Storage price per epoch
-	AdditionalFields map[string]string `json:"additionalFields,omitempty"` // Any additional custom fields
-
 }
 
 // NewStateChangeTracker creates a new instance of StateChangeTracker
