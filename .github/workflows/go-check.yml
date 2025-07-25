@@ -52,97 +52,49 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.21.x"
           
-      - name: Configure and verify databases
+      - name: Wait for PostgreSQL
         run: |
-          echo "=== Setting up MySQL permissions ==="
-          mysql -h127.0.0.1 -P3306 -uroot -proot -e "
-            CREATE USER IF NOT EXISTS 'singularity'@'%' IDENTIFIED BY 'singularity';
-            GRANT ALL PRIVILEGES ON *.* TO 'singularity'@'%' WITH GRANT OPTION;
-            FLUSH PRIVILEGES;
-          "
+          echo "Waiting for PostgreSQL..."
+          for i in {1..10}; do
+            if PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "SELECT 1" > /dev/null 2>&1; then
+              echo "Postgres is ready!"
+              break
+            fi
+            sleep 3
+          done
 
-          echo "=== Verifying MySQL connection ==="
-          mysql -h127.0.0.1 -P3306 -usingularity -psingularity -e "SELECT VERSION();"
+      - name: Verify MySQL connection
+        run: mysql -h127.0.0.1 -P3306 -usingularity -psingularity -e "SELECT VERSION();"
 
-          echo "=== Verifying MySQL Permissions ==="
-          mysql -h127.0.0.1 -P3306 -usingularity -psingularity -e "
-            SHOW DATABASES;
-            SELECT user, host, Grant_priv FROM mysql.user WHERE user = 'singularity';
-            SHOW GRANTS FOR 'singularity'@'%';
-          "
-
-          echo "=== Testing MySQL Database Creation ==="
-          mysql -h127.0.0.1 -P3306 -usingularity -psingularity -e "
-            CREATE DATABASE test_permissions;
-            USE test_permissions;
-            CREATE TABLE test (id INT);
-            DROP TABLE test;
-            DROP DATABASE test_permissions;
-          "
-
-          echo "=== Verifying PostgreSQL connection ==="
-          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "SELECT version();"
-
-          echo "=== Setting up PostgreSQL permissions and roles ==="
-          # Create root role and grant necessary permissions
-          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE ROLE root WITH LOGIN SUPERUSER PASSWORD 'root';"
-          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "ALTER USER singularity WITH SUPERUSER CREATEDB CREATEROLE;"
-          
-          echo "=== Setting up test database template ==="
-          # Create a template database that tests can clone quickly
-          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE DATABASE test_template TEMPLATE template0;"
-          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "ALTER DATABASE test_template OWNER TO singularity;"
-          
-          echo "=== Testing PostgreSQL Permissions ==="
-          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE DATABASE test_permissions;"
-          PGPASSWORD=singularity psql -h localhost -U singularity -d test_permissions -c "CREATE TABLE test (id INT);"
-          PGPASSWORD=singularity psql -h localhost -U singularity -d test_permissions -c "DROP TABLE test;"
-          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "DROP DATABASE test_permissions;"
-          
-          echo "=== Setting up automatic test database creation policy ==="
-          # Allow creation of test databases with specific naming pattern
-          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE OR REPLACE FUNCTION create_test_db() RETURNS event_trigger AS \$\$ 
-          BEGIN
-            IF current_user = 'singularity' AND substr(pg_event_trigger_ddl_commands()->0->>'object_identity', 1, 5) = 'test_' THEN
-              EXECUTE format('ALTER DATABASE %I OWNER TO singularity', pg_event_trigger_ddl_commands()->0->>'object_identity');
-            END IF;
-          END;
-          \$\$ LANGUAGE plpgsql;"
-          
-          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE EVENT TRIGGER test_db_creation ON ddl_command_end 
-          WHEN TAG IN ('CREATE DATABASE')
-          EXECUTE FUNCTION create_test_db();"
+      - name: Verify PostgreSQL connection
+        run: PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "SELECT version();"
 
       - name: Ensure swagger directories exist
-        run: |
-          mkdir -p client/swagger/client
-          chmod -R 755 client
-          ls -la client/swagger
-          
+        run: mkdir -p client/swagger/client
+
       - name: Install swagger tools
-        run: |
-          go install github.com/go-swagger/go-swagger/cmd/swagger@latest
+        run: go install github.com/go-swagger/go-swagger/cmd/swagger@v0.30.5
           
       - name: Generate code
-        run: |
-          pwd
-          go generate ./...
-        
+        run: go generate ./client/swagger/...
+
+      - name: Build
+        run: go build ./...
+
       - name: Run tests
         run: go test -v ./...
 
   staticcheck:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.21.x"
 
       - name: Install staticcheck
         run: go install honnef.co/go/tools/cmd/staticcheck@latest
