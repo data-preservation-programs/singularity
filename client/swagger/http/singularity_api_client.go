@@ -14,6 +14,7 @@ import (
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal_schedule"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal_template"
+	"github.com/data-preservation-programs/singularity/client/swagger/http/error_logs"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/file"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/job"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/piece"
@@ -70,6 +71,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Singularit
 	cli.Deal = deal.New(transport, formats)
 	cli.DealSchedule = deal_schedule.New(transport, formats)
 	cli.DealTemplate = deal_template.New(transport, formats)
+	cli.ErrorLogs = error_logs.New(transport, formats)
 	cli.File = file.New(transport, formats)
 	cli.Job = job.New(transport, formats)
 	cli.Piece = piece.New(transport, formats)
@@ -130,6 +132,8 @@ type SingularityAPI struct {
 
 	DealTemplate deal_template.ClientService
 
+	ErrorLogs error_logs.ClientService
+
 	File file.ClientService
 
 	Job job.ClientService
@@ -156,6 +160,7 @@ func (c *SingularityAPI) SetTransport(transport runtime.ClientTransport) {
 	c.Deal.SetTransport(transport)
 	c.DealSchedule.SetTransport(transport)
 	c.DealTemplate.SetTransport(transport)
+	c.ErrorLogs.SetTransport(transport)
 	c.File.SetTransport(transport)
 	c.Job.SetTransport(transport)
 	c.Piece.SetTransport(transport)

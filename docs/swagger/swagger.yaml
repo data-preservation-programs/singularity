@@ -403,6 +403,21 @@ definitions:
       totalDealSize:
         type: string
     type: object
+  errorlog.ErrorLogsResponse:
+    properties:
+      errorLogs:
+        items:
+          $ref: '#/definitions/model.ErrorLog'
+        type: array
+      hasMore:
+        type: boolean
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
   file.DealsForFileRange:
     properties:
       deals:
@@ -736,6 +751,57 @@ definitions:
       updatedAt:
         type: string
     type: object
+  model.ErrorLevel:
+    enum:
+    - info
+    - warning
+    - error
+    - critical
+    type: string
+    x-enum-varnames:
+    - ErrorLevelInfo
+    - ErrorLevelWarning
+    - ErrorLevelError
+    - ErrorLevelCritical
+  model.ErrorLog:
+    properties:
+      component:
+        description: Component that generated the error (onboard, deal_schedule, etc.)
+        type: string
+      createdAt:
+        type: string
+      entityId:
+        description: ID of the associated entity
+        type: string
+      entityType:
+        description: Type of entity (deal, preparation, schedule, etc.)
+        type: string
+      eventType:
+        description: Type of event (creation, processing, error, etc.)
+        type: string
+      id:
+        type: integer
+      level:
+        allOf:
+        - $ref: '#/definitions/model.ErrorLevel'
+        description: Error level (info, warning, error, critical)
+      message:
+        description: Human-readable error message
+        type: string
+      metadata:
+        allOf:
+        - $ref: '#/definitions/model.ConfigMap'
+        description: Additional context as JSON
+      sessionId:
+        description: Optional session identifier
+        type: string
+      stackTrace:
+        description: Stack trace if available
+        type: string
+      userId:
+        description: Optional user identifier
+        type: string
+    type: object
   model.File:
     properties:
       attachmentId:
@@ -1022,10 +1088,12 @@ definitions:
     enum:
     - UserWallet
     - SPWallet
+    - TrackedWallet
     type: string
     x-enum-varnames:
     - UserWallet
     - SPWallet
+    - TrackedWallet
   schedule.CreateRequest:
     properties:
       allowedPieceCids:
@@ -8593,6 +8661,9 @@ definitions:
       name:
         description: Optional fields for adding details to Wallet
         type: string
+      trackOnly:
+        description: For TrackedWallet creation
+        type: boolean
     type: object
   wallet.ImportRequest:
     properties:
@@ -8673,6 +8744,66 @@ paths:
       summary: Get state changes for a specific deal
       tags:
       - State Changes
+  /api/errors:
+    get:
+      consumes:
+      - application/json
+      operationId: ListErrorLogs
+      parameters:
+      - description: Filter by entity type (e.g., deal, preparation, schedule)
+        in: query
+        name: entity_type
+        type: string
+      - description: Filter by entity ID
+        in: query
+        name: entity_id
+        type: string
+      - description: Filter by component (e.g., onboard, deal_schedule)
+        in: query
+        name: component
+        type: string
+      - description: Filter by error level (info, warning, error, critical)
+        in: query
+        name: level
+        type: string
+      - description: Filter by event type
+        in: query
+        name: event_type
+        type: string
+      - description: Filter logs after this time (RFC3339 format)
+        in: query
+        name: start_time
+        type: string
+      - description: Filter logs before this time (RFC3339 format)
+        in: query
+        name: end_time
+        type: string
+      - description: 'Maximum number of logs to return (default: 50, max: 1000)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Number of logs to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/errorlog.ErrorLogsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: List error logs with filtering and pagination
+      tags:
+      - Error Logs
   /api/state-changes:
     get:
       consumes:
