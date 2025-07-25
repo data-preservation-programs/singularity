@@ -296,7 +296,7 @@ definitions:
       dealAnnounceToIpni:
         type: boolean
       dealDuration:
-        type: string
+        $ref: '#/definitions/time.Duration'
       dealForce:
         type: boolean
       dealHttpHeaders:
@@ -314,7 +314,7 @@ definitions:
       dealProvider:
         type: string
       dealStartDelay:
-        type: string
+        $ref: '#/definitions/time.Duration'
       dealUrlTemplate:
         type: string
       dealVerified:
@@ -354,7 +354,7 @@ definitions:
       dealAnnounceToIpni:
         type: boolean
       dealDuration:
-        type: string
+        $ref: '#/definitions/time.Duration'
       dealForce:
         type: boolean
       dealHttpHeaders:
@@ -372,7 +372,7 @@ definitions:
       dealProvider:
         type: string
       dealStartDelay:
-        type: string
+        $ref: '#/definitions/time.Duration'
       dealUrlTemplate:
         type: string
       dealVerified:
@@ -498,7 +498,7 @@ definitions:
         description: Path to Client SSL private key (PEM) for mutual TLS auth
         type: string
       connectTimeout:
-        description: HTTP Client Connect timeout
+        description: HTTP Client Connect timeout in nanoseconds
         type: integer
       disableHttp2:
         description: Disable HTTP/2 in the transport
@@ -507,7 +507,7 @@ definitions:
         description: Disable HTTP keep-alives and use each connection once.
         type: boolean
       expectContinueTimeout:
-        description: Timeout when using expect / 100-continue in HTTP
+        description: Timeout when using expect / 100-continue in HTTP in nanoseconds
         type: integer
       headers:
         additionalProperties:
@@ -525,13 +525,13 @@ definitions:
         description: 'Don''t set Accept-Encoding: gzip'
         type: boolean
       retryBackoff:
-        description: Constant backoff between retries. Default is 1s.
+        description: Constant backoff between retries in nanoseconds. Default is 1s.
         type: integer
       retryBackoffExponential:
         description: Exponential backoff between retries. Default is 1.0.
         type: number
       retryDelay:
-        description: Delay between retries. Default is 1s.
+        description: Delay between retries in nanoseconds. Default is 1s.
         type: integer
       retryMaxCount:
         description: Maximum number of retries. Default is 10 retries.
@@ -543,7 +543,7 @@ definitions:
         description: Skip inaccessible files. Default is false.
         type: boolean
       timeout:
-        description: IO idle timeout
+        description: IO idle timeout in nanoseconds
         type: integer
       useServerModTime:
         description: Use server modified time instead of object metadata
@@ -8606,24 +8606,24 @@ definitions:
     type: object
   time.Duration:
     enum:
-    - "1ns"
-    - "1us"
-    - "1ms"
-    - "1s"
-    - "1m"
-    - "1h"
-    - "24h"
-    - "168h"
-    type: string
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    type: integer
     x-enum-varnames:
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
     - Hour
-    - Day
-    - Week
   wallet.BalanceResponse:
     properties:
       address:

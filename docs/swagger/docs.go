@@ -6973,7 +6973,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "connectTimeout": {
-                    "description": "HTTP Client Connect timeout",
+                    "description": "HTTP Client Connect timeout in nanoseconds",
                     "type": "integer"
                 },
                 "disableHttp2": {
@@ -6985,7 +6985,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "expectContinueTimeout": {
-                    "description": "Timeout when using expect / 100-continue in HTTP",
+                    "description": "Timeout when using expect / 100-continue in HTTP in nanoseconds",
                     "type": "integer"
                 },
                 "headers": {
@@ -7008,7 +7008,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "retryBackoff": {
-                    "description": "Constant backoff between retries. Default is 1s.",
+                    "description": "Constant backoff between retries in nanoseconds. Default is 1s.",
                     "type": "integer"
                 },
                 "retryBackoffExponential": {
@@ -7016,7 +7016,7 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "retryDelay": {
-                    "description": "Delay between retries. Default is 1s.",
+                    "description": "Delay between retries in nanoseconds. Default is 1s.",
                     "type": "integer"
                 },
                 "retryMaxCount": {
@@ -7032,7 +7032,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "timeout": {
-                    "description": "IO idle timeout",
+                    "description": "IO idle timeout in nanoseconds",
                     "type": "integer"
                 },
                 "useServerModTime": {
