@@ -1,5 +1,5 @@
 
 env USER='$USER' go run singularity.go
-rm -rf docs/en/cli-reference
+# Removed deletion of docs/en/cli-reference to protect documentation
 env USER='$USER' go run singularity.go
 
