@@ -86,13 +86,10 @@ jobs:
           PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "SELECT version();"
 
           echo "=== Testing PostgreSQL Permissions ==="
-          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "
-            CREATE DATABASE test_permissions;
-            \c test_permissions;
-            CREATE TABLE test (id INT);
-            DROP TABLE test;
-            DROP DATABASE test_permissions;
-          "
+          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE DATABASE test_permissions;"
+          PGPASSWORD=singularity psql -h localhost -U singularity -d test_permissions -c "CREATE TABLE test (id INT);"
+          PGPASSWORD=singularity psql -h localhost -U singularity -d test_permissions -c "DROP TABLE test;"
+          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "DROP DATABASE test_permissions;"
 
       - name: Ensure swagger directories exist
         run: |

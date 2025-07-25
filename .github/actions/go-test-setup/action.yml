@@ -3,6 +3,11 @@ description: Setup Cache
 runs:
   using: "composite"
   steps:
+    - name: Clean Go cache directories
+      shell: bash
+      run: |
+        rm -rf ~/.cache/go-build
+        rm -rf ~/go/pkg/mod
     - name: Setup Golang caches
       uses: actions/cache@v4
       with:
