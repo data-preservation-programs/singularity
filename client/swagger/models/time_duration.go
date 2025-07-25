@@ -17,14 +17,50 @@ import (
 // TimeDuration time duration
 //
 // swagger:model time.Duration
-type TimeDuration int64
+type TimeDuration string
+
+func NewTimeDuration(value TimeDuration) *TimeDuration {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated TimeDuration.
+func (m TimeDuration) Pointer() *TimeDuration {
+	return &m
+}
+
+const (
+
+	// TimeDurationNr1ns captures enum value "1ns"
+	TimeDurationNr1ns TimeDuration = "1ns"
+
+	// TimeDurationNr1us captures enum value "1us"
+	TimeDurationNr1us TimeDuration = "1us"
+
+	// TimeDurationNr1ms captures enum value "1ms"
+	TimeDurationNr1ms TimeDuration = "1ms"
+
+	// TimeDurationNr1s captures enum value "1s"
+	TimeDurationNr1s TimeDuration = "1s"
+
+	// TimeDurationNr1m captures enum value "1m"
+	TimeDurationNr1m TimeDuration = "1m"
+
+	// TimeDurationNr1h captures enum value "1h"
+	TimeDurationNr1h TimeDuration = "1h"
+
+	// TimeDurationNr24h captures enum value "24h"
+	TimeDurationNr24h TimeDuration = "24h"
+
+	// TimeDurationNr168h captures enum value "168h"
+	TimeDurationNr168h TimeDuration = "168h"
+)
 
 // for schema
 var timeDurationEnum []interface{}
 
 func init() {
 	var res []TimeDuration
-	if err := json.Unmarshal([]byte(`[-9223372036854776000,9223372036854776000,1,1000,1000000,1000000000,60000000000,3600000000000]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["1ns","1us","1ms","1s","1m","1h","24h","168h"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

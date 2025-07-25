@@ -25,7 +25,7 @@ type DealtemplateUpdateRequest struct {
 	DealAnnounceToIpni bool `json:"dealAnnounceToIpni,omitempty"`
 
 	// deal duration
-	DealDuration TimeDuration `json:"dealDuration,omitempty"`
+	DealDuration string `json:"dealDuration,omitempty"`
 
 	// deal force
 	DealForce bool `json:"dealForce,omitempty"`
@@ -52,7 +52,7 @@ type DealtemplateUpdateRequest struct {
 	DealProvider string `json:"dealProvider,omitempty"`
 
 	// deal start delay
-	DealStartDelay TimeDuration `json:"dealStartDelay,omitempty"`
+	DealStartDelay string `json:"dealStartDelay,omitempty"`
 
 	// deal Url template
 	DealURLTemplate string `json:"dealUrlTemplate,omitempty"`
@@ -95,38 +95,13 @@ type DealtemplateUpdateRequest struct {
 func (m *DealtemplateUpdateRequest) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateDealDuration(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateDealHTTPHeaders(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateDealStartDelay(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *DealtemplateUpdateRequest) validateDealDuration(formats strfmt.Registry) error {
-	if swag.IsZero(m.DealDuration) { // not required
-		return nil
-	}
-
-	if err := m.DealDuration.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("dealDuration")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
-			return ce.ValidateName("dealDuration")
-		}
-		return err
-	}
-
 	return nil
 }
 
@@ -149,60 +124,17 @@ func (m *DealtemplateUpdateRequest) validateDealHTTPHeaders(formats strfmt.Regis
 	return nil
 }
 
-func (m *DealtemplateUpdateRequest) validateDealStartDelay(formats strfmt.Registry) error {
-	if swag.IsZero(m.DealStartDelay) { // not required
-		return nil
-	}
-
-	if err := m.DealStartDelay.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("dealStartDelay")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
-			return ce.ValidateName("dealStartDelay")
-		}
-		return err
-	}
-
-	return nil
-}
-
 // ContextValidate validate this dealtemplate update request based on the context it is used
 func (m *DealtemplateUpdateRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateDealDuration(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateDealHTTPHeaders(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateDealStartDelay(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *DealtemplateUpdateRequest) contextValidateDealDuration(ctx context.Context, formats strfmt.Registry) error {
-
-	if swag.IsZero(m.DealDuration) { // not required
-		return nil
-	}
-
-	if err := m.DealDuration.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("dealDuration")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
-			return ce.ValidateName("dealDuration")
-		}
-		return err
-	}
-
 	return nil
 }
 
@@ -217,24 +149,6 @@ func (m *DealtemplateUpdateRequest) contextValidateDealHTTPHeaders(ctx context.C
 			return ve.ValidateName("dealHttpHeaders")
 		} else if ce, ok := err.(*errors.CompositeError); ok {
 			return ce.ValidateName("dealHttpHeaders")
-		}
-		return err
-	}
-
-	return nil
-}
-
-func (m *DealtemplateUpdateRequest) contextValidateDealStartDelay(ctx context.Context, formats strfmt.Registry) error {
-
-	if swag.IsZero(m.DealStartDelay) { // not required
-		return nil
-	}
-
-	if err := m.DealStartDelay.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("dealStartDelay")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
-			return ce.ValidateName("dealStartDelay")
 		}
 		return err
 	}

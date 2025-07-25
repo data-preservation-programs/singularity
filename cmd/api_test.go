@@ -12,12 +12,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/data-preservation-programs/singularity/client/swagger/http"
-	"github.com/data-preservation-programs/singularity/client/swagger/http/file"
-	"github.com/data-preservation-programs/singularity/client/swagger/http/job"
-	"github.com/data-preservation-programs/singularity/client/swagger/http/piece"
-	"github.com/data-preservation-programs/singularity/client/swagger/http/preparation"
-	"github.com/data-preservation-programs/singularity/client/swagger/http/storage"
+	"github.com/data-preservation-programs/singularity/client/swagger/client/file"
+	"github.com/data-preservation-programs/singularity/client/swagger/client/job"
+	"github.com/data-preservation-programs/singularity/client/swagger/client/piece"
+	"github.com/data-preservation-programs/singularity/client/swagger/client/preparation"
+	"github.com/data-preservation-programs/singularity/client/swagger/client/storage"
+	httptransport "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
 	"github.com/data-preservation-programs/singularity/client/swagger/models"
 	"github.com/data-preservation-programs/singularity/service/workflow"
 	"github.com/data-preservation-programs/singularity/util/testutil"
@@ -162,7 +163,13 @@ func TestMotionIntegration(t *testing.T) {
 	})
 }
 
-func setupPreparation(t *testing.T, ctx context.Context, testFileName string, testData io.Reader, disableDagInline bool) (*http.SingularityAPI, func()) {
+func setupPreparation(t *testing.T, ctx context.Context, testFileName string, testData io.Reader, disableDagInline bool) (*struct {
+	Storage     storage.ClientService
+	Job         job.ClientService
+	Piece       piece.ClientService
+	File        file.ClientService
+	Preparation preparation.ClientService
+}, func()) {
 	t.Helper()
 	source := t.TempDir()
 	// write a test file
@@ -184,10 +191,20 @@ func setupPreparation(t *testing.T, ctx context.Context, testFileName string, te
 	require.NoError(t, err)
 	output := t.TempDir()
 	done := runAPI(t, ctx)
-	client := http.NewHTTPClientWithConfig(nil, &http.TransportConfig{
-		Host:     apiBind,
-		BasePath: http.DefaultBasePath,
-	})
+	transport := httptransport.New(apiBind, "/api", []string{"http"})
+	client := &struct {
+		Storage     storage.ClientService
+		Job         job.ClientService
+		Piece       piece.ClientService
+		File        file.ClientService
+		Preparation preparation.ClientService
+	}{
+		Storage:     storage.New(transport, strfmt.Default),
+		Job:         job.New(transport, strfmt.Default),
+		Piece:       piece.New(transport, strfmt.Default),
+		File:        file.New(transport, strfmt.Default),
+		Preparation: preparation.New(transport, strfmt.Default),
+	}
 	// Create source storage
 	response, err := client.Storage.CreateLocalStorage(&storage.CreateLocalStorageParams{
 		Request: &models.StorageCreateLocalStorageRequest{

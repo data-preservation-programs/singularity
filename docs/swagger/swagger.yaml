@@ -296,7 +296,7 @@ definitions:
       dealAnnounceToIpni:
         type: boolean
       dealDuration:
-        $ref: '#/definitions/time.Duration'
+        type: string
       dealForce:
         type: boolean
       dealHttpHeaders:
@@ -314,7 +314,7 @@ definitions:
       dealProvider:
         type: string
       dealStartDelay:
-        $ref: '#/definitions/time.Duration'
+        type: string
       dealUrlTemplate:
         type: string
       dealVerified:
@@ -354,7 +354,7 @@ definitions:
       dealAnnounceToIpni:
         type: boolean
       dealDuration:
-        $ref: '#/definitions/time.Duration'
+        type: string
       dealForce:
         type: boolean
       dealHttpHeaders:
@@ -372,7 +372,7 @@ definitions:
       dealProvider:
         type: string
       dealStartDelay:
-        $ref: '#/definitions/time.Duration'
+        type: string
       dealUrlTemplate:
         type: string
       dealVerified:
@@ -8606,24 +8606,24 @@ definitions:
     type: object
   time.Duration:
     enum:
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    type: integer
+    - "1ns"
+    - "1us"
+    - "1ms"
+    - "1s"
+    - "1m"
+    - "1h"
+    - "24h"
+    - "168h"
+    type: string
     x-enum-varnames:
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
     - Hour
+    - Day
+    - Week
   wallet.BalanceResponse:
     properties:
       address:
