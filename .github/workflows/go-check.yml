@@ -31,6 +31,20 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
+      
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: singularity
+          POSTGRES_PASSWORD: singularity
+          POSTGRES_DB: singularity
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     
     steps:
       - uses: actions/checkout@v3
@@ -40,7 +54,7 @@ jobs:
         with:
           go-version: "1.21"
           
-      - name: Configure and verify MySQL
+      - name: Configure and verify databases
         run: |
           echo "=== Setting up MySQL permissions ==="
           mysql -h127.0.0.1 -P3306 -uroot -proot -e "
@@ -52,17 +66,29 @@ jobs:
           echo "=== Verifying MySQL connection ==="
           mysql -h127.0.0.1 -P3306 -usingularity -psingularity -e "SELECT VERSION();"
 
-          echo "=== Verifying Database Permissions ==="
+          echo "=== Verifying MySQL Permissions ==="
           mysql -h127.0.0.1 -P3306 -usingularity -psingularity -e "
             SHOW DATABASES;
             SELECT user, host, Grant_priv FROM mysql.user WHERE user = 'singularity';
             SHOW GRANTS FOR 'singularity'@'%';
           "
 
-          echo "=== Testing Database Creation ==="
+          echo "=== Testing MySQL Database Creation ==="
           mysql -h127.0.0.1 -P3306 -usingularity -psingularity -e "
             CREATE DATABASE test_permissions;
             USE test_permissions;
+            CREATE TABLE test (id INT);
+            DROP TABLE test;
+            DROP DATABASE test_permissions;
+          "
+
+          echo "=== Verifying PostgreSQL connection ==="
+          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "SELECT version();"
+
+          echo "=== Testing PostgreSQL Permissions ==="
+          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "
+            CREATE DATABASE test_permissions;
+            \c test_permissions;
             CREATE TABLE test (id INT);
             DROP TABLE test;
             DROP DATABASE test_permissions;
