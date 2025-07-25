@@ -24,6 +24,15 @@ var timeDurationEnum []interface{}
 
 func init() {
 	var res []TimeDuration
+
+	if err := json.Unmarshal([]byte(`[1,1000,1000000,1000000000,60000000000,3600000000000]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		timeDurationEnum = append(timeDurationEnum, v)
+	}
+
+	// Use valid int64 values for TimeDuration enum
 	if err := json.Unmarshal([]byte(`[1,1000,1000000,1000000000,60000000000,3600000000000]`), &res); err != nil {
 		panic(err)
 	}
