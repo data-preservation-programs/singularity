@@ -21,9 +21,7 @@ import (
 	storage2 "github.com/data-preservation-programs/singularity/client/swagger/client/storage"
 	wallet2 "github.com/data-preservation-programs/singularity/client/swagger/client/wallet"
 	"github.com/data-preservation-programs/singularity/client/swagger/client/wallet_association"
-	   // Removed: old client/swagger/http import, use new client initialization if needed
-	   httptransport "github.com/go-openapi/runtime/client"
-	   "github.com/go-openapi/strfmt"
+	// Removed: old client/swagger/http import, use new client initialization if needed
 	"github.com/data-preservation-programs/singularity/client/swagger/models"
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
@@ -41,6 +39,8 @@ import (
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	httptransport "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
 	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-log/v2"
 	"github.com/parnurzeal/gorequest"
@@ -262,30 +262,30 @@ func TestAllAPIs(t *testing.T) {
 		require.NotNil(t, resp)
 		require.Equal(t, http2.StatusOK, resp.StatusCode)
 
-			   transport := httptransport.New(apiBind, "/api", []string{"http"})
-			   client := &struct {
-					   Admin        admin2.ClientService
-					   Deal         deal2.ClientService
-					   DealSchedule deal_schedule.ClientService
-					   File         file2.ClientService
-					   Job          job2.ClientService
-					   Piece        piece.ClientService
-					   Preparation  preparation.ClientService
-					   Storage      storage2.ClientService
-					   Wallet       wallet2.ClientService
-					   WalletAssoc  wallet_association.ClientService
-			   }{
-					   Admin:        admin2.New(transport, strfmt.Default),
-					   Deal:         deal2.New(transport, strfmt.Default),
-					   DealSchedule: deal_schedule.New(transport, strfmt.Default),
-					   File:         file2.New(transport, strfmt.Default),
-					   Job:          job2.New(transport, strfmt.Default),
-					   Piece:        piece.New(transport, strfmt.Default),
-					   Preparation:  preparation.New(transport, strfmt.Default),
-					   Storage:      storage2.New(transport, strfmt.Default),
-					   Wallet:       wallet2.New(transport, strfmt.Default),
-					   WalletAssoc:  wallet_association.New(transport, strfmt.Default),
-			   }
+		transport := httptransport.New(apiBind, "/api", []string{"http"})
+		client := &struct {
+			Admin        admin2.ClientService
+			Deal         deal2.ClientService
+			DealSchedule deal_schedule.ClientService
+			File         file2.ClientService
+			Job          job2.ClientService
+			Piece        piece.ClientService
+			Preparation  preparation.ClientService
+			Storage      storage2.ClientService
+			Wallet       wallet2.ClientService
+			WalletAssoc  wallet_association.ClientService
+		}{
+			Admin:        admin2.New(transport, strfmt.Default),
+			Deal:         deal2.New(transport, strfmt.Default),
+			DealSchedule: deal_schedule.New(transport, strfmt.Default),
+			File:         file2.New(transport, strfmt.Default),
+			Job:          job2.New(transport, strfmt.Default),
+			Piece:        piece.New(transport, strfmt.Default),
+			Preparation:  preparation.New(transport, strfmt.Default),
+			Storage:      storage2.New(transport, strfmt.Default),
+			Wallet:       wallet2.New(transport, strfmt.Default),
+			WalletAssoc:  wallet_association.New(transport, strfmt.Default),
+		}
 
 		t.Run("admin", func(t *testing.T) {
 			t.Run("SetIdentity", func(t *testing.T) {
@@ -302,7 +302,7 @@ func TestAllAPIs(t *testing.T) {
 
 		t.Run("wallet_association", func(t *testing.T) {
 			t.Run("AttachWallet", func(t *testing.T) {
-			   resp, err := client.WalletAssoc.AttachWallet(&wallet_association.AttachWalletParams{
+				resp, err := client.WalletAssoc.AttachWallet(&wallet_association.AttachWalletParams{
 					ID:      "id",
 					Wallet:  "wallet",
 					Context: ctx,
@@ -312,7 +312,7 @@ func TestAllAPIs(t *testing.T) {
 				require.NotNil(t, resp.Payload)
 			})
 			t.Run("DetachWallet", func(t *testing.T) {
-			   resp, err := client.WalletAssoc.DetachWallet(&wallet_association.DetachWalletParams{
+				resp, err := client.WalletAssoc.DetachWallet(&wallet_association.DetachWalletParams{
 					ID:      "id",
 					Wallet:  "wallet",
 					Context: ctx,
@@ -322,7 +322,7 @@ func TestAllAPIs(t *testing.T) {
 				require.NotNil(t, resp.Payload)
 			})
 			t.Run("ListAttachedHandler", func(t *testing.T) {
-			   resp, err := client.WalletAssoc.ListAttachedWallets(&wallet_association.ListAttachedWalletsParams{
+				resp, err := client.WalletAssoc.ListAttachedWallets(&wallet_association.ListAttachedWalletsParams{
 					ID:      "id",
 					Context: ctx,
 				})
