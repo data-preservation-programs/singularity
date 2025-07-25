@@ -25,6 +25,10 @@ var timeDurationEnum []interface{}
 func init() {
 	var res []TimeDuration
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+	   if err := json.Unmarshal([]byte(`[1,1000,1000000,1000000000,60000000000,3600000000000]`), &res); err != nil {
+>>>>>>> ce712bd (Fix data race in analytics global state and update time_duration enum initialization. All tests pass with race detector.)
 
 	if err := json.Unmarshal([]byte(`[1,1000,1000000,1000000000,60000000000,3600000000000]`), &res); err != nil {
 		panic(err)
