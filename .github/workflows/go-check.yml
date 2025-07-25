@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:8
+        image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: singularity
@@ -27,10 +27,11 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping --silent"
+          --health-cmd="mysqladmin ping"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=3
+    
     steps:
       - uses: actions/checkout@v3
       
@@ -39,6 +40,34 @@ jobs:
         with:
           go-version: "1.21"
           
+      - name: Configure and verify MySQL
+        run: |
+          echo "=== Setting up MySQL permissions ==="
+          mysql -h127.0.0.1 -P3306 -uroot -proot -e "
+            CREATE USER IF NOT EXISTS 'singularity'@'%' IDENTIFIED BY 'singularity';
+            GRANT ALL PRIVILEGES ON *.* TO 'singularity'@'%' WITH GRANT OPTION;
+            FLUSH PRIVILEGES;
+          "
+
+          echo "=== Verifying MySQL connection ==="
+          mysql -h127.0.0.1 -P3306 -usingularity -psingularity -e "SELECT VERSION();"
+
+          echo "=== Verifying Database Permissions ==="
+          mysql -h127.0.0.1 -P3306 -usingularity -psingularity -e "
+            SHOW DATABASES;
+            SELECT user, host, Grant_priv FROM mysql.user WHERE user = 'singularity';
+            SHOW GRANTS FOR 'singularity'@'%';
+          "
+
+          echo "=== Testing Database Creation ==="
+          mysql -h127.0.0.1 -P3306 -usingularity -psingularity -e "
+            CREATE DATABASE test_permissions;
+            USE test_permissions;
+            CREATE TABLE test (id INT);
+            DROP TABLE test;
+            DROP DATABASE test_permissions;
+          "
+
       - name: Ensure swagger directories exist
         run: |
           mkdir -p client/swagger/client
