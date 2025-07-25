@@ -24,11 +24,20 @@ jobs:
         with:
           go-version: "1.21"
           
-      - name: Ensure swagger client directory exists
-        run: mkdir -p client/swagger/client
-      
+      - name: Ensure swagger directories exist
+        run: |
+          mkdir -p client/swagger/client
+          chmod -R 755 client
+          ls -la client/swagger
+          
+      - name: Install swagger tools
+        run: |
+          go install github.com/go-swagger/go-swagger/cmd/swagger@latest
+          
       - name: Generate code
-        run: go generate ./...
+        run: |
+          pwd
+          go generate ./...
         
       - name: Run tests
         run: go test -v ./...
