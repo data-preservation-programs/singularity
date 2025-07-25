@@ -24,7 +24,7 @@ var timeDurationEnum []interface{}
 
 func init() {
 	var res []TimeDuration
-	if err := json.Unmarshal([]byte(`[1,1000,1000000,1000000000,60000000000,3600000000000]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`[-9223372036854776000,9223372036854776000,1,1000,1000000,1000000000,60000000000,3600000000000]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
