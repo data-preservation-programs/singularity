@@ -90,11 +90,30 @@ jobs:
           PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE ROLE root WITH LOGIN SUPERUSER PASSWORD 'root';"
           PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "ALTER USER singularity WITH SUPERUSER CREATEDB CREATEROLE;"
           
+          echo "=== Setting up test database template ==="
+          # Create a template database that tests can clone quickly
+          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE DATABASE test_template TEMPLATE template0;"
+          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "ALTER DATABASE test_template OWNER TO singularity;"
+          
           echo "=== Testing PostgreSQL Permissions ==="
           PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE DATABASE test_permissions;"
           PGPASSWORD=singularity psql -h localhost -U singularity -d test_permissions -c "CREATE TABLE test (id INT);"
           PGPASSWORD=singularity psql -h localhost -U singularity -d test_permissions -c "DROP TABLE test;"
           PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "DROP DATABASE test_permissions;"
+          
+          echo "=== Setting up automatic test database creation policy ==="
+          # Allow creation of test databases with specific naming pattern
+          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE OR REPLACE FUNCTION create_test_db() RETURNS event_trigger AS \$\$ 
+          BEGIN
+            IF current_user = 'singularity' AND substr(pg_event_trigger_ddl_commands()->0->>'object_identity', 1, 5) = 'test_' THEN
+              EXECUTE format('ALTER DATABASE %I OWNER TO singularity', pg_event_trigger_ddl_commands()->0->>'object_identity');
+            END IF;
+          END;
+          \$\$ LANGUAGE plpgsql;"
+          
+          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE EVENT TRIGGER test_db_creation ON ddl_command_end 
+          WHEN TAG IN ('CREATE DATABASE')
+          EXECUTE FUNCTION create_test_db();"
 
       - name: Ensure swagger directories exist
         run: |
