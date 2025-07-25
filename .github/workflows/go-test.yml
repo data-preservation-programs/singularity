@@ -14,12 +14,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  go-test:
-    runs-on: ubuntu-latest
+  go-test-this:
+    name: go-test / ${{ matrix.os }} (go this)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v3
 
       - name: Start MongoDB
+        if: runner.os == 'Linux'
+        uses: supercharge/mongodb-github-action@v1.9.0
+        with:
+          mongodb-version: '6.0'
+          mongodb-port: 27018
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Run Go Tests
+        run: go test ./...
+
+  go-test-next:
+    name: go-test / ${{ matrix.os }} (go next)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Start MongoDB
+        if: runner.os == 'Linux'
         uses: supercharge/mongodb-github-action@v1.9.0
         with:
           mongodb-version: '6.0'
