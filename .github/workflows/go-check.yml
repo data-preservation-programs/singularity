@@ -85,9 +85,11 @@ jobs:
           echo "=== Verifying PostgreSQL connection ==="
           PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "SELECT version();"
 
-          echo "=== Setting up PostgreSQL permissions ==="
-          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "ALTER USER singularity WITH CREATEDB;"
-
+          echo "=== Setting up PostgreSQL permissions and roles ==="
+          # Create root role and grant necessary permissions
+          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE ROLE root WITH LOGIN SUPERUSER PASSWORD 'root';"
+          PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "ALTER USER singularity WITH SUPERUSER CREATEDB CREATEROLE;"
+          
           echo "=== Testing PostgreSQL Permissions ==="
           PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "CREATE DATABASE test_permissions;"
           PGPASSWORD=singularity psql -h localhost -U singularity -d test_permissions -c "CREATE TABLE test (id INT);"
