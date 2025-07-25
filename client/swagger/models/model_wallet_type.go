@@ -29,7 +29,6 @@ func (m ModelWalletType) Pointer() *ModelWalletType {
 }
 
 const (
-
 	// ModelWalletTypeUserWallet captures enum value "UserWallet"
 	ModelWalletTypeUserWallet ModelWalletType = "UserWallet"
 
