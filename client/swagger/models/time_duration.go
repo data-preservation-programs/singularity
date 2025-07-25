@@ -24,6 +24,7 @@ var timeDurationEnum []interface{}
 
 func init() {
 	var res []TimeDuration
+<<<<<<< HEAD
 
 	if err := json.Unmarshal([]byte(`[1,1000,1000000,1000000000,60000000000,3600000000000]`), &res); err != nil {
 		panic(err)
@@ -33,6 +34,8 @@ func init() {
 	}
 
 	// Use valid int64 values for TimeDuration enum
+=======
+>>>>>>> f748e7e (docs(api): update API docs, error log models, and CLI docs for ErrorLog integration)
 	if err := json.Unmarshal([]byte(`[1,1000,1000000,1000000000,60000000000,3600000000000]`), &res); err != nil {
 		panic(err)
 	}
