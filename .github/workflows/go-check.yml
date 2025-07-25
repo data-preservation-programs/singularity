@@ -2,8 +2,9 @@ name: Go Checks
 
 on:
   pull_request:
+    branches: [main, develop]
   push:
-    branches: ["main"]
+    branches: [main, develop]
   workflow_dispatch:
 
 permissions:
@@ -14,7 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  All:
+  go-check-all:
+    name: go-check / All
     runs-on: ubuntu-latest
     services:
       mysql:
