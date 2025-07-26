@@ -34,8 +34,8 @@ type RCloneHandler struct {
 	fs                      fs.Fs
 	fsNoHead                fs.Fs
 	retryMaxCount           int
-	retryDelay              time.Duration
-	retryBackoff            time.Duration
+	retryDelay              int64
+	retryBackoff            int64
 	retryBackoffExponential float64
 	scanConcurrency         int
 }
@@ -80,8 +80,8 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 		fs:                      headFS,
 		fsNoHead:                noHeadFS,
 		retryMaxCount:           10,
-		retryDelay:              time.Second,
-		retryBackoff:            time.Second,
+		retryDelay:              int64(time.Second),
+		retryBackoff:            int64(time.Second),
 		retryBackoffExponential: 1.0,
 		scanConcurrency:         scanConcurrency,
 	}
@@ -171,8 +171,8 @@ type readerWithRetry struct {
 	object                  fs.Object
 	reader                  io.ReadCloser
 	offset                  int64
-	retryDelay              time.Duration
-	retryBackoff            time.Duration
+	retryDelay              int64
+	retryBackoff            int64
 	retryCountMax           int
 	retryCount              int
 	retryBackoffExponential float64
@@ -205,11 +205,11 @@ func (r *readerWithRetry) Read(p []byte) (int, error) {
 	select {
 	case <-r.ctx.Done():
 		return n, errors.Join(err, r.ctx.Err())
-	case <-time.After(r.retryDelay):
+	case <-time.After(time.Duration(r.retryDelay)):
 	}
 	r.retryCount += 1
-	r.retryDelay = time.Duration(float64(r.retryDelay) * r.retryBackoffExponential)
-	r.retryDelay += r.retryBackoff
+	r.retryDelay = int64(float64(r.retryDelay) * r.retryBackoffExponential)
+	r.retryDelay += int64(time.Duration(r.retryBackoff))
 	_ = r.reader.Close()
 	var err2 error
 	r.reader, err2 = r.object.Open(r.ctx, &fs.SeekOption{Offset: r.offset})
@@ -256,13 +256,13 @@ func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, leng
 func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
 	config.UseServerModTime = true
 	if s.ClientConfig.ConnectTimeout != nil {
-		config.ConnectTimeout = *s.ClientConfig.ConnectTimeout
+		config.ConnectTimeout = time.Duration(*s.ClientConfig.ConnectTimeout)
 	}
 	if s.ClientConfig.Timeout != nil {
-		config.Timeout = *s.ClientConfig.Timeout
+		config.Timeout = time.Duration(*s.ClientConfig.Timeout)
 	}
 	if s.ClientConfig.ExpectContinueTimeout != nil {
-		config.ExpectContinueTimeout = *s.ClientConfig.ExpectContinueTimeout
+		config.ExpectContinueTimeout = time.Duration(*s.ClientConfig.ExpectContinueTimeout)
 	}
 	if s.ClientConfig.InsecureSkipVerify != nil {
 		config.InsecureSkipVerify = true

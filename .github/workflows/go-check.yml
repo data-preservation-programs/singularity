@@ -2,8 +2,9 @@ name: Go Checks
 
 on:
   pull_request:
+    branches: [main, develop]
   push:
-    branches: ["main"]
+    branches: [main, develop]
   workflow_dispatch:
 
 permissions:
@@ -14,19 +15,88 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  go-check:
-    uses: ipdxco/unified-github-workflows/.github/workflows/go-check.yml@v1.0.22
+  go-check-all:
+    name: go-check / All
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: singularity
+          MYSQL_USER: singularity
+          MYSQL_PASSWORD: singularity
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+      
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: singularity
+          POSTGRES_PASSWORD: singularity
+          POSTGRES_DB: singularity
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21.x"
+          
+      - name: Wait for PostgreSQL
+        run: |
+          echo "Waiting for PostgreSQL..."
+          for i in {1..10}; do
+            if PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "SELECT 1" > /dev/null 2>&1; then
+              echo "Postgres is ready!"
+              break
+            fi
+            sleep 3
+          done
+
+      - name: Verify MySQL connection
+        run: mysql -h127.0.0.1 -P3306 -usingularity -psingularity -e "SELECT VERSION();"
+
+      - name: Verify PostgreSQL connection
+        run: PGPASSWORD=singularity psql -h localhost -U singularity -d singularity -c "SELECT version();"
+
+      - name: Ensure swagger directories exist
+        run: mkdir -p client/swagger/client
+
+      - name: Install swagger tools
+        run: go install github.com/go-swagger/go-swagger/cmd/swagger@v0.30.5
+          
+      - name: Generate code
+        run: go generate ./client/swagger/...
+
+      - name: Build
+        run: go build ./...
+
+      - name: Run tests
+        run: go test -v ./...
 
   staticcheck:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.21.x"
 
       - name: Install staticcheck
         run: go install honnef.co/go/tools/cmd/staticcheck@latest

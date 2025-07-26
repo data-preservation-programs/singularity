@@ -79,6 +79,7 @@
   * [Balance](cli-reference/wallet/balance.md)
   * [Create](cli-reference/wallet/create.md)
   * [Import](cli-reference/wallet/import.md)
+  * [Track](cli-reference/wallet/track.md)
   * [Init](cli-reference/wallet/init.md)
   * [List](cli-reference/wallet/list.md)
   * [Remove](cli-reference/wallet/remove.md)
@@ -265,6 +266,9 @@
   * [List Wallets](cli-reference/prep/list-wallets.md)
   * [Detach Wallet](cli-reference/prep/detach-wallet.md)
   * [Remove](cli-reference/prep/remove.md)
+* [Error](cli-reference/error/README.md)
+  * [Log](cli-reference/error/log/README.md)
+    * [List](cli-reference/error/log/list.md)
 
 <!-- cli end -->
 
@@ -273,8 +277,9 @@
 
 * [Admin](web-api-reference/admin.md)
 * [Deal Schedule](web-api-reference/deal-schedule.md)
-* [Deal Schedule Template](web-api-reference/deal-schedule-template.md)
+* [Deal Template](web-api-reference/deal-template.md)
 * [Deal](web-api-reference/deal.md)
+* [Error Logs](web-api-reference/error-logs.md)
 * [File](web-api-reference/file.md)
 * [Job](web-api-reference/job.md)
 * [Piece](web-api-reference/piece.md)

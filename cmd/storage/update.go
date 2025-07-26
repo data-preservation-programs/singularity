@@ -178,13 +178,16 @@ func updateAction(c *cli.Context, storageType string, provider string) error {
 func GetClientConfigForUpdate(c *cli.Context) (*model.ClientConfig, error) {
 	var config model.ClientConfig
 	if c.IsSet("client-connect-timeout") {
-		config.ConnectTimeout = ptr.Of(c.Duration("client-connect-timeout"))
+		val := c.Duration("client-connect-timeout")
+		config.ConnectTimeout = ptr.Of(int64(val))
 	}
 	if c.IsSet("client-timeout") {
-		config.Timeout = ptr.Of(c.Duration("client-timeout"))
+		val := c.Duration("client-timeout")
+		config.Timeout = ptr.Of(int64(val))
 	}
 	if c.IsSet("client-expect-continue-timeout") {
-		config.ExpectContinueTimeout = ptr.Of(c.Duration("client-expect-continue-timeout"))
+		val := c.Duration("client-expect-continue-timeout")
+		config.ExpectContinueTimeout = ptr.Of(int64(val))
 	}
 	if c.IsSet("client-insecure-skip-verify") {
 		config.InsecureSkipVerify = ptr.Of(c.Bool("client-insecure-skip-verify"))
@@ -229,10 +232,12 @@ func GetClientConfigForUpdate(c *cli.Context) (*model.ClientConfig, error) {
 		config.RetryMaxCount = ptr.Of(c.Int("client-retry-max"))
 	}
 	if c.IsSet("client-retry-delay") {
-		config.RetryDelay = ptr.Of(c.Duration("client-retry-delay"))
+		val := c.Duration("client-retry-delay")
+		config.RetryDelay = ptr.Of(int64(val))
 	}
 	if c.IsSet("client-retry-backoff") {
-		config.RetryBackoff = ptr.Of(c.Duration("client-retry-backoff"))
+		val := c.Duration("client-retry-backoff")
+		config.RetryBackoff = ptr.Of(int64(val))
 	}
 	if c.IsSet("client-retry-backoff-exp") {
 		config.RetryBackoffExponential = ptr.Of(c.Float64("client-retry-backoff-exp"))

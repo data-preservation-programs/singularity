@@ -9,8 +9,10 @@ runs:
         path: |
           ~/.cache/go-build
           ~/go/pkg/mod
-        key: ${{ matrix.os }}-golang-${{ matrix.go }}-${{ hashFiles('**/go.sum') }}
+        key: ${{ matrix.os }}-golang-${{ matrix.go }}-${{ hashFiles('**/go.sum') }}-${{ github.ref }}-${{ github.sha }}
         restore-keys: |
+          ${{ matrix.os }}-golang-${{ matrix.go }}-${{ hashFiles('**/go.sum') }}-${{ github.ref }}-
+          ${{ matrix.os }}-golang-${{ matrix.go }}-${{ hashFiles('**/go.sum') }}-
           ${{ matrix.os }}-golang-${{ matrix.go }}-
 
     - name: Setup Go
