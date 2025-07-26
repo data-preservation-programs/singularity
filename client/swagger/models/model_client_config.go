@@ -26,7 +26,7 @@ type ModelClientConfig struct {
 	// Path to Client SSL private key (PEM) for mutual TLS auth
 	ClientKey string `json:"clientKey,omitempty"`
 
-	// HTTP Client Connect timeout
+	// HTTP Client Connect timeout in nanoseconds
 	ConnectTimeout int64 `json:"connectTimeout,omitempty"`
 
 	// Disable HTTP/2 in the transport
@@ -35,7 +35,7 @@ type ModelClientConfig struct {
 	// Disable HTTP keep-alives and use each connection once.
 	DisableHTTPKeepAlives bool `json:"disableHttpKeepAlives,omitempty"`
 
-	// Timeout when using expect / 100-continue in HTTP
+	// Timeout when using expect / 100-continue in HTTP in nanoseconds
 	ExpectContinueTimeout int64 `json:"expectContinueTimeout,omitempty"`
 
 	// Set HTTP header for all transactions
@@ -50,13 +50,13 @@ type ModelClientConfig struct {
 	// Don't set Accept-Encoding: gzip
 	NoGzip bool `json:"noGzip,omitempty"`
 
-	// Constant backoff between retries. Default is 1s.
+	// Constant backoff between retries in nanoseconds. Default is 1s.
 	RetryBackoff int64 `json:"retryBackoff,omitempty"`
 
 	// Exponential backoff between retries. Default is 1.0.
 	RetryBackoffExponential float64 `json:"retryBackoffExponential,omitempty"`
 
-	// Delay between retries. Default is 1s.
+	// Delay between retries in nanoseconds. Default is 1s.
 	RetryDelay int64 `json:"retryDelay,omitempty"`
 
 	// Maximum number of retries. Default is 10 retries.
@@ -68,7 +68,7 @@ type ModelClientConfig struct {
 	// Skip inaccessible files. Default is false.
 	SkipInaccessibleFile bool `json:"skipInaccessibleFile,omitempty"`
 
-	// IO idle timeout
+	// IO idle timeout in nanoseconds
 	Timeout int64 `json:"timeout,omitempty"`
 
 	// Use server modified time instead of object metadata
