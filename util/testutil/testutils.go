@@ -183,7 +183,7 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 	// Clear any existing data from tables with unique constraints
 	tables := []string{
 		"output_attachments",
-		"source_attachments", 
+		"source_attachments",
 		"storages",
 		"wallets",
 		"deal_schedules",
@@ -200,7 +200,7 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 			err = db.Exec("DELETE FROM " + table).Error
 		}
 		if err != nil {
-			t.Logf("Warning: Failed to clear table %s: %v", table, err) 
+			t.Logf("Warning: Failed to clear table %s: %v", table, err)
 			// Don't fail the test, as table may not exist yet
 		}
 	}

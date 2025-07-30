@@ -10,10 +10,10 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/statetracker"
 	"github.com/stretchr/testify/require"
-	"github.com/urfave/cli/v2"
+	"gorm.io/gorm"
 )
 
-func setupTestDB(t *testing.T) (*database.Database, func()) {
+func setupTestDB(t *testing.T) (*gorm.DB, func()) {
 	connStr := "sqlite:" + t.TempDir() + "/test.db"
 	db, closer, err := database.OpenWithLogger(connStr)
 	require.NoError(t, err)
@@ -24,7 +24,7 @@ func setupTestDB(t *testing.T) (*database.Database, func()) {
 	return db, func() { _ = closer.Close() }
 }
 
-func createTestDeal(t *testing.T, db *database.Database, dealID uint64, provider string) *model.Deal {
+func createTestDeal(t *testing.T, db *gorm.DB, dealID uint64, provider string) *model.Deal {
 	deal := &model.Deal{
 		ID:            model.DealID(dealID),
 		State:         model.DealProposed,
@@ -138,7 +138,7 @@ func TestStatsCommandWithData(t *testing.T) {
 }
 
 func TestExportFunctionality(t *testing.T) {
-	stateChanges := []*model.DealStateChange{
+	stateChanges := []model.DealStateChange{
 		{
 			ID:            1,
 			DealID:        model.DealID(123),
@@ -150,7 +150,9 @@ func TestExportFunctionality(t *testing.T) {
 		},
 	}
 
-	tempFile := t.TempDir() + "/test.csv"
+	tempFile := "test.csv"
+	defer os.Remove(tempFile)
+
 	err := exportStateChanges(stateChanges, "csv", tempFile)
 	require.NoError(t, err)
 
