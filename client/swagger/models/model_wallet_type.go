@@ -35,6 +35,9 @@ const (
 
 	// ModelWalletTypeSPWallet captures enum value "SPWallet"
 	ModelWalletTypeSPWallet ModelWalletType = "SPWallet"
+
+	// ModelWalletTypeTrackedWallet captures enum value "TrackedWallet"
+	ModelWalletTypeTrackedWallet ModelWalletType = "TrackedWallet"
 )
 
 // for schema
@@ -42,7 +45,7 @@ var modelWalletTypeEnum []interface{}
 
 func init() {
 	var res []ModelWalletType
-	if err := json.Unmarshal([]byte(`["UserWallet","SPWallet"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["UserWallet","SPWallet","TrackedWallet"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

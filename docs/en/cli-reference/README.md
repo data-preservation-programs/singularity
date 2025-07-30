@@ -53,6 +53,7 @@ COMMANDS:
      wallet                       Wallet management
      storage                      Create and manage storage system connections
      prep                         Create and manage dataset preparations
+     error                        Error log management
    Utility:
      ez-prep      Prepare a dataset from a local path
      download     Download a CAR file from the metadata API
