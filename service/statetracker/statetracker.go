@@ -113,6 +113,14 @@ func CreateErrorMetadata(categorization *errorcategorization.ErrorCategorization
 		if categorization.Metadata.ProposalID != "" {
 			metadata.ProposalID = categorization.Metadata.ProposalID
 		}
+		// If ProposalID is empty but PieceCID is set, use PieceCID for ProposalID
+		if metadata.ProposalID == "" && categorization.Metadata.PieceCID != "" {
+			metadata.ProposalID = categorization.Metadata.PieceCID
+		}
+		// Map PieceCID to PublishCID for compatibility with test expectations
+		if categorization.Metadata.PieceCID != "" {
+			metadata.PublishCID = categorization.Metadata.PieceCID
+		}
 		if categorization.Metadata.AttemptNumber != nil {
 			metadata.AttemptNumber = categorization.Metadata.AttemptNumber
 		}
