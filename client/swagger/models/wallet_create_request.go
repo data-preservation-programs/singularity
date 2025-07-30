@@ -34,6 +34,9 @@ type WalletCreateRequest struct {
 
 	// Optional fields for adding details to Wallet
 	Name string `json:"name,omitempty"`
+
+	// For TrackedWallet creation
+	TrackOnly bool `json:"trackOnly,omitempty"`
 }
 
 // Validate validates this wallet create request

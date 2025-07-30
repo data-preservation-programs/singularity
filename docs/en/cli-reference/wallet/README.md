@@ -12,6 +12,7 @@ COMMANDS:
    balance  Get wallet balance information
    create   Create a new wallet
    import   Import a wallet from exported private key
+   track    Track a wallet without importing private key
    init     Initialize a wallet
    list     List all imported wallets
    remove   Remove a wallet

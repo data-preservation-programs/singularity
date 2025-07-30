@@ -184,6 +184,69 @@ singularity error log list --json --component onboard > error_logs.json
 - **pack**: Data packing and piece generation
 - **daggen**: DAG generation from packed data
 
+### Enhanced State Recovery
+
+Singularity includes an enhanced state recovery system that automatically detects and recovers from missing or inconsistent deal state change records on startup.
+
+#### How State Recovery Works
+
+1. **Automatic Detection**: On service startup, the system scans all deals to identify:
+   - Deals missing state change records
+   - Deals with inconsistent states between the deal table and state change history
+   - Deals that may have experienced tracking issues
+
+2. **Recovery Actions**:
+   - Creates initial state change records for deals missing any history
+   - Logs detailed information about detected inconsistencies
+   - Provides clear remediation guidance in logs
+
+3. **Recovery Process**:
+   ```bash
+   # The recovery runs automatically on startup
+   singularity run unified
+   
+   # Look for recovery logs
+   tail -f singularity.log | grep "state recovery\|RecoverMissingStateChanges"
+   ```
+
+#### Expected Logs
+
+During recovery, you'll see logs like:
+
+```
+INFO: Starting recovery of missing deal state changes
+INFO: Creating initial state change for deal 123 (provider: f01234, state: published)
+WARN: Deal 456 has inconsistent state - current: confirmed, last tracked: published
+INFO: Recovery complete - processed 150 deals, recovered 5, found 2 inconsistencies
+```
+
+#### Monitoring Recovery
+
+```bash
+# Check for recovery-related errors
+singularity error log list --component deal_state_recovery
+
+# View deals with state issues
+singularity deal list --filter "state_inconsistent"
+
+# Check specific deal state history
+singularity deal state-changes 123
+```
+
+#### Remediation Options
+
+If inconsistencies are detected:
+
+1. **Review Logs**: Check the detailed logs for specific deal IDs and their state discrepancies
+2. **Manual Verification**: Use provider APIs or on-chain data to verify actual deal states
+3. **Update States**: If needed, manually update deal states to match reality:
+   ```bash
+   singularity deal update 123 --state confirmed
+   ```
+4. **Re-run Recovery**: The recovery process runs on each startup, ensuring ongoing consistency
+
+The recovery system helps maintain data integrity and ensures accurate deal tracking even after unexpected interruptions or state tracking failures.
+
 ## 🏗️ Architecture
 
 ### Simplified Architecture
@@ -364,3 +427,16 @@ The internal tool used by `js-singularity` to regenerate the CAR that captures t
 
 ## License
 Dual-licensed under [MIT](https://github.com/filecoin-project/lotus/blob/master/LICENSE-MIT) + [Apache 2.0](https://github.com/filecoin-project/lotus/blob/master/LICENSE-APACHE)
+
+## Integration Tests & MongoDB
+
+Some integration tests require a MongoDB instance running on `localhost:27018`.
+
+- **CI:** MongoDB is automatically started on port 27018 in GitHub Actions workflows.
+- **Local Development:** You must start MongoDB locally on port 27018 before running tests:
+
+```bash
+mongod --port 27018
+```
+
+If MongoDB is not available, related tests will be skipped or fail with a connection error.

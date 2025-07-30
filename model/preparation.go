@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"encoding/json"
 	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
@@ -42,6 +43,24 @@ type ErrorLog struct {
 	Component  string     `gorm:"index"                              json:"component"`  // Component that generated the error (onboard, deal_schedule, etc.)
 	UserID     string     `gorm:"index;size:255"                     json:"userId"`     // Optional user identifier
 	SessionID  string     `gorm:"index;size:255"                     json:"sessionId"`  // Optional session identifier
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler for ErrorLog
+func (e *ErrorLog) MarshalBinary() ([]byte, error) {
+	if e == nil {
+		return nil, nil
+	}
+	return json.Marshal(e)
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler for ErrorLog
+func (e *ErrorLog) UnmarshalBinary(b []byte) error {
+	var res ErrorLog
+	if err := json.Unmarshal(b, &res); err != nil {
+		return err
+	}
+	*e = res
+	return nil
 }
 
 type Worker struct {

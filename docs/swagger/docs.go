@@ -82,6 +82,97 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/errors": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Error Logs"
+                ],
+                "summary": "List error logs with filtering and pagination",
+                "operationId": "ListErrorLogs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by entity type (e.g., deal, preparation, schedule)",
+                        "name": "entity_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by entity ID",
+                        "name": "entity_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by component (e.g., onboard, deal_schedule)",
+                        "name": "component",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by error level (info, warning, error, critical)",
+                        "name": "level",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by event type",
+                        "name": "event_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter logs after this time (RFC3339 format)",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter logs before this time (RFC3339 format)",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum number of logs to return (default: 50, max: 1000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of logs to skip (default: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/errorlog.ErrorLogsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/state-changes": {
             "get": {
                 "description": "Retrieve a list of deal state changes with optional filtering by deal ID, state, provider, client, and time range. Supports pagination and sorting.",
@@ -6744,6 +6835,29 @@ const docTemplate = `{
                 }
             }
         },
+        "errorlog.ErrorLogsResponse": {
+            "type": "object",
+            "properties": {
+                "errorLogs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ErrorLog"
+                    }
+                },
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "file.DealsForFileRange": {
             "type": "object",
             "properties": {
@@ -6859,7 +6973,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "connectTimeout": {
-                    "description": "HTTP Client Connect timeout",
+                    "description": "HTTP Client Connect timeout in nanoseconds",
                     "type": "integer"
                 },
                 "disableHttp2": {
@@ -6871,7 +6985,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "expectContinueTimeout": {
-                    "description": "Timeout when using expect / 100-continue in HTTP",
+                    "description": "Timeout when using expect / 100-continue in HTTP in nanoseconds",
                     "type": "integer"
                 },
                 "headers": {
@@ -6894,7 +7008,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "retryBackoff": {
-                    "description": "Constant backoff between retries. Default is 1s.",
+                    "description": "Constant backoff between retries in nanoseconds. Default is 1s.",
                     "type": "integer"
                 },
                 "retryBackoffExponential": {
@@ -6902,7 +7016,7 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "retryDelay": {
-                    "description": "Delay between retries. Default is 1s.",
+                    "description": "Delay between retries in nanoseconds. Default is 1s.",
                     "type": "integer"
                 },
                 "retryMaxCount": {
@@ -6918,7 +7032,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "timeout": {
-                    "description": "IO idle timeout",
+                    "description": "IO idle timeout in nanoseconds",
                     "type": "integer"
                 },
                 "useServerModTime": {
@@ -7204,6 +7318,80 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.ErrorLevel": {
+            "type": "string",
+            "enum": [
+                "info",
+                "warning",
+                "error",
+                "critical"
+            ],
+            "x-enum-varnames": [
+                "ErrorLevelInfo",
+                "ErrorLevelWarning",
+                "ErrorLevelError",
+                "ErrorLevelCritical"
+            ]
+        },
+        "model.ErrorLog": {
+            "type": "object",
+            "properties": {
+                "component": {
+                    "description": "Component that generated the error (onboard, deal_schedule, etc.)",
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "entityId": {
+                    "description": "ID of the associated entity",
+                    "type": "string"
+                },
+                "entityType": {
+                    "description": "Type of entity (deal, preparation, schedule, etc.)",
+                    "type": "string"
+                },
+                "eventType": {
+                    "description": "Type of event (creation, processing, error, etc.)",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "description": "Error level (info, warning, error, critical)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ErrorLevel"
+                        }
+                    ]
+                },
+                "message": {
+                    "description": "Human-readable error message",
+                    "type": "string"
+                },
+                "metadata": {
+                    "description": "Additional context as JSON",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ConfigMap"
+                        }
+                    ]
+                },
+                "sessionId": {
+                    "description": "Optional session identifier",
+                    "type": "string"
+                },
+                "stackTrace": {
+                    "description": "Stack trace if available",
+                    "type": "string"
+                },
+                "userId": {
+                    "description": "Optional user identifier",
                     "type": "string"
                 }
             }
@@ -7615,11 +7803,13 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "UserWallet",
-                "SPWallet"
+                "SPWallet",
+                "TrackedWallet"
             ],
             "x-enum-varnames": [
                 "UserWallet",
-                "SPWallet"
+                "SPWallet",
+                "TrackedWallet"
             ]
         },
         "schedule.CreateRequest": {
@@ -17604,6 +17794,10 @@ const docTemplate = `{
                 "name": {
                     "description": "Optional fields for adding details to Wallet",
                     "type": "string"
+                },
+                "trackOnly": {
+                    "description": "For TrackedWallet creation",
+                    "type": "boolean"
                 }
             }
         },

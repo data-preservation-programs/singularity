@@ -1,0 +1,31 @@
+name: Cache Cleanup
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday at midnight
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup
+        run: |
+          # Get all cache keys
+          CACHE_KEYS=$(gh cache list -L 1000 | awk '{print $1}')
+          
+          # Calculate total size
+          TOTAL_SIZE=$(gh cache list -L 1000 | awk '{sum += $2} END {print sum}')
+          
+          # If total size > 8GB (keeping buffer from 10GB limit)
+          if [ "$TOTAL_SIZE" -gt 8000000000 ]; then
+            # Delete older caches until we're under 8GB
+            echo "$CACHE_KEYS" | while read key; do
+              gh cache delete "$key" -f
+              TOTAL_SIZE=$(gh cache list -L 1000 | awk '{sum += $2} END {print sum}')
+              if [ "$TOTAL_SIZE" -lt 8000000000 ]; then
+                break
+              fi
+            done
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
