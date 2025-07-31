@@ -87,7 +87,7 @@ func TestCreateEnhancedMetadata(t *testing.T) {
 	activationEpoch := int32(100)
 	expirationEpoch := int32(200)
 	slashingEpoch := int32(150)
-	
+
 	dealInfo := &DealInfo{
 		StoragePrice:    "1000",
 		PieceSize:       1024,
@@ -301,4 +301,3 @@ func TestEnhancedStateChangeStats(t *testing.T) {
 		require.Len(t, topProviders, 2)
 	})
 }
-

@@ -62,26 +62,26 @@ func (d TimeDuration) Duration() time.Duration {
 }
 
 type ClientConfig struct {
-	ConnectTimeout          *int64    `cbor:"1,keyasint,omitempty"  json:"connectTimeout,omitempty"`          // HTTP Client Connect timeout in nanoseconds
-	Timeout                 *int64    `cbor:"2,keyasint,omitempty"  json:"timeout,omitempty"`                 // IO idle timeout in nanoseconds
-	ExpectContinueTimeout   *int64    `cbor:"3,keyasint,omitempty"  json:"expectContinueTimeout,omitempty"`   // Timeout when using expect / 100-continue in HTTP in nanoseconds
-	InsecureSkipVerify      *bool             `cbor:"4,keyasint,omitempty"  json:"insecureSkipVerify,omitempty"`                                      // Do not verify the server SSL certificate (insecure)
-	NoGzip                  *bool             `cbor:"5,keyasint,omitempty"  json:"noGzip,omitempty"`                                                  // Don't set Accept-Encoding: gzip
-	UserAgent               *string           `cbor:"6,keyasint,omitempty"  json:"userAgent,omitempty"`                                               // Set the user-agent to a specified string
-	CaCert                  []string          `cbor:"7,keyasint,omitempty"  json:"caCert,omitempty"`                                                  // Paths to CA certificate used to verify servers
-	ClientCert              *string           `cbor:"8,keyasint,omitempty"  json:"clientCert,omitempty"`                                              // Path to Client SSL certificate (PEM) for mutual TLS auth
-	ClientKey               *string           `cbor:"9,keyasint,omitempty"  json:"clientKey,omitempty"`                                               // Path to Client SSL private key (PEM) for mutual TLS auth
-	Headers                 map[string]string `cbor:"10,keyasint,omitempty" json:"headers,omitempty"`                                                 // Set HTTP header for all transactions
-	DisableHTTP2            *bool             `cbor:"11,keyasint,omitempty" json:"disableHttp2,omitempty"`                                            // Disable HTTP/2 in the transport
-	DisableHTTPKeepAlives   *bool             `cbor:"12,keyasint,omitempty" json:"disableHttpKeepAlives,omitempty"`                                   // Disable HTTP keep-alives and use each connection once.
-	RetryMaxCount           *int              `cbor:"13,keyasint,omitempty" json:"retryMaxCount,omitempty"`                                           // Maximum number of retries. Default is 10 retries.
-	RetryDelay              *int64    `cbor:"14,keyasint,omitempty" json:"retryDelay,omitempty"`              // Delay between retries in nanoseconds. Default is 1s.
-	RetryBackoff            *int64    `cbor:"15,keyasint,omitempty" json:"retryBackoff,omitempty"`            // Constant backoff between retries in nanoseconds. Default is 1s.
-	RetryBackoffExponential *float64          `cbor:"16,keyasint,omitempty" json:"retryBackoffExponential,omitempty"`                                 // Exponential backoff between retries. Default is 1.0.
-	SkipInaccessibleFile    *bool             `cbor:"17,keyasint,omitempty" json:"skipInaccessibleFile,omitempty"`                                    // Skip inaccessible files. Default is false.
-	UseServerModTime        *bool             `cbor:"18,keyasint,omitempty" json:"useServerModTime,omitempty"`                                        // Use server modified time instead of object metadata
-	LowLevelRetries         *int              `cbor:"19,keyasint,omitempty" json:"lowlevelRetries,omitempty"`                                         // Maximum number of retries for low-level client errors. Default is 10 retries.
-	ScanConcurrency         *int              `cbor:"20,keyasint,omitempty" json:"scanConcurrency,omitempty"`                                         // Maximum number of concurrent scan requests. Default is 1.
+	ConnectTimeout          *int64            `cbor:"1,keyasint,omitempty"  json:"connectTimeout,omitempty"`          // HTTP Client Connect timeout in nanoseconds
+	Timeout                 *int64            `cbor:"2,keyasint,omitempty"  json:"timeout,omitempty"`                 // IO idle timeout in nanoseconds
+	ExpectContinueTimeout   *int64            `cbor:"3,keyasint,omitempty"  json:"expectContinueTimeout,omitempty"`   // Timeout when using expect / 100-continue in HTTP in nanoseconds
+	InsecureSkipVerify      *bool             `cbor:"4,keyasint,omitempty"  json:"insecureSkipVerify,omitempty"`      // Do not verify the server SSL certificate (insecure)
+	NoGzip                  *bool             `cbor:"5,keyasint,omitempty"  json:"noGzip,omitempty"`                  // Don't set Accept-Encoding: gzip
+	UserAgent               *string           `cbor:"6,keyasint,omitempty"  json:"userAgent,omitempty"`               // Set the user-agent to a specified string
+	CaCert                  []string          `cbor:"7,keyasint,omitempty"  json:"caCert,omitempty"`                  // Paths to CA certificate used to verify servers
+	ClientCert              *string           `cbor:"8,keyasint,omitempty"  json:"clientCert,omitempty"`              // Path to Client SSL certificate (PEM) for mutual TLS auth
+	ClientKey               *string           `cbor:"9,keyasint,omitempty"  json:"clientKey,omitempty"`               // Path to Client SSL private key (PEM) for mutual TLS auth
+	Headers                 map[string]string `cbor:"10,keyasint,omitempty" json:"headers,omitempty"`                 // Set HTTP header for all transactions
+	DisableHTTP2            *bool             `cbor:"11,keyasint,omitempty" json:"disableHttp2,omitempty"`            // Disable HTTP/2 in the transport
+	DisableHTTPKeepAlives   *bool             `cbor:"12,keyasint,omitempty" json:"disableHttpKeepAlives,omitempty"`   // Disable HTTP keep-alives and use each connection once.
+	RetryMaxCount           *int              `cbor:"13,keyasint,omitempty" json:"retryMaxCount,omitempty"`           // Maximum number of retries. Default is 10 retries.
+	RetryDelay              *int64            `cbor:"14,keyasint,omitempty" json:"retryDelay,omitempty"`              // Delay between retries in nanoseconds. Default is 1s.
+	RetryBackoff            *int64            `cbor:"15,keyasint,omitempty" json:"retryBackoff,omitempty"`            // Constant backoff between retries in nanoseconds. Default is 1s.
+	RetryBackoffExponential *float64          `cbor:"16,keyasint,omitempty" json:"retryBackoffExponential,omitempty"` // Exponential backoff between retries. Default is 1.0.
+	SkipInaccessibleFile    *bool             `cbor:"17,keyasint,omitempty" json:"skipInaccessibleFile,omitempty"`    // Skip inaccessible files. Default is false.
+	UseServerModTime        *bool             `cbor:"18,keyasint,omitempty" json:"useServerModTime,omitempty"`        // Use server modified time instead of object metadata
+	LowLevelRetries         *int              `cbor:"19,keyasint,omitempty" json:"lowlevelRetries,omitempty"`         // Maximum number of retries for low-level client errors. Default is 10 retries.
+	ScanConcurrency         *int              `cbor:"20,keyasint,omitempty" json:"scanConcurrency,omitempty"`         // Maximum number of concurrent scan requests. Default is 1.
 }
 
 func (c CID) MarshalBinary() ([]byte, error) {

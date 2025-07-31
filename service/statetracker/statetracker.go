@@ -19,16 +19,16 @@ var Logger = log.Logger("statetracker")
 
 // Error categories for better error handling and analytics
 const (
-	ErrorCategoryNetwork   = "network"     // Network connectivity issues
-	ErrorCategoryProvider  = "provider"    // Storage provider related issues
-	ErrorCategoryClient    = "client"      // Client related issues
-	ErrorCategoryChain     = "chain"       // Blockchain/consensus issues
-	ErrorCategoryDB        = "database"    // Database operation issues
-	ErrorCategoryInternal  = "internal"    // Internal processing errors
-	ErrorCategoryTimeout   = "timeout"     // Timeout related errors
-	ErrorCategoryFunding   = "funding"     // Insufficient funds or collateral
-	ErrorCategorySlashing  = "slashing"    // Deal slashing related
-	ErrorCategoryExpiry    = "expiry"      // Deal expiration related
+	ErrorCategoryNetwork  = "network"  // Network connectivity issues
+	ErrorCategoryProvider = "provider" // Storage provider related issues
+	ErrorCategoryClient   = "client"   // Client related issues
+	ErrorCategoryChain    = "chain"    // Blockchain/consensus issues
+	ErrorCategoryDB       = "database" // Database operation issues
+	ErrorCategoryInternal = "internal" // Internal processing errors
+	ErrorCategoryTimeout  = "timeout"  // Timeout related errors
+	ErrorCategoryFunding  = "funding"  // Insufficient funds or collateral
+	ErrorCategorySlashing = "slashing" // Deal slashing related
+	ErrorCategoryExpiry   = "expiry"   // Deal expiration related
 )
 
 // StateChangeTracker is responsible for tracking deal state changes
@@ -39,20 +39,20 @@ type StateChangeTracker struct {
 // StateChangeMetadata represents additional metadata that can be stored with a state change
 type StateChangeMetadata struct {
 	// Basic state change information
-	Reason           string `json:"reason,omitempty"`           // Reason for the state change
-	Error            string `json:"error,omitempty"`            // Error message if applicable
-	TransactionID    string `json:"transactionId,omitempty"`    // On-chain transaction ID
-	PublishCID       string `json:"publishCid,omitempty"`       // Message CID for deal publication
+	Reason        string `json:"reason,omitempty"`        // Reason for the state change
+	Error         string `json:"error,omitempty"`         // Error message if applicable
+	TransactionID string `json:"transactionId,omitempty"` // On-chain transaction ID
+	PublishCID    string `json:"publishCid,omitempty"`    // Message CID for deal publication
 
 	// Deal lifecycle epochs
-	ActivationEpoch  *int32 `json:"activationEpoch,omitempty"`  // Epoch when deal was activated
-	ExpirationEpoch  *int32 `json:"expirationEpoch,omitempty"`  // Epoch when deal expires
-	SlashingEpoch    *int32 `json:"slashingEpoch,omitempty"`    // Epoch when deal was slashed
+	ActivationEpoch *int32 `json:"activationEpoch,omitempty"` // Epoch when deal was activated
+	ExpirationEpoch *int32 `json:"expirationEpoch,omitempty"` // Epoch when deal expires
+	SlashingEpoch   *int32 `json:"slashingEpoch,omitempty"`   // Epoch when deal was slashed
 
 	// Deal pricing and terms
-	StoragePrice     string `json:"storagePrice,omitempty"`     // Storage price per epoch
-	PieceSize        int64  `json:"pieceSize,omitempty"`        // Size of the piece
-	VerifiedDeal     bool   `json:"verifiedDeal,omitempty"`     // Whether this is a verified deal
+	StoragePrice string `json:"storagePrice,omitempty"` // Storage price per epoch
+	PieceSize    int64  `json:"pieceSize,omitempty"`    // Size of the piece
+	VerifiedDeal bool   `json:"verifiedDeal,omitempty"` // Whether this is a verified deal
 
 	// Enhanced error categorization fields
 	ErrorCategory  string `json:"errorCategory,omitempty"`  // Categorized error type (e.g., "network_timeout", "deal_rejected")
@@ -83,9 +83,9 @@ type StateChangeMetadata struct {
 	DatabaseHealth string   `json:"databaseHealth,omitempty"` // Database health status
 
 	// Legacy fields for backward compatibility
-	RetryCount       int    `json:"retryCount,omitempty"`       // Number of retry attempts
-	ProcessingTime   int64  `json:"processingTime,omitempty"`   // Time taken to process in milliseconds
-	ChainTipSetKey   string `json:"chainTipSetKey,omitempty"`   // Chain tipset key when event occurred
+	RetryCount     int    `json:"retryCount,omitempty"`     // Number of retry attempts
+	ProcessingTime int64  `json:"processingTime,omitempty"` // Time taken to process in milliseconds
+	ChainTipSetKey string `json:"chainTipSetKey,omitempty"` // Chain tipset key when event occurred
 
 	// Flexible additional fields for future extensibility
 	AdditionalFields map[string]interface{} `json:"additionalFields,omitempty"` // Any additional custom fields
@@ -437,7 +437,7 @@ func CategorizeError(err error) string {
 	}
 
 	errStr := strings.ToLower(err.Error())
-	
+
 	switch {
 	case strings.Contains(errStr, "database") || strings.Contains(errStr, "sql") || strings.Contains(errStr, "gorm"):
 		return ErrorCategoryDB
@@ -502,15 +502,15 @@ func CreateEnhancedMetadata(reason string, err error, dealInfo *DealInfo) *State
 
 // DealInfo represents additional deal information for enhanced metadata
 type DealInfo struct {
-	StoragePrice     string
-	PieceSize        int64
-	VerifiedDeal     bool
-	ActivationEpoch  *int32
-	ExpirationEpoch  *int32
-	SlashingEpoch    *int32
-	PublishCID       string
-	TransactionID    string
-	ChainTipSetKey   string
+	StoragePrice    string
+	PieceSize       int64
+	VerifiedDeal    bool
+	ActivationEpoch *int32
+	ExpirationEpoch *int32
+	SlashingEpoch   *int32
+	PublishCID      string
+	TransactionID   string
+	ChainTipSetKey  string
 }
 
 // TrackStateChangeWithError tracks a state change that resulted from an error
@@ -532,7 +532,7 @@ func (t *StateChangeTracker) TrackStateChangeWithError(
 	}
 
 	metadata := CreateEnhancedMetadata(reason, err, dealInfo)
-	
+
 	return t.TrackStateChangeWithDetails(
 		ctx,
 		dealID,

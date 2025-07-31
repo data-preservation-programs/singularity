@@ -619,8 +619,8 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 				switch newState {
 				case model.DealSlashed:
 					reason = fmt.Sprintf("Deal slashed at epoch %d", deal.State.SlashEpoch)
-					Logger.Warnw("Deal slashed detected", 
-						"dealID", dealID, 
+					Logger.Warnw("Deal slashed detected",
+						"dealID", dealID,
 						"provider", deal.Proposal.Provider,
 						"client", deal.Proposal.Client,
 						"slashEpoch", deal.State.SlashEpoch,
@@ -823,7 +823,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 
 			reason := fmt.Sprintf("Deal expired naturally - end epoch %d reached at current epoch %d", deal.EndEpoch, lastEpoch)
 			metadata := statetracker.CreateEnhancedMetadata(reason, nil, dealInfo)
-			
+
 			if err := d.stateTracker.TrackStateChangeWithDetails(
 				ctx,
 				deal.ID,
@@ -880,7 +880,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 
 			reason := fmt.Sprintf("Deal proposal expired - start epoch %d reached without activation at current epoch %d", deal.StartEpoch, lastEpoch)
 			metadata := statetracker.CreateEnhancedMetadata(reason, nil, dealInfo)
-			
+
 			if err := d.stateTracker.TrackStateChangeWithDetails(
 				ctx,
 				deal.ID,
