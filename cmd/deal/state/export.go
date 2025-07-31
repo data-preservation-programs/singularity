@@ -1,4 +1,4 @@
-package statechange
+package state
 
 import (
 	"encoding/csv"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -18,6 +19,10 @@ func exportStateChanges(stateChanges []model.DealStateChange, format, outputPath
 	cleanPath := filepath.Clean(outputPath)
 	if filepath.IsAbs(cleanPath) {
 		return errors.New("absolute paths are not allowed for security reasons")
+	}
+	// Check for directory traversal attempts
+	if strings.Contains(cleanPath, "..") {
+		return errors.New("directory traversal using '..' is not allowed")
 	}
 	if len(cleanPath) > 255 {
 		return errors.New("output path is too long")

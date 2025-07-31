@@ -1,4 +1,4 @@
-package statechange
+package state
 
 import (
 	"strconv"
