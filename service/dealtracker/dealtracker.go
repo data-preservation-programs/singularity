@@ -39,6 +39,7 @@ import (
 	lchadt "github.com/filecoin-project/lotus/chain/actors/adt"
 	lchmarket "github.com/filecoin-project/lotus/chain/actors/builtin/market"
 	lchtypes "github.com/filecoin-project/lotus/chain/types"
+	"github.com/ipfs/boxo/blockstore"
 	blocks "github.com/ipfs/go-block-format"
 	ipldcbor "github.com/ipfs/go-ipld-cbor"
 )
@@ -50,6 +51,102 @@ const (
 	cleanupTimeout              = 5 * time.Second
 	logStatsInterval            = 15 * time.Second
 )
+
+// CountingBlockGetter interface based on filexp optimizations
+type CountingBlockGetter interface {
+	blockstore.Blockstore
+	N() int64
+	Speed() float64
+	IncrementCount() // Add method for manual counting
+}
+
+// FullCBG provides full counting including unique CID tracking
+type FullCBG struct {
+	blockstore.Blockstore
+	counter *advancedCounter
+}
+
+func (f *FullCBG) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
+	blk, err := f.Blockstore.Get(ctx, c)
+	if err == nil {
+		f.counter.incrementUniqueCount(c)
+	}
+	return blk, err
+}
+
+func (f *FullCBG) N() int64 {
+	return f.counter.N()
+}
+
+func (f *FullCBG) Speed() float64 {
+	return f.counter.Speed()
+}
+
+func (f *FullCBG) IncrementCount() {
+	// For FullCBG, we need a dummy CID for manual increments
+	// In practice, this is used for deal counting, not block counting
+	atomic.AddInt64(&f.counter.count, 1)
+}
+
+// LiteCBG provides lightweight counting without unique CID tracking for better performance
+type LiteCBG struct {
+	blockstore.Blockstore
+	counter *simpleCounter
+}
+
+func (l *LiteCBG) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
+	blk, err := l.Blockstore.Get(ctx, c)
+	if err == nil {
+		atomic.AddInt64(&l.counter.count, 1)
+	}
+	return blk, err
+}
+
+func (l *LiteCBG) N() int64 {
+	return l.counter.N()
+}
+
+func (l *LiteCBG) Speed() float64 {
+	return l.counter.Speed()
+}
+
+func (l *LiteCBG) IncrementCount() {
+	atomic.AddInt64(&l.counter.count, 1)
+}
+
+// advancedCounter for full counting with unique CID tracking
+type advancedCounter struct {
+	count      int64
+	uniqueCIDs sync.Map
+	start      time.Time
+}
+
+func newAdvancedCounter() *advancedCounter {
+	return &advancedCounter{
+		start: time.Now(),
+	}
+}
+
+func (c *advancedCounter) incrementUniqueCount(cid cid.Cid) {
+	if _, loaded := c.uniqueCIDs.LoadOrStore(cid.String(), struct{}{}); !loaded {
+		atomic.AddInt64(&c.count, 1)
+	}
+}
+
+func (c *advancedCounter) N() int64 {
+	return atomic.LoadInt64(&c.count)
+}
+
+func (c *advancedCounter) Speed() float64 {
+	if c.start.IsZero() {
+		c.start = time.Now()
+	}
+	elapsed := time.Since(c.start)
+	if elapsed == 0 {
+		return 0
+	}
+	return float64(atomic.LoadInt64(&c.count)) / elapsed.Seconds()
+}
 
 type Deal struct {
 	Proposal DealProposal
@@ -108,14 +205,15 @@ func (c CloserFunc) Close() error {
 var Logger = log.Logger("dealtracker")
 
 type DealTracker struct {
-	workerID    uuid.UUID
-	dbNoContext *gorm.DB
-	interval    time.Duration
-	dealZstURL  string
-	lotusURL    string
-	lotusToken  string
-	once        bool
-	batchSize   int
+	workerID        uuid.UUID
+	dbNoContext     *gorm.DB
+	interval        time.Duration
+	dealZstURL      string
+	lotusURL        string
+	lotusToken      string
+	once            bool
+	batchSize       int
+	countUniqueCIDs bool
 }
 
 func NewDealTracker(
@@ -127,14 +225,38 @@ func NewDealTracker(
 	once bool,
 ) DealTracker {
 	return DealTracker{
-		workerID:    uuid.New(),
-		dbNoContext: db,
-		interval:    interval,
-		dealZstURL:  dealZstURL,
-		lotusURL:    lotusURL,
-		lotusToken:  lotusToken,
-		once:        once,
-		batchSize:   100, // Default batch size
+		workerID:        uuid.New(),
+		dbNoContext:     db,
+		interval:        interval,
+		dealZstURL:      dealZstURL,
+		lotusURL:        lotusURL,
+		lotusToken:      lotusToken,
+		once:            once,
+		batchSize:       100,   // Default batch size
+		countUniqueCIDs: false, // Default to lite mode for better performance
+	}
+}
+
+// NewDealTrackerWithOptions creates a DealTracker with additional options
+func NewDealTrackerWithOptions(
+	db *gorm.DB,
+	interval time.Duration,
+	dealZstURL string,
+	lotusURL string,
+	lotusToken string,
+	once bool,
+	countUniqueCIDs bool,
+) DealTracker {
+	return DealTracker{
+		workerID:        uuid.New(),
+		dbNoContext:     db,
+		interval:        interval,
+		dealZstURL:      dealZstURL,
+		lotusURL:        lotusURL,
+		lotusToken:      lotusToken,
+		once:            once,
+		batchSize:       100, // Default batch size
+		countUniqueCIDs: countUniqueCIDs,
 	}
 }
 
@@ -1069,7 +1191,7 @@ func (d *DealTracker) dealStateStreamCustom(ctx context.Context, walletIDs map[s
 	Logger.Infof("getting deal state from %s via filexp-style approach", d.lotusURL)
 
 	// Try filexp-style approach first
-	dealChan, counter, closer, err := DealStateStreamFromLotusFilexp(ctx, d.lotusURL, d.lotusToken, walletIDs)
+	dealChan, counter, closer, err := DealStateStreamFromLotusFilexp(ctx, d.lotusURL, d.lotusToken, walletIDs, d.countUniqueCIDs)
 	if err != nil {
 		Logger.Warnf("filexp-style approach failed: %v", err)
 		Logger.Info("falling back to StateMarketDeals RPC approach")
@@ -1321,7 +1443,7 @@ type FilexpJsonEntry struct {
 }
 
 // DealStateStreamFromLotusFilexp creates a deal stream using filexp approach with riba library
-func DealStateStreamFromLotusFilexp(ctx context.Context, lotusURL, lotusToken string, walletIDs map[string]struct{}) (chan *ParsedDeal, Counter, io.Closer, error) {
+func DealStateStreamFromLotusFilexp(ctx context.Context, lotusURL, lotusToken string, walletIDs map[string]struct{}, countUniqueCIDs bool) (chan *ParsedDeal, Counter, io.Closer, error) {
 	Logger.Info("Starting filexp-style deal streaming")
 
 	// Create riba Lotus client with proper signature
@@ -1339,9 +1461,12 @@ func DealStateStreamFromLotusFilexp(ctx context.Context, lotusURL, lotusToken st
 
 	Logger.Infof("Got chain head at height %d", ts.Height())
 
-	// Create channels and counter with larger buffer
+	// Create channels with larger buffer based on filexp optimizations
 	dealChan := make(chan *ParsedDeal, 1000)
-	counter := &simpleCounter{start: time.Now()}
+
+	// Create the optimized blockstore and counting block getter
+	bs := &lotusAPIBlockstore{api: lApi}
+	countingBG := newCountingBlockGetter(bs, countUniqueCIDs)
 
 	// Create closer that cleans up API connection
 	closer := CloserFunc(func() error {
@@ -1352,17 +1477,17 @@ func DealStateStreamFromLotusFilexp(ctx context.Context, lotusURL, lotusToken st
 	// Start processing in background
 	go func() {
 		defer close(dealChan)
-		err := processStateMarketDealsFilexp(ctx, lApi, ts, dealChan, walletIDs, counter)
+		err := processStateMarketDealsFilexp(ctx, lApi, ts, dealChan, walletIDs, countingBG)
 		if err != nil {
 			Logger.Errorw("failed to process state market deals", "error", err)
 		}
 	}()
 
-	return dealChan, counter, closer, nil
+	return dealChan, countingBG, closer, nil
 }
 
 // processStateMarketDealsFilexp processes deals using filexp approach with worker goroutines
-func processStateMarketDealsFilexp(ctx context.Context, lApi fil.LotusDaemonAPIClientV0, ts *lchtypes.TipSet, dealChan chan<- *ParsedDeal, walletIDs map[string]struct{}, counter *simpleCounter) error {
+func processStateMarketDealsFilexp(ctx context.Context, lApi fil.LotusDaemonAPIClientV0, ts *lchtypes.TipSet, dealChan chan<- *ParsedDeal, walletIDs map[string]struct{}, counter CountingBlockGetter) error {
 	// Setup worker pool similar to filexp approach
 	wrkCnt := runtime.NumCPU()
 	if wrkCnt < 3 {
@@ -1397,7 +1522,7 @@ func processStateMarketDealsFilexp(ctx context.Context, lApi fil.LotusDaemonAPIC
 }
 
 // filexpDealIterator iterates through deals like filexp does
-func filexpDealIterator(ctx context.Context, lApi fil.LotusDaemonAPIClientV0, ts *lchtypes.TipSet, rawDealChan chan<- FilexpJsonEntry, walletIDs map[string]struct{}, counter *simpleCounter) error {
+func filexpDealIterator(ctx context.Context, lApi fil.LotusDaemonAPIClientV0, ts *lchtypes.TipSet, rawDealChan chan<- FilexpJsonEntry, walletIDs map[string]struct{}, counter CountingBlockGetter) error {
 	Logger.Info("Starting filexp deal iterator")
 
 	// Get the storage market actor state (like filexp does)
@@ -1460,7 +1585,7 @@ func filexpDealIterator(ctx context.Context, lApi fil.LotusDaemonAPIClientV0, ts
 			}
 
 			processed := processedCount.Add(1)
-			atomic.AddInt64(&counter.count, 1)
+			counter.IncrementCount() // Use the CountingBlockGetter's IncrementCount method
 
 			// Log progress periodically
 			if processed%10000 == 0 {
@@ -1534,8 +1659,54 @@ func (bs *lotusAPIBlockstore) Get(ctx context.Context, c cid.Cid) (blocks.Block,
 	return blocks.NewBlockWithCid(blkData, c)
 }
 
+func (bs *lotusAPIBlockstore) Has(ctx context.Context, c cid.Cid) (bool, error) {
+	_, err := bs.Get(ctx, c)
+	if err != nil {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (bs *lotusAPIBlockstore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
+	blk, err := bs.Get(ctx, c)
+	if err != nil {
+		return 0, err
+	}
+	return len(blk.RawData()), nil
+}
+
 func (bs *lotusAPIBlockstore) Put(ctx context.Context, blk blocks.Block) error {
 	return errors.New("put not supported")
+}
+
+func (bs *lotusAPIBlockstore) PutMany(ctx context.Context, blks []blocks.Block) error {
+	return errors.New("put many not supported")
+}
+
+func (bs *lotusAPIBlockstore) DeleteBlock(ctx context.Context, c cid.Cid) error {
+	return errors.New("delete block not supported")
+}
+
+func (bs *lotusAPIBlockstore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
+	return nil, errors.New("all keys chan not supported")
+}
+
+func (bs *lotusAPIBlockstore) HashOnRead(enabled bool) {
+	// No-op for API blockstore
+}
+
+// newCountingBlockGetter creates the appropriate CountingBlockGetter based on optimization settings
+func newCountingBlockGetter(bs blockstore.Blockstore, countUniqueCIDs bool) CountingBlockGetter {
+	if countUniqueCIDs {
+		return &FullCBG{
+			Blockstore: bs,
+			counter:    newAdvancedCounter(),
+		}
+	}
+	return &LiteCBG{
+		Blockstore: bs,
+		counter:    &simpleCounter{start: time.Now()},
+	}
 }
 
 // filexpDealWorker processes deals in parallel like filexp
