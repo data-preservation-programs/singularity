@@ -28,7 +28,7 @@ func TestEnhancedDealTracking(t *testing.T) {
 		// Create test deal that will be slashed
 		dealID := uint64(1)
 		cidVal := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))))
-		
+
 		testDeal := model.Deal{
 			DealID:           &dealID,
 			State:            model.DealActive,
@@ -78,7 +78,7 @@ func TestEnhancedDealTracking(t *testing.T) {
 
 		// Create deal tracker
 		tracker := NewDealTracker(db, time.Minute, url, "https://api.node.glif.io/", "", true)
-		
+
 		// Run tracking once
 		err = tracker.runOnce(ctx)
 		require.NoError(t, err)
@@ -89,13 +89,21 @@ func TestEnhancedDealTracking(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, model.DealSlashed, updatedDeal.State)
 
-		// Verify state change was tracked with enhanced metadata
+		// Verify state changes were tracked with enhanced metadata
+		// We expect 2 state changes: 1 for recovery and 1 for the actual slashing
 		var stateChanges []model.DealStateChange
-		err = db.Where("deal_id = ?", testDeal.ID).Find(&stateChanges).Error
+		err = db.Where("deal_id = ?", testDeal.ID).Order("timestamp ASC").Find(&stateChanges).Error
 		require.NoError(t, err)
-		require.Len(t, stateChanges, 1)
+		require.Len(t, stateChanges, 2)
 
-		sc := stateChanges[0]
+		// First state change should be the recovery
+		recoveryChange := stateChanges[0]
+		require.Equal(t, testDeal.ID, recoveryChange.DealID)
+		require.Equal(t, model.DealState(""), recoveryChange.PreviousState) // No previous state for recovery
+		require.Equal(t, model.DealActive, recoveryChange.NewState)
+
+		// Second state change should be the slashing event
+		sc := stateChanges[1]
 		require.Equal(t, testDeal.ID, sc.DealID)
 		require.Equal(t, model.DealActive, sc.PreviousState)
 		require.Equal(t, model.DealSlashed, sc.NewState)
@@ -127,8 +135,10 @@ func TestEnhancedExternalDealDiscovery(t *testing.T) {
 		require.NoError(t, err)
 
 		cidVal := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("external"))))
-		
-		// Create mock external deal data
+
+		// Create mock external deal data with far future epochs to ensure it's active
+		// Use epochs that are guaranteed to be in the far future
+		currentEpoch := int32(10000000) // Use a very high epoch to ensure it's future
 		externalDeal := Deal{
 			Proposal: DealProposal{
 				PieceCID:             Cid{Root: cidVal.String()},
@@ -136,14 +146,14 @@ func TestEnhancedExternalDealDiscovery(t *testing.T) {
 				VerifiedDeal:         false,
 				Client:               "t0100",
 				Provider:             "t01001",
-				StartEpoch:           200,
-				EndEpoch:             300,
+				StartEpoch:           currentEpoch - 1000,    // Started 1000 epochs ago
+				EndEpoch:             currentEpoch + 1000000, // Ends 1M epochs in the future
 				StoragePricePerEpoch: "2000",
 				Label:                "external-deal",
 			},
 			State: DealState{
-				SectorStartEpoch: 205,
-				LastUpdatedEpoch: 210,
+				SectorStartEpoch: currentEpoch - 900, // Activated 900 epochs ago
+				LastUpdatedEpoch: currentEpoch - 800, // Last updated 800 epochs ago
 				SlashEpoch:       -1,
 			},
 		}
@@ -160,7 +170,7 @@ func TestEnhancedExternalDealDiscovery(t *testing.T) {
 
 		// Create deal tracker
 		tracker := NewDealTracker(db, time.Minute, url, "https://api.node.glif.io/", "", true)
-		
+
 		// Run tracking once
 		err = tracker.runOnce(ctx)
 		require.NoError(t, err)
@@ -199,7 +209,7 @@ func TestEnhancedExternalDealDiscovery(t *testing.T) {
 		require.Equal(t, int64(2048), metadata.PieceSize)
 		require.False(t, metadata.VerifiedDeal)
 		require.NotNil(t, metadata.ActivationEpoch)
-		require.Equal(t, int32(205), *metadata.ActivationEpoch)
+		require.Equal(t, int32(9999100), *metadata.ActivationEpoch) // currentEpoch - 900
 	})
 }
 
@@ -216,7 +226,7 @@ func TestEnhancedDealExpiration(t *testing.T) {
 		// Create test deal that will expire
 		dealID := uint64(1)
 		cidVal := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("expiring"))))
-		
+
 		expiringDeal := model.Deal{
 			DealID:           &dealID,
 			State:            model.DealActive,
@@ -263,7 +273,7 @@ func TestEnhancedDealExpiration(t *testing.T) {
 
 		// Create deal tracker
 		tracker := NewDealTracker(db, time.Minute, url, "https://api.node.glif.io/", "", true)
-		
+
 		// Run tracking once
 		err = tracker.runOnce(ctx)
 		require.NoError(t, err)
@@ -309,19 +319,19 @@ func TestEnhancedProposalExpiration(t *testing.T) {
 		require.NoError(t, err)
 
 		cidVal := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("proposal"))))
-		
+
 		// Create test deal proposal that will expire
 		expiringProposal := model.Deal{
-			State:            model.DealProposed,
-			ClientID:         &wallet.ID,
-			ClientActorID:    wallet.ActorID,
-			Provider:         "t01000",
-			PieceCID:         cidVal,
-			PieceSize:        1024,
-			StartEpoch:       100, // Will expire at epoch 100 without activation
-			EndEpoch:         200,
-			Price:            "1000",
-			Verified:         false,
+			State:         model.DealProposed,
+			ClientID:      &wallet.ID,
+			ClientActorID: wallet.ActorID,
+			Provider:      "t01000",
+			PieceCID:      cidVal,
+			PieceSize:     1024,
+			StartEpoch:    100, // Will expire at epoch 100 without activation
+			EndEpoch:      200,
+			Price:         "1000",
+			Verified:      false,
 		}
 		err = db.Create(&expiringProposal).Error
 		require.NoError(t, err)
@@ -341,7 +351,7 @@ func TestEnhancedProposalExpiration(t *testing.T) {
 					Label:                "proposal",
 				},
 				State: DealState{
-					SectorStartEpoch: -1, // Deal not activated
+					SectorStartEpoch: -1,  // Deal not activated
 					LastUpdatedEpoch: 150, // Current epoch past start epoch
 					SlashEpoch:       -1,
 				},
@@ -355,7 +365,7 @@ func TestEnhancedProposalExpiration(t *testing.T) {
 
 		// Create deal tracker
 		tracker := NewDealTracker(db, time.Minute, url, "https://api.node.glif.io/", "", true)
-		
+
 		// Run tracking once
 		err = tracker.runOnce(ctx)
 		require.NoError(t, err)
