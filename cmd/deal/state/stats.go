@@ -8,6 +8,25 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// getStateChangeStatsAction handles the stats command action
+func getStateChangeStatsAction(c *cli.Context) error {
+	db, closer, err := database.OpenFromCLI(c)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	defer func() { _ = closer.Close() }()
+
+	// Get state change statistics
+	stats, err := statechange.Default.GetStateChangeStatsHandler(c.Context, db)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Print statistics
+	cliutil.Print(c, stats)
+	return nil
+}
+
 var StatsCmd = &cli.Command{
 	Name:  "stats",
 	Usage: "Get statistics about deal state changes",
@@ -17,21 +36,5 @@ var StatsCmd = &cli.Command{
 - Recent activity
 - Provider statistics
 - Client statistics`,
-	Action: func(c *cli.Context) error {
-		db, closer, err := database.OpenFromCLI(c)
-		if err != nil {
-			return errors.WithStack(err)
-		}
-		defer func() { _ = closer.Close() }()
-
-		// Get state change statistics
-		stats, err := statechange.Default.GetStateChangeStatsHandler(c.Context, db)
-		if err != nil {
-			return errors.WithStack(err)
-		}
-
-		// Print statistics
-		cliutil.Print(c, stats)
-		return nil
-	},
+	Action: getStateChangeStatsAction,
 }

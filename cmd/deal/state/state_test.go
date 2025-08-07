@@ -291,7 +291,7 @@ func TestRepairOperations(t *testing.T) {
 
 		// Verify state change was tracked
 		var stateChange model.DealStateChange
-		err = db.Where("deal_id = ? AND previous_state = ? AND new_state = ?", 
+		err = db.Where("deal_id = ? AND previous_state = ? AND new_state = ?",
 			deal.ID, model.DealErrored, model.DealProposed).First(&stateChange).Error
 		require.NoError(t, err)
 	})
@@ -338,7 +338,7 @@ func TestIntegrationWorkflow(t *testing.T) {
 	deal500 := &model.Deal{}
 	err := db.First(deal500, 500).Error
 	require.NoError(t, err)
-	
+
 	prevState := deal500.State
 	err = tracker.TrackStateChange(ctx, deal500, &prevState, model.DealPublished, metadata)
 	require.NoError(t, err)
@@ -357,7 +357,7 @@ func TestIntegrationWorkflow(t *testing.T) {
 	deal501 := &model.Deal{}
 	err = db.First(deal501, 501).Error
 	require.NoError(t, err)
-	
+
 	prevState = deal501.State
 	err = tracker.TrackStateChange(ctx, deal501, &prevState, model.DealErrored, metadata)
 	require.NoError(t, err)
@@ -369,7 +369,7 @@ func TestIntegrationWorkflow(t *testing.T) {
 	deal502 := &model.Deal{}
 	err = db.First(deal502, 502).Error
 	require.NoError(t, err)
-	
+
 	prevState = deal502.State
 	err = tracker.TrackStateChange(ctx, deal502, &prevState, model.DealPublished, metadata)
 	require.NoError(t, err)
@@ -491,7 +491,7 @@ func TestIntegrationWorkflow(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Equal(t, int64(5), stats.TotalChanges)
-		require.Equal(t, int64(3), stats.UniqueDeals) // deals 500, 501, 502
+		require.Equal(t, int64(3), stats.UniqueDeals)     // deals 500, 501, 502
 		require.Equal(t, int64(2), stats.UniqueProviders) // f01234, f01235
 
 		// Test state distribution
@@ -514,6 +514,6 @@ func TestIntegrationWorkflow(t *testing.T) {
 		require.Equal(t, int64(2), stateDistribution["published"]) // deals 500, 502
 		require.Equal(t, int64(1), stateDistribution["active"])    // deal 500
 		require.Equal(t, int64(1), stateDistribution["error"])     // deal 501 (original)
-		require.Equal(t, int64(1), stateDistribution["proposed"]) // deal 501 (reset)
+		require.Equal(t, int64(1), stateDistribution["proposed"])  // deal 501 (reset)
 	})
 }

@@ -54,9 +54,11 @@ func exportToCSV(stateChanges []model.DealStateChange, outputPath string) (err e
 	defer writer.Flush()
 
 	// Write CSV header
+	// Note: Both ID and DealID are database IDs, not CIDs
+	// ID = state change record database ID, DealID = internal singularity deal database ID
 	header := []string{
-		"ID",
-		"DealID",
+		"StateChangeID", // Database ID of the state change record
+		"DealID",        // Internal singularity deal database ID
 		"PreviousState",
 		"NewState",
 		"Timestamp",
