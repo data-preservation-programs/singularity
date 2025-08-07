@@ -15,6 +15,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/dataprep"
 	"github.com/data-preservation-programs/singularity/cmd/deal"
 	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
+	"github.com/data-preservation-programs/singularity/cmd/deal/state"
 	"github.com/data-preservation-programs/singularity/cmd/dealtemplate"
 	"github.com/data-preservation-programs/singularity/cmd/errorlog"
 	"github.com/data-preservation-programs/singularity/cmd/ez"
@@ -145,6 +146,21 @@ Upgrading:
 						schedule.PauseCmd,
 						schedule.ResumeCmd,
 						schedule.RemoveCmd,
+					},
+				},
+				{
+					Name:  "state",
+					Usage: "Deal state management and monitoring",
+					Description: `Comprehensive deal state management tools including:
+- View and filter deal state changes
+- Export state history to CSV/JSON
+- Manual recovery and repair operations
+- State change statistics and analytics`,
+					Subcommands: []*cli.Command{
+						state.ListCmd,
+						state.GetCmd,
+						state.StatsCmd,
+						state.RepairCmd,
 					},
 				},
 				deal.SendManualCmd,

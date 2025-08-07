@@ -23,12 +23,19 @@ type StateChangeTracker struct {
 
 // StateChangeMetadata represents additional metadata that can be stored with a state change
 type StateChangeMetadata struct {
-
 	// Basic state change information
+	Reason        string `json:"reason,omitempty"`        // Reason for the state change
+	Error         string `json:"error,omitempty"`         // Error message if applicable
+	TransactionID string `json:"transactionId,omitempty"` // On-chain transaction ID
+	PublishCID    string `json:"publishCid,omitempty"`    // Message CID for deal publication
 
 	// Deal lifecycle epochs
+	ActivationEpoch *int32 `json:"activationEpoch,omitempty"` // Epoch when deal was activated
+	ExpirationEpoch *int32 `json:"expirationEpoch,omitempty"` // Epoch when deal expires
+	SlashingEpoch   *int32 `json:"slashingEpoch,omitempty"`   // Epoch when deal was slashed
 
 	// Deal pricing and terms
+	StoragePrice string `json:"storagePrice,omitempty"` // Storage price per epoch
 
 	// Enhanced error categorization fields
 	ErrorCategory  string `json:"errorCategory,omitempty"`  // Categorized error type (e.g., "network_timeout", "deal_rejected")
@@ -59,17 +66,7 @@ type StateChangeMetadata struct {
 	DatabaseHealth string   `json:"databaseHealth,omitempty"` // Database health status
 
 	// Flexible additional fields for future extensibility
-
-	Reason           string                 `json:"reason,omitempty"`           // Reason for the state change
-	Error            string                 `json:"error,omitempty"`            // Error message if applicable
-	TransactionID    string                 `json:"transactionId,omitempty"`    // On-chain transaction ID
-	PublishCID       string                 `json:"publishCid,omitempty"`       // Message CID for deal publication
-	ActivationEpoch  *int32                 `json:"activationEpoch,omitempty"`  // Epoch when deal was activated
-	ExpirationEpoch  *int32                 `json:"expirationEpoch,omitempty"`  // Epoch when deal expires
-	SlashingEpoch    *int32                 `json:"slashingEpoch,omitempty"`    // Epoch when deal was slashed
-	StoragePrice     string                 `json:"storagePrice,omitempty"`     // Storage price per epoch
 	AdditionalFields map[string]interface{} `json:"additionalFields,omitempty"` // Any additional custom fields
-
 }
 
 // NewStateChangeTracker creates a new instance of StateChangeTracker

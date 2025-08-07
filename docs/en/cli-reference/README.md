@@ -54,6 +54,7 @@ COMMANDS:
      storage                      Create and manage storage system connections
      prep                         Create and manage dataset preparations
      error                        Error log management
+     state                        Deal state management and monitoring
    Utility:
      ez-prep      Prepare a dataset from a local path
      download     Download a CAR file from the metadata API

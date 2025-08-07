@@ -16,7 +16,7 @@ func BenchmarkStateChangeInsert(b *testing.B) {
 	connStr := "sqlite:" + b.TempDir() + "/benchmark.db"
 	db, closer, err := database.OpenWithLogger(connStr)
 	require.NoError(b, err)
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 
 	err = model.GetMigrator(db).Migrate()
 	require.NoError(b, err)
@@ -63,7 +63,7 @@ func BenchmarkDealLifecycle(b *testing.B) {
 	connStr := "sqlite:" + b.TempDir() + "/benchmark.db"
 	db, closer, err := database.OpenWithLogger(connStr)
 	require.NoError(b, err)
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 
 	err = model.GetMigrator(db).Migrate()
 	require.NoError(b, err)
@@ -122,7 +122,7 @@ func TestStateTrackingPerformanceImpact(t *testing.T) {
 	connStr := "sqlite:" + t.TempDir() + "/performance.db"
 	db, closer, err := database.OpenWithLogger(connStr)
 	require.NoError(t, err)
-	defer closer.Close()
+	defer func() { _ = closer.Close() }()
 
 	err = model.GetMigrator(db).Migrate()
 	require.NoError(t, err)
