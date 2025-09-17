@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"encoding/json"
+
 	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
@@ -142,7 +143,7 @@ type Preparation struct {
 
 	// Associations
 	DealTemplate   *DealTemplate `gorm:"foreignKey:DealTemplateID;constraint:OnDelete:SET NULL" json:"dealTemplate,omitempty"   swaggerignore:"true"                   table:"expand"`
-	Wallets        []Wallet      `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
+	Wallets        []Wallet      `gorm:"many2many:wallet_assignments;constraint:OnDelete:CASCADE" json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
 	SourceStorages []Storage     `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" table:"expand;header:Source Storages:"`
 	OutputStorages []Storage     `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" table:"expand;header:Output Storages:"`
 }
