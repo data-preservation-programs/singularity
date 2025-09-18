@@ -78,8 +78,8 @@ func TestReaderWithRetry(t *testing.T) {
 		object:                  mockObject,
 		reader:                  &faultyReader{willFail: true},
 		offset:                  0,
-		retryDelay:              int64(time.Second),
-		retryBackoff:            int64(time.Second),
+		retryDelay:              time.Second,
+		retryBackoff:            time.Second,
 		retryCountMax:           10,
 		retryBackoffExponential: 1.0,
 	}
@@ -93,9 +93,9 @@ func TestRCloneHandler_OverrideConfig(t *testing.T) {
 
 	ctx := context.Background()
 	handler, err := NewRCloneHandler(ctx, model.Storage{Type: "local", Path: tmp, ClientConfig: model.ClientConfig{
-		ConnectTimeout:          ptr.Of(int64(time.Hour)),
-		Timeout:                 ptr.Of(int64(time.Hour)),
-		ExpectContinueTimeout:   ptr.Of(int64(time.Hour)),
+		ConnectTimeout:          ptr.Of(time.Hour),
+		Timeout:                 ptr.Of(time.Hour),
+		ExpectContinueTimeout:   ptr.Of(time.Hour),
 		InsecureSkipVerify:      ptr.Of(true),
 		NoGzip:                  ptr.Of(true),
 		UserAgent:               ptr.Of("test"),
@@ -106,8 +106,8 @@ func TestRCloneHandler_OverrideConfig(t *testing.T) {
 		DisableHTTP2:            ptr.Of(true),
 		DisableHTTPKeepAlives:   ptr.Of(true),
 		RetryMaxCount:           ptr.Of(10),
-		RetryDelay:              ptr.Of(int64(time.Second)),
-		RetryBackoff:            ptr.Of(int64(time.Second)),
+		RetryDelay:              ptr.Of(time.Second),
+		RetryBackoff:            ptr.Of(time.Second),
 		RetryBackoffExponential: ptr.Of(1.0),
 		SkipInaccessibleFile:    ptr.Of(true),
 		UseServerModTime:        ptr.Of(true),

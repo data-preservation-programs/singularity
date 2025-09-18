@@ -427,16 +427,3 @@ The internal tool used by `js-singularity` to regenerate the CAR that captures t
 
 ## License
 Dual-licensed under [MIT](https://github.com/filecoin-project/lotus/blob/master/LICENSE-MIT) + [Apache 2.0](https://github.com/filecoin-project/lotus/blob/master/LICENSE-APACHE)
-
-## Integration Tests & MongoDB
-
-Some integration tests require a MongoDB instance running on `localhost:27018`.
-
-- **CI:** MongoDB is automatically started on port 27018 in GitHub Actions workflows.
-- **Local Development:** You must start MongoDB locally on port 27018 before running tests:
-
-```bash
-mongod --port 27018
-```
-
-If MongoDB is not available, related tests will be skipped or fail with a connection error.

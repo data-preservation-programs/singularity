@@ -1033,16 +1033,13 @@ func validateOnboardInputs(c *cli.Context) error {
 func getOnboardClientConfig(c *cli.Context) (*model.ClientConfig, error) {
 	var config model.ClientConfig
 	if c.IsSet("client-connect-timeout") {
-		val := c.Duration("client-connect-timeout")
-		config.ConnectTimeout = ptr.Of(int64(val))
+		config.ConnectTimeout = ptr.Of(c.Duration("client-connect-timeout"))
 	}
 	if c.IsSet("client-timeout") {
-		val := c.Duration("client-timeout")
-		config.Timeout = ptr.Of(int64(val))
+		config.Timeout = ptr.Of(c.Duration("client-timeout"))
 	}
 	if c.IsSet("client-expect-continue-timeout") {
-		val := c.Duration("client-expect-continue-timeout")
-		config.ExpectContinueTimeout = ptr.Of(int64(val))
+		config.ExpectContinueTimeout = ptr.Of(c.Duration("client-expect-continue-timeout"))
 	}
 	if c.IsSet("client-insecure-skip-verify") {
 		config.InsecureSkipVerify = ptr.Of(c.Bool("client-insecure-skip-verify"))
@@ -1083,12 +1080,10 @@ func getOnboardClientConfig(c *cli.Context) (*model.ClientConfig, error) {
 		config.RetryMaxCount = ptr.Of(c.Int("client-retry-max"))
 	}
 	if c.IsSet("client-retry-delay") {
-		val := c.Duration("client-retry-delay")
-		config.RetryDelay = ptr.Of(int64(val))
+		config.RetryDelay = ptr.Of(c.Duration("client-retry-delay"))
 	}
 	if c.IsSet("client-retry-backoff") {
-		val := c.Duration("client-retry-backoff")
-		config.RetryBackoff = ptr.Of(int64(val))
+		config.RetryBackoff = ptr.Of(c.Duration("client-retry-backoff"))
 	}
 	if c.IsSet("client-retry-backoff-exp") {
 		config.RetryBackoffExponential = ptr.Of(c.Float64("client-retry-backoff-exp"))

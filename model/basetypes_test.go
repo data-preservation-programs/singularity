@@ -12,9 +12,9 @@ import (
 
 func TestClientConfigMarshal(t *testing.T) {
 	c := ClientConfig{
-		ConnectTimeout:          ptr.Of(int64(time.Second)),
-		Timeout:                 ptr.Of(int64(time.Second)),
-		ExpectContinueTimeout:   ptr.Of(int64(time.Second)),
+		ConnectTimeout:          ptr.Of(time.Second),
+		Timeout:                 ptr.Of(time.Second),
+		ExpectContinueTimeout:   ptr.Of(time.Second),
 		InsecureSkipVerify:      ptr.Of(true),
 		NoGzip:                  ptr.Of(true),
 		UserAgent:               ptr.Of("x"),
@@ -25,8 +25,8 @@ func TestClientConfigMarshal(t *testing.T) {
 		DisableHTTP2:            ptr.Of(true),
 		DisableHTTPKeepAlives:   ptr.Of(true),
 		RetryMaxCount:           ptr.Of(10),
-		RetryDelay:              ptr.Of(int64(time.Second)),
-		RetryBackoff:            ptr.Of(int64(time.Second)),
+		RetryDelay:              ptr.Of(time.Second),
+		RetryBackoff:            ptr.Of(time.Second),
 		RetryBackoffExponential: ptr.Of(1.0),
 		SkipInaccessibleFile:    ptr.Of(true),
 		UseServerModTime:        ptr.Of(true),

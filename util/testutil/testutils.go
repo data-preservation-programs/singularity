@@ -86,9 +86,7 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 		require.NoError(t, err)
 		return
 	}
-	// Include test name in database name to avoid conflicts in parallel tests
-	testName := strings.ReplaceAll(t.Name(), "/", "_")
-	dbName := "test_" + testName + "_" + RandomLetterString(6)
+	dbName := RandomLetterString(6)
 	var opError *net.OpError
 	switch dialect {
 	case "mysql":
@@ -183,31 +181,6 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 
 	err := model.GetMigrator(db).Migrate()
 	require.NoError(t, err)
-
-	// Clear any existing data from tables with unique constraints
-	tables := []string{
-		"output_attachments",
-		"source_attachments",
-		"storages",
-		"wallets",
-		"deal_schedules",
-		"preparations",
-	}
-
-	// Get DB type from connection string
-	isPostgres := strings.HasPrefix(connStr, "postgres:")
-	for _, table := range tables {
-		var err error
-		if isPostgres {
-			err = db.Exec("TRUNCATE TABLE " + table + " CASCADE").Error
-		} else {
-			err = db.Exec("DELETE FROM " + table).Error
-		}
-		if err != nil {
-			t.Logf("Warning: Failed to clear table %s: %v", table, err)
-			// Don't fail the test, as table may not exist yet
-		}
-	}
 
 	t.Run(backend, func(t *testing.T) {
 		testFunc(ctx, t, db)

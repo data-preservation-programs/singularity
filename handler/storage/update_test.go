@@ -40,9 +40,9 @@ func TestUpdateStorageHandler(t *testing.T) {
 		testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 			tmp := t.TempDir()
 			_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil, model.ClientConfig{
-				ConnectTimeout:        ptr.Of(int64(time.Minute)),
-				Timeout:               ptr.Of(int64(time.Minute)),
-				ExpectContinueTimeout: ptr.Of(int64(time.Minute)),
+				ConnectTimeout:        ptr.Of(time.Minute),
+				Timeout:               ptr.Of(time.Minute),
+				ExpectContinueTimeout: ptr.Of(time.Minute),
 				InsecureSkipVerify:    ptr.Of(true),
 				NoGzip:                ptr.Of(true),
 				UserAgent:             ptr.Of("1"),
@@ -58,9 +58,9 @@ func TestUpdateStorageHandler(t *testing.T) {
 			}})
 			require.NoError(t, err)
 			newConfig := model.ClientConfig{
-				ConnectTimeout:        ptr.Of(int64(time.Hour)),
-				Timeout:               ptr.Of(int64(time.Hour)),
-				ExpectContinueTimeout: ptr.Of(int64(time.Hour)),
+				ConnectTimeout:        ptr.Of(time.Hour),
+				Timeout:               ptr.Of(time.Hour),
+				ExpectContinueTimeout: ptr.Of(time.Hour),
 				InsecureSkipVerify:    ptr.Of(false),
 				NoGzip:                ptr.Of(false),
 				UserAgent:             ptr.Of("0"),
