@@ -26,7 +26,7 @@
     },
     "forwardPorts": [],
     "postCreateCommand": "go mod download",
-    "postStartCommand": "/bin/bash -lc '/workspace/.devcontainer/init-postgres.sh && /workspace/.devcontainer/init-mysql.sh'",
+    "postStartCommand": "/bin/bash -lc '/usr/local/share/pq-init.sh && sudo service postgresql restart && /workspace/.devcontainer/start-mysql.sh && /workspace/.devcontainer/init-mysql.sh'",
     "remoteUser": "vscode",
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached,relabel=private",
     "workspaceFolder": "/workspace",
