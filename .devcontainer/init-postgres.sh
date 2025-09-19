@@ -6,6 +6,12 @@ if ! command -v pg_isready >/dev/null 2>&1; then
   exit 0
 fi
 
+# One-time init guard
+MARKER="/workspace/.devcontainer/.pg-initialized"
+if [ -f "$MARKER" ]; then
+  exit 0
+fi
+
 # Wait for server readiness (best effort)
 for i in {1..60}; do
   if pg_isready -q; then
@@ -27,4 +33,6 @@ if ! PGPASSWORD="" psql --no-password -U postgres -d postgres -tAc "SELECT 1 FRO
   PGPASSWORD="" createdb --no-password -U postgres singularity
 fi
 
+# mark initialized
+touch "$MARKER"
 
