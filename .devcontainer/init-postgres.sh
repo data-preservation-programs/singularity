@@ -15,16 +15,16 @@ for i in {1..60}; do
 done
 
 # If we still can't connect, bail (container may not include a running server)
-if ! psql -U postgres -d postgres -tc "SELECT 1" >/dev/null 2>&1; then
+if ! PGPASSWORD="" psql --no-password -U postgres -d postgres -tc "SELECT 1" >/dev/null 2>&1; then
   exit 0
 fi
 
 # Create role if missing (idempotent)
-psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'singularity') THEN CREATE ROLE singularity WITH LOGIN SUPERUSER PASSWORD 'singularity'; END IF; END $$;"
+PGPASSWORD="" psql --no-password -U postgres -d postgres -v ON_ERROR_STOP=1 -c "DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'singularity') THEN CREATE ROLE singularity WITH LOGIN SUPERUSER PASSWORD 'singularity'; END IF; END $$;"
 
 # Create database if missing (idempotent)
-if ! psql -U postgres -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = 'singularity'" | grep -q 1; then
-  createdb -U postgres singularity
+if ! PGPASSWORD="" psql --no-password -U postgres -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = 'singularity'" | grep -q 1; then
+  PGPASSWORD="" createdb --no-password -U postgres singularity
 fi
 
 
