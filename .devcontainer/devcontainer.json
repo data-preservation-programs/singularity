@@ -1,0 +1,37 @@
+{
+    "name": "singularity",
+    "image": "mcr.microsoft.com/devcontainers/go:1.24",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "golang.go",
+                "eamodio.gitlens"
+            ],
+            "settings": {
+                "go.useLanguageServer": true,
+                "go.toolsEnvVars": {
+                    "GOPATH": "/home/vscode/go"
+                }
+            }
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/go:1": {
+            "version": "1.24"
+        },
+        "ghcr.io/itsmechlark/features/postgresql:1": {
+            "version": "16"
+        }
+    },
+    "forwardPorts": [],
+    "postCreateCommand": "go mod download",
+    "postStartCommand": "/bin/bash -lc 'set -e; if command -v pg_isready >/dev/null 2>&1; then for i in $(seq 1 30); do pg_isready -q && break || sleep 1; done; psql -U postgres -d postgres -c \"CREATE ROLE singularity WITH LOGIN SUPERUSER PASSWORD '\\''singularity'\\''';\" >/dev/null 2>&1 || true; psql -U postgres -d postgres -tc \"SELECT 1 FROM pg_database WHERE datname = '\\''singularity'\\''\" | grep -q 1 || createdb -U postgres singularity; fi'",
+    "remoteUser": "vscode",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached,relabel=private",
+    "workspaceFolder": "/workspace",
+    "containerEnv": {
+        "GOPATH": "/home/vscode/go"
+    },
+    "runArgs": ["--userns=keep-id"],
+    "containerUser": "vscode"
+}
