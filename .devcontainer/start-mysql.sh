@@ -5,12 +5,12 @@ set -euo pipefail
 MYSQLD="${MYSQLD:-/home/linuxbrew/.linuxbrew/opt/mysql/bin/mysqld}"
 MYSQLADMIN="${MYSQLADMIN:-/home/linuxbrew/.linuxbrew/bin/mysqladmin}"
 
-# Runtime locations inside workspace (owned by repo user)
-DATADIR="${MYSQL_DATADIR:-/workspace/.devcontainer/.mysql-data}"
-SOCKET="${MYSQL_SOCKET:-/workspace/.devcontainer/.mysql.sock}"
+# Runtime locations under /tmp so tests are ephemeral and permissions are simple
+DATADIR="${MYSQL_DATADIR:-/tmp/singularity-mysql-data}"
+SOCKET="${MYSQL_SOCKET:-/tmp/singularity-mysql.sock}"
 PORT="${MYSQL_PORT:-3306}"
-PIDFILE="${MYSQL_PIDFILE:-/workspace/.devcontainer/.mysql.pid}"
-LOGFILE="${MYSQL_LOGFILE:-/workspace/.devcontainer/.mysql.log}"
+PIDFILE="${MYSQL_PIDFILE:-/tmp/singularity-mysql.pid}"
+LOGFILE="${MYSQL_LOGFILE:-/tmp/singularity-mysql.log}"
 
 if ! command -v "$MYSQLD" >/dev/null 2>&1; then
   echo "mysqld not found at $MYSQLD; skipping mysql start"
@@ -46,7 +46,7 @@ for i in {1..60}; do
     exit 0
   fi
   sleep 1
-fi
+done
 
 echo "mysqld failed to start; see $LOGFILE"
 exit 0
