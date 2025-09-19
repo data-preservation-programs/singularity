@@ -92,9 +92,13 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 	var opError *net.OpError
 	switch dialect {
 	case "mysql":
-		connStr = "mysql://singularity:singularity@tcp(localhost:3306)/singularity?parseTime=true"
+		if socket := os.Getenv("MYSQL_SOCKET"); socket != "" {
+			connStr = "mysql://singularity:singularity@unix(" + socket + ")/singularity?parseTime=true"
+		} else {
+			connStr = "mysql://singularity:singularity@tcp(localhost:3306)/singularity?parseTime=true"
+		}
 	case "postgres":
-		connStr = "postgres://singularity:singularity@localhost:5432/singularity?sslmode=disable"
+		connStr = "postgres://postgres@localhost:5432/postgres?sslmode=disable"
 	default:
 		require.Fail(t, "Unsupported dialect: "+dialect)
 	}
@@ -183,7 +187,7 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 	// Clear any existing data from tables with unique constraints
 	tables := []string{
 		"output_attachments",
-		"source_attachments", 
+		"source_attachments",
 		"storages",
 		"wallets",
 		"deal_schedules",
@@ -200,7 +204,7 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 			err = db.Exec("DELETE FROM " + table).Error
 		}
 		if err != nil {
-			t.Logf("Warning: Failed to clear table %s: %v", table, err) 
+			t.Logf("Warning: Failed to clear table %s: %v", table, err)
 			// Don't fail the test, as table may not exist yet
 		}
 	}
