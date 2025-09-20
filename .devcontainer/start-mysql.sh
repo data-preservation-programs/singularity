@@ -13,8 +13,8 @@ fi
 echo "Starting MySQL server..."
 mysql.server start
 
-# The MySQL socket location for tests
-SOCKET="${MYSQL_SOCKET:-/tmp/singularity-mysql.sock}"
+# MySQL uses /tmp/mysql.sock by default when started with mysql.server
+SOCKET="/tmp/mysql.sock"
 
 # Wait for MySQL to be ready
 for i in {1..60}; do
@@ -27,5 +27,3 @@ done
 
 echo "MySQL server failed to start"
 exit 1
-
-

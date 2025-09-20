@@ -6,8 +6,8 @@ if ! command -v mysql >/dev/null 2>&1; then
   exit 0
 fi
 
-# Use same socket as mysqld starter
-SOCKET="${MYSQL_SOCKET:-/tmp/singularity-mysql.sock}"
+# Use same socket as mysql.server (homebrew default)
+SOCKET="${MYSQL_SOCKET:-/tmp/mysql.sock}"
 
 # One-time init guard
 MARKER="/workspace/.devcontainer/.mysql-initialized"
