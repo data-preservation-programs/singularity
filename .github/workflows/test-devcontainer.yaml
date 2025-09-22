@@ -1,0 +1,18 @@
+name: Test with Devcontainer
+on:
+  push:
+    branches: [ "local/devcontainer" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Run tests in devcontainer
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: make test
