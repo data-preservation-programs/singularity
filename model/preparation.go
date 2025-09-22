@@ -303,9 +303,9 @@ type File struct {
 	// Associations
 	AttachmentID SourceAttachmentID `cbor:"-" json:"attachmentId"`
 	Attachment   *SourceAttachment  `cbor:"-" gorm:"foreignKey:AttachmentID" json:"attachment,omitempty" swaggerignore:"true"`
-	DirectoryID  *DirectoryID       `cbor:"-" gorm:"index"                                               json:"directoryId"`
-	Directory    *Directory         `cbor:"-" gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"  json:"directory,omitempty"  swaggerignore:"true"`
-	FileRanges   []FileRange        `cbor:"-" gorm:"constraint:OnDelete:CASCADE"                         json:"fileRanges,omitempty"`
+	DirectoryID  *DirectoryID        `cbor:"-" gorm:"index"                                               json:"directoryId"`
+	Directory    *Directory          `cbor:"-" gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"  json:"directory,omitempty"  swaggerignore:"true"`
+	FileRanges   []FileRange         `cbor:"-" gorm:"constraint:OnDelete:CASCADE"                         json:"fileRanges,omitempty"`
 }
 
 func (i File) FileName() string {

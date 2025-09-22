@@ -97,6 +97,41 @@ func _init(db *gorm.DB) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to auto migrate")
 		}
+		
+		// apply postgres-specific fk fixes for clean databases
+		if db.Dialector.Name() == "postgres" {
+			if err := db.Exec("ALTER TABLE files ALTER COLUMN attachment_id DROP NOT NULL").Error; err != nil {
+				return errors.Wrap(err, "make files.attachment_id nullable")
+			}
+			if err := db.Exec("ALTER TABLE files DROP CONSTRAINT IF EXISTS fk_files_attachment").Error; err != nil {
+				return errors.Wrap(err, "drop fk_files_attachment")
+			}
+			if err := db.Exec("ALTER TABLE files ADD CONSTRAINT fk_files_attachment FOREIGN KEY (attachment_id) REFERENCES source_attachments(id) ON DELETE SET NULL").Error; err != nil {
+				return errors.Wrap(err, "add fk_files_attachment set null")
+			}
+			
+			if err := db.Exec(`
+				CREATE OR REPLACE FUNCTION delete_orphan_files() RETURNS trigger AS $$
+				BEGIN
+					IF NEW.attachment_id IS NULL THEN
+						DELETE FROM files WHERE id = NEW.id;
+					END IF;
+					RETURN NULL;
+				END; $$ LANGUAGE plpgsql;
+			`).Error; err != nil {
+				return errors.Wrap(err, "create delete_orphan_files function")
+			}
+			
+			if err := db.Exec(`
+				CREATE TRIGGER trg_delete_orphan_files
+				AFTER UPDATE OF attachment_id ON files
+				FOR EACH ROW
+				WHEN (NEW.attachment_id IS NULL)
+				EXECUTE FUNCTION delete_orphan_files();
+			`).Error; err != nil {
+				return errors.Wrap(err, "create trigger")
+			}
+		}
 
 		logger.Debug("Creating instance id")
 		err = db.Clauses(clause.OnConflict{

@@ -11,19 +11,49 @@ func _202509171745_files_attachment_no_cascade() *gormigrate.Migration {
 		ID: "202509171745",
 		Migrate: func(tx *gorm.DB) error {
 			if tx.Dialector.Name() == "postgres" {
+				if err := tx.Exec("ALTER TABLE files ALTER COLUMN attachment_id DROP NOT NULL").Error; err != nil {
+					return errors.Wrap(err, "make files.attachment_id nullable")
+				}
 				if err := tx.Exec("ALTER TABLE files DROP CONSTRAINT IF EXISTS fk_files_attachment").Error; err != nil {
 					return errors.Wrap(err, "drop fk_files_attachment")
 				}
-				if err := tx.Exec("ALTER TABLE files ADD CONSTRAINT fk_files_attachment FOREIGN KEY (attachment_id) REFERENCES source_attachments(id) ON DELETE NO ACTION").Error; err != nil {
-					return errors.Wrap(err, "add fk_files_attachment no action")
+				if err := tx.Exec("ALTER TABLE files ADD CONSTRAINT fk_files_attachment FOREIGN KEY (attachment_id) REFERENCES source_attachments(id) ON DELETE SET NULL").Error; err != nil {
+					return errors.Wrap(err, "add fk_files_attachment set null")
 				}
+				
+				if err := tx.Exec(`
+					CREATE OR REPLACE FUNCTION delete_orphan_files() RETURNS trigger AS $$
+					BEGIN
+						IF NEW.attachment_id IS NULL THEN
+							DELETE FROM files WHERE id = NEW.id;
+						END IF;
+						RETURN NULL;
+					END; $$ LANGUAGE plpgsql;
+				`).Error; err != nil {
+					return errors.Wrap(err, "create delete_orphan_files function")
+				}
+				
+				if err := tx.Exec("DROP TRIGGER IF EXISTS trg_delete_orphan_files ON files").Error; err != nil {
+					return errors.Wrap(err, "drop existing trigger")
+				}
+				
+				if err := tx.Exec(`
+					CREATE TRIGGER trg_delete_orphan_files
+					AFTER UPDATE OF attachment_id ON files
+					FOR EACH ROW
+					WHEN (NEW.attachment_id IS NULL)
+					EXECUTE FUNCTION delete_orphan_files();
+				`).Error; err != nil {
+					return errors.Wrap(err, "create trigger")
+				}
+				
 				return nil
 			}
 			if tx.Dialector.Name() == "mysql" {
 				if err := tx.Exec("ALTER TABLE files DROP FOREIGN KEY fk_files_attachment").Error; err != nil {
 				}
 				if err := tx.Exec("ALTER TABLE files ADD CONSTRAINT fk_files_attachment FOREIGN KEY (attachment_id) REFERENCES source_attachments(id) ON DELETE RESTRICT").Error; err != nil {
-					return errors.Wrap(err, "add fk_files_attachment restrict (mysql)")
+					return errors.Wrap(err, "add fk_files_attachment restrict")
 				}
 				return nil
 			}
@@ -31,11 +61,20 @@ func _202509171745_files_attachment_no_cascade() *gormigrate.Migration {
 		},
 		Rollback: func(tx *gorm.DB) error {
 			if tx.Dialector.Name() == "postgres" {
+				if err := tx.Exec("DROP TRIGGER IF EXISTS trg_delete_orphan_files ON files").Error; err != nil {
+					return errors.Wrap(err, "drop trigger (rollback)")
+				}
+				if err := tx.Exec("DROP FUNCTION IF EXISTS delete_orphan_files()").Error; err != nil {
+					return errors.Wrap(err, "drop function (rollback)")
+				}
 				if err := tx.Exec("ALTER TABLE files DROP CONSTRAINT IF EXISTS fk_files_attachment").Error; err != nil {
 					return errors.Wrap(err, "drop fk_files_attachment (rollback)")
 				}
-				if err := tx.Exec("ALTER TABLE files ADD CONSTRAINT fk_files_attachment FOREIGN KEY (attachment_id) REFERENCES source_attachments(id) ON DELETE CASCADE").Error; err != nil {
-					return errors.Wrap(err, "add fk_files_attachment cascade (rollback)")
+				if err := tx.Exec("ALTER TABLE files ALTER COLUMN attachment_id SET NOT NULL").Error; err != nil {
+					return errors.Wrap(err, "make files.attachment_id not null (rollback)")
+				}
+				if err := tx.Exec("ALTER TABLE files ADD CONSTRAINT fk_files_attachment FOREIGN KEY (attachment_id) REFERENCES source_attachments(id) ON DELETE NO ACTION").Error; err != nil {
+					return errors.Wrap(err, "add fk_files_attachment no action (rollback)")
 				}
 				return nil
 			}
