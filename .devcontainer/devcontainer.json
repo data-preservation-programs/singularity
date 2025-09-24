@@ -28,7 +28,7 @@
     "postCreateCommand": "/bin/bash -lc '/workspace/.devcontainer/post-create.sh'",
     "postStartCommand": "/bin/bash -lc 'echo \"local all all trust\nhost all all 127.0.0.1/32 trust\nhost all all ::1/128 trust\" | sudo tee /etc/postgresql/16/main/pg_hba.conf > /dev/null && sudo service postgresql restart && /workspace/.devcontainer/start-mysql.sh && /workspace/.devcontainer/init-mysql.sh'",
     "remoteUser": "vscode",
-    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached,relabel=private",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace:Z,type=bind,consistency=cached",
     "workspaceFolder": "/workspace",
     "containerEnv": {
         "GOPATH": "/home/vscode/go",
