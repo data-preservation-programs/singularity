@@ -35,6 +35,7 @@
         "MYSQL_PASSWORD": "singularity",
         "MYSQL_SOCKET": "/tmp/mysql.sock"
     },
+    "runArgs": ["--userns=keep-id"],
     "containerUser": "vscode"
 }
 
