@@ -13,15 +13,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show Podman version
-        run: podman --version
+      - name: Disable Docker engine and install podman-docker
+        run: |
+          set -euo pipefail
+          sudo systemctl stop docker.socket docker || true
+          sudo systemctl disable docker.socket docker || true
+          sudo systemctl mask docker.socket docker || true
+          sudo service docker stop || true
+          sudo apt-get update
+          sudo apt-get install -y podman-docker
+          docker --version
+          podman --version
 
-      - name: Start Podman Docker-compatible service
+      - name: Start Podman service socket (Docker-compatible)
         run: |
           set -euo pipefail
           podman info
-          nohup podman system service -t 0 tcp:127.0.0.1:8080 > podman-service.log 2>&1 &
-          echo "DOCKER_HOST=tcp://127.0.0.1:8080" >> $GITHUB_ENV
+          nohup podman system service -t 0 unix:///tmp/podman.sock > podman-service.log 2>&1 &
+          echo "DOCKER_HOST=unix:///tmp/podman.sock" >> $GITHUB_ENV
+          echo "DOCKER_CLI_HINTS=false" >> $GITHUB_ENV
 
       - name: Install Dev Containers CLI
         run: |
