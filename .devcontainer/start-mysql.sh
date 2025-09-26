@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Start MySQL using homebrew's mysql.server command
-# This is provided by the ghcr.io/devcontainers-extra/features/mysql-homebrew feature
+# Start MariaDB/MySQL via system service
 
-# Check if already running
-if mysql.server status >/dev/null 2>&1; then
+# If already running, exit
+if pgrep -x mysqld >/dev/null 2>&1; then
   echo "MySQL already running"
   exit 0
 fi
 
 echo "Starting MySQL server..."
-mysql.server start
+sudo service mysql start >/dev/null 2>&1 || sudo service mariadb start >/dev/null 2>&1 || true
 
-# MySQL uses /tmp/mysql.sock by default when started with mysql.server
-SOCKET="/tmp/mysql.sock"
+# Debian socket path
+SOCKET="/var/run/mysqld/mysqld.sock"
 
 # Wait for MySQL to be ready
 for i in {1..60}; do

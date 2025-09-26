@@ -21,19 +21,19 @@
         },
         "ghcr.io/itsmechlark/features/postgresql:1": {
             "version": "16"
-        },
-        "ghcr.io/devcontainers-extra/features/mysql-homebrew:1": {}
+        }
     },
     "forwardPorts": [],
     "postCreateCommand": "/bin/bash -lc '${containerWorkspaceFolder}/.devcontainer/post-create.sh'",
-    "postStartCommand": "/bin/bash -lc 'echo \"local all all trust\nhost all all 127.0.0.1/32 trust\nhost all all ::1/128 trust\" | sudo tee /etc/postgresql/16/main/pg_hba.conf > /dev/null && sudo service postgresql restart && ${containerWorkspaceFolder}/.devcontainer/start-mysql.sh && ${containerWorkspaceFolder}/.devcontainer/init-mysql.sh'",
+    "postStartCommand": "/bin/bash -lc '${containerWorkspaceFolder}/.devcontainer/start-postgres.sh && ${containerWorkspaceFolder}/.devcontainer/start-mysql.sh && ${containerWorkspaceFolder}/.devcontainer/init-mysql.sh'",
     "remoteUser": "vscode",
     "containerEnv": {
         "GOPATH": "/home/vscode/go",
         "MYSQL_DATABASE": "singularity",
         "MYSQL_USER": "singularity",
         "MYSQL_PASSWORD": "singularity",
-        "MYSQL_SOCKET": "/tmp/mysql.sock"
+        "MYSQL_SOCKET": "/var/run/mysqld/mysqld.sock",
+        "PGDATA": "${containerWorkspaceFolder}/.devcontainer/pgdata"
     },
     "runArgs": ["--userns=keep-id"],
     "containerUser": "vscode"
