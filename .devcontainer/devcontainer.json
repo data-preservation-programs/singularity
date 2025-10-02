@@ -1,6 +1,14 @@
 {
     "name": "singularity",
-    "image": "mcr.microsoft.com/devcontainers/go:1.24",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "GO_VERSION": "1.24",
+            "DEBIAN_CODENAME": "trixie",
+            "PG_MAJOR": "16",
+            "MARIADB_MAJOR": "12.0.2"
+        }
+    },
     "customizations": {
         "vscode": {
             "extensions": [
@@ -15,15 +23,9 @@
             }
         }
     },
-    "features": {
-        "ghcr.io/devcontainers/features/go:1": {
-            "version": "1.24"
-        },
-        "ghcr.io/itsmechlark/features/postgresql:1": {
-            "version": "16"
-        }
-    },
     "forwardPorts": [],
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/singularity,type=bind,consistency=cached,relabel=private",
+    "workspaceFolder": "/workspaces/singularity",
     "postCreateCommand": "/bin/bash -lc '${containerWorkspaceFolder}/.devcontainer/post-create.sh'",
     "postStartCommand": "/bin/bash -lc '${containerWorkspaceFolder}/.devcontainer/start-postgres.sh && ${containerWorkspaceFolder}/.devcontainer/start-mysql.sh && ${containerWorkspaceFolder}/.devcontainer/init-mysql.sh'",
     "remoteUser": "vscode",
@@ -32,8 +34,10 @@
         "MYSQL_DATABASE": "singularity",
         "MYSQL_USER": "singularity",
         "MYSQL_PASSWORD": "singularity",
-        "MYSQL_SOCKET": "/var/run/mysqld/mysqld.sock",
-        "PGDATA": "${containerWorkspaceFolder}/.devcontainer/pgdata"
+        "MYSQL_SOCKET": "/home/vscode/.local/share/mysql/mysql.sock",
+        "PGDATA": "/home/vscode/.local/share/pg/pgdata",
+        "PGPORT": "55432",
+        "PGSOCK_DIR": "/home/vscode/.local/share/pg"
     },
     "runArgs": ["--userns=keep-id"],
     "containerUser": "vscode"

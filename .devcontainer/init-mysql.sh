@@ -6,8 +6,8 @@ if ! command -v mysql >/dev/null 2>&1; then
   exit 0
 fi
 
-# Use same socket as mysql.server (homebrew default)
-SOCKET="${MYSQL_SOCKET:-/tmp/mysql.sock}"
+# Resolve socket path; default to user-owned socket
+SOCKET="${MYSQL_SOCKET:-${HOME}/.local/share/mysql/mysql.sock}"
 
 ## Removed one-time init guard; operations below are idempotent
 
