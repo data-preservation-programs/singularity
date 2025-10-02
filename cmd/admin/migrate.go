@@ -101,7 +101,7 @@ var MigrateCmd = &cli.Command{
 				if err != nil {
 					return errors.WithStack(err)
 				}
-				fmt.Printf("Current migration: " + last + "\n")
+                fmt.Printf("Current migration: %s\n", last)
 				return nil
 			},
 		},

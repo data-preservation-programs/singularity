@@ -17,5 +17,7 @@ func GetMigrations() []*gormigrate.Migration {
 		_202507091100_add_tracked_wallet_type(),
 		_202507180900_create_deal_state_changes(),
 		_202507180930_create_error_logs(),
+		_202509171710_wallet_assignments_cascade(),
+        _202509171745_files_attachment_no_cascade(),
 	}
 }
