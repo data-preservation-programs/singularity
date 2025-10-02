@@ -25,4 +25,4 @@ jobs:
           workspace-folder: .
           container-runtime: podman
           container-id-label: ci=podman
-          test-command: 'make test'
+          test-command: 'cd /workspaces/singularity && make test'
