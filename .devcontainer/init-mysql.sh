@@ -37,9 +37,12 @@ PASS=${MYSQL_PASSWORD:-singularity}
 
 mysql --socket="$SOCKET" "${MYSQL_ROOT_FLAGS[@]}" <<SQL
 CREATE DATABASE IF NOT EXISTS \`${DB}\`;
+CREATE USER IF NOT EXISTS '${USER}'@'localhost' IDENTIFIED BY '${PASS}';
 CREATE USER IF NOT EXISTS '${USER}'@'%' IDENTIFIED BY '${PASS}';
 -- tests create per-run databases, so grant global privileges for dev only
+GRANT ALL PRIVILEGES ON *.* TO '${USER}'@'localhost' WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON *.* TO '${USER}'@'%' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON \`${DB}\`.* TO '${USER}'@'localhost';
 GRANT ALL PRIVILEGES ON \`${DB}\`.* TO '${USER}'@'%';
 FLUSH PRIVILEGES;
 SQL
