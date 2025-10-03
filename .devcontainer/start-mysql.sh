@@ -1,15 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MYSQLD_BIN="$(command -v mariadbd || true)"
-if [ -z "$MYSQLD_BIN" ]; then
-  MYSQLD_BIN="$(command -v mysqld || true)"
-fi
-if [ -z "$MYSQLD_BIN" ]; then
-  echo "Could not find MariaDB server binary (mariadbd or mysqld)"
-  exit 1
-fi
-
 # Start MariaDB as an unprivileged user using a user-owned data directory
 
 MYSQL_BASE="${HOME}/.local/share/mysql"
@@ -35,7 +26,7 @@ fi
 
 echo "Starting MySQL server"
 touch "${LOG_FILE}"
-nohup "$MYSQLD_BIN" \
+nohup mariadbd \
   --datadir="${DATA_DIR}" \
   --socket="${SOCKET}" \
   --pid-file="${PID_FILE}" \
@@ -49,6 +40,8 @@ nohup "$MYSQLD_BIN" \
 for i in {1..60}; do
   if [ -S "${SOCKET}" ] && grep -q "ready for connections" "${LOG_FILE}" >/dev/null 2>&1; then
     echo "MySQL server is ready"
+    echo "Socket exists at: ${SOCKET}"
+    echo "Continuing to init script..."
     exit 0
   fi
   sleep 1
