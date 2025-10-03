@@ -96,7 +96,11 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 			connStr = "mysql://singularity:singularity@tcp(localhost:3306)/singularity?parseTime=true"
 		}
 	case "postgres":
-		connStr = "postgres://postgres@localhost:5432/postgres?sslmode=disable"
+		if pgPort := os.Getenv("PGPORT"); pgPort != "" {
+			connStr = "postgres://singularity@localhost:" + pgPort + "/singularity?sslmode=disable"
+		} else {
+			connStr = "postgres://singularity@localhost:5432/singularity?sslmode=disable"
+		}
 	default:
 		require.Fail(t, "Unsupported dialect: "+dialect)
 	}

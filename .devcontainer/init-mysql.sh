@@ -26,8 +26,8 @@ done
 
 # Bail if still unreachable
 if ! mariadb-admin --socket="$SOCKET" ping "${MYSQL_ROOT_FLAGS[@]}" >/dev/null 2>&1; then
-  echo "MySQL server not reachable, skipping init"
-  exit 0
+  echo "MySQL server not reachable, init failed"
+  exit 1
 fi
 
 # Create database and user idempotently (MySQL 8+ supports IF NOT EXISTS for users)
@@ -48,8 +48,6 @@ GRANT ALL PRIVILEGES ON \`${DB}\`.* TO '${USER}'@'%';
 FLUSH PRIVILEGES;
 SQL
 
-echo "Checking created users:"
-mariadb --socket="$SOCKET" "${MYSQL_ROOT_FLAGS[@]}" -e "SELECT user, host, plugin, authentication_string FROM mysql.user WHERE user='${USER}' OR user='root';"
 echo "MySQL init completed successfully"
 
 ## No marker file; script can run safely on every start
