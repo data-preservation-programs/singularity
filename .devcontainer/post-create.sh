@@ -35,22 +35,18 @@ echo "Starting database servers..."
 .devcontainer/start-postgres.sh
 .devcontainer/start-mysql.sh
 
-# Create users and databases
-echo "Creating database users and databases..."
+# Create users (databases will be created during testing as needed)
+echo "Creating database users..."
 
 # Postgres setup
 psql -h localhost -p 55432 -d postgres -c "CREATE USER singularity WITH SUPERUSER CREATEDB CREATEROLE LOGIN;"
-createdb -h localhost -p 55432 -O singularity singularity
 
 # MySQL setup  
 mariadb --socket=/home/vscode/.local/share/mysql/mysql.sock -uroot <<SQL
-CREATE DATABASE singularity;
 CREATE USER 'singularity'@'localhost' IDENTIFIED BY 'singularity';
 CREATE USER 'singularity'@'%' IDENTIFIED BY 'singularity';
 GRANT ALL PRIVILEGES ON *.* TO 'singularity'@'localhost' WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON *.* TO 'singularity'@'%' WITH GRANT OPTION;
-GRANT ALL PRIVILEGES ON singularity.* TO 'singularity'@'localhost';
-GRANT ALL PRIVILEGES ON singularity.* TO 'singularity'@'%';
 FLUSH PRIVILEGES;
 SQL
 
