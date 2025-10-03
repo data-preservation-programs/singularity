@@ -39,7 +39,7 @@ echo "Starting database servers..."
 echo "Creating database users and databases..."
 
 # Postgres setup
-psql -h localhost -p 55432 -d postgres -c "CREATE USER singularity WITH SUPERUSER;"
+psql -h localhost -p 55432 -d postgres -c "CREATE USER singularity WITH SUPERUSER CREATEDB CREATEROLE LOGIN;"
 createdb -h localhost -p 55432 -O singularity singularity
 
 # MySQL setup  
