@@ -61,7 +61,13 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 		sql = "[SLOW!] " + sql
 	}
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) && !strings.Contains(err.Error(), sqlSerializationFailure) {
-		lvl = logging.LevelError
+		// Demote noisy missing-table errors during test setup/teardown
+		emsg := err.Error()
+		if strings.Contains(emsg, "no such table") || strings.Contains(emsg, "does not exist") || strings.Contains(emsg, "doesn't exist") {
+			lvl = logging.LevelDebug
+		} else {
+			lvl = logging.LevelError
+		}
 	}
 
 	// Uncomment for logging everything in testing
