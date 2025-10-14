@@ -36,11 +36,11 @@ jobs:
           container-runtime: podman
           container-id-label: ci=podman
 
-      - name: Run tests
+      - name: Check formatting
         uses: parkan/github-actions/devcontainer-exec@v2
         with:
           container-id: ${{ steps.build.outputs.container-id }}
-          command: 'cd /workspaces/singularity && go test -v ./...'
+          command: 'cd /workspaces/singularity && gofmt -l .'
           container-runtime: podman
 
       - name: Run go vet
@@ -48,13 +48,6 @@ jobs:
         with:
           container-id: ${{ steps.build.outputs.container-id }}
           command: 'cd /workspaces/singularity && go vet ./...'
-          container-runtime: podman
-
-      - name: Check formatting
-        uses: parkan/github-actions/devcontainer-exec@v2
-        with:
-          container-id: ${{ steps.build.outputs.container-id }}
-          command: 'cd /workspaces/singularity && gofmt -l .'
           container-runtime: podman
 
       - name: Run staticcheck
@@ -69,6 +62,13 @@ jobs:
         with:
           container-id: ${{ steps.build.outputs.container-id }}
           command: 'cd /workspaces/singularity && go build ./...'
+          container-runtime: podman
+
+      - name: Run tests
+        uses: parkan/github-actions/devcontainer-exec@v2
+        with:
+          container-id: ${{ steps.build.outputs.container-id }}
+          command: 'cd /workspaces/singularity && go test -v ./...'
           container-runtime: podman
 
       - name: Cleanup
