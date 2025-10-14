@@ -1,8 +1,0 @@
-name: disabled (replaced by Podman devcontainer workflow)
-on:
-  workflow_call:
-jobs:
-  skip:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "This workflow is disabled. See devcontainer-podman.yml."
