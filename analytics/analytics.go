@@ -21,10 +21,7 @@ import (
 
 const flushInterval = time.Hour
 
-var (
-	mu      sync.RWMutex
-	Enabled = true
-)
+var Enabled = true
 
 var logger = log.Logger("analytics")
 
@@ -40,8 +37,6 @@ var logger = log.Logger("analytics")
 // Returns:
 //   - An error if there are issues fetching the instance id from the database or if the database appears empty.
 func Init(ctx context.Context, db *gorm.DB) error {
-	mu.Lock()
-	defer mu.Unlock()
 	if Instance != "" {
 		return nil
 	}
@@ -72,27 +67,6 @@ var (
 	Instance string
 	Identity string
 )
-
-// GetInstance safely returns the Instance value
-func GetInstance() string {
-	mu.RLock()
-	defer mu.RUnlock()
-	return Instance
-}
-
-// GetIdentity safely returns the Identity value
-func GetIdentity() string {
-	mu.RLock()
-	defer mu.RUnlock()
-	return Identity
-}
-
-// IsEnabled safely returns the Enabled value
-func IsEnabled() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-	return Enabled
-}
 
 type Collector struct {
 	mu            sync.Mutex

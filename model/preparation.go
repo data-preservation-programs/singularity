@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"encoding/json"
-
 	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
@@ -44,24 +42,6 @@ type ErrorLog struct {
 	Component  string     `gorm:"index"                              json:"component"`  // Component that generated the error (onboard, deal_schedule, etc.)
 	UserID     string     `gorm:"index;size:255"                     json:"userId"`     // Optional user identifier
 	SessionID  string     `gorm:"index;size:255"                     json:"sessionId"`  // Optional session identifier
-}
-
-// MarshalBinary implements encoding.BinaryMarshaler for ErrorLog
-func (e *ErrorLog) MarshalBinary() ([]byte, error) {
-	if e == nil {
-		return nil, nil
-	}
-	return json.Marshal(e)
-}
-
-// UnmarshalBinary implements encoding.BinaryUnmarshaler for ErrorLog
-func (e *ErrorLog) UnmarshalBinary(b []byte) error {
-	var res ErrorLog
-	if err := json.Unmarshal(b, &res); err != nil {
-		return err
-	}
-	*e = res
-	return nil
 }
 
 type Worker struct {
@@ -303,9 +283,9 @@ type File struct {
 	// Associations
 	AttachmentID SourceAttachmentID `cbor:"-" json:"attachmentId"`
 	Attachment   *SourceAttachment  `cbor:"-" gorm:"foreignKey:AttachmentID" json:"attachment,omitempty" swaggerignore:"true"`
-	DirectoryID  *DirectoryID        `cbor:"-" gorm:"index"                                               json:"directoryId"`
-	Directory    *Directory          `cbor:"-" gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"  json:"directory,omitempty"  swaggerignore:"true"`
-	FileRanges   []FileRange         `cbor:"-" gorm:"constraint:OnDelete:CASCADE"                         json:"fileRanges,omitempty"`
+	DirectoryID  *DirectoryID       `cbor:"-" gorm:"index"                                               json:"directoryId"`
+	Directory    *Directory         `cbor:"-" gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"  json:"directory,omitempty"  swaggerignore:"true"`
+	FileRanges   []FileRange        `cbor:"-" gorm:"constraint:OnDelete:CASCADE"                         json:"fileRanges,omitempty"`
 }
 
 func (i File) FileName() string {
