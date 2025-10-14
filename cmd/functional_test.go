@@ -513,7 +513,7 @@ func TestNoDuplicatedOutput(t *testing.T) {
 		// run the dataset worker. If multiple workers try to work on the same
 		// job, then this will return fail because a previous worker will have
 		// removed files.
-		_, _, err = runner.Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true --concurrency=8")
+		_, _, err = runner.Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true --concurrency=8 --enable-dag=false")
 		require.NoError(t, err)
 
 		// Check output to make sure is has some CAR files
