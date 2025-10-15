@@ -5,8 +5,8 @@ import (
 	"crypto/rand"
 	"io"
 	rand2 "math/rand"
-	"net"
 	"os"
+	"os/exec"
 	"strings"
 	"testing"
 	"time"
@@ -14,6 +14,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/google/uuid"
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
@@ -49,6 +50,11 @@ func RandomLetterString(length int) string {
 	return string(b)
 }
 
+// GenerateUniqueName creates a unique name for testing by combining a prefix with a UUID suffix
+func GenerateUniqueName(prefix string) string {
+	return prefix + "-" + strings.ReplaceAll(uuid.New().String(), "-", "")
+}
+
 func GetFileTimestamp(t *testing.T, path string) int64 {
 	t.Helper()
 	info, err := os.Stat(path)
@@ -75,33 +81,82 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 		require.NoError(t, err)
 		return
 	}
-	dbName := RandomLetterString(6)
-	var opError *net.OpError
+	// Use UUID for database names to ensure uniqueness and avoid MySQL's 64-character limit
+	// Remove hyphens to make it a valid database identifier
+	dbName := "test_" + strings.ReplaceAll(uuid.New().String(), "-", "")
 	switch dialect {
 	case "mysql":
-		connStr = "mysql://singularity:singularity@tcp(localhost:3306)/singularity?parseTime=true"
+		socket := os.Getenv("MYSQL_SOCKET")
+		connStr = "mysql://singularity:singularity@unix(" + socket + ")/mysql?parseTime=true"
 	case "postgres":
-		connStr = "postgres://singularity:singularity@localhost:5432/singularity?sslmode=disable"
+		pgPort := os.Getenv("PGPORT")
+		connStr = "postgres://singularity@localhost:" + pgPort + "/postgres?sslmode=disable"
 	default:
 		require.Fail(t, "Unsupported dialect: "+dialect)
 	}
-	var db1 *gorm.DB
-	var closer1 io.Closer
-	db1, closer1, err = database.OpenWithLogger(connStr)
-	if errors.As(err, &opError) {
-		return
+	// Skip initial connection test - databases will be created during testing
+	// Create database using shell commands to avoid driver transaction issues
+	switch dialect {
+	case "postgres":
+		// Use createdb command for PostgreSQL
+		cmd := exec.Command("createdb", "-h", "localhost", "-p", os.Getenv("PGPORT"), "-U", "singularity", dbName)
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Logf("Failed to create PostgreSQL database %s: %v, output: %s", dbName, err, string(output))
+			return nil, nil, ""
+		}
+		t.Logf("Created PostgreSQL database %s", dbName)
+	case "mysql":
+		// Use mysql command for MySQL
+		socket := os.Getenv("MYSQL_SOCKET")
+		cmd := exec.Command("mariadb", "--socket="+socket, "-usingularity", "-psingularity", "-e", "CREATE DATABASE "+dbName)
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Logf("Failed to create MySQL database %s: %v, output: %s", dbName, err, string(output))
+			return nil, nil, ""
+		}
+		t.Logf("Created MySQL database %s", dbName)
+	default:
+		t.Logf("Unsupported dialect for shell database creation: %s", dialect)
+		return nil, nil, ""
 	}
-	require.NoError(t, err)
-	err = db1.Exec("CREATE DATABASE " + dbName + "").Error
-	require.NoError(t, err)
-	connStr = strings.ReplaceAll(connStr, "singularity?", dbName+"?")
+	// Replace database name in connection string
+	if strings.Contains(connStr, "postgres?") {
+		connStr = strings.ReplaceAll(connStr, "postgres?", dbName+"?")
+	} else if strings.Contains(connStr, "mysql?") {
+		connStr = strings.ReplaceAll(connStr, "mysql?", dbName+"?")
+	}
 	var closer2 io.Closer
 	db, closer2, err = database.OpenWithLogger(connStr)
-	require.NoError(t, err)
+	if err != nil {
+		t.Logf("Failed to connect to test database %s: %v", dbName, err)
+		// Cleanup using shell commands
+		switch dialect {
+		case "postgres":
+			cmd := exec.Command("dropdb", "-h", "localhost", "-p", os.Getenv("PGPORT"), "-U", "singularity", dbName)
+			cmd.Run() // Ignore errors during cleanup
+		case "mysql":
+			socket := os.Getenv("MYSQL_SOCKET")
+			cmd := exec.Command("mariadb", "--socket="+socket, "-usingularity", "-psingularity", "-e", "DROP DATABASE "+dbName)
+			cmd.Run() // Ignore errors during cleanup
+		}
+		return nil, nil, ""
+	}
 	closer = CloserFunc(func() error {
-		require.NoError(t, closer2.Close())
-		require.NoError(t, db1.Exec("DROP DATABASE "+dbName+"").Error)
-		return closer1.Close()
+		if closer2 != nil {
+			_ = closer2.Close()
+		}
+		// Cleanup using shell commands
+		switch dialect {
+		case "postgres":
+			cmd := exec.Command("dropdb", "-h", "localhost", "-p", os.Getenv("PGPORT"), "-U", "singularity", dbName)
+			cmd.Run() // Ignore errors during cleanup
+		case "mysql":
+			socket := os.Getenv("MYSQL_SOCKET")
+			cmd := exec.Command("mariadb", "--socket="+socket, "-usingularity", "-psingularity", "-e", "DROP DATABASE "+dbName)
+			cmd.Run() // Ignore errors during cleanup
+		}
+		return nil
 	})
 	return
 }

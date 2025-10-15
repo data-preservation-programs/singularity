@@ -27,7 +27,7 @@
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/singularity,type=bind,consistency=cached,relabel=private",
     "workspaceFolder": "/workspaces/singularity",
     "postCreateCommand": "/bin/bash -lc '${containerWorkspaceFolder}/.devcontainer/post-create.sh'",
-    "postStartCommand": "/bin/bash -lc '${containerWorkspaceFolder}/.devcontainer/start-postgres.sh && ${containerWorkspaceFolder}/.devcontainer/start-mysql.sh && ${containerWorkspaceFolder}/.devcontainer/init-mysql.sh'",
+	"postStartCommand": "/bin/bash -lc '${containerWorkspaceFolder}/.devcontainer/start-postgres.sh && ${containerWorkspaceFolder}/.devcontainer/start-mysql.sh'",
     "remoteUser": "vscode",
     "containerEnv": {
         "GOPATH": "/home/vscode/go",
