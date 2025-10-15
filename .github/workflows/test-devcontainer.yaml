@@ -1,18 +1,8 @@
-name: Test with Devcontainer
+name: disabled (replaced by Podman devcontainer workflow)
 on:
-  push:
-    branches: [ "local/devcontainer" ]
-  pull_request:
-    branches: [ "main" ]
-
+  workflow_call:
 jobs:
-  test:
+  skip:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Run tests in devcontainer
-        uses: devcontainers/ci@v0.3
-        with:
-          runCmd: make test
+      - run: echo "This workflow is disabled. See devcontainer-podman.yml."
