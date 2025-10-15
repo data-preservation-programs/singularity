@@ -6,14 +6,10 @@ if ! command -v mysql >/dev/null 2>&1; then
   exit 0
 fi
 
-# Use same socket as mysql.server (homebrew default)
-SOCKET="${MYSQL_SOCKET:-/tmp/mysql.sock}"
+# Resolve socket path; default to user-owned socket
+SOCKET="${MYSQL_SOCKET:-${HOME}/.local/share/mysql/mysql.sock}"
 
-# One-time init guard
-MARKER="/workspace/.devcontainer/.mysql-initialized"
-if [ -f "$MARKER" ]; then
-  exit 0
-fi
+## Removed one-time init guard; operations below are idempotent
 
 # Determine root auth flags
 MYSQL_ROOT_FLAGS=("-uroot")
@@ -48,7 +44,6 @@ GRANT ALL PRIVILEGES ON \`${DB}\`.* TO '${USER}'@'%';
 FLUSH PRIVILEGES;
 SQL
 
-# mark initialized
-touch "$MARKER"
+## No marker file; script can run safely on every start
 
 
