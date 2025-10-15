@@ -66,7 +66,13 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 		sql = "[SLOW!] " + sql
 	}
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) && !strings.Contains(err.Error(), sqlSerializationFailure) {
-		lvl = logging.LevelError
+		// Demote noisy missing-table errors during test setup/teardown
+		emsg := err.Error()
+		if strings.Contains(emsg, "no such table") || strings.Contains(emsg, "does not exist") || strings.Contains(emsg, "doesn't exist") {
+			lvl = logging.LevelDebug
+		} else {
+			lvl = logging.LevelError
+		}
 	}
 
 	// Uncomment for logging everything in testing
@@ -94,4 +100,14 @@ func OpenWithLogger(connString string) (*gorm.DB, io.Closer, error) {
 func OpenFromCLI(c *cli.Context) (*gorm.DB, io.Closer, error) {
 	connString := c.String("database-connection-string")
 	return OpenWithLogger(connString)
+}
+
+func retryOn(err error) bool {
+	emsg := err.Error()
+	return strings.Contains(emsg, sqlSerializationFailure) ||
+		strings.Contains(emsg, "database is locked") ||
+		strings.Contains(emsg, "database table is locked") ||
+		// MySQL/InnoDB serialization conflict
+		strings.Contains(emsg, "Record has changed since last read") ||
+		strings.Contains(emsg, "Error 1020 (HY000)")
 }

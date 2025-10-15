@@ -202,6 +202,36 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 	err := model.AutoMigrate(db)
 	require.NoError(t, err)
 
+	// Clear any existing data from tables with unique constraints
+	tables := []string{
+		"output_attachments",
+		"source_attachments",
+		"storages",
+		"wallets",
+		"deal_schedules",
+		"preparations",
+	}
+
+	// Get DB type from connection string
+	isPostgres := strings.HasPrefix(connStr, "postgres:")
+	for _, table := range tables {
+		var err error
+		if isPostgres {
+			err = db.Exec("TRUNCATE TABLE " + table + " CASCADE").Error
+		} else {
+			err = db.Exec("DELETE FROM " + table).Error
+		}
+		if err != nil {
+			emsg := err.Error()
+			// Suppress noisy logs when tables don't exist yet across backends
+			if strings.Contains(emsg, "no such table") || strings.Contains(emsg, "does not exist") || strings.Contains(emsg, "doesn't exist") {
+				continue
+			}
+			t.Logf("Warning: Failed to clear table %s: %v", table, err)
+			// Don't fail the test for other errors either
+		}
+	}
+
 	t.Run(backend, func(t *testing.T) {
 		testFunc(ctx, t, db)
 	})
