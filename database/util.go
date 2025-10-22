@@ -24,11 +24,6 @@ var (
 	ErrDatabaseNotSupported        = errors.New("database not supported")
 )
 
-func retryOn(err error) bool {
-	emsg := err.Error()
-	return strings.Contains(emsg, sqlSerializationFailure) || strings.Contains(emsg, "database is locked") || strings.Contains(emsg, "database table is locked")
-}
-
 func DoRetry(ctx context.Context, f func() error) error {
 	return retry.Do(f, retry.RetryIf(retryOn), retry.LastErrorOnly(true), retry.Context(ctx))
 }
