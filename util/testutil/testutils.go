@@ -85,8 +85,8 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 	// Create database using shell commands to avoid driver transaction issues
 	switch dialect {
 	case "postgres":
-		// Use createdb command for PostgreSQL
-		cmd := exec.Command("createdb", "-h", "localhost", "-p", os.Getenv("PGPORT"), "-U", "singularity", dbName)
+		// Use createdb command for PostgreSQL with UTF-8 encoding
+		cmd := exec.Command("createdb", "-h", "localhost", "-p", os.Getenv("PGPORT"), "-U", "singularity", "-E", "UTF8", dbName)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("Failed to create PostgreSQL database %s: %v, output: %s", dbName, err, string(output))
@@ -94,9 +94,9 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 		}
 		t.Logf("Created PostgreSQL database %s", dbName)
 	case "mysql":
-		// Use mysql command for MySQL
+		// Use mysql command for MySQL with UTF-8 character set
 		socket := os.Getenv("MYSQL_SOCKET")
-		cmd := exec.Command("mariadb", "--socket="+socket, "-usingularity", "-psingularity", "-e", "CREATE DATABASE "+dbName)
+		cmd := exec.Command("mariadb", "--socket="+socket, "-usingularity", "-psingularity", "-e", "CREATE DATABASE "+dbName+" CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("Failed to create MySQL database %s: %v, output: %s", dbName, err, string(output))
