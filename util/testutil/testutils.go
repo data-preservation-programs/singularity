@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"io"
-	rand2 "math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -36,17 +35,6 @@ func GenerateRandomBytes(n int) []byte {
 	//nolint:errcheck
 	rand.Read(b)
 	return b
-}
-
-func RandomLetterString(length int) string {
-	const charset = "abcdefghijklmnopqrstuvwxyz"
-
-	b := make([]byte, length)
-	for i := range b {
-		//nolint:gosec
-		b[i] = charset[rand2.Intn(len(charset))]
-	}
-	return string(b)
 }
 
 // GenerateUniqueName creates a unique name for testing by combining a prefix with a UUID suffix
