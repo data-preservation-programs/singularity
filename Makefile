@@ -17,7 +17,7 @@ install-lint-deps:
 	@which staticcheck > /dev/null || (echo "Required staticcheck not found. Installing it..." && go install honnef.co/go/tools/cmd/staticcheck@latest)
 
 install-test-deps:
-	@which gotestsum > /dev/null || (echo "Installing gotestsum..." && GO111MODULE=on go get gotest.tools/gotestsum@latest)
+	@which gotestsum > /dev/null || (echo "Installing gotestsum..." && GOBIN=$$(go env GOPATH)/bin go install gotest.tools/gotestsum@latest)
 
 build: check-go
 	go build -o singularity .
@@ -37,7 +37,7 @@ lint: check-go install-lint-deps
 	staticcheck ./...
 
 test: check-go install-test-deps
-	go run gotest.tools/gotestsum@latest --format testname ./...
+	@PATH="$$(go env GOPATH)/bin:$$PATH" gotestsum --format testname ./...
 
 diagram: build
 	./singularity admin init
