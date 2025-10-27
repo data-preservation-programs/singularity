@@ -21,9 +21,6 @@
 /baga*
 singularity.db*
 
-# Devcontainer
-.devcontainer/
-
 node_modules
 /.pnp
 .pnp.js
