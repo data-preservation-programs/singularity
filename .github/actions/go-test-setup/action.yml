@@ -26,12 +26,6 @@ runs:
     - name: Create MySQL database
       shell: bash
       run: mysql -u root -e "create database singularity"
-    - name: Start MongoDB
-      uses: supercharge/mongodb-github-action@v1.10.0
-      if: matrix.os == 'ubuntu'
-      with:
-        mongodb-version: '6.0'
-        mongodb-port: 27018
     - run: |
         echo "GOTESTFLAGS=$GOTESTFLAGS -timeout=30m" >> $GITHUB_ENV
         echo "GO386FLAGS=$GO386FLAGS -timeout=30m" >> $GITHUB_ENV
