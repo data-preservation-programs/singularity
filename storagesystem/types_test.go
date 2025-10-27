@@ -7,7 +7,7 @@ import (
 )
 
 func TestBackends(t *testing.T) {
-	require.EqualValues(t, 42, len(Backends))
+	require.EqualValues(t, 41, len(Backends)) // Was 42 before amazonclouddrive removal
 	local := BackendMap["local"]
 	require.Equal(t, "local", local.Name)
 }

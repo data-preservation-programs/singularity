@@ -22,19 +22,19 @@ var HTTPClientConfigFlagsForUpdate = []cli.Flag{
 	&cli.DurationFlag{
 		Name:        "client-connect-timeout",
 		Usage:       "HTTP Client Connect timeout",
-		DefaultText: defaultClientConfig.ConnectTimeout.String(),
+		DefaultText: "1m0s", // rclone default
 		Category:    "Client Config",
 	},
 	&cli.DurationFlag{
 		Name:        "client-timeout",
 		Usage:       "IO idle timeout",
-		DefaultText: defaultClientConfig.Timeout.String(),
+		DefaultText: "5m0s", // rclone default
 		Category:    "Client Config",
 	},
 	&cli.DurationFlag{
 		Name:        "client-expect-continue-timeout",
 		Usage:       "Timeout when using expect / 100-continue in HTTP",
-		DefaultText: defaultClientConfig.ExpectContinueTimeout.String(),
+		DefaultText: "1s", // rclone default
 		Category:    "Client Config",
 	},
 	&cli.BoolFlag{
@@ -52,7 +52,7 @@ var HTTPClientConfigFlagsForUpdate = []cli.Flag{
 	&cli.StringFlag{
 		Name:        "client-user-agent",
 		Usage:       "Set the user-agent to a specified string. To remove, use empty string.",
-		DefaultText: defaultClientConfig.UserAgent,
+		DefaultText: "rclone default", // Actual: "rclone/" + version
 		Category:    "Client Config",
 	},
 	&cli.PathFlag{
