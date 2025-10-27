@@ -11,8 +11,6 @@
 コマンド:
    init              データベースを初期化します
    reset             データベースをリセットします
-   migrate-dataset   古い singularity mongodb からデータセットを移行します
-   migrate-schedule  古い singularity mongodb からスケジュールを移行します
    help, h           コマンドの一覧または特定のコマンドのヘルプを表示します
 
 オプション:

@@ -11,8 +11,6 @@
 命令:
    init              初始化数据库
    reset             重置数据库
-   migrate-dataset   从旧的singularity mongodb迁移数据集
-   migrate-schedule  从旧的singularity mongodb迁移计划
    help, h           显示命令列表或一个命令的帮助
 
 选项:

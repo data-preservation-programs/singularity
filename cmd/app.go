@@ -120,8 +120,6 @@ Upgrading:
 			Subcommands: []*cli.Command{
 				admin.InitCmd,
 				admin.ResetCmd,
-				admin.MigrateDatasetCmd,
-				admin.MigrateScheduleCmd,
 			},
 		},
 		DownloadCmd,
