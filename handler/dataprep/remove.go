@@ -54,7 +54,11 @@ func (DefaultHandler) RemovePreparationHandler(ctx context.Context, db *gorm.DB,
 
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
-			return db.Delete(&preparation).Error
+			// Use Select to control deletion order and avoid circular cascade deadlocks.
+			// GORM v1.31+ handles this by deleting associations in specified order,
+			// preventing Postgres deadlocks from multiple cascade paths to Files table.
+			// See: https://github.com/data-preservation-programs/singularity/pull/583
+			return db.Select("Wallets", "SourceStorages", "OutputStorages").Delete(&preparation).Error
 		})
 	})
 	if err != nil {
