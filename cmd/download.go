@@ -9,7 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/storagesystem"
-	"github.com/ipfs/go-log"
+	log "github.com/ipfs/go-log/v2"
 	"github.com/urfave/cli/v2"
 )
 
