@@ -73,7 +73,7 @@ func (DefaultHandler) ExploreHandler(
 			result = append(result, DirEntry{
 				Path:         v.Remote(),
 				LastModified: v.ModTime(ctx),
-				Size:         v.Size(),
+				Size:         -1,
 				IsDir:        true,
 				DirID:        v.ID(),
 				NumItems:     v.Items(),
