@@ -210,7 +210,24 @@ func (p ProviderOptions) ToCLICommand(short string, long string, description str
 	}
 	var helpLines []string
 	margin := "   "
-	for _, option := range p.Options {
+
+	// Deduplicate flags by name, keeping the last occurrence (most specific, e.g., provider-specific overrides)
+	// Iterate from end to identify which indices to keep
+	seenFlags := make(map[string]int)
+	for i := len(p.Options) - 1; i >= 0; i-- {
+		flagName := strings.ReplaceAll(p.Options[i].Name, "_", "-")
+		if _, exists := seenFlags[flagName]; !exists {
+			seenFlags[flagName] = i // Keep the last (most specific) occurrence
+		}
+	}
+
+	// Now iterate forward, only processing options we decided to keep
+	for i, option := range p.Options {
+		flagName := strings.ReplaceAll(option.Name, "_", "-")
+		if seenFlags[flagName] != i {
+			continue // Skip this duplicate, we're keeping a later (more specific) one
+		}
+
 		flag := option.ToCLIFlag("", true, "")
 		command.Flags = append(command.Flags, flag)
 		lines := underscore.Map(strings.Split(option.Help, "\n"), func(line string) string { return margin + line })
