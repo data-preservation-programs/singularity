@@ -19,7 +19,10 @@ func TestIsSameEntry(t *testing.T) {
 	ctx := context.Background()
 	mockObject := new(MockObject)
 	mockObject.On("Size").Return(int64(5))
-	s3fs, err := s3.NewFs(ctx, "s3", "commoncrawl", configmap.Simple{"chunk_size": "5Mi"})
+	s3fs, err := s3.NewFs(ctx, "s3", "commoncrawl", configmap.Simple{
+		"chunk_size":   "5Mi",
+		"copy_cutoff":  "5Mi", // rclone v1.68.0 requires copy_cutoff >= 1
+	})
 	require.NoError(t, err)
 	mockObject.On("Fs").Return(s3fs)
 	mockObject.On("Hash", mock.Anything, mock.Anything).Return("hash", nil)
@@ -141,10 +144,13 @@ func TestGetRandomOutputWriter(t *testing.T) {
 		Path: t.TempDir(),
 	}
 	s3 := model.Storage{
-		ID:     3,
-		Type:   "s3",
-		Path:   "commoncrawl",
-		Config: map[string]string{"chunk_size": "5Mi"},
+		ID:   3,
+		Type: "s3",
+		Path: "commoncrawl",
+		Config: map[string]string{
+			"chunk_size":  "5Mi",
+			"copy_cutoff": "5Mi", // rclone v1.68.0 requires copy_cutoff >= 1
+		},
 	}
 	t.Run("no storages", func(t *testing.T) {
 		id, writer, err := GetRandomOutputWriter(ctx, []model.Storage{})
