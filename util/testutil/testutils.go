@@ -96,7 +96,7 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 	case "mysql":
 		// Use mysql command for MySQL with UTF-8 character set
 		socket := os.Getenv("MYSQL_SOCKET")
-		cmd := exec.Command("mariadb", "--socket="+socket, "-usingularity", "-psingularity", "-e", "CREATE DATABASE "+dbName+" CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+		cmd := exec.Command("mariadb", "--socket="+socket, "-usingularity", "-psingularity", "-e", "CREATE DATABASE "+dbName)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("Failed to create MySQL database %s: %v, output: %s", dbName, err, string(output))
