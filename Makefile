@@ -4,7 +4,7 @@ help:
 	@echo "  buildall         Compile all Go code in all subdirectories."
 	@echo "  generate         Run the Go generate tool on all packages."
 	@echo "  lint             Run various linting and formatting tools."
-	@echo "  test             Execute tests using gotestsum."
+	@echo "  test             Execute tests using gotestsum. Use GOTESTSUM_FORMAT and GOTESTSUM_ARGS to customize."
 	@echo "  diagram          Generate a database schema diagram."
 	@echo "  languagetool     Check or install LanguageTool and process spelling."
 	@echo "  godoclint        Check Go source files for specific comment patterns."
@@ -36,8 +36,10 @@ lint: check-go install-lint-deps
 	golangci-lint run --fix --timeout 10m
 	staticcheck ./...
 
+GOTESTSUM_FORMAT ?= testname
+
 test: check-go install-test-deps
-	@PATH="$$(go env GOPATH)/bin:$$PATH" gotestsum --format testname ./...
+	@PATH="$$(go env GOPATH)/bin:$$PATH" gotestsum --format $(GOTESTSUM_FORMAT) $(GOTESTSUM_ARGS) ./...
 
 diagram: build
 	./singularity admin init

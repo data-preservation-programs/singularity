@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  checks: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'push' && github.sha || github.ref }}
@@ -76,15 +77,28 @@ jobs:
         uses: parkan/github-actions/devcontainer-exec@v2
         with:
           container-id: ${{ steps.build.outputs.container-id }}
-          command: 'cd /workspaces/singularity && go test -v ./...'
+          command: >
+            cd /workspaces/singularity && mkdir -p artifacts && make test GOTESTSUM_ARGS="--junitfile artifacts/unit-tests.xml"
           container-runtime: podman
 
       - name: Run integration tests
         uses: parkan/github-actions/devcontainer-exec@v2
         with:
           container-id: ${{ steps.build.outputs.container-id }}
-          command: 'cd /workspaces/singularity && SINGULARITY_TEST_INTEGRATION=true go test -v -timeout 20m -run "Integration" ./cmd/...'
+          command: >
+            cd /workspaces/singularity &&
+            mkdir -p artifacts &&
+            SINGULARITY_TEST_INTEGRATION=true make test GOTESTSUM_ARGS="--junitfile artifacts/integration-tests.xml -- -timeout 20m -run Integration ./cmd/..."
           container-runtime: podman
+
+      - name: Report test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Go tests
+          path: artifacts/*.xml
+          reporter: java-junit
+          fail-on-error: true
 
       - name: Cleanup
         if: always()
