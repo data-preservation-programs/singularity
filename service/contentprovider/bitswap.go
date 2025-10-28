@@ -6,9 +6,8 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/data-preservation-programs/singularity/util"
-	bsnetwork "github.com/ipfs/boxo/bitswap/network"
+	bsnetwork "github.com/ipfs/boxo/bitswap/network/bsnet"
 	"github.com/ipfs/boxo/bitswap/server"
-	nilrouting "github.com/ipfs/go-ipfs-routing/none"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -51,12 +50,8 @@ func (BitswapServer) Name() string {
 // and starts serving Bitswap requests.
 // It returns channels that signal when the service has stopped or encountered an error.
 func (s BitswapServer) Start(ctx context.Context, exitErr chan<- error) error {
-	nilRouter, err := nilrouting.ConstructNilRouting(ctx, nil, nil, nil)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	net := bsnetwork.NewFromIpfsHost(s.host, nilRouter)
+	// boxo v0.35.0: routing parameter removed from NewFromIpfsHost
+	net := bsnetwork.NewFromIpfsHost(s.host)
 	bs := &store.FileReferenceBlockStore{DBNoContext: s.dbNoContext}
 	bsserver := server.New(ctx, net, bs)
 	net.Start(bsserver)
