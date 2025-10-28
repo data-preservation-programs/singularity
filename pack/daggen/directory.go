@@ -172,7 +172,10 @@ func (d *DirectoryData) Node() (format.Node, error) {
 //   - DirectoryData : A new DirectoryData instance with the initialized directory, blockstore, and a dirty node flag set to true.
 func NewDirectoryData() DirectoryData {
 	dagServ := NewRecordedDagService()
-	dir := uio.NewDirectory(dagServ)
+	dir, err := uio.NewDirectory(dagServ)
+	if err != nil {
+		panic(err) // Should never happen with NewRecordedDagService
+	}
 	dir.SetCidBuilder(merkledag.V1CidPrefix())
 	return DirectoryData{
 		dir:        dir,
@@ -387,7 +390,10 @@ func UnmarshalToBlocks(in []byte) ([]blocks.Block, error) {
 func (d *DirectoryData) UnmarshalBinary(ctx context.Context, in []byte) error {
 	dagServ := NewRecordedDagService()
 	if len(in) == 0 {
-		dir := uio.NewDirectory(dagServ)
+		dir, err := uio.NewDirectory(dagServ)
+		if err != nil {
+			return errors.WithStack(err)
+		}
 		dir.SetCidBuilder(merkledag.V1CidPrefix())
 		*d = DirectoryData{
 			dir:        dir,
