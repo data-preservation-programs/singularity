@@ -93,7 +93,7 @@ jobs:
 
       - name: Report test results
         if: always()
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         with:
           name: Go tests
           path: artifacts/*.xml
