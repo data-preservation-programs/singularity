@@ -4,24 +4,25 @@ import (
 	"context"
 	"testing"
 
+	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/require"
 )
 
 func TestDefaultValue(t *testing.T) {
-	err := Initialize(context.Background(), "https://api.node.glif.io/rpc/v0", "")
+	err := Initialize(context.Background(), testutil.TestLotusAPI, "")
 	require.NoError(t, err)
 	require.EqualValues(t, 1598306400, GenesisTimestamp)
 }
 
 func TestCalibNet(t *testing.T) {
 	// This test may fail when calibnet resets
-	err := Initialize(context.Background(), "https://api.calibration.node.glif.io/rpc/v0", "")
+	err := Initialize(context.Background(), "https://api.calibration.node.glif.io/rpc/v1", "")
 	require.NoError(t, err)
 	require.EqualValues(t, 1667326380, GenesisTimestamp)
 }
 
 func TestEpochToTime(t *testing.T) {
-	err := Initialize(context.Background(), "https://api.node.glif.io/rpc/v0", "")
+	err := Initialize(context.Background(), testutil.TestLotusAPI, "")
 	require.NoError(t, err)
 	require.EqualValues(t, 1598306400, GenesisTimestamp)
 	require.EqualValues(t, 1598306400, EpochToTime(0).Unix())
@@ -29,7 +30,7 @@ func TestEpochToTime(t *testing.T) {
 }
 
 func TestUnixToEpoch(t *testing.T) {
-	err := Initialize(context.Background(), "https://api.node.glif.io/rpc/v0", "")
+	err := Initialize(context.Background(), testutil.TestLotusAPI, "")
 	require.NoError(t, err)
 	require.EqualValues(t, 1598306400, GenesisTimestamp)
 	require.EqualValues(t, 0, UnixToEpoch(1598306400))
@@ -37,7 +38,7 @@ func TestUnixToEpoch(t *testing.T) {
 }
 
 func TestTimeToEpoch(t *testing.T) {
-	err := Initialize(context.Background(), "https://api.node.glif.io/rpc/v0", "")
+	err := Initialize(context.Background(), testutil.TestLotusAPI, "")
 	require.NoError(t, err)
 	require.EqualValues(t, 1598306400, GenesisTimestamp)
 	require.EqualValues(t, 0, TimeToEpoch(EpochToTime(0)))

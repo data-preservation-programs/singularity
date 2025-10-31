@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/require"
@@ -23,9 +24,10 @@ func TestNextPowerOfTwo(t *testing.T) {
 }
 
 func TestNewLotusClient(t *testing.T) {
+	testutil.SkipIfNotExternalAPI(t)
 	for _, token := range []string{""} {
 		t.Run(token, func(t *testing.T) {
-			client := NewLotusClient("https://api.node.glif.io/", token)
+			client := NewLotusClient(testutil.TestLotusAPI, token)
 			resp, err := client.Call(context.Background(), "Filecoin.Version")
 			if token != "" {
 				require.Error(t, err)
@@ -39,7 +41,8 @@ func TestNewLotusClient(t *testing.T) {
 }
 
 func TestGetLotusHeadTime(t *testing.T) {
-	headTime, err := GetLotusHeadTime(context.Background(), "https://api.node.glif.io/", "")
+	testutil.SkipIfNotExternalAPI(t)
+	headTime, err := GetLotusHeadTime(context.Background(), testutil.TestLotusAPI, "")
 	require.NoError(t, err)
 	require.NotZero(t, headTime)
 }

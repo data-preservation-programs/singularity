@@ -13,8 +13,9 @@ import (
 )
 
 func TestImportHandler(t *testing.T) {
+	testutil.SkipIfNotExternalAPI(t)
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		lotusClient := util.NewLotusClient("https://api.node.glif.io/rpc/v0", "")
+		lotusClient := util.NewLotusClient(testutil.TestLotusAPI, "")
 
 		t.Run("success", func(t *testing.T) {
 			w, err := Default.ImportHandler(ctx, db, lotusClient, ImportRequest{

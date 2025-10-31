@@ -55,6 +55,20 @@ const TestWalletAddr = "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa"
 
 const TestPrivateKeyHex = "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a226b35507976337148327349586343595a58594f5775453149326e32554539436861556b6c4e36695a5763453d227d"
 
+// TestLotusAPI is the Lotus API endpoint to use for tests
+// Using /rpc/v1 (stable) instead of deprecated /rpc/v0
+const TestLotusAPI = "https://api.node.glif.io/rpc/v1"
+
+// SkipIfNotExternalAPI skips the test if SINGULARITY_TEST_EXTERNAL_API is not set
+// Use this for tests that make external API calls (e.g., Lotus/Filecoin APIs)
+// These are skipped by default because external APIs may be unreliable or rate-limited
+func SkipIfNotExternalAPI(t *testing.T) {
+	t.Helper()
+	if os.Getenv("SINGULARITY_TEST_EXTERNAL_API") == "" {
+		t.Skip("Skipping external API test. Set SINGULARITY_TEST_EXTERNAL_API=true to run")
+	}
+}
+
 func EscapePath(p string) string {
 	return "'" + strings.ReplaceAll(p, `\`, `\\`) + "'"
 }
