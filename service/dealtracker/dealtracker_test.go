@@ -150,6 +150,7 @@ func TestTrackDeal(t *testing.T) {
 }
 
 func TestRunOnce(t *testing.T) {
+	testutil.SkipIfNotExternalAPI(t)
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Wallet{
 			ID:      "t0100",
@@ -337,7 +338,7 @@ func TestRunOnce(t *testing.T) {
 		url, server := setupTestServerWithBody(t, string(body))
 		defer server.Close()
 		require.NoError(t, err)
-		tracker := NewDealTracker(db, time.Minute, url, "https://api.node.glif.io/", "", true)
+		tracker := NewDealTracker(db, time.Minute, url, testutil.TestLotusAPI, "", true)
 		err = tracker.runOnce(context.Background())
 		require.NoError(t, err)
 		var allDeals []model.Deal

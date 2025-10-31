@@ -64,7 +64,7 @@ func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, ca
 
 func TestDealMakerService_Start(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1, 10)
+		service, err := NewDealPusher(db, testutil.TestLotusAPI, "", 1, 10)
 		require.NoError(t, err)
 		ctx, cancel := context.WithCancel(ctx)
 		exitErr := make(chan error, 1)
@@ -78,9 +78,9 @@ func TestDealMakerService_Start(t *testing.T) {
 
 func TestDealMakerService_MultipleInstances(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		service1, err := NewDealPusher(db, "https://api.node.glif.io", "", 1, 10)
+		service1, err := NewDealPusher(db, testutil.TestLotusAPI, "", 1, 10)
 		require.NoError(t, err)
-		service2, err := NewDealPusher(db, "https://api.node.glif.io", "", 1, 10)
+		service2, err := NewDealPusher(db, testutil.TestLotusAPI, "", 1, 10)
 		require.NoError(t, err)
 		ctx, cancel := context.WithTimeout(ctx, time.Second)
 		defer cancel()
@@ -99,7 +99,7 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		waitPendingInterval = time.Minute
 	}()
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		service, err := NewDealPusher(db, "https://api.node.glif.io", "", 2, 0)
+		service, err := NewDealPusher(db, testutil.TestLotusAPI, "", 2, 0)
 		require.NoError(t, err)
 		mockDealmaker := new(MockDealMaker)
 		service.dealMaker = mockDealmaker
@@ -153,7 +153,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 		waitPendingInterval = time.Minute
 	}()
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1, 10)
+		service, err := NewDealPusher(db, testutil.TestLotusAPI, "", 1, 10)
 		require.NoError(t, err)
 		mockDealmaker := new(MockDealMaker)
 		service.dealMaker = mockDealmaker
@@ -250,7 +250,7 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 		waitPendingInterval = time.Minute
 	}()
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1, 10)
+		service, err := NewDealPusher(db, testutil.TestLotusAPI, "", 1, 10)
 		require.NoError(t, err)
 		mockDealmaker := new(MockDealMaker)
 		service.dealMaker = mockDealmaker
@@ -359,7 +359,7 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 
 func TestDealmakerService_Force(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1, 10)
+		service, err := NewDealPusher(db, testutil.TestLotusAPI, "", 1, 10)
 		require.NoError(t, err)
 		mockDealmaker := new(MockDealMaker)
 		service.dealMaker = mockDealmaker
@@ -418,7 +418,7 @@ func TestDealmakerService_Force(t *testing.T) {
 
 func TestDealMakerService_MaxReplica(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1, 1)
+		service, err := NewDealPusher(db, testutil.TestLotusAPI, "", 1, 1)
 		require.NoError(t, err)
 		mockDealmaker := new(MockDealMaker)
 		service.dealMaker = mockDealmaker
@@ -475,7 +475,7 @@ func TestDealMakerService_MaxReplica(t *testing.T) {
 
 func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1, 10)
+		service, err := NewDealPusher(db, testutil.TestLotusAPI, "", 1, 10)
 		require.NoError(t, err)
 		mockDealmaker := new(MockDealMaker)
 		service.dealMaker = mockDealmaker
