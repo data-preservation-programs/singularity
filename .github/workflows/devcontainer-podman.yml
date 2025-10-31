@@ -98,6 +98,9 @@ jobs:
           name: Go tests
           path: artifacts/*.xml
           reporter: java-junit
+          list-tests: failed
+          use-actions-summary: true
+          only-summary: true    
           fail-on-error: false
 
       - name: Cleanup
