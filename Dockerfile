@@ -4,7 +4,7 @@ COPY go.* ./
 RUN go mod download
 COPY . ./
 RUN go build -o singularity .
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
