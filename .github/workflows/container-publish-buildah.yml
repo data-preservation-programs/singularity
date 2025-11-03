@@ -1,0 +1,197 @@
+name: Container (buildah)
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'develop'
+    tags:
+      - 'v*'
+  workflow_run:
+    workflows: [ Releaser ]
+    types:
+      - completed
+  pull_request:
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  prepare-checkout:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    name: Prepare ref
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ github.event_name != 'workflow_run' && github.ref || steps.releaser.outputs.version }}
+      version: ${{ steps.version.outputs.version }}
+      tags: ${{ steps.version.outputs.tags }}
+    steps:
+      - name: Get Ref from releaser
+        id: releaser
+        if: github.event_name == 'workflow_run'
+        uses: ipdxco/unified-github-workflows/.github/actions/inspect-releaser@v0.0
+        with:
+          artifacts-url: ${{ github.event.workflow_run.artifacts_url }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name != 'workflow_run' && github.ref || steps.releaser.outputs.version }}
+
+      # Generate version tags (mimic docker/metadata-action behavior)
+      - name: Generate tags
+        id: version
+        run: |
+          TAGS=""
+
+          # For tag pushes (e.g., v1.2.3)
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${{ github.ref_name }}"
+            TAGS="${{ env.IMAGE }}:${VERSION}"
+          # For branch pushes
+          elif [[ "${{ github.ref }}" == refs/heads/* ]]; then
+            BRANCH="${{ github.ref_name }}"
+            TAGS="${{ env.IMAGE }}:${BRANCH}"
+          # For workflow_run (releaser)
+          elif [[ -n "${{ needs.prepare-checkout.outputs.ref }}" ]]; then
+            VERSION="${{ needs.prepare-checkout.outputs.ref }}"
+            TAGS="${{ env.IMAGE }}:${VERSION}"
+          fi
+
+          # Add 'latest' tag for main branch or version tags
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            TAGS="${TAGS},${{ env.IMAGE }}:latest"
+          fi
+
+          # Extract version for later use
+          VERSION="${{ github.ref_name }}"
+
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+          echo "Generated tags: ${TAGS}"
+
+  build:
+    name: Build ${{ matrix.arch }}
+    needs: [ prepare-checkout ]
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm64  # GitHub-hosted ARM64 runners
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare-checkout.outputs.ref }}
+
+      # Install buildah and configure for rootless operation
+      - name: Install buildah
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y buildah skopeo
+          # Use vfs driver to avoid overlayfs issues in GitHub Actions
+          sudo mkdir -p /etc/containers
+          echo -e '[storage]\ndriver="vfs"' | sudo tee /etc/containers/storage.conf
+          buildah version
+
+      # Login to GitHub Container Registry
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | buildah login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      # Build the image natively for this architecture
+      - name: Build image
+        id: build
+        run: |
+          ARCH="${{ matrix.arch }}"
+          IMAGE_TAG="${{ env.IMAGE }}:${ARCH}-${{ github.sha }}"
+
+          echo "Building for ${ARCH}..."
+          buildah bud \
+            --layers \
+            --pull \
+            --arch="${ARCH}" \
+            --tag "${IMAGE_TAG}" \
+            .
+
+          echo "image=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "Built: ${IMAGE_TAG}"
+
+      # Push the arch-specific image
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        run: |
+          IMAGE_TAG="${{ steps.build.outputs.image }}"
+          echo "Pushing ${IMAGE_TAG}..."
+          buildah push --format oci "${IMAGE_TAG}"
+
+      # Inspect the pushed image
+      - name: Inspect image
+        if: github.event_name != 'pull_request'
+        run: |
+          skopeo inspect "docker://${{ steps.build.outputs.image }}"
+
+  manifest:
+    name: Create manifest
+    needs: [ prepare-checkout, build ]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Install buildah
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y buildah skopeo
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | buildah login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      # Create and push multi-arch manifest
+      - name: Create and push manifest
+        run: |
+          SHA="${{ github.sha }}"
+          TAGS="${{ needs.prepare-checkout.outputs.tags }}"
+
+          # Build the list of arch-specific images
+          AMD64_IMAGE="${{ env.IMAGE }}:amd64-${SHA}"
+          ARM64_IMAGE="${{ env.IMAGE }}:arm64-${SHA}"
+
+          # Split tags and create manifests for each
+          IFS=',' read -ra TAG_ARRAY <<< "${TAGS}"
+          for TAG in "${TAG_ARRAY[@]}"; do
+            TAG=$(echo "$TAG" | xargs)  # trim whitespace
+
+            echo "Creating manifest for ${TAG}..."
+            buildah manifest create "${TAG}"
+
+            echo "Adding ${AMD64_IMAGE} to manifest..."
+            buildah manifest add "${TAG}" "docker://${AMD64_IMAGE}"
+
+            echo "Adding ${ARM64_IMAGE} to manifest..."
+            buildah manifest add "${TAG}" "docker://${ARM64_IMAGE}"
+
+            echo "Pushing manifest ${TAG}..."
+            buildah manifest push --all "${TAG}" "docker://${TAG}"
+          done
+
+      # Inspect final manifest
+      - name: Inspect manifest
+        run: |
+          TAGS="${{ needs.prepare-checkout.outputs.tags }}"
+          IFS=',' read -ra TAG_ARRAY <<< "${TAGS}"
+          FIRST_TAG=$(echo "${TAG_ARRAY[0]}" | xargs)
+
+          echo "Inspecting ${FIRST_TAG}..."
+          skopeo inspect --raw "docker://${FIRST_TAG}" | jq .
+          buildah manifest inspect "${FIRST_TAG}"

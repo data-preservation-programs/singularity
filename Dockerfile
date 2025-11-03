@@ -1,13 +1,17 @@
 FROM golang:1.24.9-bookworm AS builder
 WORKDIR /app
-COPY go.* ./
+
+# Copy dependency files first (changes infrequently)
+COPY go.mod go.sum ./
 RUN go mod download
+
+# Copy source code after (changes frequently)
 COPY . ./
+
+# Build binary
 RUN go build -o singularity .
-FROM debian:bullseye-slim
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl && \
-    rm -rf /var/lib/apt/lists/*
+
+FROM gcr.io/distroless/cc-debian12
 
 COPY --from=builder /app/singularity /app/singularity
 ENTRYPOINT ["/app/singularity"]
