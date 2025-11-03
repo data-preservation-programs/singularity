@@ -4,10 +4,7 @@ COPY go.* ./
 RUN go mod download
 COPY . ./
 RUN go build -o singularity .
-FROM debian:bookworm-slim
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl && \
-    rm -rf /var/lib/apt/lists/*
+FROM gcr.io/distroless/cc-debian12
 
 COPY --from=builder /app/singularity /app/singularity
 ENTRYPOINT ["/app/singularity"]
