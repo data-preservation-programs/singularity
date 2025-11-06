@@ -45,16 +45,17 @@ var (
 //   - pos: An int64 that represents the current position in the data being read.
 //   - blockIndex: An integer that represents the index of the current block being read.
 type PieceReader struct {
-	ctx        context.Context
-	fileSize   int64
-	header     []byte
-	handler    storagesystem.Handler
-	carBlocks  []model.CarBlock
-	files      map[model.FileID]model.File
-	reader     io.ReadCloser
-	readerFor  model.FileID
-	pos        int64
-	blockIndex int
+	ctx                 context.Context
+	fileSize            int64
+	minPieceSizePadding int64
+	header              []byte
+	handler             storagesystem.Handler
+	carBlocks           []model.CarBlock
+	files               map[model.FileID]model.File
+	reader              io.ReadCloser
+	readerFor           model.FileID
+	pos                 int64
+	blockIndex          int
 }
 
 // Seek is a method on the PieceReader struct that changes the position of the reader.
@@ -113,16 +114,17 @@ func (pr *PieceReader) Seek(offset int64, whence int) (int64, error) {
 //   - A new PieceReader that has the same state as the original, but starting at position 0.
 func (pr *PieceReader) Clone() *PieceReader {
 	reader := &PieceReader{
-		ctx:        pr.ctx,
-		fileSize:   pr.fileSize,
-		header:     pr.header,
-		handler:    pr.handler,
-		carBlocks:  pr.carBlocks,
-		files:      pr.files,
-		reader:     pr.reader,
-		readerFor:  pr.readerFor,
-		pos:        pr.pos,
-		blockIndex: pr.blockIndex,
+		ctx:                 pr.ctx,
+		fileSize:            pr.fileSize,
+		header:              pr.header,
+		handler:             pr.handler,
+		carBlocks:           pr.carBlocks,
+		files:               pr.files,
+		reader:              pr.reader,
+		readerFor:           pr.readerFor,
+		pos:                 pr.pos,
+		blockIndex:          pr.blockIndex,
+		minPieceSizePadding: pr.minPieceSizePadding,
 	}
 	//nolint:errcheck
 	reader.Seek(0, io.SeekStart)
@@ -174,8 +176,10 @@ func NewPieceReader(
 	}
 
 	lastBlock := carBlocks[len(carBlocks)-1]
-	if lastBlock.CarOffset+int64(lastBlock.CarBlockLength) != car.FileSize {
-		return nil, errors.Wrapf(ErrInvalidEndOffset, "expected %d, got %d", car.FileSize, lastBlock.CarOffset+int64(lastBlock.CarBlockLength))
+	// Account for MinPieceSizePadding: actual data ends before padding
+	actualDataSize := car.FileSize - car.MinPieceSizePadding
+	if lastBlock.CarOffset+int64(lastBlock.CarBlockLength) != actualDataSize {
+		return nil, errors.Wrapf(ErrInvalidEndOffset, "expected %d, got %d", actualDataSize, lastBlock.CarOffset+int64(lastBlock.CarBlockLength))
 	}
 
 	for i := range carBlocks {
@@ -208,13 +212,14 @@ func NewPieceReader(
 	}
 
 	return &PieceReader{
-		ctx:        ctx,
-		header:     header,
-		fileSize:   car.FileSize,
-		handler:    handler,
-		carBlocks:  carBlocks,
-		files:      filesMap,
-		blockIndex: -1,
+		ctx:                 ctx,
+		header:              header,
+		fileSize:            car.FileSize,
+		minPieceSizePadding: car.MinPieceSizePadding,
+		handler:             handler,
+		carBlocks:           carBlocks,
+		files:               filesMap,
+		blockIndex:          -1,
 	}, nil
 }
 
@@ -246,6 +251,24 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 			pr.blockIndex = 0
 		}
 		return
+	}
+
+	// Check if we're in the padding region (after all real data)
+	if pr.minPieceSizePadding > 0 {
+		actualDataSize := pr.fileSize - pr.minPieceSizePadding
+		if pr.pos >= actualDataSize && pr.pos < pr.fileSize {
+			// We're in the padding region, serve zeros
+			maxToRead := pr.fileSize - pr.pos
+			if maxToRead > int64(len(p)) {
+				maxToRead = int64(len(p))
+			}
+			n = int(maxToRead)
+			for i := 0; i < n; i++ {
+				p[i] = 0
+			}
+			pr.pos += maxToRead
+			return n, nil
+		}
 	}
 
 	if pr.pos >= pr.fileSize {

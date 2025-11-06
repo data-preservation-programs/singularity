@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"io"
+	"os"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -204,6 +205,7 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 	var pieceCid cid.Cid
 	var finalPieceSize uint64
 	var fileSize int64
+	var minPieceSizePadding int64
 	if storageWriter != nil {
 		reader := io.TeeReader(dagGenerator, calc)
 		filename = uuid.NewString() + ".car"
@@ -222,6 +224,54 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 		if err != nil {
 			return errors.WithStack(err)
 		}
+
+		// Check if minPieceSize constraint forced larger piece size
+		naturalPieceSize := util.NextPowerOfTwo(uint64(fileSize))
+		if finalPieceSize > naturalPieceSize {
+			// Need to pad to full piece size
+			paddingNeeded := int64(finalPieceSize) - fileSize
+
+			// Find the output storage by ID
+			var outputStorage *model.Storage
+			for i := range job.Attachment.Preparation.OutputStorages {
+				if job.Attachment.Preparation.OutputStorages[i].ID == *storageID {
+					outputStorage = &job.Attachment.Preparation.OutputStorages[i]
+					break
+				}
+			}
+
+			// For local storage, append zeros to file
+			if outputStorage != nil && outputStorage.Type == "local" && obj != nil {
+				// Build full path to CAR file
+				carPath := outputStorage.Path + "/" + filename
+
+				// Reopen file and append zeros
+				f, err := os.OpenFile(carPath, os.O_APPEND|os.O_WRONLY, 0644)
+				if err != nil {
+					return errors.Wrap(err, "failed to open DAG CAR file for padding")
+				}
+
+				zeros := make([]byte, paddingNeeded)
+				_, err = f.Write(zeros)
+				f.Close()
+				if err != nil {
+					return errors.Wrap(err, "failed to write padding to DAG CAR file")
+				}
+
+				fileSize = int64(finalPieceSize)
+				// minPieceSizePadding stays 0 for non-inline (zeros are in file)
+
+				logger.Infow("padded DAG CAR file for minPieceSize", "original", fileSize-paddingNeeded, "padded", fileSize, "padding", paddingNeeded)
+			} else {
+				// Non-local storage: log warning
+				storageType := "unknown"
+				if outputStorage != nil {
+					storageType = outputStorage.Type
+				}
+				logger.Warnw("minPieceSize padding needed for DAG but storage is not local, skipping", "storage", storageType, "padding", paddingNeeded)
+			}
+		}
+
 		_, err = storageWriter.Move(ctx, obj, pieceCid.String()+".car")
 		if err != nil && !errors.Is(err, storagesystem.ErrMoveNotSupported) {
 			logger.Errorf("failed to move car file from %s to %s: %s", filename, pieceCid.String()+".car", err)
@@ -244,18 +294,30 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 		if err != nil {
 			return errors.WithStack(err)
 		}
+
+		// Check if minPieceSize constraint forced larger piece size
+		naturalPieceSize := util.NextPowerOfTwo(uint64(fileSize))
+		if finalPieceSize > naturalPieceSize {
+			// For inline, store virtual padding
+			paddingNeeded := int64(finalPieceSize) - fileSize
+			fileSize = int64(finalPieceSize)
+			minPieceSizePadding = paddingNeeded
+
+			logger.Infow("inline DAG CAR needs virtual padding for minPieceSize", "data", fileSize-paddingNeeded, "total", fileSize, "padding", paddingNeeded)
+		}
 	}
 
 	car := model.Car{
-		PieceCID:      model.CID(pieceCid),
-		PieceSize:     int64(finalPieceSize),
-		RootCID:       model.CID(rootCID),
-		FileSize:      fileSize,
-		StorageID:     storageID,
-		StoragePath:   filename,
-		AttachmentID:  &job.AttachmentID,
-		PreparationID: job.Attachment.PreparationID,
-		PieceType:     model.DagPiece,
+		PieceCID:            model.CID(pieceCid),
+		PieceSize:           int64(finalPieceSize),
+		RootCID:             model.CID(rootCID),
+		FileSize:            fileSize,
+		MinPieceSizePadding: minPieceSizePadding,
+		StorageID:           storageID,
+		StoragePath:         filename,
+		AttachmentID:        &job.AttachmentID,
+		PreparationID:       job.Attachment.PreparationID,
+		PieceType:           model.DagPiece,
 	}
 
 	err = database.DoRetry(ctx, func() error {

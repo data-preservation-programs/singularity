@@ -39,8 +39,9 @@ func TestAssembleCar(t *testing.T) {
 				State: model.Processing,
 				Attachment: &model.SourceAttachment{
 					Preparation: &model.Preparation{
-						MaxSize:   2000000,
-						PieceSize: 1 << 21,
+						MaxSize:      2000000,
+						PieceSize:    1 << 21,
+						MinPieceSize: 1, // set to 1 byte to disable padding
 					},
 					Storage: &model.Storage{
 						Type: "local",
@@ -71,8 +72,9 @@ func TestAssembleCar(t *testing.T) {
 				State: model.Processing,
 				Attachment: &model.SourceAttachment{
 					Preparation: &model.Preparation{
-						MaxSize:   2000000,
-						PieceSize: 1 << 21,
+						MaxSize:      2000000,
+						PieceSize:    1 << 21,
+						MinPieceSize: 1, // set to 1 byte to disable padding
 					},
 					Storage: &model.Storage{
 						Type: "local",
@@ -104,8 +106,9 @@ func TestAssembleCar(t *testing.T) {
 				State: model.Processing,
 				Attachment: &model.SourceAttachment{
 					Preparation: &model.Preparation{
-						MaxSize:   2000000,
-						PieceSize: 1 << 21,
+						MaxSize:      2000000,
+						PieceSize:    1 << 21,
+						MinPieceSize: 1, // set to 1 byte to disable padding
 					},
 					Storage: &model.Storage{
 						Type: "local",
@@ -151,8 +154,9 @@ func TestAssembleCar(t *testing.T) {
 				State: model.Processing,
 				Attachment: &model.SourceAttachment{
 					Preparation: &model.Preparation{
-						MaxSize:   2000000,
-						PieceSize: 1 << 21,
+						MaxSize:      2000000,
+						PieceSize:    1 << 21,
+						MinPieceSize: 1, // set to 1 byte to disable padding
 						OutputStorages: []model.Storage{
 							{
 								Name: "out",
@@ -261,7 +265,7 @@ func TestLastPiecePadding(t *testing.T) {
 			minPieceSize:         1 << 20,          // 1 MiB min piece size
 			fileSize:             int64(smallSize), // 500 KB file
 			expectedPieceSize:    1 << 20,          // Expected to be padded to 1 MiB (min piece size)
-			expectedFileSize:     500098,           // Based on actual test results
+			expectedFileSize:     1 << 20,          // File now padded to full piece size with literal zeros
 			expectedFileRanges:   1,
 			expectedFileRangeLen: int64(smallSize),
 		},
