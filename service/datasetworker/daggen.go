@@ -241,8 +241,8 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 				}
 			}
 
-			// For local storage, append zeros to file
-			if outputStorage != nil && outputStorage.Type == "local" && obj != nil {
+			// Append zeros to file
+			if outputStorage != nil && obj != nil {
 				// Build full path to CAR file
 				carPath := outputStorage.Path + "/" + filename
 
@@ -263,13 +263,6 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 				// minPieceSizePadding stays 0 for non-inline (zeros are in file)
 
 				logger.Infow("padded DAG CAR file for minPieceSize", "original", fileSize-paddingNeeded, "padded", fileSize, "padding", paddingNeeded, "piece_size", finalPieceSize)
-			} else {
-				// Non-local storage: log warning
-				storageType := "unknown"
-				if outputStorage != nil {
-					storageType = outputStorage.Type
-				}
-				logger.Warnw("minPieceSize padding needed for DAG but storage is not local, skipping", "storage", storageType, "padding", paddingNeeded)
 			}
 		}
 
