@@ -161,12 +161,13 @@ func GetFirstCID(content string) string {
 
 func CalculateCommp(t *testing.T, content []byte, targetPieceSize uint64) string {
 	t.Helper()
+	// Use commp.Calc just like pack.Pack does
 	calc := &commp.Calc{}
-	_, err := bytes.NewBuffer(content).WriteTo(calc)
+	_, err := calc.Write(content)
 	require.NoError(t, err)
-	c, _, err := pack.GetCommp(calc, targetPieceSize)
+	pieceCid, _, err := pack.GetCommp(calc, targetPieceSize)
 	require.NoError(t, err)
-	return c.String()
+	return pieceCid.String()
 }
 
 func WaitForServerReady(ctx context.Context, url string) error {

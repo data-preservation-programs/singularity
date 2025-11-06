@@ -30,11 +30,11 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 	}
 	var job model.Job
 	for _, jobType := range typesOrdered {
-			err := database.DoRetry(ctx, func() error {
-				return db.Transaction(func(db *gorm.DB) error {
-					err := db.Preload("Attachment.Preparation.OutputStorages").Preload("Attachment.Storage").
-						Where("type = ? AND (state = ? OR (state = ? AND worker_id IS NULL))", jobType, model.Ready, model.Processing).
-						First(&job).Error
+		err := database.DoRetry(ctx, func() error {
+			return db.Transaction(func(db *gorm.DB) error {
+				err := db.Preload("Attachment.Preparation.OutputStorages").Preload("Attachment.Storage").
+					Where("type = ? AND (state = ? OR (state = ? AND worker_id IS NULL))", jobType, model.Ready, model.Processing).
+					First(&job).Error
 				if err != nil {
 					if errors.Is(err, gorm.ErrRecordNotFound) {
 						job.ID = 0
