@@ -123,14 +123,15 @@ func TestMinPieceSizePaddingDetection(t *testing.T) {
 					if tc.expectPaddingNonZero {
 						// For non-inline with local storage, zeros are written to file, so MinPieceSizePadding should be 0
 						require.Equal(t, int64(0), car.MinPieceSizePadding, "non-inline should have MinPieceSizePadding=0 (zeros in file)")
-						// But FileSize should be padded to full piece size
-						require.Equal(t, int64(tc.expectedFinalPieceSize), car.FileSize)
+						// But FileSize should be padded to (127/128) × piece_size due to Fr32 overhead
+						expectedFileSize := (int64(tc.expectedFinalPieceSize) * 127) / 128
+						require.Equal(t, expectedFileSize, car.FileSize, "FileSize should include padding")
 
 						// Verify file was actually padded
 						carPath := filepath.Join(out, car.StoragePath)
 						stat, err := os.Stat(carPath)
 						require.NoError(t, err)
-						require.Equal(t, int64(tc.expectedFinalPieceSize), stat.Size(), "physical file should be padded to full piece size")
+						require.Equal(t, expectedFileSize, stat.Size(), "physical file should be padded to (127/128)×piece_size")
 					} else {
 						require.Equal(t, int64(0), car.MinPieceSizePadding, "no padding needed")
 					}
@@ -198,9 +199,11 @@ func TestMinPieceSizePaddingDetection(t *testing.T) {
 					if tc.expectPaddingNonZero {
 						// For inline, MinPieceSizePadding stores the virtual padding amount
 						require.Greater(t, car.MinPieceSizePadding, int64(0), "inline should have MinPieceSizePadding > 0")
-						require.Equal(t, int64(tc.expectedFinalPieceSize), car.FileSize, "FileSize should include padding")
+						// FileSize should be (127/128) × piece_size due to Fr32 overhead
+						expectedFileSize := (int64(tc.expectedFinalPieceSize) * 127) / 128
+						require.Equal(t, expectedFileSize, car.FileSize, "FileSize should include padding")
 
-						// Verify padding makes sense: actual data + padding = finalPieceSize
+						// Verify padding makes sense: actual data + padding = expected FileSize
 						actualDataSize := car.FileSize - car.MinPieceSizePadding
 						require.Greater(t, actualDataSize, int64(0), "should have actual data")
 						require.Equal(t, car.FileSize, actualDataSize+car.MinPieceSizePadding, "FileSize should equal data + padding")
@@ -284,7 +287,8 @@ func TestPieceReaderServesZeros(t *testing.T) {
 		// Verify padding was applied
 		require.Greater(t, car.MinPieceSizePadding, int64(0), "should have virtual padding")
 		require.Equal(t, int64(1<<20), car.PieceSize, "piece size should be 1 MiB")
-		require.Equal(t, int64(1<<20), car.FileSize, "file size should include padding")
+		expectedFileSize := (int64(1<<20) * 127) / 128
+		require.Equal(t, expectedFileSize, car.FileSize, "file size should include padding")
 
 		// Load car blocks for PieceReader
 		var carBlocks []model.CarBlock
@@ -404,20 +408,21 @@ func TestMinPieceSizePaddingFileIntegrity(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, car)
 
-		// Verify file size matches piece size
+		// Verify file size matches expected size (127/128 × piece_size)
 		require.Equal(t, int64(1<<20), car.PieceSize)
-		require.Equal(t, int64(1<<20), car.FileSize)
+		expectedFileSize := (int64(1<<20) * 127) / 128
+		require.Equal(t, expectedFileSize, car.FileSize)
 
 		// Verify actual file was padded
 		carPath := filepath.Join(out, car.StoragePath)
 		stat, err := os.Stat(carPath)
 		require.NoError(t, err)
-		require.Equal(t, int64(1<<20), stat.Size())
+		require.Equal(t, expectedFileSize, stat.Size())
 
 		// Read file and verify padding region is zeros
 		carData, err := os.ReadFile(carPath)
 		require.NoError(t, err)
-		require.Equal(t, int64(1<<20), int64(len(carData)))
+		require.Equal(t, expectedFileSize, int64(len(carData)))
 
 		// Find where padding starts (should be near the end)
 		// The last chunk should be zeros
@@ -542,7 +547,8 @@ func TestDownloadPaddedPiece(t *testing.T) {
 
 				// Verify padding was applied
 				require.Equal(t, int64(tc.minPieceSize), car.PieceSize)
-				require.Equal(t, int64(tc.minPieceSize), car.FileSize)
+				expectedFileSize := (int64(tc.minPieceSize) * 127) / 128
+				require.Equal(t, expectedFileSize, car.FileSize)
 
 				var downloadedData []byte
 				var n int

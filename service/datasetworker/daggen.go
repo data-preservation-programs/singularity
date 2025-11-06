@@ -228,8 +228,9 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 		// Check if minPieceSize constraint forced larger piece size
 		naturalPieceSize := util.NextPowerOfTwo(uint64(fileSize))
 		if finalPieceSize > naturalPieceSize {
-			// Need to pad to full piece size
-			paddingNeeded := int64(finalPieceSize) - fileSize
+			// Need to pad to (127/128) × piece_size due to Fr32 padding overhead
+			targetCarSize := (int64(finalPieceSize) * 127) / 128
+			paddingNeeded := targetCarSize - fileSize
 
 			// Find the output storage by ID
 			var outputStorage *model.Storage
@@ -258,10 +259,10 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 					return errors.Wrap(err, "failed to write padding to DAG CAR file")
 				}
 
-				fileSize = int64(finalPieceSize)
+				fileSize = targetCarSize
 				// minPieceSizePadding stays 0 for non-inline (zeros are in file)
 
-				logger.Infow("padded DAG CAR file for minPieceSize", "original", fileSize-paddingNeeded, "padded", fileSize, "padding", paddingNeeded)
+				logger.Infow("padded DAG CAR file for minPieceSize", "original", fileSize-paddingNeeded, "padded", fileSize, "padding", paddingNeeded, "piece_size", finalPieceSize)
 			} else {
 				// Non-local storage: log warning
 				storageType := "unknown"
@@ -298,12 +299,13 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 		// Check if minPieceSize constraint forced larger piece size
 		naturalPieceSize := util.NextPowerOfTwo(uint64(fileSize))
 		if finalPieceSize > naturalPieceSize {
-			// For inline, store virtual padding
-			paddingNeeded := int64(finalPieceSize) - fileSize
-			fileSize = int64(finalPieceSize)
+			// For inline, store virtual padding to (127/128) × piece_size
+			targetCarSize := (int64(finalPieceSize) * 127) / 128
+			paddingNeeded := targetCarSize - fileSize
+			fileSize = targetCarSize
 			minPieceSizePadding = paddingNeeded
 
-			logger.Infow("inline DAG CAR needs virtual padding for minPieceSize", "data", fileSize-paddingNeeded, "total", fileSize, "padding", paddingNeeded)
+			logger.Infow("inline DAG CAR needs virtual padding for minPieceSize", "data", fileSize-paddingNeeded, "total", fileSize, "padding", paddingNeeded, "piece_size", finalPieceSize)
 		}
 	}
 

@@ -261,11 +261,11 @@ func TestLastPiecePadding(t *testing.T) {
 	}{
 		{
 			name:                 "last piece smaller than min piece size gets padded to min piece size",
-			pieceSize:            1 << 21,          // 2 MiB piece size
-			minPieceSize:         1 << 20,          // 1 MiB min piece size
-			fileSize:             int64(smallSize), // 500 KB file
-			expectedPieceSize:    1 << 20,          // Expected to be padded to 1 MiB (min piece size)
-			expectedFileSize:     1 << 20,          // File now padded to full piece size with literal zeros
+			pieceSize:            1 << 21,               // 2 MiB piece size
+			minPieceSize:         1 << 20,               // 1 MiB min piece size
+			fileSize:             int64(smallSize),      // 500 KB file
+			expectedPieceSize:    1 << 20,               // Expected to be padded to 1 MiB (min piece size)
+			expectedFileSize:     (1 << 20) * 127 / 128, // File padded to (127/128) × piece_size due to Fr32
 			expectedFileRanges:   1,
 			expectedFileRangeLen: int64(smallSize),
 		},

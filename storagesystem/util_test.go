@@ -20,8 +20,8 @@ func TestIsSameEntry(t *testing.T) {
 	mockObject := new(MockObject)
 	mockObject.On("Size").Return(int64(5))
 	s3fs, err := s3.NewFs(ctx, "s3", "commoncrawl", configmap.Simple{
-		"chunk_size":   "5Mi",
-		"copy_cutoff":  "5Mi", // rclone v1.68.0 requires copy_cutoff >= 1
+		"chunk_size":  "5Mi",
+		"copy_cutoff": "5Mi", // rclone v1.68.0 requires copy_cutoff >= 1
 	})
 	require.NoError(t, err)
 	mockObject.On("Fs").Return(s3fs)
