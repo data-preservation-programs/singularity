@@ -265,7 +265,7 @@ type Car struct {
 	PieceSize           int64      `cbor:"2,keyasint,omitempty" json:"pieceSize"`
 	RootCID             CID        `cbor:"3,keyasint,omitempty" gorm:"column:root_cid;type:bytes"                        json:"rootCid"                             swaggertype:"string"`
 	FileSize            int64      `cbor:"4,keyasint,omitempty" json:"fileSize"`
-	MinPieceSizePadding int64      `cbor:"5,keyasint,omitempty" json:"minPieceSizePadding"` // MinPieceSizePadding is the number of literal zero bytes that need to be appended (for inline) or were appended (for non-inline) to meet Curio TreeD requirements. For inline mode, PieceReader serves these zeros virtually. For non-inline mode, zeros are written to the file and this field is 0.
+	MinPieceSizePadding int64      `cbor:"5,keyasint,omitempty" json:"minPieceSizePadding"` // MinPieceSizePadding tracks virtual padding for inline mode only. Inline: stores padding amount, PieceReader serves zeros virtually. Non-inline: always 0, literal zeros are written to CAR file for Curio TreeD compatibility.
 	StorageID           *StorageID `cbor:"-"                    json:"storageId"                                         table:"verbose"`
 	Storage             *Storage   `cbor:"-"                    gorm:"foreignKey:StorageID;constraint:OnDelete:SET NULL" json:"storage,omitempty"                   swaggerignore:"true" table:"expand"`
 	StoragePath         string     `cbor:"-"                    json:"storagePath"` // StoragePath is the path to the CAR file inside the storage. If the StorageID is nil but StoragePath is not empty, it means the CAR file is stored at the local absolute path.
