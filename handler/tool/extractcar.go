@@ -18,6 +18,7 @@ import (
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	ipld "github.com/ipfs/go-ipld-format"
+	"github.com/ipld/go-car/v2"
 	carblockstore "github.com/ipld/go-car/v2/blockstore"
 	"github.com/urfave/cli/v2"
 )
@@ -138,7 +139,7 @@ func ExtractCarHandler(ctx *cli.Context, inputDir string, output string, c cid.C
 
 	var bss []blockstore.Blockstore
 	for _, f := range files {
-		bs, err := carblockstore.OpenReadOnly(f)
+		bs, err := carblockstore.OpenReadOnly(f, car.ZeroLengthSectionAsEOF(true))
 		if err != nil {
 			return errors.Wrapf(err, "failed to open CAR file %s", f)
 		}
