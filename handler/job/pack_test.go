@@ -136,7 +136,9 @@ func TestPackHandler_Success(t *testing.T) {
 		car, err := Default.PackHandler(ctx, db, 1)
 		require.NoError(t, err)
 		require.NotNil(t, car)
-		require.EqualValues(t, 100, car.FileSize)
+		// With default minPieceSize of 1 MiB, the virtual file size is padded to (1 MiB * 127/128)
+		require.EqualValues(t, 1040384, car.FileSize)
+		// PieceCID reflects the 1 MiB piece size (padded from natural ~128 byte piece)
 		require.EqualValues(t, "baga6ea4seaqpikooah5wmbpjmnvx3ysyf36xagymjtbccnf5twt2cpaqcgcwqha", car.PieceCID.String())
 		err = db.Find(&job, 1).Error
 		require.NoError(t, err)
