@@ -14,7 +14,7 @@ import (
 func TestRemoveHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		t.Run("success", func(t *testing.T) {
-			err := db.Create(&model.Wallet{
+			err := db.Create(&model.Actor{
 				ID: "test",
 			}).Error
 			require.NoError(t, err)

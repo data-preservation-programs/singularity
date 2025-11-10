@@ -47,7 +47,7 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 		lotusClient := new(MockRPCClient)
 
 		// Set up the test data
-		wallets := []model.Wallet{
+		wallets := []model.Actor{
 			{ID: "1", Address: "address1"},
 			{ID: "2", Address: "address2"},
 			{ID: "3", Address: "address3"},
@@ -90,18 +90,18 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 		require.NoError(t, err)
 
 		t.Run("Choose wallet with empty wallet", func(t *testing.T) {
-			_, err := chooser.Choose(context.Background(), []model.Wallet{})
+			_, err := chooser.Choose(context.Background(), []model.Actor{})
 			require.ErrorAs(t, err, &ErrNoWallet)
 		})
 
 		t.Run("Choose wallet with sufficient datacap", func(t *testing.T) {
-			chosenWallet, err := chooser.Choose(context.Background(), []model.Wallet{wallets[0], wallets[1]})
+			chosenWallet, err := chooser.Choose(context.Background(), []model.Actor{wallets[0], wallets[1]})
 			require.NoError(t, err)
 			require.Equal(t, "address1", chosenWallet.Address)
 		})
 
 		t.Run("Choose wallet with insufficient datacap", func(t *testing.T) {
-			_, err := chooser.Choose(context.Background(), []model.Wallet{wallets[2], wallets[3]})
+			_, err := chooser.Choose(context.Background(), []model.Actor{wallets[2], wallets[3]})
 			require.ErrorAs(t, err, &ErrNoDatacap)
 		})
 	})
@@ -110,7 +110,7 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 func TestRandomWalletChooser(t *testing.T) {
 	chooser := &RandomWalletChooser{}
 	ctx := context.Background()
-	wallet, err := chooser.Choose(ctx, []model.Wallet{
+	wallet, err := chooser.Choose(ctx, []model.Actor{
 		{ID: "1", Address: "address1"},
 		{ID: "2", Address: "address2"},
 	})

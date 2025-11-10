@@ -23,7 +23,7 @@ var testPreparation = model.Preparation{
 	DeleteAfterExport: false,
 	MaxSize:           100,
 	PieceSize:         200,
-	Wallets: []model.Wallet{{
+	Actors: []model.Actor{{
 		ID:         "client_id",
 		Address:    "client_address",
 		PrivateKey: "private_key",
@@ -225,7 +225,7 @@ func TestDataPreparationListAttachedWalletHandler(t *testing.T) {
 		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 
-		mockHandler.On("ListAttachedHandler", mock.Anything, mock.Anything, mock.Anything).Return(testPreparation.Wallets, nil)
+		mockHandler.On("ListAttachedHandler", mock.Anything, mock.Anything, mock.Anything).Return(testPreparation.Actors, nil)
 		_, _, err := runner.Run(ctx, "singularity prep list-wallets 1")
 		require.NoError(t, err)
 

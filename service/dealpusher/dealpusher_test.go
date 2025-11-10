@@ -13,6 +13,7 @@ import (
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	"github.com/google/uuid"
@@ -32,8 +33,8 @@ type MockDealMaker struct {
 	mock.Mock
 }
 
-func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig replication.DealConfig) (*model.Deal, error) {
-	args := m.Called(ctx, walletObj, car, dealConfig)
+func (m *MockDealMaker) MakeDeal(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, actorObj model.Actor, car model.Car, dealConfig replication.DealConfig) (*model.Deal, error) {
+	args := m.Called(ctx, actorObj, car, dealConfig)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -41,7 +42,7 @@ func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, ca
 	deal.ID = 0
 	deal.PieceCID = car.PieceCID
 	deal.PieceSize = car.PieceSize
-	deal.ClientID = walletObj.ID
+	deal.ClientID = actorObj.ID
 	deal.Provider = dealConfig.Provider
 	deal.Verified = dealConfig.Verified
 	deal.ProposalID = uuid.NewString()
@@ -110,7 +111,7 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				SourceStorages: []model.Storage{{}},
-				Wallets: []model.Wallet{
+				Actors: []model.Actor{
 					{
 						ID: client, Address: "f0xx",
 					},
@@ -166,7 +167,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				SourceStorages: []model.Storage{{}},
-				Wallets: []model.Wallet{
+				Actors: []model.Actor{
 					{
 						ID: client, Address: "f0xx",
 					},
@@ -261,7 +262,7 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				SourceStorages: []model.Storage{{}},
-				Wallets: []model.Wallet{
+				Actors: []model.Actor{
 					{
 						ID: client, Address: "f0xx",
 					},
@@ -370,7 +371,7 @@ func TestDealmakerService_Force(t *testing.T) {
 		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
-				Wallets: []model.Wallet{
+				Actors: []model.Actor{
 					{
 						ID: client, Address: "f0xx",
 					},
@@ -429,7 +430,7 @@ func TestDealMakerService_MaxReplica(t *testing.T) {
 		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
-				Wallets: []model.Wallet{
+				Actors: []model.Actor{
 					{
 						ID: client, Address: "f0xx",
 					},
@@ -495,7 +496,7 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
-				Wallets: []model.Wallet{
+				Actors: []model.Actor{
 					{
 						ID: client, Address: "f0xx",
 					},
