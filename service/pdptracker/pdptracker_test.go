@@ -60,7 +60,7 @@ func TestPDPTracker_RunOnce_UpsertByParsedPieceCID(t *testing.T) {
 		providerAddr, err := address.NewDelegatedAddress(10, providerSubaddr)
 		require.NoError(t, err)
 
-		err = db.Create(&model.Wallet{
+		err = db.Create(&model.Actor{
 			ID:      "f0100",
 			Address: walletAddr.String(),
 		}).Error
@@ -128,7 +128,7 @@ func TestPDPTracker_RunOnce_SkipsInvalidPieceCID(t *testing.T) {
 		providerAddr, err := address.NewDelegatedAddress(10, providerSubaddr)
 		require.NoError(t, err)
 
-		err = db.Create(&model.Wallet{
+		err = db.Create(&model.Actor{
 			ID:      "f0100",
 			Address: walletAddr.String(),
 		}).Error
@@ -170,7 +170,7 @@ func TestPDPTracker_RunOnce_UsesBulkFetchWhenAvailable(t *testing.T) {
 		providerAddr, err := address.NewDelegatedAddress(10, providerSubaddr)
 		require.NoError(t, err)
 
-		err = db.Create(&model.Wallet{
+		err = db.Create(&model.Actor{
 			ID:      "f0101",
 			Address: walletAddr.String(),
 		}).Error

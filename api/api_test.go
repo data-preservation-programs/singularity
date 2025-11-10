@@ -34,6 +34,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/gotidy/ptr"
@@ -50,8 +51,8 @@ type MockDealMaker struct {
 	mock.Mock
 }
 
-func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig replication.DealConfig) (*model.Deal, error) {
-	args := m.Called(ctx, walletObj, car, dealConfig)
+func (m *MockDealMaker) MakeDeal(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, actorObj model.Actor, car model.Car, dealConfig replication.DealConfig) (*model.Deal, error) {
+	args := m.Called(ctx, actorObj, car, dealConfig)
 	return args.Get(0).(*model.Deal), args.Error(1)
 }
 
@@ -191,7 +192,7 @@ func setupMockWallet() wallet.Handler {
 	m.On("ListHandler", mock.Anything, mock.Anything).
 		Return([]model.Wallet{{}}, nil)
 	m.On("ListAttachedHandler", mock.Anything, mock.Anything, "id").
-		Return([]model.Wallet{{}}, nil)
+		Return([]model.Actor{{}}, nil)
 	m.On("RemoveHandler", mock.Anything, mock.Anything, "wallet").
 		Return(nil)
 	return m

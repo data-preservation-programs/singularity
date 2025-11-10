@@ -189,7 +189,7 @@ func TestCreateHandler_NoAssociatedWallet(t *testing.T) {
 func TestCreateHandler_InvalidProvider(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
-			Wallets: []model.Wallet{{
+			Actors: []model.Actor{{
 				ID: "f01",
 			}},
 		}).Error
@@ -206,7 +206,7 @@ func TestCreateHandler_InvalidProvider(t *testing.T) {
 func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
-			Wallets: []model.Wallet{{
+			Actors: []model.Actor{{
 				ID: "f01",
 			}},
 		}).Error
@@ -226,7 +226,7 @@ func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
 func TestCreateHandler_ScheduleDealSizeSetForNonCron(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
-			Wallets: []model.Wallet{{
+			Actors: []model.Actor{{
 				ID: "f01",
 			}},
 		}).Error
@@ -247,7 +247,7 @@ func TestCreateHandler_Success(t *testing.T) {
 			testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 				err := db.Create(&model.Preparation{
 					Name: "name",
-					Wallets: []model.Wallet{{
+					Actors: []model.Actor{{
 						ID: "f01",
 					}},
 				}).Error

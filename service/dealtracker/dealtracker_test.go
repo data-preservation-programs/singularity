@@ -152,7 +152,7 @@ func TestTrackDeal(t *testing.T) {
 func TestRunOnce(t *testing.T) {
 	testutil.SkipIfNotExternalAPI(t)
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Wallet{
+		err := db.Create(&model.Actor{
 			ID:      "t0100",
 			Address: "t3xxx",
 		}).Error

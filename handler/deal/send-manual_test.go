@@ -20,7 +20,7 @@ type MockDealMaker struct {
 }
 
 func (m *MockDealMaker) MakeDeal(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, actorObj model.Actor, car model.Car, dealConfig replication.DealConfig) (*model.Deal, error) {
-	args := m.Called(ctx, db, ks, walletObj, car, dealConfig)
+	args := m.Called(ctx, db, ks, actorObj, car, dealConfig)
 	return args.Get(0).(*model.Deal), args.Error(1)
 }
 
@@ -50,7 +50,7 @@ func TestSendManualHandler_WalletNotFound(t *testing.T) {
 		err := db.Create(&actor).Error
 		require.NoError(t, err)
 
-		mockKS := keystore.NewMemoryKeyStore()
+		var mockKS keystore.KeyStore
 		mockDealMaker := new(MockDealMaker)
 		mockDealMaker.On("MakeDeal", ctx, db, mockKS, actor, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 		_, err = Default.SendManualHandler(ctx, db, mockKS, mockDealMaker, proposal)
@@ -69,7 +69,7 @@ func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
 		err := db.Create(&actor).Error
 		require.NoError(t, err)
 
-		mockKS := keystore.NewMemoryKeyStore()
+		var mockKS keystore.KeyStore
 		mockDealMaker := new(MockDealMaker)
 		mockDealMaker.On("MakeDeal", ctx, db, mockKS, actor, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 		badProposal := proposal
@@ -90,7 +90,7 @@ func TestSendManualHandler_InvalidPieceCID_NOTCOMMP(t *testing.T) {
 		err := db.Create(&actor).Error
 		require.NoError(t, err)
 
-		mockKS := keystore.NewMemoryKeyStore()
+		var mockKS keystore.KeyStore
 		mockDealMaker := new(MockDealMaker)
 		mockDealMaker.On("MakeDeal", ctx, db, mockKS, actor, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 		badProposal := proposal
@@ -111,7 +111,7 @@ func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
 		err := db.Create(&actor).Error
 		require.NoError(t, err)
 
-		mockKS := keystore.NewMemoryKeyStore()
+		var mockKS keystore.KeyStore
 		mockDealMaker := new(MockDealMaker)
 		mockDealMaker.On("MakeDeal", ctx, db, mockKS, actor, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 		badProposal := proposal
@@ -132,7 +132,7 @@ func TestSendManualHandler_InvalidPieceSize_NotPowerOfTwo(t *testing.T) {
 		err := db.Create(&actor).Error
 		require.NoError(t, err)
 
-		mockKS := keystore.NewMemoryKeyStore()
+		var mockKS keystore.KeyStore
 		mockDealMaker := new(MockDealMaker)
 		mockDealMaker.On("MakeDeal", ctx, db, mockKS, actor, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 		badProposal := proposal
@@ -153,7 +153,7 @@ func TestSendManualHandler_InvalidRootCID(t *testing.T) {
 		err := db.Create(&actor).Error
 		require.NoError(t, err)
 
-		mockKS := keystore.NewMemoryKeyStore()
+		var mockKS keystore.KeyStore
 		mockDealMaker := new(MockDealMaker)
 		mockDealMaker.On("MakeDeal", ctx, db, mockKS, actor, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 		badProposal := proposal
@@ -174,7 +174,7 @@ func TestSendManualHandler_InvalidDuration(t *testing.T) {
 		err := db.Create(&actor).Error
 		require.NoError(t, err)
 
-		mockKS := keystore.NewMemoryKeyStore()
+		var mockKS keystore.KeyStore
 		mockDealMaker := new(MockDealMaker)
 		mockDealMaker.On("MakeDeal", ctx, db, mockKS, actor, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 		badProposal := proposal
@@ -195,7 +195,7 @@ func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
 		err := db.Create(&actor).Error
 		require.NoError(t, err)
 
-		mockKS := keystore.NewMemoryKeyStore()
+		var mockKS keystore.KeyStore
 		mockDealMaker := new(MockDealMaker)
 		mockDealMaker.On("MakeDeal", ctx, db, mockKS, actor, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 		badProposal := proposal
@@ -207,17 +207,18 @@ func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
 }
 
 func TestSendManualHandler(t *testing.T) {
-	wallet := model.Wallet{
+	actor := model.Actor{
 		ID:      "f01000",
 		Address: "f10000",
 	}
 
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&wallet).Error
+		err := db.Create(&actor).Error
 		require.NoError(t, err)
 
+		var mockKS keystore.KeyStore
 		mockDealMaker := new(MockDealMaker)
-		mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, replication.DealConfig{
+		mockDealMaker.On("MakeDeal", ctx, db, mockKS, actor, mock.Anything, replication.DealConfig{
 			Provider:        proposal.ProviderID,
 			StartDelay:      24 * time.Hour,
 			Duration:        2400 * time.Hour,

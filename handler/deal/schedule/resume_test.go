@@ -14,7 +14,7 @@ import (
 func TestResumeHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
-			Wallets: []model.Wallet{{
+			Actors: []model.Actor{{
 				ID: "f01",
 			}},
 		}).Error

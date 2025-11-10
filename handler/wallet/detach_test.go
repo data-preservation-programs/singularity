@@ -14,7 +14,7 @@ import (
 func TestDetachHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
-			Wallets: []model.Wallet{{
+			Actors: []model.Actor{{
 				ID: "test",
 			}},
 		}).Error
@@ -25,7 +25,7 @@ func TestDetachHandler(t *testing.T) {
 			require.ErrorIs(t, err, handlererror.ErrNotFound)
 		})
 
-		t.Run("wallet not found", func(t *testing.T) {
+		t.Run("actor not found", func(t *testing.T) {
 			_, err := Default.DetachHandler(ctx, db, "1", "invalid")
 			require.ErrorIs(t, err, handlererror.ErrNotFound)
 		})
@@ -33,7 +33,7 @@ func TestDetachHandler(t *testing.T) {
 		t.Run("success", func(t *testing.T) {
 			preparation, err := Default.DetachHandler(ctx, db, "1", "test")
 			require.NoError(t, err)
-			require.Len(t, preparation.Wallets, 0)
+			require.Len(t, preparation.Actors, 0)
 		})
 	})
 }

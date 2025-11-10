@@ -115,7 +115,7 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 	defer client.Close()
 	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
-	wallet := model.Wallet{
+	wallet := model.Actor{
 		ID:         "f047684",
 		Address:    addr,
 		PrivateKey: key,
@@ -154,14 +154,14 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 		StorageProposalV120,
 	}, ttlcache.DefaultTTL)
 
-	_, err = maker.MakeDeal(ctx, wallet, car, dealConfig)
+	_, err = maker.MakeDeal(ctx, nil, nil, wallet, car, dealConfig)
 	require.NoError(t, err)
 
 	maker.protocolsCache.Set(server.ID(), []protocol.ID{
 		StorageProposalV111,
 	}, ttlcache.DefaultTTL)
 
-	_, err = maker.MakeDeal(ctx, wallet, car, dealConfig)
+	_, err = maker.MakeDeal(ctx, nil, nil, wallet, car, dealConfig)
 	require.NoError(t, err)
 }
 
