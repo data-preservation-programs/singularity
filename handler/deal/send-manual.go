@@ -70,9 +70,9 @@ func (DefaultHandler) SendManualHandler(
 	request Proposal,
 ) (*model.Deal, error) {
 	db = db.WithContext(ctx)
-	// Get the wallet object
-	wallet := model.Wallet{}
-	err := db.Where("id = ? OR address = ?", request.ClientAddress, request.ClientAddress).First(&wallet).Error
+	// get the actor object
+	actor := model.Actor{}
+	err := db.Where("id = ? OR address = ?", request.ClientAddress, request.ClientAddress).First(&actor).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "client address %s not found", request.ClientAddress)
 	}
@@ -136,7 +136,7 @@ func (DefaultHandler) SendManualHandler(
 		Duration:       duration,
 	}
 
-	dealModel, err := dealMaker.MakeDeal(ctx, wallet, car, dealConfig)
+	dealModel, err := dealMaker.MakeDeal(ctx, actor, car, dealConfig)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

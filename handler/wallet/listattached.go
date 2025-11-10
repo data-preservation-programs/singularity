@@ -28,9 +28,9 @@ func (DefaultHandler) ListAttachedHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	preparationID string,
-) ([]model.Wallet, error) {
+) ([]model.Actor, error) {
 	var preparation model.Preparation
-	err := preparation.FindByIDOrName(db, preparationID, "Wallets")
+	err := preparation.FindByIDOrName(db, preparationID, "Actors")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", preparationID)
 	}
@@ -38,7 +38,7 @@ func (DefaultHandler) ListAttachedHandler(
 		return nil, errors.WithStack(err)
 	}
 
-	return preparation.Wallets, nil
+	return preparation.Actors, nil
 }
 
 // @ID ListAttachedWallets

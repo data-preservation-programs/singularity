@@ -158,8 +158,8 @@ func (DefaultHandler) CreateHandler(
 		}
 	}
 
-	if len(preparation.Wallets) == 0 {
-		return nil, errors.Wrap(handlererror.ErrNotFound, "no wallet attached to preparation")
+	if len(preparation.Actors) == 0 {
+		return nil, errors.Wrap(handlererror.ErrNotFound, "no actor attached to preparation")
 	}
 
 	var providerActor string

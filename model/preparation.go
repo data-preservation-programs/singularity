@@ -46,7 +46,7 @@ type Preparation struct {
 	NoDag             bool          `json:"noDag"`
 
 	// Associations
-	Wallets        []Wallet  `gorm:"many2many:wallet_assignments;constraint:OnDelete:CASCADE" json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
+	Actors         []Actor   `gorm:"many2many:actor_assignments;constraint:OnDelete:CASCADE;joinForeignKey:PreparationID;joinReferences:ActorID" json:"actors,omitempty" swaggerignore:"true" table:"expand"` // TODO: GORM will rename wallet_assignments→actor_assignments
 	SourceStorages []Storage `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" table:"expand;header:Source Storages:"`
 	OutputStorages []Storage `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" table:"expand;header:Output Storages:"`
 }

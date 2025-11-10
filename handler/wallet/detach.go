@@ -30,7 +30,7 @@ func (DefaultHandler) DetachHandler(
 ) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
-	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Wallets")
+	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Actors")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", preparationID)
 	}
@@ -38,15 +38,15 @@ func (DefaultHandler) DetachHandler(
 		return nil, errors.WithStack(err)
 	}
 
-	found, err := underscore.Find(preparation.Wallets, func(w model.Wallet) bool {
-		return w.ID == wallet || w.Address == wallet
+	found, err := underscore.Find(preparation.Actors, func(a model.Actor) bool {
+		return a.ID == wallet || a.Address == wallet
 	})
 	if err != nil {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not attached to preparation %d", wallet, preparationID)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "actor %s not attached to preparation %d", wallet, preparationID)
 	}
 
 	err = database.DoRetry(ctx, func() error {
-		return db.Model(&preparation).Association("Wallets").Delete(&found)
+		return db.Model(&preparation).Association("Actors").Delete(&found)
 	})
 	if err != nil {
 		return nil, errors.WithStack(err)
