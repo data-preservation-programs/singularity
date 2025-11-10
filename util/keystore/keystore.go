@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/filecoin-project/go-address"
-	"github.com/jsign/go-filsigner/wallet"
+	filwallet "github.com/jsign/go-filsigner/wallet"
 )
 
 type KeyStore interface {
@@ -36,7 +36,7 @@ func NewLocalKeyStore(dir string) (*LocalKeyStore, error) {
 
 // lotus/go-filsigner export format expected
 func (ks *LocalKeyStore) Put(privateKey string) (string, address.Address, error) {
-	addr, err := wallet.PublicKey(privateKey)
+	addr, err := filwallet.PublicKey(privateKey)
 	if err != nil {
 		return "", address.Undef, fmt.Errorf("failed to derive address from private key: %w", err)
 	}
@@ -79,7 +79,7 @@ func (ks *LocalKeyStore) List() ([]KeyInfo, error) {
 		}
 
 		// verify valid key by deriving address
-		addr, err := wallet.PublicKey(string(data))
+		addr, err := filwallet.PublicKey(string(data))
 		if err != nil {
 			continue // skip invalid
 		}

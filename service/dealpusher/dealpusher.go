@@ -282,7 +282,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			}
 			var car model.Car
 			var dealModel *model.Deal
-			var walletObj model.Wallet
+			var walletObj model.Actor
 			if schedule.MaxPendingDealNumber > 0 && pending.DealNumber >= schedule.MaxPendingDealNumber {
 				Logger.Infow("skipping this time since the max pending deal is reached", "schedule_id", schedule.ID)
 				goto waitForPending
@@ -352,7 +352,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return model.ScheduleError, errors.Wrap(err, "failed to find car")
 			}
 
-			walletObj, err = d.walletChooser.Choose(ctx, schedule.Preparation.Wallets)
+			walletObj, err = d.walletChooser.Choose(ctx, schedule.Preparation.Actors)
 			if err != nil {
 				return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
 			}
@@ -477,7 +477,7 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 	scheduleMap := map[model.ScheduleID]model.Schedule{}
 	Logger.Debugw("getting schedules")
 	db := d.dbNoContext.WithContext(ctx)
-	err := db.Preload("Preparation.Wallets").Where("state = ?",
+	err := db.Preload("Preparation.Actors").Where("state = ?",
 		model.ScheduleActive).Find(&schedules).Error
 	if err != nil {
 		Logger.Errorw("failed to get schedules", "error", err)

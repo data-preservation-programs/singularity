@@ -74,8 +74,8 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 		Type: "local",
 		Path: urlToPath(gofakeit.URL()),
 	}
-	// Setup wallet
-	wallet := model.Wallet{
+	// Setup actor
+	actor := model.Actor{
 		ID:      fmt.Sprintf("f0%d", r.Intn(10000)),
 		Address: "f1" + randomLetterString(39),
 	}
@@ -85,7 +85,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 		Name:           gofakeit.AppName(),
 		MaxSize:        30 << 30,
 		PieceSize:      1 << 35,
-		Wallets:        []model.Wallet{wallet},
+		Actors:         []model.Actor{actor},
 		SourceStorages: []model.Storage{source},
 	}
 
@@ -342,7 +342,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				Price:      "0",
 				Verified:   true,
 				ScheduleID: ptr.Of(schedule.ID),
-				ClientID:   wallet.ID,
+				ClientActorID: actor.ID,
 			}
 			if state == model.DealActive {
 				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062

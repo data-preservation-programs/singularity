@@ -25,7 +25,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/jellydator/ttlcache/v3"
-	"github.com/jsign/go-filsigner/wallet"
+	filwallet "github.com/jsign/go-filsigner/wallet"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/peerstore"
@@ -55,7 +55,7 @@ type DealProviderCollateralBound struct {
 }
 
 type DealMaker interface {
-	MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig DealConfig) (*model.Deal, error)
+	MakeDeal(ctx context.Context, walletObj model.Actor, car model.Car, dealConfig DealConfig) (*model.Deal, error)
 }
 
 // DealMakerImpl is an implementation of a deal-making component for a Filecoin-like network.
@@ -515,7 +515,7 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 //   - Deal proposal rejected by the provider.
 //
 //   - No supported protocol found between client and provider.
-func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
+func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Actor,
 	car model.Car, dealConfig DealConfig,
 ) (*model.Deal, error) {
 	logger.Infow("making deal", "client", walletObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
@@ -578,7 +578,9 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 		return nil, errors.Wrapf(err, "failed to serialize deal proposal %s", proposal)
 	}
 
-	signature, err := wallet.WalletSign(walletObj.PrivateKey, proposalBytes)
+	// TODO: update to use new keystore-based signing with handler/wallet.SignWithWallet()
+	// for now, PrivateKey column still exists in actors table as orphaned column
+	signature, err := filwallet.WalletSign(walletObj.PrivateKey, proposalBytes)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to sign deal proposal")
 	}
@@ -589,10 +591,10 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	}
 
 	dealModel := &model.Deal{
-		State:     model.DealProposed,
-		ClientID:  walletObj.ID,
-		Provider:  dealConfig.Provider,
-		Label:     cid.Cid(car.RootCID).String(),
+		State:         model.DealProposed,
+		ClientActorID: walletObj.ID,
+		Provider:      dealConfig.Provider,
+		Label:         cid.Cid(car.RootCID).String(),
 		PieceCID:  car.PieceCID,
 		PieceSize: car.PieceSize,
 		//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062
@@ -635,7 +637,7 @@ func queueDealEvent(deal model.Deal) {
 		DataCID:    deal.Label,
 		PieceSize:  deal.PieceSize,
 		Provider:   deal.Provider,
-		Client:     deal.ClientID,
+		Client:     deal.ClientActorID,
 		Verified:   deal.Verified,
 		StartEpoch: deal.StartEpoch,
 		EndEpoch:   deal.EndEpoch - deal.StartEpoch,

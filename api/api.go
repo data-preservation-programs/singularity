@@ -31,6 +31,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/filecoin-project/lassie/pkg/lassie"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
@@ -47,6 +48,7 @@ type Server struct {
 	listener        net.Listener
 	lotusClient     jsonrpc.RPCClient
 	dealMaker       replication.DealMaker
+	keyStore        keystore.KeyStore
 	closer          io.Closer
 	host            host.Host
 	retriever       *retriever.Retriever
@@ -135,6 +137,10 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 		endpointfinder.WithErrorLruSize(128),
 		endpointfinder.WithErrorLruTimeout(time.Minute*5),
 	)
+	ks, err := keystore.NewLocalKeyStore(wallet.GetKeystoreDir())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to init keystore")
+	}
 	return &Server{
 		db:          db,
 		host:        h,
@@ -146,6 +152,7 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 			time.Hour,
 			time.Minute*5,
 		),
+		keyStore:        ks,
 		retriever:       retriever.NewRetriever(lassie, endpointFinder),
 		closer:          closer,
 		adminHandler:    &admin.DefaultHandler{},
@@ -217,6 +224,10 @@ func (s *Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 			}
 			if paramType.String() == "replication.DealMaker" {
 				inputParams = append(inputParams, reflect.ValueOf(s.dealMaker))
+				continue
+			}
+			if paramType.String() == "keystore.KeyStore" {
+				inputParams = append(inputParams, reflect.ValueOf(s.keyStore))
 				continue
 			}
 			if paramType.Kind() == reflect.String || isIntKind(paramType.Kind()) || isUIntKind(paramType.Kind()) {
@@ -347,7 +358,7 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	e.DELETE("/api/preparation/:id/piece/:piece_cid", s.toEchoHandler(s.dataprepHandler.DeletePieceHandler))
 
 	// Wallet
-	e.POST("/api/wallet", s.toEchoHandler(s.walletHandler.ImportHandler))
+	e.POST("/api/wallet", s.toEchoHandler(s.walletHandler.ImportKeystoreHandler))
 	e.GET("/api/wallet", s.toEchoHandler(s.walletHandler.ListHandler))
 	e.DELETE("/api/wallet/:address", s.toEchoHandler(s.walletHandler.RemoveHandler))
 

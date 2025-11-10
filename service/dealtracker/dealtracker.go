@@ -381,10 +381,10 @@ type KnownDeal struct {
 	State model.DealState
 }
 type UnknownDeal struct {
-	ID         model.DealID
-	ClientID   string
-	Provider   string
-	PieceCID   model.CID
+	ID            model.DealID
+	ClientID string
+	Provider      string
+	PieceCID      model.CID
 	StartEpoch int32
 	EndEpoch   int32
 }
@@ -424,16 +424,16 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	var lastEpoch int32
 
 	db := d.dbNoContext.WithContext(ctx)
-	var wallets []model.Wallet
-	err = db.Find(&wallets).Error
+	var actors []model.Actor
+	err = db.Find(&actors).Error
 	if err != nil {
-		return errors.Wrap(err, "failed to get wallets from database")
+		return errors.Wrap(err, "failed to get actors from database")
 	}
 
-	walletIDs := make(map[string]struct{})
-	for _, wallet := range wallets {
-		Logger.Infof("tracking deals for wallet %s", wallet.ID)
-		walletIDs[wallet.ID] = struct{}{}
+	actorIDs := make(map[string]struct{})
+	for _, actor := range actors {
+		Logger.Infof("tracking deals for actor %s", actor.ID)
+		actorIDs[actor.ID] = struct{}{}
 	}
 
 	knownDeals := make(map[uint64]model.DealState)
@@ -467,10 +467,10 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		}
 		key := deal.Key()
 		unknownDeals[key] = append(unknownDeals[key], UnknownDeal{
-			ID:         deal.ID,
-			ClientID:   deal.ClientID,
-			Provider:   deal.Provider,
-			PieceCID:   deal.PieceCID,
+			ID:            deal.ID,
+			ClientID: deal.ClientID,
+			Provider:      deal.Provider,
+			PieceCID:      deal.PieceCID,
 			StartEpoch: deal.StartEpoch,
 			EndEpoch:   deal.EndEpoch,
 		})
@@ -488,7 +488,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		if deal.State.LastUpdatedEpoch > lastEpoch {
 			lastEpoch = deal.State.LastUpdatedEpoch
 		}
-		_, ok := walletIDs[deal.Proposal.Client]
+		_, ok := actorIDs[deal.Proposal.Client]
 		if !ok {
 			return nil
 		}
@@ -556,7 +556,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			return db.Create(&model.Deal{
 				DealID:           &dealID,
 				State:            newState,
-				DealType:         model.DealTypeMarket, // Legacy market deal (f05)
+				DealType:         model.DealTypeMarket,
 				ClientID:         deal.Proposal.Client,
 				Provider:         deal.Proposal.Provider,
 				Label:            deal.Proposal.Label,

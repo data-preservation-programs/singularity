@@ -92,8 +92,8 @@ func StoragePricePerEpochToPricePerDeal(price string, dealSize int64, durationEp
 type DealID uint64
 
 // Deal is the deal model for all deals made by deal pusher or tracked by the tracker.
-// The index on PieceCID is used to track replication of the same piece CID.
-// The index on State and ClientID is used to calculate number and size of pending deals.
+// index on PieceCID tracks replication of same piece
+// index on State and ClientActorID calculates pending deals
 type Deal struct {
 	ID               DealID     `gorm:"primaryKey"                      json:"id"                                  table:"verbose"`
 	CreatedAt        time.Time  `json:"createdAt"                       table:"verbose;format:2006-01-02 15:04:05"`
@@ -120,15 +120,15 @@ type Deal struct {
 	NextChallengeEpoch *int32  `json:"nextChallengeEpoch,omitempty" table:"verbose"` // NextChallengeEpoch is the next epoch when a challenge proof is due
 
 	// Associations
-	ScheduleID *ScheduleID `json:"scheduleId"                                         table:"verbose"`
-	Schedule   *Schedule   `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL" json:"schedule,omitempty" swaggerignore:"true" table:"expand"`
-	ClientID   string      `gorm:"index:idx_pending"                                  json:"clientId"`
-	Wallet     *Wallet     `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"   swaggerignore:"true" table:"expand"`
+	ScheduleID    *ScheduleID `json:"scheduleId"                                         table:"verbose"`
+	Schedule      *Schedule   `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL" json:"schedule,omitempty" swaggerignore:"true" table:"expand"`
+	ClientActorID string      `gorm:"index:idx_pending;column:client_id"                 json:"clientActorId"` // TODO: rename column after migration
+	Actor         *Actor      `gorm:"foreignKey:ClientActorID;constraint:OnDelete:SET NULL" json:"actor,omitempty" swaggerignore:"true" table:"expand"`
 }
 
 // Key returns a mostly unique key to match deal from locally proposed deals and deals from the chain.
 func (d Deal) Key() string {
-	return fmt.Sprintf("%s-%s-%s-%d-%d", d.ClientID, d.Provider, d.PieceCID.String(), d.StartEpoch, d.EndEpoch)
+	return fmt.Sprintf("%s-%s-%s-%d-%d", d.ClientActorID, d.Provider, d.PieceCID.String(), d.StartEpoch, d.EndEpoch)
 }
 
 type ScheduleID uint32
@@ -167,8 +167,16 @@ type Schedule struct {
 	Preparation   *Preparation  `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"expand"`
 }
 
-type Wallet struct {
-	ID         string `gorm:"primaryKey;size:15"   json:"id"`      // ID is the short ID of the wallet
-	Address    string `gorm:"index"                json:"address"` // Address is the Filecoin full address of the wallet
-	PrivateKey string `json:"privateKey,omitempty" table:"-"`      // PrivateKey is the private key of the wallet
+// on-chain actor identity tracked by singularity
+// actor may or may not be controlled by us (linked via optional WalletID)
+// TODO: after migration, add WalletID field linking to new Wallet model
+type Actor struct {
+	ID         string `gorm:"primaryKey;size:15"   json:"id"`      // actor ID (f0...)
+	Address    string `gorm:"index"                json:"address"` // filecoin address
+	PrivateKey string `json:"privateKey,omitempty" table:"-"`      // TODO: orphaned column, will be dropped by export-keys command
+}
+
+// GORM will rename "wallets" table to "actors" on AutoMigrate
+func (Actor) TableName() string {
+	return "actors"
 }
