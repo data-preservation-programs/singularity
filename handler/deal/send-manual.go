@@ -11,6 +11,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
@@ -66,6 +67,7 @@ func argToDuration(s string) (time.Duration, error) {
 func (DefaultHandler) SendManualHandler(
 	ctx context.Context,
 	db *gorm.DB,
+	ks keystore.KeyStore,
 	dealMaker replication.DealMaker,
 	request Proposal,
 ) (*model.Deal, error) {
@@ -136,7 +138,7 @@ func (DefaultHandler) SendManualHandler(
 		Duration:       duration,
 	}
 
-	dealModel, err := dealMaker.MakeDeal(ctx, actor, car, dealConfig)
+	dealModel, err := dealMaker.MakeDeal(ctx, db, ks, actor, car, dealConfig)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

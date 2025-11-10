@@ -8,9 +8,11 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/urfave/cli/v2"
 )
 
@@ -176,13 +178,19 @@ Notes:
 			return errors.Wrap(err, "failed to init host")
 		}
 		defer h.Close()
+
+		ks, err := keystore.NewLocalKeyStore(wallet.GetKeystoreDir())
+		if err != nil {
+			return errors.Wrap(err, "failed to init keystore")
+		}
+
 		dealMaker := replication.NewDealMaker(
 			util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token")),
 			h,
 			10*timeout,
 			timeout,
 		)
-		dealModel, err := deal.Default.SendManualHandler(ctx, db, dealMaker, proposal)
+		dealModel, err := deal.Default.SendManualHandler(ctx, db, ks, dealMaker, proposal)
 		if err != nil {
 			return errors.WithStack(err)
 		}

@@ -10,44 +10,67 @@ import (
 	"gorm.io/gorm"
 )
 
-// AttachHandler associates a wallet with a specific preparation based on given preparationID and wallet address or ID.
-//
-// Parameters:
-//   - ctx: The context for database transactions and other operations.
-//   - db: A pointer to the gorm.DB instance representing the database connection.
-//   - preparationID: The ID or name of the preparation to which the wallet will be attached.
-//   - wallet: The address or ID of the wallet to be attached to the preparation.
-//
-// Returns:
-//   - A pointer to the updated Preparation instance.
-//   - An error, if any occurred during the association operation.
+// attaches actor to preparation for deal-making
+// accepts actor ID (f0...) or wallet address/ID
+// wallet must already be linked to on-chain actor
 func (DefaultHandler) AttachHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	preparationID string,
-	wallet string,
+	actorOrWallet string,
 ) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
-	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Wallets")
+	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Actors")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", preparationID)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %s not found", preparationID)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	var w model.Wallet
-	err = db.Where("address = ? OR id = ?", wallet, wallet).First(&w).Error
+	// try to find as actor ID first
+	var actor model.Actor
+	err = db.Where("id = ?", actorOrWallet).First(&actor).Error
+	if err == nil {
+		// found actor directly
+		err = database.DoRetry(ctx, func() error {
+			return db.Model(&preparation).Association("Actors").Append(&actor)
+		})
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		return &preparation, nil
+	}
+
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.WithStack(err)
+	}
+
+	// not found as actor, try as wallet address or ID
+	var wallet model.Wallet
+	err = db.Where("address = ? OR id = ?", actorOrWallet, actorOrWallet).First(&wallet).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not found", wallet)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "actor or wallet %s not found", actorOrWallet)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
+	}
+
+	// wallet found - check if it has an actor
+	if wallet.ActorID == nil || *wallet.ActorID == "" {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter,
+			"wallet %s not yet linked to on-chain actor - fund the wallet first", wallet.Address)
+	}
+
+	// get the actor
+	err = db.Where("id = ?", *wallet.ActorID).First(&actor).Error
+	if err != nil {
+		return nil, errors.Wrapf(err, "actor %s not found", *wallet.ActorID)
 	}
 
 	err = database.DoRetry(ctx, func() error {
-		return db.Model(&preparation).Association("Wallets").Append(&w)
+		return db.Model(&preparation).Association("Actors").Append(&actor)
 	})
 	if err != nil {
 		return nil, errors.WithStack(err)
