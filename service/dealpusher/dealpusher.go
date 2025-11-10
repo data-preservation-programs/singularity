@@ -10,10 +10,12 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
@@ -36,6 +38,7 @@ var waitPendingInterval = time.Minute
 // DealPusher represents a struct that encapsulates the data and functionality related to pushing deals in a replication process.
 type DealPusher struct {
 	dbNoContext              *gorm.DB                                // Pointer to a gorm.DB object representing a database connection.
+	keyStore                 keystore.KeyStore                       // Keystore for loading private keys
 	walletChooser            replication.WalletChooser               // Object responsible for choosing a wallet for replication.
 	dealMaker                replication.DealMaker                   // Object responsible for making a deal in replication.
 	workerID                 uuid.UUID                               // UUID identifying the associated worker.
@@ -282,7 +285,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			}
 			var car model.Car
 			var dealModel *model.Deal
-			var walletObj model.Actor
+			var actorObj model.Actor
 			if schedule.MaxPendingDealNumber > 0 && pending.DealNumber >= schedule.MaxPendingDealNumber {
 				Logger.Infow("skipping this time since the max pending deal is reached", "schedule_id", schedule.ID)
 				goto waitForPending
@@ -352,7 +355,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return model.ScheduleError, errors.Wrap(err, "failed to find car")
 			}
 
-			walletObj, err = d.walletChooser.Choose(ctx, schedule.Preparation.Actors)
+			actorObj, err = d.walletChooser.Choose(ctx, schedule.Preparation.Actors)
 			if err != nil {
 				return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
 			}
@@ -360,7 +363,9 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			err = retry.Do(func() error {
 				dealModel, err = d.dealMaker.MakeDeal(
 					ctx,
-					walletObj,
+					d.dbNoContext,
+					d.keyStore,
+					actorObj,
 					car,
 					replication.DealConfig{
 						Provider:        schedule.Provider,
@@ -433,13 +438,18 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to init host")
 	}
+
+	ks, err := keystore.NewLocalKeyStore(wallet.GetKeystoreDir())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to init keystore")
+	}
+
 	lotusClient := util.NewLotusClient(lotusURL, lotusToken)
 	dealMaker := replication.NewDealMaker(lotusClient, h, time.Hour, time.Minute)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to init deal maker")
-	}
+
 	return &DealPusher{
 		dbNoContext:              db,
+		keyStore:                 ks,
 		activeScheduleCancelFunc: make(map[model.ScheduleID]context.CancelFunc),
 		activeSchedule:           make(map[model.ScheduleID]*model.Schedule),
 		cronEntries:              make(map[model.ScheduleID]cron.EntryID),

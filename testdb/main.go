@@ -342,7 +342,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				Price:      "0",
 				Verified:   true,
 				ScheduleID: ptr.Of(schedule.ID),
-				ClientActorID: actor.ID,
+				ClientID: actor.ID,
 			}
 			if state == model.DealActive {
 				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062

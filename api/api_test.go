@@ -97,7 +97,7 @@ func setupMockDeal() deal.Handler {
 	m := new(deal.MockDeal)
 	m.On("ListHandler", mock.Anything, mock.Anything, mock.Anything).
 		Return([]model.Deal{{}}, nil)
-	m.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	m.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&model.Deal{}, nil)
 	return m
 }

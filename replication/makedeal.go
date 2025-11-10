@@ -22,16 +22,18 @@ import (
 	"github.com/filecoin-project/go-state-types/big"
 	"github.com/filecoin-project/go-state-types/builtin/v9/market"
 	"github.com/filecoin-shipyard/boostly"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/jellydator/ttlcache/v3"
-	filwallet "github.com/jsign/go-filsigner/wallet"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/peerstore"
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/ybbus/jsonrpc/v3"
+	"gorm.io/gorm"
 )
 
 const (
@@ -55,7 +57,7 @@ type DealProviderCollateralBound struct {
 }
 
 type DealMaker interface {
-	MakeDeal(ctx context.Context, walletObj model.Actor, car model.Car, dealConfig DealConfig) (*model.Deal, error)
+	MakeDeal(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, actorObj model.Actor, car model.Car, dealConfig DealConfig) (*model.Deal, error)
 }
 
 // DealMakerImpl is an implementation of a deal-making component for a Filecoin-like network.
@@ -491,7 +493,7 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 //
 // Parameters:
 //   - ctx context.Context: The context to use for timeouts and cancellation.
-//   - walletObj model.Wallet: The client's wallet, containing the client's addresses and private key.
+//   - actorObj model.Wallet: The client's wallet, containing the client's addresses and private key.
 //   - car model.Car: The car file that contains the data to be stored.
 //   - dealConfig DealConfig: The configuration for the deal, including price and duration.
 //
@@ -515,14 +517,15 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 //   - Deal proposal rejected by the provider.
 //
 //   - No supported protocol found between client and provider.
-func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Actor,
+func (d DealMakerImpl) MakeDeal(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, actorObj model.Actor,
 	car model.Car, dealConfig DealConfig,
 ) (*model.Deal, error) {
-	logger.Infow("making deal", "client", walletObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
+	db = db.WithContext(ctx)
+	logger.Infow("making deal", "client", actorObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
 	now := time.Now().UTC()
-	addr, err := address.NewFromString(walletObj.Address)
+	addr, err := address.NewFromString(actorObj.Address)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse wallet address %s", walletObj.Address)
+		return nil, errors.Wrapf(err, "failed to parse wallet address %s", actorObj.Address)
 	}
 
 	pvd, err := address.NewFromString(dealConfig.Provider)
@@ -578,9 +581,14 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Actor,
 		return nil, errors.Wrapf(err, "failed to serialize deal proposal %s", proposal)
 	}
 
-	// TODO: update to use new keystore-based signing with handler/wallet.SignWithWallet()
-	// for now, PrivateKey column still exists in actors table as orphaned column
-	signature, err := filwallet.WalletSign(walletObj.PrivateKey, proposalBytes)
+	// load wallet that controls this actor
+	walletRecord, err := wallet.LoadWalletByActorID(ctx, db, actorObj.ID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to load wallet for actor %s", actorObj.ID)
+	}
+
+	// sign using keystore-based signing
+	signature, err := wallet.SignWithWallet(ks, *walletRecord, proposalBytes)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to sign deal proposal")
 	}
@@ -592,7 +600,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Actor,
 
 	dealModel := &model.Deal{
 		State:         model.DealProposed,
-		ClientActorID: walletObj.ID,
+		ClientID: actorObj.ID,
 		Provider:      dealConfig.Provider,
 		Label:         cid.Cid(car.RootCID).String(),
 		PieceCID:  car.PieceCID,
@@ -637,7 +645,7 @@ func queueDealEvent(deal model.Deal) {
 		DataCID:    deal.Label,
 		PieceSize:  deal.PieceSize,
 		Provider:   deal.Provider,
-		Client:     deal.ClientActorID,
+		Client:     deal.ClientID,
 		Verified:   deal.Verified,
 		StartEpoch: deal.StartEpoch,
 		EndEpoch:   deal.EndEpoch - deal.StartEpoch,

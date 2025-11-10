@@ -24,13 +24,13 @@ func swapDealHandler(mockHandler deal.Handler) func() {
 
 func TestSendDealHandler(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Wallet{ID: "client_id"}).Error
+		err := db.Create(&model.Actor{ID: "client_id"}).Error
 		require.NoError(t, err)
 		runner := NewRunner()
 		defer runner.Save(t)
 		mockHandler := new(deal.MockDeal)
 		defer swapDealHandler(mockHandler)()
-		mockHandler.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
+		mockHandler.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			State:            "proposed",
 			Provider:         "f01",
 			ProposalID:       "proposal_id",
@@ -46,7 +46,7 @@ func TestSendDealHandler(t *testing.T) {
 		}, nil).Once()
 		_, _, err = runner.Run(ctx, "singularity deal send-manual --client client --provider provider --piece-cid piece_cid --piece-size 1024 --save")
 		require.NoError(t, err)
-		mockHandler.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
+		mockHandler.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			State:            "proposed",
 			Provider:         "f01",
 			ProposalID:       "proposal_id",
