@@ -204,7 +204,7 @@ type File struct {
 	LastModifiedNano int64  `cbor:"5,keyasint,omitempty" json:"lastModifiedNano"`
 
 	// Associations
-	AttachmentID SourceAttachmentID `cbor:"-" json:"attachmentId"`
+	AttachmentID SourceAttachmentID `cbor:"-" gorm:"index"                                               json:"attachmentId"`
 	Attachment   *SourceAttachment  `cbor:"-" gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
 	DirectoryID  *DirectoryID       `cbor:"-" gorm:"index"                                               json:"directoryId"`
 	Directory    *Directory         `cbor:"-" gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"  json:"directory,omitempty"  swaggerignore:"true"`
