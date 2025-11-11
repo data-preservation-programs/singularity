@@ -11,8 +11,8 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/scan"
-	"github.com/data-preservation-programs/singularity/util"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var (
@@ -54,27 +54,44 @@ func (DefaultHandler) StartPackHandler(
 	var jobs []model.Job
 	if jobID == 0 {
 		err = database.DoRetry(ctx, func() error {
-			err := db.Where("type = ? AND state in ? AND attachment_id = ?", model.Pack, startableStatesForPack, sourceAttachment.ID).Find(&jobs).Error
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			var jobIDs []model.JobID
-			for i, job := range jobs {
-				jobIDs = append(jobIDs, job.ID)
-				jobs[i].State = model.Ready
-			}
-			jobIDChunks := util.ChunkSlice(jobIDs, util.BatchSize)
-			for _, jobIDs := range jobIDChunks {
-				err = db.Model(&model.Job{}).Where("id IN ?", jobIDs).Updates(map[string]any{
-					"state":             model.Ready,
-					"error_message":     "",
-					"error_stack_trace": "",
-				}).Error
+			return db.Transaction(func(tx *gorm.DB) error {
+				// Find all eligible jobs
+				err := tx.Where("type = ? AND state in ? AND attachment_id = ?", model.Pack, startableStatesForPack, sourceAttachment.ID).Find(&jobs).Error
 				if err != nil {
 					return errors.WithStack(err)
 				}
-			}
-			return nil
+
+				// Update jobs one at a time with SKIP LOCKED to avoid deadlock with worker cleanup
+				updatedJobs := make([]model.Job, 0, len(jobs))
+				for _, job := range jobs {
+					// Try to lock and update this job
+					err = tx.Clauses(clause.Locking{
+						Strength: "UPDATE",
+						Options:  "SKIP LOCKED",
+					}).Model(&model.Job{}).
+						Where("id = ?", job.ID).
+						Updates(map[string]any{
+							"state":             model.Ready,
+							"error_message":     "",
+							"error_stack_trace": "",
+						}).Error
+
+					if err != nil {
+						return errors.WithStack(err)
+					}
+
+					// Check if we actually updated the job (RowsAffected would tell us)
+					// If SKIP LOCKED caused us to skip it, RowsAffected will be 0
+					if tx.RowsAffected > 0 {
+						job.State = model.Ready
+						updatedJobs = append(updatedJobs, job)
+					}
+				}
+
+				// Replace jobs with only the ones we successfully updated
+				jobs = updatedJobs
+				return nil
+			})
 		})
 		if err != nil {
 			return nil, errors.WithStack(err)
@@ -162,23 +179,40 @@ func (DefaultHandler) PausePackHandler(
 	var jobs []model.Job
 	if jobID == 0 {
 		err = database.DoRetry(ctx, func() error {
-			err := db.Where("type = ? AND state in ? AND attachment_id = ?", model.Pack, pausableStatesForPack, sourceAttachment.ID).Find(&jobs).Error
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			var jobIDs []model.JobID
-			for i, job := range jobs {
-				jobIDs = append(jobIDs, job.ID)
-				jobs[i].State = model.Paused
-			}
-			jobIDChunks := util.ChunkSlice(jobIDs, util.BatchSize)
-			for _, jobIDs := range jobIDChunks {
-				err = db.Model(&model.Job{}).Where("id IN ?", jobIDs).Update("state", model.Paused).Error
+			return db.Transaction(func(tx *gorm.DB) error {
+				// Find all eligible jobs
+				err := tx.Where("type = ? AND state in ? AND attachment_id = ?", model.Pack, pausableStatesForPack, sourceAttachment.ID).Find(&jobs).Error
 				if err != nil {
 					return errors.WithStack(err)
 				}
-			}
-			return nil
+
+				// Update jobs one at a time with SKIP LOCKED to avoid deadlock with worker cleanup
+				updatedJobs := make([]model.Job, 0, len(jobs))
+				for _, job := range jobs {
+					// Try to lock and update this job
+					err = tx.Clauses(clause.Locking{
+						Strength: "UPDATE",
+						Options:  "SKIP LOCKED",
+					}).Model(&model.Job{}).
+						Where("id = ?", job.ID).
+						Update("state", model.Paused).Error
+
+					if err != nil {
+						return errors.WithStack(err)
+					}
+
+					// Check if we actually updated the job (RowsAffected would tell us)
+					// If SKIP LOCKED caused us to skip it, RowsAffected will be 0
+					if tx.RowsAffected > 0 {
+						job.State = model.Paused
+						updatedJobs = append(updatedJobs, job)
+					}
+				}
+
+				// Replace jobs with only the ones we successfully updated
+				jobs = updatedJobs
+				return nil
+			})
 		})
 		if err != nil {
 			return nil, errors.WithStack(err)
