@@ -33,11 +33,11 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 	for _, jobType := range typesOrdered {
 		err := database.DoRetry(ctx, func() error {
 			return db.Transaction(func(db *gorm.DB) error {
-				err := db.Preload("Attachment.Preparation.OutputStorages").Preload("Attachment.Storage").
-					Clauses(clause.Locking{
-						Strength: "UPDATE",
-						Options:  "SKIP LOCKED",
-					}).
+				// First, lock and claim the job without preloading (preload can interfere with locking)
+				err := db.Clauses(clause.Locking{
+					Strength: "UPDATE",
+					Options:  "SKIP LOCKED",
+				}).
 					Where("type = ? AND (state = ? OR (state = ? AND worker_id IS NULL))", jobType, model.Ready, model.Processing).
 					First(&job).Error
 				if err != nil {
@@ -48,12 +48,21 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 					return errors.WithStack(err)
 				}
 
-				return db.Model(&job).
+				// Update the job to claim it
+				err = db.Model(&job).
 					Updates(map[string]any{
 						"state":         model.Processing,
 						"worker_id":     w.id,
 						"error_message": "",
 					}).Error
+				if err != nil {
+					return errors.WithStack(err)
+				}
+
+				// Now load the associations we need
+				err = db.Preload("Attachment.Preparation.OutputStorages").Preload("Attachment.Storage").
+					First(&job, job.ID).Error
+				return errors.WithStack(err)
 			}, txOpts)
 		})
 		if err != nil {
