@@ -59,11 +59,9 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 
 // HealthCheckCleanup is a function that cleans up stale workers and work files in the database.
 //
-// It first removes all workers that haven't sent a heartbeat for a certain threshold (staleThreshold).
-// If there's an error removing the workers, it logs the error and continues.
-//
-// Then, it resets the state of any jobs that are marked as being processed by a worker that no longer exists.
-// If there's an error updating the sources, it logs the error and continues.
+// It first finds workers that haven't sent a heartbeat for a certain threshold (staleThreshold).
+// Then it explicitly updates jobs owned by those workers to prevent CASCADE lock contention.
+// Finally, it removes the stale workers.
 //
 // All database operations are retried on failure using the DoRetry function.
 //
@@ -72,17 +70,73 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	db = db.WithContext(ctx)
 	logger.Debugw("running healthcheck cleanup")
-	// Remove all workers that haven't sent heartbeat for 5 minutes.
+
+	// Clean up stale workers and their jobs in a single transaction to ensure consistency
+	// and avoid FK CASCADE deadlocks by explicitly updating jobs first with SKIP LOCKED.
 	err := database.DoRetry(ctx, func() error {
-		return db.Where("last_heartbeat < ?", time.Now().UTC().Add(-staleThreshold)).Delete(&model.Worker{}).Error
+		return db.Transaction(func(tx *gorm.DB) error {
+			// Find stale workers
+			var staleWorkers []model.Worker
+			err := tx.Where("last_heartbeat < ?", time.Now().UTC().Add(-staleThreshold)).Find(&staleWorkers).Error
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			if len(staleWorkers) == 0 {
+				return nil
+			}
+
+			staleWorkerIDs := make([]string, len(staleWorkers))
+			for i, w := range staleWorkers {
+				staleWorkerIDs[i] = w.ID
+			}
+
+			// Explicitly update jobs owned by stale workers with SKIP LOCKED to avoid deadlock
+			// with concurrent bulk job updates. We use a two-step approach (SELECT then UPDATE)
+			// to be compatible with both PostgreSQL and MySQL/MariaDB.
+			var jobsToUpdate []model.Job
+			err = tx.Clauses(clause.Locking{
+				Strength: "UPDATE",
+				Options:  "SKIP LOCKED",
+			}).Select("id").
+				Where("worker_id IN ? AND state = ?", staleWorkerIDs, model.Processing).
+				Find(&jobsToUpdate).Error
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			// Update the jobs we successfully locked
+			if len(jobsToUpdate) > 0 {
+				jobIDsToUpdate := make([]model.JobID, len(jobsToUpdate))
+				for i, job := range jobsToUpdate {
+					jobIDsToUpdate[i] = job.ID
+				}
+
+				err = tx.Model(&model.Job{}).
+					Where("id IN ?", jobIDsToUpdate).
+					Updates(map[string]any{
+						"worker_id": nil,
+						"state":     model.Ready,
+					}).Error
+				if err != nil {
+					return errors.WithStack(err)
+				}
+			}
+
+			// Now delete the workers. The FK CASCADE will be mostly a no-op since we already
+			// nullified worker_id on jobs we could lock. Any jobs we couldn't lock will be
+			// handled by the CASCADE (may still cause some lock contention but reduced).
+			return errors.WithStack(tx.Where("id IN ?", staleWorkerIDs).Delete(&model.Worker{}).Error)
+		})
 	})
 	if err != nil && !errors.Is(err, context.Canceled) {
-		log.Logger("healthcheck").Errorw("failed to remove dead workers", "error", err)
+		logger.Errorw("failed to cleanup dead workers", "error", err)
 	}
 
-	// In case there are some works that have stale foreign key referenced to dead workers, we need to remove them
+	// Safety check: clean up any orphaned jobs that might have been missed
+	// (e.g., jobs we couldn't lock due to SKIP LOCKED, or jobs left in inconsistent state)
 	err = database.DoRetry(ctx, func() error {
-		return db.Model(&model.Job{}).Where("(worker_id NOT IN (?) OR worker_id IS NULL) AND state = ?",
+		return db.Model(&model.Job{}).Where("worker_id NOT IN (?) AND state = ?",
 			db.Table("workers").Select("id"), model.Processing).
 			Updates(map[string]any{
 				"worker_id": nil,
@@ -90,7 +144,7 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 			}).Error
 	})
 	if err != nil && !errors.Is(err, context.Canceled) {
-		log.Logger("healthcheck").Errorw("failed to remove stale workers", "error", err)
+		logger.Errorw("failed to cleanup orphaned jobs", "error", err)
 	}
 }
 

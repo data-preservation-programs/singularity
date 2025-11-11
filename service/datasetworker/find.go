@@ -8,6 +8,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // findJob searches for a Job from the database based on the ordered list of job types provided.
@@ -26,13 +27,17 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 	db := w.dbNoContext.WithContext(ctx)
 
 	txOpts := &sql.TxOptions{
-		Isolation: sql.LevelSerializable,
+		Isolation: sql.LevelReadCommitted,
 	}
 	var job model.Job
 	for _, jobType := range typesOrdered {
 		err := database.DoRetry(ctx, func() error {
 			return db.Transaction(func(db *gorm.DB) error {
 				err := db.Preload("Attachment.Preparation.OutputStorages").Preload("Attachment.Storage").
+					Clauses(clause.Locking{
+						Strength: "UPDATE",
+						Options:  "SKIP LOCKED",
+					}).
 					Where("type = ? AND (state = ? OR (state = ? AND worker_id IS NULL))", jobType, model.Ready, model.Processing).
 					First(&job).Error
 				if err != nil {
