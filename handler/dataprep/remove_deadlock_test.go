@@ -173,8 +173,8 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 				handler := DefaultHandler{}
 				err := handler.RemovePreparationHandler(deleteCtx, db, preparations[prepIdx].Name, RemoveRequest{})
 				if err != nil && deleteCtx.Err() == nil {
-					// Ignore "not found" and "active jobs" errors
-					if !isNotFoundError(err) && !isActiveJobsError(err) {
+					// Ignore expected errors from concurrent operations
+					if !isNotFoundError(err) && !isActiveJobsError(err) && !isJobsInUseError(err) {
 						errChan <- err
 					}
 				}
@@ -283,6 +283,10 @@ func isNotFoundError(err error) bool {
 
 func isActiveJobsError(err error) bool {
 	return err != nil && strings.Contains(err.Error(), "active jobs")
+}
+
+func isJobsInUseError(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "jobs in use")
 }
 
 func isFKError(err error) bool {

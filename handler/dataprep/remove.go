@@ -12,6 +12,7 @@ import (
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type RemoveRequest struct {
@@ -96,6 +97,28 @@ func (DefaultHandler) RemovePreparationHandler(ctx context.Context, db *gorm.DB,
 				Find(&fileIDs).Error
 			if err != nil {
 				return errors.WithStack(err)
+			}
+
+			// Step 5: Try to lock all jobs with SKIP LOCKED to detect concurrent activity
+			// This prevents deadlock with concurrent job updates
+			if len(jobIDs) > 0 {
+				var lockedJobs []model.Job
+				err = tx.Clauses(clause.Locking{
+					Strength: "UPDATE",
+					Options:  "SKIP LOCKED",
+				}).Select("id").
+					Where("id IN ?", jobIDs).
+					Find(&lockedJobs).Error
+				if err != nil {
+					return errors.WithStack(err)
+				}
+
+				// If we couldn't lock all jobs, some are being used by concurrent transactions
+				if len(lockedJobs) < len(jobIDs) {
+					return errors.Wrapf(handlererror.ErrInvalidParameter,
+						"preparation %s has jobs in use by concurrent operations (%d/%d locked)",
+						preparation.Name, len(lockedJobs), len(jobIDs))
+				}
 			}
 
 			// Now delete in leaf-to-root order using materialized IDs:
