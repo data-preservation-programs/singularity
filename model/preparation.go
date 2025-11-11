@@ -183,9 +183,9 @@ type Job struct {
 	ErrorStackTrace string   `json:"errorStackTrace"      table:"verbose"`
 
 	// Associations
-	WorkerID     *string            `gorm:"size:63"                                                        json:"workerId,omitempty"`
+	WorkerID     *string            `gorm:"size:63;index"                                                  json:"workerId,omitempty"`
 	Worker       *Worker            `gorm:"foreignKey:WorkerID;references:ID;constraint:OnDelete:SET NULL" json:"worker,omitempty"     swaggerignore:"true" table:"verbose;expand"`
-	AttachmentID SourceAttachmentID `json:"attachmentId"                                                   table:"verbose"`
+	AttachmentID SourceAttachmentID `gorm:"index"                                                          json:"attachmentId"                                                   table:"verbose"`
 	Attachment   *SourceAttachment  `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE"            json:"attachment,omitempty" swaggerignore:"true" table:"expand"`
 	FileRanges   []FileRange        `gorm:"foreignKey:JobID;constraint:OnDelete:SET NULL"                  json:"fileRanges,omitempty" swaggerignore:"true" table:"-"`
 }
@@ -266,17 +266,17 @@ type Car struct {
 	RootCID             CID        `cbor:"3,keyasint,omitempty" gorm:"column:root_cid;type:bytes"                        json:"rootCid"                             swaggertype:"string"`
 	FileSize            int64      `cbor:"4,keyasint,omitempty" json:"fileSize"`
 	MinPieceSizePadding int64      `cbor:"5,keyasint,omitempty" json:"minPieceSizePadding"` // MinPieceSizePadding tracks virtual padding for inline mode only. Inline: stores padding amount, PieceReader serves zeros virtually. Non-inline: always 0, literal zeros are written to CAR file for Curio TreeD compatibility.
-	StorageID           *StorageID `cbor:"-"                    json:"storageId"                                         table:"verbose"`
+	StorageID           *StorageID `cbor:"-"                    gorm:"index"                                             json:"storageId"                                         table:"verbose"`
 	Storage             *Storage   `cbor:"-"                    gorm:"foreignKey:StorageID;constraint:OnDelete:SET NULL" json:"storage,omitempty"                   swaggerignore:"true" table:"expand"`
 	StoragePath         string     `cbor:"-"                    json:"storagePath"` // StoragePath is the path to the CAR file inside the storage. If the StorageID is nil but StoragePath is not empty, it means the CAR file is stored at the local absolute path.
 	NumOfFiles          int64      `cbor:"-"                    json:"numOfFiles"                                        table:"verbose"`
 
 	// Association
-	PreparationID PreparationID       `cbor:"-" json:"preparationId"                                        table:"-"`
+	PreparationID PreparationID       `cbor:"-" gorm:"index"                                                json:"preparationId"                                        table:"-"`
 	Preparation   *Preparation        `cbor:"-" gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"-"`
-	AttachmentID  *SourceAttachmentID `cbor:"-" json:"attachmentId"                                         table:"-"`
+	AttachmentID  *SourceAttachmentID `cbor:"-" gorm:"index"                                                json:"attachmentId"                                         table:"-"`
 	Attachment    *SourceAttachment   `cbor:"-" gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE"  json:"attachment,omitempty"  swaggerignore:"true" table:"-"`
-	JobID         *JobID              `cbor:"-" json:"jobId,omitempty"                                      table:"-"`
+	JobID         *JobID              `cbor:"-" gorm:"index"                                                json:"jobId,omitempty"                                      table:"-"`
 	Job           *Job                `cbor:"-" gorm:"foreignKey:JobID;constraint:OnDelete:SET NULL"        json:"job,omitempty"         swaggerignore:"true" table:"-"`
 }
 
