@@ -61,7 +61,7 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 //
 // It first finds workers that haven't sent a heartbeat for a certain threshold (staleThreshold).
 // Then it explicitly updates jobs owned by those workers to prevent CASCADE lock contention.
-// Finally, it removes the stale workers.
+// Worker deletion is deferred to avoid deadlocks during concurrent operations.
 //
 // All database operations are retried on failure using the DoRetry function.
 //
@@ -71,97 +71,78 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	db = db.WithContext(ctx)
 	logger.Debugw("running healthcheck cleanup")
 
-	// Clean up stale workers and their jobs in a single transaction to ensure consistency
-	// and avoid FK CASCADE deadlocks by explicitly updating jobs first with SKIP LOCKED.
-	err := database.DoRetry(ctx, func() error {
-		return db.Transaction(func(tx *gorm.DB) error {
-			// Find stale workers
-			var staleWorkers []model.Worker
-			err := tx.Where("last_heartbeat < ?", time.Now().UTC().Add(-staleThreshold)).Find(&staleWorkers).Error
-			if err != nil {
-				return errors.WithStack(err)
-			}
+	// Find stale workers
+	var staleWorkers []model.Worker
+	err := db.Where("last_heartbeat < ?", time.Now().UTC().Add(-staleThreshold)).Find(&staleWorkers).Error
+	if err != nil {
+		logger.Errorw("failed to find stale workers", "error", err)
+		return
+	}
 
-			if len(staleWorkers) == 0 {
-				return nil
-			}
+	if len(staleWorkers) == 0 {
+		return
+	}
 
-			staleWorkerIDs := make([]string, len(staleWorkers))
-			for i, w := range staleWorkers {
-				staleWorkerIDs[i] = w.ID
-			}
-
-			// Explicitly update jobs owned by stale workers with SKIP LOCKED to avoid deadlock
-			// with concurrent bulk job updates. We use a two-step approach (SELECT then UPDATE)
-			// to be compatible with both PostgreSQL and MySQL/MariaDB.
-			var jobsToUpdate []model.Job
-			err = tx.Clauses(clause.Locking{
-				Strength: "UPDATE",
-				Options:  "SKIP LOCKED",
-			}).Select("id").
-				Where("worker_id IN ? AND state = ?", staleWorkerIDs, model.Processing).
-				Find(&jobsToUpdate).Error
-			if err != nil {
-				return errors.WithStack(err)
-			}
-
-			// Update the jobs we successfully locked
-			if len(jobsToUpdate) > 0 {
-				jobIDsToUpdate := make([]model.JobID, len(jobsToUpdate))
-				for i, job := range jobsToUpdate {
-					jobIDsToUpdate[i] = job.ID
-				}
-
-				err = tx.Model(&model.Job{}).
-					Where("id IN ?", jobIDsToUpdate).
-					Updates(map[string]any{
-						"worker_id": nil,
-						"state":     model.Ready,
-					}).Error
-				if err != nil {
-					return errors.WithStack(err)
-				}
-			}
-
-			// Only delete workers that have no remaining jobs with worker_id set
-			// This avoids deadlock from FK CASCADE trying to lock jobs that are locked by other transactions
-			for _, workerID := range staleWorkerIDs {
-				var remainingJobCount int64
-				err = tx.Model(&model.Job{}).
-					Where("worker_id = ?", workerID).
-					Count(&remainingJobCount).Error
+	// Process each stale worker individually to avoid lock ordering issues
+	for _, worker := range staleWorkers {
+		// First, just update jobs without trying to delete the worker
+		err := database.DoRetry(ctx, func() error {
+			return db.Transaction(func(tx *gorm.DB) error {
+				// Lock and update jobs owned by this specific worker with SKIP LOCKED
+				var jobsToUpdate []model.Job
+				err := tx.Clauses(clause.Locking{
+					Strength: "UPDATE",
+					Options:  "SKIP LOCKED",
+				}).Select("id").
+					Where("worker_id = ? AND state = ?", worker.ID, model.Processing).
+					Find(&jobsToUpdate).Error
 				if err != nil {
 					return errors.WithStack(err)
 				}
 
-				// Only delete if no jobs reference this worker anymore
-				if remainingJobCount == 0 {
-					err = tx.Where("id = ?", workerID).Delete(&model.Worker{}).Error
+				// Update the jobs we successfully locked
+				if len(jobsToUpdate) > 0 {
+					jobIDsToUpdate := make([]model.JobID, len(jobsToUpdate))
+					for i, job := range jobsToUpdate {
+						jobIDsToUpdate[i] = job.ID
+					}
+
+					err = tx.Model(&model.Job{}).
+						Where("id IN ?", jobIDsToUpdate).
+						Updates(map[string]any{
+							"worker_id": nil,
+							"state":     model.Ready,
+						}).Error
 					if err != nil {
 						return errors.WithStack(err)
 					}
 				}
-				// If remainingJobCount > 0, skip this worker and let next cleanup attempt handle it
-			}
-			return nil
+				return nil
+			})
 		})
-	})
-	if err != nil && !errors.Is(err, context.Canceled) {
-		logger.Errorw("failed to cleanup dead workers", "error", err)
-	}
+		if err != nil && !errors.Is(err, context.Canceled) {
+			logger.Errorw("failed to cleanup jobs for worker", "workerID", worker.ID, "error", err)
+		}
 
-	// Safety check: clean up any orphaned jobs that might have been missed
-	// (e.g., jobs we couldn't lock due to SKIP LOCKED, or jobs left in inconsistent state)
-	err = database.DoRetry(ctx, func() error {
-		return db.Model(&model.Job{}).Where("worker_id NOT IN (?) AND state = ?",
-			db.Table("workers").Select("id"), model.Processing).
-			Updates(map[string]any{
-				"worker_id": nil,
-				"state":     model.Ready,
-			}).Error
-	})
-	if err != nil && !errors.Is(err, context.Canceled) {
-		logger.Errorw("failed to cleanup orphaned jobs", "error", err)
+		// Now check if the worker has any jobs left
+		var jobCount int64
+		err = db.Model(&model.Job{}).Where("worker_id = ?", worker.ID).Count(&jobCount).Error
+		if err != nil {
+			logger.Errorw("failed to count jobs for worker", "workerID", worker.ID, "error", err)
+			continue
+		}
+
+		// Only delete the worker if it has no jobs
+		if jobCount == 0 {
+			result := db.Where("id = ?", worker.ID).Delete(&model.Worker{})
+			if result.Error != nil {
+				logger.Errorw("failed to delete worker", "workerID", worker.ID, "error", result.Error)
+			} else if result.RowsAffected > 0 {
+				logger.Debugw("deleted stale worker", "workerID", worker.ID)
+			}
+		} else {
+			logger.Debugw("worker still has jobs, will retry later", "workerID", worker.ID, "jobCount", jobCount)
+		}
 	}
 }
 
