@@ -2,10 +2,12 @@ package healthcheck
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/google/uuid"
@@ -19,6 +21,7 @@ import (
 func TestHealthCheckCleanupNoDeadlock(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		req := require.New(t)
+		testutil.EnableDeadlockLogging(t, db)
 
 		// Create test preparation and storage for jobs
 		preparation := model.Preparation{
@@ -125,6 +128,12 @@ func TestHealthCheckCleanupNoDeadlock(t *testing.T) {
 				})
 
 				if err != nil && updateCtx.Err() == nil {
+					// If it's a deadlock error, get InnoDB status
+					if strings.Contains(err.Error(), "Deadlock") {
+						if deadlockInfo := database.PrintDeadlockInfo(db); deadlockInfo != "" {
+							t.Logf("\n%s", deadlockInfo)
+						}
+					}
 					errChan <- err
 				}
 			}(i)

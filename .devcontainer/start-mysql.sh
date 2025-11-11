@@ -26,6 +26,7 @@ nohup mariadbd \
   --port="${PORT}" \
   --skip-name-resolve \
   --log-error="${LOG_FILE}" \
+  --innodb-print-all-deadlocks=ON \
   >/dev/null 2>&1 &
 
 # Wait for MySQL to be ready
