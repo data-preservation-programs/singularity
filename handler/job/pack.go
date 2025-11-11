@@ -62,13 +62,26 @@ func (DefaultHandler) StartPackHandler(
 				}
 
 				// Update jobs one at a time with SKIP LOCKED to avoid deadlock with worker cleanup
+				// Use two-step approach: SELECT FOR UPDATE SKIP LOCKED, then UPDATE
 				updatedJobs := make([]model.Job, 0, len(jobs))
 				for _, job := range jobs {
-					// Try to lock and update this job
+					// Try to lock this job
+					var lockedJob model.Job
 					err = tx.Clauses(clause.Locking{
 						Strength: "UPDATE",
 						Options:  "SKIP LOCKED",
-					}).Model(&model.Job{}).
+					}).Where("id = ?", job.ID).First(&lockedJob).Error
+
+					if errors.Is(err, gorm.ErrRecordNotFound) {
+						// Job was locked by someone else, skip it
+						continue
+					}
+					if err != nil {
+						return errors.WithStack(err)
+					}
+
+					// Now update the job we successfully locked
+					err = tx.Model(&model.Job{}).
 						Where("id = ?", job.ID).
 						Updates(map[string]any{
 							"state":             model.Ready,
@@ -80,12 +93,8 @@ func (DefaultHandler) StartPackHandler(
 						return errors.WithStack(err)
 					}
 
-					// Check if we actually updated the job (RowsAffected would tell us)
-					// If SKIP LOCKED caused us to skip it, RowsAffected will be 0
-					if tx.RowsAffected > 0 {
-						job.State = model.Ready
-						updatedJobs = append(updatedJobs, job)
-					}
+					job.State = model.Ready
+					updatedJobs = append(updatedJobs, job)
 				}
 
 				// Replace jobs with only the ones we successfully updated
@@ -187,13 +196,26 @@ func (DefaultHandler) PausePackHandler(
 				}
 
 				// Update jobs one at a time with SKIP LOCKED to avoid deadlock with worker cleanup
+				// Use two-step approach: SELECT FOR UPDATE SKIP LOCKED, then UPDATE
 				updatedJobs := make([]model.Job, 0, len(jobs))
 				for _, job := range jobs {
-					// Try to lock and update this job
+					// Try to lock this job
+					var lockedJob model.Job
 					err = tx.Clauses(clause.Locking{
 						Strength: "UPDATE",
 						Options:  "SKIP LOCKED",
-					}).Model(&model.Job{}).
+					}).Where("id = ?", job.ID).First(&lockedJob).Error
+
+					if errors.Is(err, gorm.ErrRecordNotFound) {
+						// Job was locked by someone else, skip it
+						continue
+					}
+					if err != nil {
+						return errors.WithStack(err)
+					}
+
+					// Now update the job we successfully locked
+					err = tx.Model(&model.Job{}).
 						Where("id = ?", job.ID).
 						Update("state", model.Paused).Error
 
@@ -201,12 +223,8 @@ func (DefaultHandler) PausePackHandler(
 						return errors.WithStack(err)
 					}
 
-					// Check if we actually updated the job (RowsAffected would tell us)
-					// If SKIP LOCKED caused us to skip it, RowsAffected will be 0
-					if tx.RowsAffected > 0 {
-						job.State = model.Paused
-						updatedJobs = append(updatedJobs, job)
-					}
+					job.State = model.Paused
+					updatedJobs = append(updatedJobs, job)
 				}
 
 				// Replace jobs with only the ones we successfully updated

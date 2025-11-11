@@ -123,10 +123,27 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 				}
 			}
 
-			// Now delete the workers. The FK CASCADE will be mostly a no-op since we already
-			// nullified worker_id on jobs we could lock. Any jobs we couldn't lock will be
-			// handled by the CASCADE (may still cause some lock contention but reduced).
-			return errors.WithStack(tx.Where("id IN ?", staleWorkerIDs).Delete(&model.Worker{}).Error)
+			// Only delete workers that have no remaining jobs with worker_id set
+			// This avoids deadlock from FK CASCADE trying to lock jobs that are locked by other transactions
+			for _, workerID := range staleWorkerIDs {
+				var remainingJobCount int64
+				err = tx.Model(&model.Job{}).
+					Where("worker_id = ?", workerID).
+					Count(&remainingJobCount).Error
+				if err != nil {
+					return errors.WithStack(err)
+				}
+
+				// Only delete if no jobs reference this worker anymore
+				if remainingJobCount == 0 {
+					err = tx.Where("id = ?", workerID).Delete(&model.Worker{}).Error
+					if err != nil {
+						return errors.WithStack(err)
+					}
+				}
+				// If remainingJobCount > 0, skip this worker and let next cleanup attempt handle it
+			}
+			return nil
 		})
 	})
 	if err != nil && !errors.Is(err, context.Canceled) {
