@@ -10,10 +10,7 @@ import (
 // This should be called when a deadlock error is detected to help diagnose the issue.
 // Returns the deadlock information as a string, or empty string if not available.
 func PrintDeadlockInfo(db *gorm.DB) string {
-	// Check if this is MySQL/MariaDB
-	var dbType string
-	db.Raw("SELECT VERSION()").Scan(&dbType)
-	if !strings.Contains(strings.ToLower(dbType), "maria") && !strings.Contains(strings.ToLower(dbType), "mysql") {
+	if db.Dialector.Name() != "mysql" {
 		return ""
 	}
 
