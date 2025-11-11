@@ -54,10 +54,10 @@ func TestHealthCheckCleanupNoDeadlock(t *testing.T) {
 			workerID := uuid.New().String()
 			workerIDs[i] = workerID
 
-			// Create worker with old heartbeat (will be considered stale)
+			// Create worker with old heartbeat
 			worker := model.Worker{
 				ID:            workerID,
-				LastHeartbeat: time.Now().UTC().Add(-10 * time.Minute), // Stale
+				LastHeartbeat: time.Now().UTC().Add(-10 * time.Minute),
 				Hostname:      "test-host",
 				Type:          model.DatasetWorker,
 			}
@@ -78,25 +78,16 @@ func TestHealthCheckCleanupNoDeadlock(t *testing.T) {
 			}
 		}
 
-		// Run concurrent operations that could previously cause deadlock
 		const numIterations = 20
 		var wg sync.WaitGroup
 		errChan := make(chan error, numIterations*2)
 
-		// Override stale threshold temporarily for this test
-		oldThreshold := staleThreshold
-		staleThreshold = 5 * time.Minute
-		defer func() {
-			staleThreshold = oldThreshold
-		}()
-
 		for i := range numIterations {
 			wg.Add(2)
 
-			// Goroutine 1: Worker cleanup (deletes workers, triggers CASCADE)
+			// Goroutine 1: Worker cleanup
 			go func(iteration int) {
 				defer wg.Done()
-				// Add slight randomization to increase chance of lock conflicts
 				time.Sleep(time.Duration(iteration%3) * time.Millisecond)
 
 				cleanupCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -105,23 +96,19 @@ func TestHealthCheckCleanupNoDeadlock(t *testing.T) {
 				HealthCheckCleanup(cleanupCtx, db)
 			}(i)
 
-			// Goroutine 2: Bulk job update (updates multiple jobs)
+			// Goroutine 2: Bulk job update
 			go func(iteration int) {
 				defer wg.Done()
-				// Add slight randomization to increase chance of lock conflicts
 				time.Sleep(time.Duration(iteration%5) * time.Millisecond)
 
 				updateCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 				defer cancel()
 
-				// Simulate bulk update like in handler/job/pack.go
-				// Update a subset of jobs to Ready state
 				startIdx := (iteration * 5) % len(jobIDs)
 				endIdx := min(startIdx+10, len(jobIDs))
 				batchJobIDs := jobIDs[startIdx:endIdx]
 
 				err := db.WithContext(updateCtx).Transaction(func(tx *gorm.DB) error {
-					// This pattern previously could deadlock with worker cleanup
 					for _, jobID := range batchJobIDs {
 						err := tx.Model(&model.Job{}).
 							Where("id = ?", jobID).
@@ -137,37 +124,33 @@ func TestHealthCheckCleanupNoDeadlock(t *testing.T) {
 					return nil
 				})
 
-				if err != nil && ctx.Err() == nil {
+				if err != nil && updateCtx.Err() == nil {
 					errChan <- err
 				}
 			}(i)
 		}
 
-		// Wait for all operations to complete
 		done := make(chan struct{})
 		go func() {
 			wg.Wait()
 			close(done)
 		}()
 
-		// Wait with timeout
 		select {
 		case <-done:
-			// Success - no deadlock
 		case err := <-errChan:
 			req.NoError(err, "Unexpected error during concurrent operations")
 		case <-time.After(30 * time.Second):
 			req.Fail("Test timed out - likely deadlock occurred")
 		}
 
-		// Verify final state consistency
-		// All workers should be deleted
+		// Verify workers deleted
 		var remainingWorkers []model.Worker
 		err = db.Where("id IN ?", workerIDs).Find(&remainingWorkers).Error
 		req.NoError(err)
 		req.Empty(remainingWorkers, "All stale workers should be deleted")
 
-		// All jobs should have worker_id set to NULL and be in Ready or Complete state
+		// Verify jobs reset
 		var remainingJobs []model.Job
 		err = db.Where("id IN ?", jobIDs).Find(&remainingJobs).Error
 		req.NoError(err)

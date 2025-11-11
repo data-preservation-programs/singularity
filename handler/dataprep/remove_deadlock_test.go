@@ -2,6 +2,7 @@ package dataprep
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -21,8 +22,7 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		req := require.New(t)
 
-		// Create test data: multiple preparations sharing the SAME storage (realistic production scenario)
-		// When deleting one prep, CASCADE affects tables shared with other preps on same storage
+		// Create test data: multiple preparations sharing one storage
 		const numPreparations = 3
 		const numFilesPerPrep = 50
 		const numDirsPerPrep = 10
@@ -30,7 +30,7 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 		const numCarsPerPrep = 5
 		const numBlocksPerCar = 20
 
-		// Create ONE shared storage (this is the key to reproducing the real deadlock)
+		// Create shared storage
 		sharedStorage := model.Storage{
 			Name: "shared-storage-" + uuid.New().String(),
 			Type: "local",
@@ -56,7 +56,7 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 			req.NoError(err)
 			preparations[i] = prep
 
-			// ALL preparations attach to the SAME storage (production pattern!)
+			// Attach to shared storage
 			attachment := model.SourceAttachment{
 				PreparationID: prep.ID,
 				StorageID:     sharedStorage.ID,
@@ -65,7 +65,7 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 			req.NoError(err)
 			attachments[i] = attachment
 
-			// Create directories (will have circular references with files)
+			// Create directories
 			directories := make([]model.Directory, numDirsPerPrep)
 			for j := range numDirsPerPrep {
 				dir := model.Directory{
@@ -154,7 +154,6 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 			}
 		}
 
-		// Run concurrent operations that could previously cause deadlock
 		const numIterations = 15
 		var wg sync.WaitGroup
 		errChan := make(chan error, numIterations*4)
@@ -162,7 +161,7 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 		for i := range numIterations {
 			wg.Add(4)
 
-			// Goroutine 1: Delete preparations (triggers CASCADE)
+			// Goroutine 1: Delete preparations
 			go func(iteration int) {
 				defer wg.Done()
 				time.Sleep(time.Duration(iteration%3) * time.Millisecond)
@@ -174,16 +173,14 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 				handler := DefaultHandler{}
 				err := handler.RemovePreparationHandler(deleteCtx, db, preparations[prepIdx].Name, RemoveRequest{})
 				if err != nil && deleteCtx.Err() == nil {
-					// Ignore expected errors:
-					// - "not found" errors (prep already deleted by another goroutine)
-					// - "active jobs" errors (concurrent job updates made jobs active)
+					// Ignore "not found" and "active jobs" errors
 					if !isNotFoundError(err) && !isActiveJobsError(err) {
 						errChan <- err
 					}
 				}
 			}(i)
 
-			// Goroutine 2: Bulk job updates (simulating pack/pause operations)
+			// Goroutine 2: Bulk job updates
 			go func(iteration int) {
 				defer wg.Done()
 				time.Sleep(time.Duration(iteration%5) * time.Millisecond)
@@ -191,7 +188,6 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 				updateCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 				defer cancel()
 
-				// Update a batch of jobs
 				startIdx := (iteration * 5) % len(allJobIDs)
 				endIdx := min(startIdx+8, len(allJobIDs))
 				batchJobIDs := allJobIDs[startIdx:endIdx]
@@ -217,7 +213,7 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 				}
 			}(i)
 
-			// Goroutine 3: File updates (simulating scan operations)
+			// Goroutine 3: File updates
 			go func(iteration int) {
 				defer wg.Done()
 				time.Sleep(time.Duration(iteration%7) * time.Millisecond)
@@ -225,20 +221,17 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 				updateCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 				defer cancel()
 
-				// Update some files
-				if len(allFileIDs) > 0 {
-					fileIdx := iteration % len(allFileIDs)
-					err := db.WithContext(updateCtx).Model(&model.File{}).
-						Where("id = ?", allFileIDs[fileIdx]).
-						Update("size", 2048).Error
+				fileIdx := iteration % len(allFileIDs)
+				err := db.WithContext(updateCtx).Model(&model.File{}).
+					Where("id = ?", allFileIDs[fileIdx]).
+					Update("size", 2048).Error
 
-					if err != nil && updateCtx.Err() == nil {
-						errChan <- err
-					}
+				if err != nil && updateCtx.Err() == nil {
+					errChan <- err
 				}
 			}(i)
 
-			// Goroutine 4: Car block creation (simulating pack completion)
+			// Goroutine 4: Car block creation
 			go func(iteration int) {
 				defer wg.Done()
 				time.Sleep(time.Duration(iteration%4) * time.Millisecond)
@@ -246,98 +239,57 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 				createCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 				defer cancel()
 
-				// Try to create a car block (might fail if car already deleted)
-				if len(allCarIDs) > 0 {
-					carIdx := iteration % len(allCarIDs)
-					block := model.CarBlock{
-						CarID:          allCarIDs[carIdx],
-						CID:            model.CID(testutil.TestCid),
-						CarOffset:      int64(1000 + iteration),
-						CarBlockLength: 512,
-						Varint:         []byte{0x02},
-						RawBlock:       []byte("new-block"),
-						FileOffset:     int64(1000 + iteration),
-					}
-					err := db.WithContext(createCtx).Create(&block).Error
+				carIdx := iteration % len(allCarIDs)
+				block := model.CarBlock{
+					CarID:          allCarIDs[carIdx],
+					CID:            model.CID(testutil.TestCid),
+					CarOffset:      int64(1000 + iteration),
+					CarBlockLength: 512,
+					Varint:         []byte{0x02},
+					RawBlock:       []byte("new-block"),
+					FileOffset:     int64(1000 + iteration),
+				}
+				err := db.WithContext(createCtx).Create(&block).Error
 
-					// Ignore FK errors (car might have been deleted)
-					if err != nil && createCtx.Err() == nil && !isFKError(err) {
-						errChan <- err
-					}
+				// Ignore FK errors
+				if err != nil && createCtx.Err() == nil && !isFKError(err) {
+					errChan <- err
 				}
 			}(i)
 		}
 
-		// Wait for all operations to complete
 		done := make(chan struct{})
 		go func() {
 			wg.Wait()
 			close(done)
 		}()
 
-		// Wait with timeout
 		select {
 		case <-done:
-			// Success - no deadlock
 		case err := <-errChan:
 			req.NoError(err, "Unexpected error during concurrent operations")
 		case <-time.After(45 * time.Second):
 			req.Fail("Test timed out - likely deadlock occurred")
 		}
 
-		// Verify no deadlock occurred (test completed successfully)
-		// We don't verify complete cleanup because:
-		// - Some deletions may have been blocked by active jobs (expected)
-		// - Some operations may still be pending when test ends
-		// - The important thing is we didn't deadlock
-		//
-		// If we want to verify actual cleanup, we'd need to:
-		// 1. Pause all jobs first
-		// 2. Wait for all deletions to complete
-		// 3. Then verify cleanup
-		// But that's not the point of this test - we're testing for deadlocks, not cleanup.
-
+		// We don't verify complete cleanup because some deletions may be blocked by active jobs.
 		t.Logf("Test completed without deadlock")
 	})
 }
 
-// isNotFoundError checks if error is a "not found" error
 func isNotFoundError(err error) bool {
-	if err == nil {
-		return false
-	}
-	errStr := err.Error()
-	return contains(errStr, "not found") || contains(errStr, "does not exist")
+	return err != nil && (strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "does not exist"))
 }
 
-// isActiveJobsError checks if error is about active jobs preventing deletion
 func isActiveJobsError(err error) bool {
-	if err == nil {
-		return false
-	}
-	errStr := err.Error()
-	return contains(errStr, "active jobs")
+	return err != nil && strings.Contains(err.Error(), "active jobs")
 }
 
-// isFKError checks if error is a foreign key constraint violation
 func isFKError(err error) bool {
 	if err == nil {
 		return false
 	}
-	errStr := err.Error()
-	return contains(errStr, "foreign key") || contains(errStr, "FOREIGN KEY") ||
-		contains(errStr, "violates") || contains(errStr, "constraint")
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && findSubstring(s, substr))
-}
-
-func findSubstring(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
+	s := err.Error()
+	return strings.Contains(s, "foreign key") || strings.Contains(s, "FOREIGN KEY") ||
+		strings.Contains(s, "violates") || strings.Contains(s, "constraint")
 }
