@@ -44,22 +44,34 @@ func PrintDeadlockInfo(db *gorm.DB) string {
 // By default, MySQL/MariaDB only logs the most recent deadlock.
 // This setting persists until the server is restarted.
 func EnableDeadlockLogging(db *gorm.DB) error {
+	if db.Dialector.Name() != "mysql" {
+		return nil
+	}
 	return db.Exec("SET GLOBAL innodb_print_all_deadlocks = ON").Error
 }
 
 // CheckDeadlockLoggingEnabled checks if innodb_print_all_deadlocks is enabled.
 func CheckDeadlockLoggingEnabled(db *gorm.DB) (bool, error) {
-	var value string
-	err := db.Raw("SHOW VARIABLES LIKE 'innodb_print_all_deadlocks'").Scan(&value).Error
+	if db.Dialector.Name() != "mysql" {
+		return false, nil
+	}
+	var result struct {
+		VariableName string `gorm:"column:Variable_name"`
+		Value        string `gorm:"column:Value"`
+	}
+	err := db.Raw("SHOW VARIABLES LIKE 'innodb_print_all_deadlocks'").Scan(&result).Error
 	if err != nil {
 		return false, err
 	}
-	return strings.ToLower(value) == "on", nil
+	return strings.ToLower(result.Value) == "on", nil
 }
 
 // GetDataLockWaits returns current lock wait information from performance_schema.
 // This requires MySQL 8.0.30+ or MariaDB 10.5+.
 func GetDataLockWaits(db *gorm.DB) ([]map[string]interface{}, error) {
+	if db.Dialector.Name() != "mysql" {
+		return nil, nil
+	}
 	var results []map[string]interface{}
 	err := db.Raw("SELECT * FROM performance_schema.data_lock_waits").Scan(&results).Error
 	return results, err
@@ -68,6 +80,9 @@ func GetDataLockWaits(db *gorm.DB) ([]map[string]interface{}, error) {
 // GetLockWaitTransactions returns transactions currently waiting for locks.
 // This requires MySQL 8.0.30+ or MariaDB 10.5+.
 func GetLockWaitTransactions(db *gorm.DB) ([]map[string]interface{}, error) {
+	if db.Dialector.Name() != "mysql" {
+		return nil, nil
+	}
 	var results []map[string]interface{}
 	err := db.Raw(`
 		SELECT * FROM performance_schema.events_transactions_current
