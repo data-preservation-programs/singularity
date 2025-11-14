@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-varint"
+	"github.com/rclone/rclone/fs"
 	"gorm.io/gorm"
 )
 
@@ -207,62 +208,134 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 	var fileSize int64
 	var minPieceSizePadding int64
 	if storageWriter != nil {
-		reader := io.TeeReader(dagGenerator, calc)
+		// Find the output storage to determine if it's local or remote
+		var outputStorage *model.Storage
+		for i := range job.Attachment.Preparation.OutputStorages {
+			if job.Attachment.Preparation.OutputStorages[i].ID == *storageID {
+				outputStorage = &job.Attachment.Preparation.OutputStorages[i]
+				break
+			}
+		}
+
 		filename = uuid.NewString() + ".car"
-		obj, err := storageWriter.Write(ctx, filename, reader)
-		if err != nil {
-			return errors.WithStack(err)
-		}
-		fileSize = obj.Size()
+		var obj fs.Object
 
-		if dagGenerator.offset <= 59 {
-			logger.Info("Nothing to export to dag. Skipping.")
-			return nil
-		}
+		// For remote storage, use temp file to enable padding after writing
+		if outputStorage != nil && outputStorage.Type != "local" {
+			// Write to temp file first
+			tempFile, err := os.CreateTemp("", "dagcar-*.car")
+			if err != nil {
+				return errors.Wrap(err, "failed to create temp file for DAG CAR")
+			}
+			tempPath := tempFile.Name()
+			defer os.Remove(tempPath)
 
-		pieceCid, finalPieceSize, err = pack.GetCommp(calc, uint64(pieceSize))
-		if err != nil {
-			return errors.WithStack(err)
-		}
+			reader := io.TeeReader(dagGenerator, calc)
+			_, err = io.Copy(tempFile, reader)
+			if err != nil {
+				tempFile.Close()
+				return errors.Wrap(err, "failed to write DAG CAR to temp file")
+			}
+			tempFile.Close()
 
-		// Check if minPieceSize constraint forced larger piece size
-		naturalPieceSize := util.NextPowerOfTwo(uint64(fileSize))
-		if finalPieceSize > naturalPieceSize {
-			// Need to pad to (127/128) × piece_size due to Fr32 padding overhead
-			targetCarSize := (int64(finalPieceSize) * 127) / 128
-			paddingNeeded := targetCarSize - fileSize
-
-			// Find the output storage by ID
-			var outputStorage *model.Storage
-			for i := range job.Attachment.Preparation.OutputStorages {
-				if job.Attachment.Preparation.OutputStorages[i].ID == *storageID {
-					outputStorage = &job.Attachment.Preparation.OutputStorages[i]
-					break
-				}
+			if dagGenerator.offset <= 59 {
+				logger.Info("Nothing to export to dag. Skipping.")
+				return nil
 			}
 
-			// Append zeros to file
-			if outputStorage != nil && obj != nil {
-				// Build full path to CAR file
-				carPath := outputStorage.Path + "/" + filename
+			// Get file size before padding
+			stat, err := os.Stat(tempPath)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			fileSize = stat.Size()
 
-				// Reopen file and append zeros
-				f, err := os.OpenFile(carPath, os.O_APPEND|os.O_WRONLY, 0644)
+			pieceCid, finalPieceSize, err = pack.GetCommp(calc, uint64(pieceSize))
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			// Check if minPieceSize constraint forced larger piece size
+			naturalPieceSize := util.NextPowerOfTwo(uint64(fileSize))
+			if finalPieceSize > naturalPieceSize {
+				// Need to pad to (127/128) × piece_size due to Fr32 padding overhead
+				targetCarSize := (int64(finalPieceSize) * 127) / 128
+				paddingNeeded := targetCarSize - fileSize
+
+				// Append zeros to temp file
+				f, err := os.OpenFile(tempPath, os.O_APPEND|os.O_WRONLY, 0644)
 				if err != nil {
-					return errors.Wrap(err, "failed to open DAG CAR file for padding")
+					return errors.Wrap(err, "failed to open temp DAG CAR file for padding")
 				}
 
 				zeros := make([]byte, paddingNeeded)
 				_, err = f.Write(zeros)
 				f.Close()
 				if err != nil {
-					return errors.Wrap(err, "failed to write padding to DAG CAR file")
+					return errors.Wrap(err, "failed to write padding to temp DAG CAR file")
 				}
 
 				fileSize = targetCarSize
-				// minPieceSizePadding stays 0 for non-inline (zeros are in file)
+				logger.Infow("padded DAG CAR file for minPieceSize (remote storage)", "original", fileSize-paddingNeeded, "padded", fileSize, "padding", paddingNeeded, "piece_size", finalPieceSize)
+			}
 
-				logger.Infow("padded DAG CAR file for minPieceSize", "original", fileSize-paddingNeeded, "padded", fileSize, "padding", paddingNeeded, "piece_size", finalPieceSize)
+			// Upload complete file to remote storage
+			f, err := os.Open(tempPath)
+			if err != nil {
+				return errors.Wrap(err, "failed to open temp file for upload")
+			}
+			defer f.Close()
+
+			obj, err = storageWriter.Write(ctx, filename, f)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+		} else {
+			// Local storage: write directly then append if needed
+			reader := io.TeeReader(dagGenerator, calc)
+			obj, err = storageWriter.Write(ctx, filename, reader)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			fileSize = obj.Size()
+
+			if dagGenerator.offset <= 59 {
+				logger.Info("Nothing to export to dag. Skipping.")
+				return nil
+			}
+
+			pieceCid, finalPieceSize, err = pack.GetCommp(calc, uint64(pieceSize))
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			// Check if minPieceSize constraint forced larger piece size
+			naturalPieceSize := util.NextPowerOfTwo(uint64(fileSize))
+			if finalPieceSize > naturalPieceSize {
+				// Need to pad to (127/128) × piece_size due to Fr32 padding overhead
+				targetCarSize := (int64(finalPieceSize) * 127) / 128
+				paddingNeeded := targetCarSize - fileSize
+
+				if outputStorage != nil && obj != nil {
+					// Build full path to CAR file
+					carPath := outputStorage.Path + "/" + filename
+
+					// Reopen file and append zeros
+					f, err := os.OpenFile(carPath, os.O_APPEND|os.O_WRONLY, 0644)
+					if err != nil {
+						return errors.Wrap(err, "failed to open DAG CAR file for padding")
+					}
+
+					zeros := make([]byte, paddingNeeded)
+					_, err = f.Write(zeros)
+					f.Close()
+					if err != nil {
+						return errors.Wrap(err, "failed to write padding to DAG CAR file")
+					}
+
+					fileSize = targetCarSize
+					logger.Infow("padded DAG CAR file for minPieceSize (local storage)", "original", fileSize-paddingNeeded, "padded", fileSize, "padding", paddingNeeded, "piece_size", finalPieceSize)
+				}
 			}
 		}
 
