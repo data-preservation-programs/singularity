@@ -21,6 +21,7 @@ import (
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-log/v2"
+	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -113,9 +114,102 @@ func Pack(
 	var minPieceSizePadding int64
 	if storageWriter != nil {
 		var carGenerated bool
-		reader := io.TeeReader(assembler, calc)
 		filename = uuid.NewString() + ".car"
-		obj, err := storageWriter.Write(ctx, filename, reader)
+
+		// Calculate total input size
+		var totalInputSize int64
+		for _, fr := range job.FileRanges {
+			totalInputSize += fr.Length
+		}
+
+		// Use temp file if input size suggests padding may be needed (< minPieceSize/2)
+		useTempFile := pieceSize > 0 && totalInputSize < int64(pieceSize)/2
+		var obj fs.Object
+
+		if useTempFile {
+			// Write to temp file first to enable padding
+			tempFile, err := os.CreateTemp("", "car-*.car")
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to create temp file for CAR")
+			}
+			tempPath := tempFile.Name()
+			defer os.Remove(tempPath)
+
+			reader := io.TeeReader(assembler, calc)
+			_, err = io.Copy(tempFile, reader)
+			if err != nil {
+				tempFile.Close()
+				return nil, errors.Wrap(err, "failed to write CAR to temp file")
+			}
+			tempFile.Close()
+
+			if assembler.carOffset <= 65 {
+				return nil, errors.WithStack(ErrNoContent)
+			}
+
+			stat, err := os.Stat(tempPath)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			fileSize = stat.Size()
+
+			pieceCid, finalPieceSize, err = GetCommp(calc, uint64(pieceSize))
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+
+			// Check if padding needed
+			naturalPieceSize := util.NextPowerOfTwo(uint64(fileSize))
+			if finalPieceSize > naturalPieceSize {
+				targetCarSize := (int64(finalPieceSize) * 127) / 128
+				paddingNeeded := targetCarSize - fileSize
+
+				f, err := os.OpenFile(tempPath, os.O_APPEND|os.O_WRONLY, 0644)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to open temp CAR file for padding")
+				}
+
+				zeros := make([]byte, paddingNeeded)
+				_, err = f.Write(zeros)
+				f.Close()
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to write padding to temp CAR file")
+				}
+
+				fileSize = targetCarSize
+				logger.Infow("padded CAR file for minPieceSize", "original", fileSize-paddingNeeded, "padded", fileSize, "padding", paddingNeeded, "piece_size", finalPieceSize)
+			}
+
+			// Upload complete file
+			f, err := os.Open(tempPath)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to open temp file for upload")
+			}
+			defer f.Close()
+
+			obj, err = storageWriter.Write(ctx, filename, f)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+		} else {
+			// Stream directly without temp file (input too large for padding to be likely)
+			reader := io.TeeReader(assembler, calc)
+			obj, err = storageWriter.Write(ctx, filename, reader)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			fileSize = obj.Size()
+
+			if assembler.carOffset <= 65 {
+				return nil, errors.WithStack(ErrNoContent)
+			}
+
+			pieceCid, finalPieceSize, err = GetCommp(calc, uint64(pieceSize))
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+		}
+
 		defer func() {
 			if !carGenerated && obj != nil {
 				removeCtx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
@@ -126,59 +220,6 @@ func Pack(
 				cancel()
 			}
 		}()
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-		fileSize = obj.Size()
-
-		if assembler.carOffset <= 65 {
-			return nil, errors.WithStack(ErrNoContent)
-		}
-		pieceCid, finalPieceSize, err = GetCommp(calc, uint64(pieceSize))
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-
-		// Check if minPieceSize constraint forced larger piece size
-		naturalPieceSize := util.NextPowerOfTwo(uint64(fileSize))
-		if finalPieceSize > naturalPieceSize {
-			// Need to pad to (127/128) × piece_size due to Fr32 padding overhead
-			targetCarSize := (int64(finalPieceSize) * 127) / 128
-			paddingNeeded := targetCarSize - fileSize
-
-			// Find the output storage by ID
-			var outputStorage *model.Storage
-			for i := range job.Attachment.Preparation.OutputStorages {
-				if job.Attachment.Preparation.OutputStorages[i].ID == *storageID {
-					outputStorage = &job.Attachment.Preparation.OutputStorages[i]
-					break
-				}
-			}
-
-			// Append zeros to file
-			if outputStorage != nil && obj != nil {
-				// Build full path to CAR file
-				carPath := outputStorage.Path + "/" + filename
-
-				// Reopen file and append zeros (like dd does)
-				f, err := os.OpenFile(carPath, os.O_APPEND|os.O_WRONLY, 0644)
-				if err != nil {
-					return nil, errors.Wrap(err, "failed to open CAR file for padding")
-				}
-
-				zeros := make([]byte, paddingNeeded)
-				_, err = f.Write(zeros)
-				f.Close()
-				if err != nil {
-					return nil, errors.Wrap(err, "failed to write padding to CAR file")
-				}
-
-				fileSize = targetCarSize
-				// minPieceSizePadding stays 0 for non-inline (zeros are in file)
-
-				logger.Infow("padded CAR file for minPieceSize", "original", fileSize-paddingNeeded, "padded", fileSize, "padding", paddingNeeded, "piece_size", finalPieceSize)
-			}
-		}
 
 		_, err = storageWriter.Move(ctx, obj, pieceCid.String()+".car")
 		if err != nil && !errors.Is(err, storagesystem.ErrMoveNotSupported) {
@@ -189,6 +230,7 @@ func Pack(
 		}
 		carGenerated = true
 	} else {
+		// Inline preparation - no physical CAR file
 		fileSize, err = io.Copy(calc, assembler)
 		if err != nil {
 			return nil, errors.WithStack(err)
