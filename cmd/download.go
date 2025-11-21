@@ -23,6 +23,7 @@ var DownloadCmd = &cli.Command{
 		flags := []cli.Flag{
 			&cli.StringFlag{
 				Name:     "api",
+				Aliases:  []string{"metadata-api"},
 				Usage:    "URL of the metadata API",
 				Value:    "http://127.0.0.1:7777",
 				Category: "General Config",
@@ -76,7 +77,7 @@ var DownloadCmd = &cli.Command{
 		config := map[string]string{}
 		for _, key := range c.LocalFlagNames() {
 			if c.IsSet(key) {
-				if slices.Contains([]string{"api", "out-dir", "concurrency", "quiet"}, key) {
+				if slices.Contains([]string{"api", "metadata-api", "out-dir", "concurrency", "quiet"}, key) {
 					continue
 				}
 				value := c.String(key)
