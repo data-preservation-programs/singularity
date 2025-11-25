@@ -26,9 +26,9 @@ func TestListPiecesHandler(t *testing.T) {
 				require.NoError(t, err)
 				err = db.Create([]model.Car{{
 					AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-					PreparationID: 1,
+					PreparationID: ptr.Of(model.PreparationID(1)),
 				}, {
-					PreparationID: 1,
+					PreparationID: ptr.Of(model.PreparationID(1)),
 				}}).Error
 				require.NoError(t, err)
 				result, err := Default.ListPiecesHandler(ctx, db, name)

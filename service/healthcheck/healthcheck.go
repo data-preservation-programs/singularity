@@ -90,7 +90,66 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 			}).Error
 	})
 	if err != nil && !errors.Is(err, context.Canceled) {
-		log.Logger("healthcheck").Errorw("failed to remove stale workers", "error", err)
+		logger.Errorw("failed to remove stale workers", "error", err)
+	}
+
+	// Clean up orphaned records from deleted preparations (SET NULL cascades)
+	cleanupOrphanedRecords(ctx, db)
+}
+
+// cleanupOrphanedRecords deletes orphaned records in batches.
+// When preparations are deleted, FK cascades set attachment_id/preparation_id to NULL.
+// This function gradually cleans up those orphaned records.
+// Batch sizes are proportional to typical table cardinality.
+func cleanupOrphanedRecords(ctx context.Context, db *gorm.DB) {
+	// Delete orphaned car_blocks - largest table, 10K per cycle
+	result := db.Exec(`DELETE FROM car_blocks WHERE id IN (
+		SELECT id FROM car_blocks WHERE car_id IS NULL LIMIT 10000
+	)`)
+	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
+		logger.Errorw("failed to clean up orphaned car_blocks", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		logger.Infow("cleaned up orphaned car_blocks", "count", result.RowsAffected)
+	}
+
+	// Delete orphaned files - large table, 1000 per cycle
+	result = db.Exec(`DELETE FROM files WHERE id IN (
+		SELECT id FROM files WHERE attachment_id IS NULL LIMIT 1000
+	)`)
+	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
+		logger.Errorw("failed to clean up orphaned files", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		logger.Infow("cleaned up orphaned files", "count", result.RowsAffected)
+	}
+
+	// Delete orphaned cars - 100 per cycle
+	result = db.Exec(`DELETE FROM cars WHERE id IN (
+		SELECT id FROM cars WHERE preparation_id IS NULL LIMIT 100
+	)`)
+	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
+		logger.Errorw("failed to clean up orphaned cars", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		logger.Infow("cleaned up orphaned cars", "count", result.RowsAffected)
+	}
+
+	// Delete orphaned directories - 100 per cycle
+	result = db.Exec(`DELETE FROM directories WHERE id IN (
+		SELECT id FROM directories WHERE attachment_id IS NULL LIMIT 100
+	)`)
+	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
+		logger.Errorw("failed to clean up orphaned directories", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		logger.Infow("cleaned up orphaned directories", "count", result.RowsAffected)
+	}
+
+	// Delete orphaned jobs - 100 per cycle
+	result = db.Exec(`DELETE FROM jobs WHERE id IN (
+		SELECT id FROM jobs WHERE attachment_id IS NULL LIMIT 100
+	)`)
+	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
+		logger.Errorw("failed to clean up orphaned jobs", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		logger.Infow("cleaned up orphaned jobs", "count", result.RowsAffected)
 	}
 }
 

@@ -108,7 +108,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	root := model.Directory{
 		CID:          randomCID(),
 		Name:         "",
-		AttachmentID: sourceAttachment.ID,
+		AttachmentID: &sourceAttachment.ID,
 	}
 	err = db.Create(&root).Error
 	if err != nil {
@@ -119,7 +119,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	lots := model.Directory{
 		CID:          randomCID(),
 		Name:         "lots_of_files",
-		AttachmentID: sourceAttachment.ID,
+		AttachmentID: &sourceAttachment.ID,
 		ParentID:     ptr.Of(root.ID),
 	}
 	err = db.Create(&lots).Error
@@ -130,7 +130,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	job := model.Job{
 		Type:         model.Pack,
 		State:        model.Complete,
-		AttachmentID: sourceAttachment.ID,
+		AttachmentID: &sourceAttachment.ID,
 	}
 	err = db.Create(&job).Error
 	if err != nil {
@@ -147,7 +147,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 			Hash:             randomLetterString(6),
 			Size:             size,
 			LastModifiedNano: randomLastModifiedNano(),
-			AttachmentID:     sourceAttachment.ID,
+			AttachmentID:     &sourceAttachment.ID,
 			DirectoryID:      ptr.Of(lots.ID),
 			FileRanges: []model.FileRange{{
 				Offset: 0,
@@ -166,7 +166,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	large := model.Directory{
 		CID:          randomCID(),
 		Name:         "large_files",
-		AttachmentID: sourceAttachment.ID,
+		AttachmentID: &sourceAttachment.ID,
 		ParentID:     ptr.Of(root.ID),
 	}
 	err = db.Create(&large).Error
@@ -180,7 +180,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 		Hash:             randomLetterString(6),
 		Size:             100 << 34,
 		LastModifiedNano: randomLastModifiedNano(),
-		AttachmentID:     sourceAttachment.ID,
+		AttachmentID:     &sourceAttachment.ID,
 		DirectoryID:      ptr.Of(large.ID),
 		FileRanges:       nil,
 	}
@@ -193,7 +193,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 			Job: &model.Job{
 				Type:         model.Pack,
 				State:        model.Complete,
-				AttachmentID: sourceAttachment.ID,
+				AttachmentID: &sourceAttachment.ID,
 			},
 		})
 	}
@@ -212,7 +212,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 			Hash:             randomLetterString(6),
 			Size:             r.Int63n(1 << 20),
 			LastModifiedNano: randomLastModifiedNano(),
-			AttachmentID:     sourceAttachment.ID,
+			AttachmentID:     &sourceAttachment.ID,
 			DirectoryID:      ptr.Of(root.ID),
 			FileRanges: []model.FileRange{{
 				Offset: 0,
@@ -221,7 +221,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				Job: &model.Job{
 					Type:         model.Pack,
 					State:        model.Complete,
-					AttachmentID: sourceAttachment.ID,
+					AttachmentID: &sourceAttachment.ID,
 				},
 			}},
 		}).Error
@@ -248,7 +248,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 			FileSize:      1 << 34,
 			StorageID:     ptr.Of(output.ID),
 			StoragePath:   pieceCID.String() + ".car",
-			PreparationID: preparation.ID,
+			PreparationID: &preparation.ID,
 			AttachmentID:  ptr.Of(sourceAttachment.ID),
 			JobID:         ptr.Of(job.ID),
 		}).Error
@@ -270,7 +270,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 			FileSize:      1 << 34,
 			StorageID:     ptr.Of(output.ID),
 			StoragePath:   pieceCID.String() + ".car",
-			PreparationID: preparation.ID,
+			PreparationID: &preparation.ID,
 		}).Error
 		if err != nil {
 			return errors.WithStack(err)

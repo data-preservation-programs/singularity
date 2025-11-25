@@ -60,7 +60,7 @@ func (DefaultHandler) AddSourceStorageHandler(ctx context.Context, db *gorm.DB, 
 		}
 
 		err = db.Create(&model.Directory{
-			AttachmentID: attachment.ID,
+			AttachmentID: &attachment.ID,
 		}).Error
 		if err != nil {
 			return errors.WithStack(err)

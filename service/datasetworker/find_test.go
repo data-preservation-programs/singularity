@@ -41,7 +41,7 @@ func TestFindPackWork(t *testing.T) {
 		require.NoError(t, err)
 
 		err = db.Create(&model.Job{
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			State:        model.Ready,
 			Type:         model.Pack,
 		}).Error
@@ -49,7 +49,7 @@ func TestFindPackWork(t *testing.T) {
 		err = db.Create(&model.FileRange{
 			JobID: ptr.Of(model.JobID(1)),
 			File: &model.File{
-				AttachmentID: 1,
+				AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			},
 		}).Error
 		require.NoError(t, err)

@@ -30,13 +30,14 @@ func (DefaultHandler) RemovePreparationHandler(ctx context.Context, db *gorm.DB,
 		return errors.WithStack(err)
 	}
 
+	// Block deletion if there are active jobs
 	attachments, err := preparation.SourceAttachments(db)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	attachmentIDs := underscore.Map(attachments, func(attachment model.SourceAttachment) model.SourceAttachmentID { return attachment.ID })
 	var activeCount int64
-	err = db.Model(&model.Job{}).Where("attachment_id in ? and state = ?", attachmentIDs, model.Processing).Count(&activeCount).Error
+	err = db.Model(&model.Job{}).Where("attachment_id IN ? AND state = ?", attachmentIDs, model.Processing).Count(&activeCount).Error
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -52,12 +53,11 @@ func (DefaultHandler) RemovePreparationHandler(ctx context.Context, db *gorm.DB,
 		}
 	}
 
+	// Delete preparation. FK cascades use SET NULL, so this returns quickly.
+	// Orphaned records (cars, files, car_blocks, etc.) are cleaned up asynchronously
+	// by the healthcheck worker every 5 minutes.
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
-			// Use Select to control deletion order and avoid circular cascade deadlocks.
-			// GORM v1.31+ handles this by deleting associations in specified order,
-			// preventing Postgres deadlocks from multiple cascade paths to Files table.
-			// See: https://github.com/data-preservation-programs/singularity/pull/583
 			return db.Select("Wallets", "SourceStorages", "OutputStorages").Delete(&preparation).Error
 		})
 	})

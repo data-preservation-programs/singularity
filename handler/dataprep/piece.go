@@ -208,7 +208,7 @@ func (DefaultHandler) AddPieceHandler(
 		PieceSize:     pieceSize,
 		RootCID:       model.CID(rootCID),
 		StoragePath:   request.FilePath,
-		PreparationID: preparation.ID,
+		PreparationID: &preparation.ID,
 		FileSize:      fileSize,
 		PieceType:     model.DataPiece,
 	}

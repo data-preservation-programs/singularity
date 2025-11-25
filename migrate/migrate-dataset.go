@@ -12,6 +12,7 @@ import (
 	util2 "github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/pack/push"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/urfave/cli/v2"
@@ -61,7 +62,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 	}
 
 	rootDir := model.Directory{
-		AttachmentID: attachment.ID,
+		AttachmentID: &attachment.ID,
 		Name:         path,
 	}
 	err = db.Create(&rootDir).Error
@@ -93,7 +94,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 			State:           model.Complete,
 			ErrorMessage:    generation.ErrorMessage,
 			ErrorStackTrace: "",
-			AttachmentID:    attachment.ID,
+			AttachmentID:    &attachment.ID,
 		}
 		err = db.Create(&packJob).Error
 		if err != nil {
@@ -123,7 +124,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 			FileSize:      int64(generation.CarSize),
 			StoragePath:   filepath.Join(scanning.OutDir, fileName),
 			AttachmentID:  &attachment.ID,
-			PreparationID: preparation.ID,
+			PreparationID: &preparation.ID,
 		}
 		err = db.Create(&car).Error
 		if err != nil {
@@ -171,10 +172,10 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 								Offset: 0,
 								Length: int64(generatedFile.Size),
 								CID:    model.CID(fileCID),
-								JobID:  &packJob.ID,
+								JobID:  ptr.Of(packJob.ID),
 							},
 						},
-						AttachmentID:     attachment.ID,
+						AttachmentID:     &attachment.ID,
 						LastModifiedNano: generation.CreatedAt.UnixNano(),
 					}
 				} else if generatedFile.Start == 0 {
@@ -187,10 +188,10 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 								Offset: 0,
 								Length: int64(generatedFile.End),
 								CID:    model.CID(fileCID),
-								JobID:  &packJob.ID,
+								JobID:  ptr.Of(packJob.ID),
 							},
 						},
-						AttachmentID:     attachment.ID,
+						AttachmentID:     &attachment.ID,
 						LastModifiedNano: generation.CreatedAt.UnixNano(),
 					}
 					continue
@@ -199,7 +200,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 						Offset: int64(generatedFile.Start),
 						Length: int64(generatedFile.End - generatedFile.Start),
 						CID:    model.CID(fileCID),
-						JobID:  &packJob.ID,
+						JobID:  ptr.Of(packJob.ID),
 					})
 					if generatedFile.End < generatedFile.Size {
 						continue

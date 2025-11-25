@@ -32,20 +32,20 @@ func TestGetFileDealsHandler(t *testing.T) {
 		require.NoError(t, err)
 		jobs := []model.Job{
 			{
-				AttachmentID: attachment.ID,
+				AttachmentID: &attachment.ID,
 			},
 			{
-				AttachmentID: attachment.ID,
+				AttachmentID: &attachment.ID,
 			},
 			{
-				AttachmentID: attachment.ID,
+				AttachmentID: &attachment.ID,
 			},
 		}
 		err = db.Create(&jobs).Error
 		require.NoError(t, err)
 		file := model.File{
 			Path:         "test.txt",
-			AttachmentID: attachment.ID,
+			AttachmentID: &attachment.ID,
 			FileRanges: []model.FileRange{
 				{
 					JobID: ptr.Of(model.JobID(1)),
@@ -66,11 +66,11 @@ func TestGetFileDealsHandler(t *testing.T) {
 		cars := []model.Car{{
 			JobID:         ptr.Of(model.JobID(1)),
 			PieceCID:      model.CID(testCid1),
-			PreparationID: 1,
+			PreparationID: ptr.Of(model.PreparationID(1)),
 		}, {
 			JobID:         ptr.Of(model.JobID(2)),
 			PieceCID:      model.CID(testCid2),
-			PreparationID: 1,
+			PreparationID: ptr.Of(model.PreparationID(1)),
 		}}
 		err = db.Create(cars).Error
 		require.NoError(t, err)

@@ -67,14 +67,14 @@ func TestCARPaddingValidity(t *testing.T) {
 
 		// Create directory
 		dir := model.Directory{
-			AttachmentID: attachment.ID,
+			AttachmentID: &attachment.ID,
 		}
 		err = db.Create(&dir).Error
 		require.NoError(t, err)
 
 		// Create file record
 		file := model.File{
-			AttachmentID:     attachment.ID,
+			AttachmentID:     &attachment.ID,
 			Path:             "test.txt",
 			Size:             int64(len(testData)),
 			LastModifiedNano: testStat.ModTime().UnixNano(),
@@ -85,7 +85,7 @@ func TestCARPaddingValidity(t *testing.T) {
 
 		// Create job
 		job := model.Job{
-			AttachmentID: attachment.ID,
+			AttachmentID: &attachment.ID,
 			State:        model.Processing,
 			Type:         model.Pack,
 			FileRanges: []model.FileRange{

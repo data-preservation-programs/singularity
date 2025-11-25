@@ -84,12 +84,12 @@ func TestMinPieceSizePaddingDetection(t *testing.T) {
 					err = db.Where("preparation_id = ? AND storage_id = ?", prep.ID, storage.ID).First(&attachment).Error
 					require.NoError(t, err)
 
-					dir := model.Directory{AttachmentID: attachment.ID}
+					dir := model.Directory{AttachmentID: &attachment.ID}
 					err = db.Create(&dir).Error
 					require.NoError(t, err)
 
 					file := model.File{
-						AttachmentID:     attachment.ID,
+						AttachmentID:     &attachment.ID,
 						Path:             "test.txt",
 						Size:             int64(len(testData)),
 						LastModifiedNano: testStat.ModTime().UnixNano(),
@@ -99,7 +99,7 @@ func TestMinPieceSizePaddingDetection(t *testing.T) {
 					require.NoError(t, err)
 
 					job := model.Job{
-						AttachmentID: attachment.ID,
+						AttachmentID: &attachment.ID,
 						State:        model.Processing,
 						Type:         model.Pack,
 						FileRanges: []model.FileRange{
@@ -160,12 +160,12 @@ func TestMinPieceSizePaddingDetection(t *testing.T) {
 					err = db.Where("preparation_id = ? AND storage_id = ?", prep.ID, storage.ID).First(&attachment).Error
 					require.NoError(t, err)
 
-					dir := model.Directory{AttachmentID: attachment.ID}
+					dir := model.Directory{AttachmentID: &attachment.ID}
 					err = db.Create(&dir).Error
 					require.NoError(t, err)
 
 					file := model.File{
-						AttachmentID:     attachment.ID,
+						AttachmentID:     &attachment.ID,
 						Path:             "test.txt",
 						Size:             int64(len(testData)),
 						LastModifiedNano: testStat.ModTime().UnixNano(),
@@ -175,7 +175,7 @@ func TestMinPieceSizePaddingDetection(t *testing.T) {
 					require.NoError(t, err)
 
 					job := model.Job{
-						AttachmentID: attachment.ID,
+						AttachmentID: &attachment.ID,
 						State:        model.Processing,
 						Type:         model.Pack,
 						FileRanges: []model.FileRange{
@@ -252,12 +252,12 @@ func TestPieceReaderServesZeros(t *testing.T) {
 		err = db.Where("preparation_id = ? AND storage_id = ?", prep.ID, storage.ID).First(&attachment).Error
 		require.NoError(t, err)
 
-		dir := model.Directory{AttachmentID: attachment.ID}
+		dir := model.Directory{AttachmentID: &attachment.ID}
 		err = db.Create(&dir).Error
 		require.NoError(t, err)
 
 		file := model.File{
-			AttachmentID:     attachment.ID,
+			AttachmentID:     &attachment.ID,
 			Path:             "test.txt",
 			Size:             int64(len(testData)),
 			LastModifiedNano: testStat.ModTime().UnixNano(),
@@ -267,7 +267,7 @@ func TestPieceReaderServesZeros(t *testing.T) {
 		require.NoError(t, err)
 
 		job := model.Job{
-			AttachmentID: attachment.ID,
+			AttachmentID: &attachment.ID,
 			State:        model.Processing,
 			Type:         model.Pack,
 			FileRanges: []model.FileRange{
@@ -376,12 +376,12 @@ func TestMinPieceSizePaddingFileIntegrity(t *testing.T) {
 		err = db.Where("preparation_id = ? AND storage_id = ?", prep.ID, storage.ID).First(&attachment).Error
 		require.NoError(t, err)
 
-		dir := model.Directory{AttachmentID: attachment.ID}
+		dir := model.Directory{AttachmentID: &attachment.ID}
 		err = db.Create(&dir).Error
 		require.NoError(t, err)
 
 		file := model.File{
-			AttachmentID:     attachment.ID,
+			AttachmentID:     &attachment.ID,
 			Path:             "test.txt",
 			Size:             int64(len(testData)),
 			LastModifiedNano: testStat.ModTime().UnixNano(),
@@ -391,7 +391,7 @@ func TestMinPieceSizePaddingFileIntegrity(t *testing.T) {
 		require.NoError(t, err)
 
 		job := model.Job{
-			AttachmentID: attachment.ID,
+			AttachmentID: &attachment.ID,
 			State:        model.Processing,
 			Type:         model.Pack,
 			FileRanges: []model.FileRange{
@@ -508,12 +508,12 @@ func TestDownloadPaddedPiece(t *testing.T) {
 				err = db.Where("preparation_id = ? AND storage_id = ?", prep.ID, storage.ID).First(&attachment).Error
 				require.NoError(t, err)
 
-				dir := model.Directory{AttachmentID: attachment.ID}
+				dir := model.Directory{AttachmentID: &attachment.ID}
 				err = db.Create(&dir).Error
 				require.NoError(t, err)
 
 				file := model.File{
-					AttachmentID:     attachment.ID,
+					AttachmentID:     &attachment.ID,
 					Path:             "test.txt",
 					Size:             int64(len(testData)),
 					LastModifiedNano: testStat.ModTime().UnixNano(),
@@ -523,7 +523,7 @@ func TestDownloadPaddedPiece(t *testing.T) {
 				require.NoError(t, err)
 
 				job := model.Job{
-					AttachmentID: attachment.ID,
+					AttachmentID: &attachment.ID,
 					State:        model.Processing,
 					Type:         model.Pack,
 					FileRanges: []model.FileRange{

@@ -31,7 +31,7 @@ func TestRemovePreparationHandler_HasActiveJobs(t *testing.T) {
 		err := db.Create(&preparation).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Job{
-			AttachmentID: model.SourceAttachmentID(1),
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			State:        model.Processing,
 		}).Error
 		require.NoError(t, err)
@@ -58,24 +58,24 @@ func TestRemovePreparationHandler_Success(t *testing.T) {
 		err = db.Create(&preparation).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Job{
-			AttachmentID: model.SourceAttachmentID(1),
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			State:        model.Complete,
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Car{
 			Storage:       ptr.Of(storages[1]),
 			StoragePath:   "1.car",
-			PreparationID: 1,
+			PreparationID: ptr.Of(model.PreparationID(1)),
 			AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
 			JobID:         ptr.Of(model.JobID(1)),
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.CarBlock{
-			CarID: 1,
+			CarID: ptr.Of(model.CarID(1)),
 			File: &model.File{
-				AttachmentID: 1,
+				AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 				Directory: &model.Directory{
-					AttachmentID: 1,
+					AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 				},
 				FileRanges: []model.FileRange{
 					{},
@@ -99,13 +99,25 @@ func TestRemovePreparationHandler_Success(t *testing.T) {
 		err = Default.RemovePreparationHandler(ctx, db, "1", RemoveRequest{RemoveCars: true})
 		require.NoError(t, err)
 
-		for _, model := range []interface{}{&model.Preparation{}, &model.Job{}, &model.Car{}, &model.CarBlock{},
-			&model.Schedule{}, &model.File{}, &model.FileRange{}, &model.Directory{}} {
+		// Preparation and Schedule are deleted immediately
+		for _, m := range []interface{}{&model.Preparation{}, &model.Schedule{}} {
 			var count int64
-			err = db.Model(model).Count(&count).Error
+			err = db.Model(m).Count(&count).Error
 			require.NoError(t, err)
 			require.Zero(t, count)
 		}
+
+		// Other records are orphaned (SET NULL) and cleaned up async by healthcheck
+		// Verify they are orphaned (have NULL foreign keys)
+		var job model.Job
+		err = db.First(&job).Error
+		require.NoError(t, err)
+		require.Nil(t, job.AttachmentID)
+
+		var car model.Car
+		err = db.First(&car).Error
+		require.NoError(t, err)
+		require.Nil(t, car.PreparationID)
 
 		entries, err := os.ReadDir(tmp)
 		require.NoError(t, err)
@@ -128,11 +140,11 @@ func TestRemovePreparationHandler_CascadeCycle_Postgres(t *testing.T) {
 		require.NoError(t, db.Create(&stor).Error)
 		sa := model.SourceAttachment{PreparationID: prep.ID, StorageID: stor.ID}
 		require.NoError(t, db.Create(&sa).Error)
-		root := model.Directory{AttachmentID: sa.ID, Name: "", ParentID: nil}
+		root := model.Directory{AttachmentID: &sa.ID, Name: "", ParentID: nil}
 		require.NoError(t, db.Create(&root).Error)
-		d1 := model.Directory{AttachmentID: sa.ID, Name: "sub", ParentID: &root.ID}
+		d1 := model.Directory{AttachmentID: &sa.ID, Name: "sub", ParentID: &root.ID}
 		require.NoError(t, db.Create(&d1).Error)
-		f := model.File{AttachmentID: sa.ID, DirectoryID: &d1.ID, Path: "sub/a.txt", Size: 1}
+		f := model.File{AttachmentID: &sa.ID, DirectoryID: &d1.ID, Path: "sub/a.txt", Size: 1}
 		require.NoError(t, db.Create(&f).Error)
 		fr := model.FileRange{FileID: f.ID, Offset: 0, Length: 1}
 		require.NoError(t, db.Create(&fr).Error)
@@ -166,11 +178,11 @@ func TestRemovePreparationHandler_CascadeCycle_MySQL(t *testing.T) {
 		require.NoError(t, db.Create(&stor).Error)
 		sa := model.SourceAttachment{PreparationID: prep.ID, StorageID: stor.ID}
 		require.NoError(t, db.Create(&sa).Error)
-		root := model.Directory{AttachmentID: sa.ID, Name: "", ParentID: nil}
+		root := model.Directory{AttachmentID: &sa.ID, Name: "", ParentID: nil}
 		require.NoError(t, db.Create(&root).Error)
-		d1 := model.Directory{AttachmentID: sa.ID, Name: "sub", ParentID: &root.ID}
+		d1 := model.Directory{AttachmentID: &sa.ID, Name: "sub", ParentID: &root.ID}
 		require.NoError(t, db.Create(&d1).Error)
-		f := model.File{AttachmentID: sa.ID, DirectoryID: &d1.ID, Path: "sub/a.txt", Size: 1}
+		f := model.File{AttachmentID: &sa.ID, DirectoryID: &d1.ID, Path: "sub/a.txt", Size: 1}
 		require.NoError(t, db.Create(&f).Error)
 		fr := model.FileRange{FileID: f.ID, Offset: 0, Length: 1}
 		require.NoError(t, db.Create(&fr).Error)

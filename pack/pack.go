@@ -221,8 +221,8 @@ func Pack(
 		MinPieceSizePadding: minPieceSizePadding,
 		StorageID:           storageID,
 		StoragePath:         filename,
-		AttachmentID:        &job.AttachmentID,
-		PreparationID:       job.Attachment.PreparationID,
+		AttachmentID:        job.AttachmentID,
+		PreparationID:       &job.Attachment.PreparationID,
 		JobID:               &job.ID,
 		PieceType:           model.DataPiece,
 	}
@@ -327,7 +327,7 @@ func Pack(
 				}
 				if !job.Attachment.Preparation.NoInline {
 					for j := range assembler.carBlocks {
-						assembler.carBlocks[j].CarID = car.ID
+						assembler.carBlocks[j].CarID = &car.ID
 					}
 					err = db.CreateInBatches(assembler.carBlocks, util.BatchSize).Error
 					if err != nil {

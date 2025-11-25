@@ -130,7 +130,7 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		err = db.Create([]model.Car{
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[0],
 				PieceSize:     1024,
 				StoragePath:   "0",
@@ -186,19 +186,19 @@ func TestDealMakerService_Cron(t *testing.T) {
 		err = db.Create([]model.Car{
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
 				PieceSize:     1024,
 			},
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
 				PieceSize:     1024,
 			},
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
 				PieceSize:     1024,
 			},
@@ -287,35 +287,35 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 		err = db.Create([]model.Car{
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[0],
 				PieceSize:     1024,
 				StoragePath:   "0",
 			},
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[1],
 				PieceSize:     1024,
 				StoragePath:   "1",
 			},
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[2],
 				PieceSize:     2048,
 				StoragePath:   "2",
 			},
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[3],
 				PieceSize:     1024,
 				StoragePath:   "3",
 			},
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[4],
 				PieceSize:     1024,
 				StoragePath:   "4",
@@ -390,7 +390,7 @@ func TestDealmakerService_Force(t *testing.T) {
 		err = db.Create([]model.Car{
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCID,
 				PieceSize:     1024,
 				StoragePath:   "0",
@@ -447,7 +447,7 @@ func TestDealMakerService_MaxReplica(t *testing.T) {
 		err = db.Create([]model.Car{
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCID,
 				PieceSize:     1024,
 				StoragePath:   "0",
@@ -516,42 +516,42 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 		err = db.Create([]model.Car{
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[0],
 				PieceSize:     1024,
 				StoragePath:   "0",
 			},
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[1],
 				PieceSize:     1024,
 				StoragePath:   "1",
 			},
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[2],
 				PieceSize:     1024,
 				StoragePath:   "2",
 			},
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[3],
 				PieceSize:     1024,
 				StoragePath:   "3",
 			},
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[4],
 				PieceSize:     1024,
 				StoragePath:   "4",
 			},
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 				PieceCID:      pieceCIDs[5],
 				PieceSize:     1024,
 				StoragePath:   "5",

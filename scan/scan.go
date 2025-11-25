@@ -76,7 +76,7 @@ func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) e
 				dummyFilePath += "/dummy.file"
 			}
 			err = push.EnsureParentDirectories(ctx, db, &model.File{
-				AttachmentID: attachment.ID,
+				AttachmentID: &attachment.ID,
 				Path:         dummyFilePath,
 			}, rootID, directoryCache)
 			if err != nil {

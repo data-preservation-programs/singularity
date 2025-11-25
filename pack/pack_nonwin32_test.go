@@ -44,9 +44,9 @@ func TestAssembleCar_InaccessibleFile(t *testing.T) {
 						Path:             "test.txt",
 						Size:             stat.Size(),
 						LastModifiedNano: stat.ModTime().UnixNano(),
-						AttachmentID:     1,
+						AttachmentID:     ptr.Of(model.SourceAttachmentID(1)),
 						Directory: &model.Directory{
-							AttachmentID: 1,
+							AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 						},
 					},
 				},
@@ -83,9 +83,9 @@ func TestAssembleCar_InaccessibleFile(t *testing.T) {
 						Path:             "test.txt",
 						Size:             stat.Size(),
 						LastModifiedNano: stat.ModTime().UnixNano(),
-						AttachmentID:     1,
+						AttachmentID:     ptr.Of(model.SourceAttachmentID(1)),
 						Directory: &model.Directory{
-							AttachmentID: 1,
+							AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 						},
 					},
 				},

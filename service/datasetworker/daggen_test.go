@@ -79,8 +79,8 @@ func TestExportDag(t *testing.T) {
 		require.NoError(t, err)
 
 		dirs := []model.Directory{
-			{AttachmentID: 1, Data: dir1Data, CID: model.CID(packutil.EmptyFileCid)},
-			{AttachmentID: 1, Data: dir2Data, CID: model.CID(packutil.EmptyFileCid), ParentID: ptr.Of(model.DirectoryID(1)), Name: "sub"},
+			{AttachmentID: ptr.Of(model.SourceAttachmentID(1)), Data: dir1Data, CID: model.CID(packutil.EmptyFileCid)},
+			{AttachmentID: ptr.Of(model.SourceAttachmentID(1)), Data: dir2Data, CID: model.CID(packutil.EmptyFileCid), ParentID: ptr.Of(model.DirectoryID(1)), Name: "sub"},
 		}
 		err = thread.dbNoContext.Create(&dirs).Error
 		require.NoError(t, err)
@@ -144,8 +144,8 @@ func TestExportDag_WithOutputStorage_NoInline(t *testing.T) {
 		require.NoError(t, err)
 
 		dirs := []model.Directory{
-			{AttachmentID: 1, Data: dir1Data, CID: model.CID(packutil.EmptyFileCid)},
-			{AttachmentID: 1, Data: dir2Data, CID: model.CID(packutil.EmptyFileCid), ParentID: ptr.Of(model.DirectoryID(1)), Name: "sub"},
+			{AttachmentID: ptr.Of(model.SourceAttachmentID(1)), Data: dir1Data, CID: model.CID(packutil.EmptyFileCid)},
+			{AttachmentID: ptr.Of(model.SourceAttachmentID(1)), Data: dir2Data, CID: model.CID(packutil.EmptyFileCid), ParentID: ptr.Of(model.DirectoryID(1)), Name: "sub"},
 		}
 		err = thread.dbNoContext.Create(&dirs).Error
 		require.NoError(t, err)

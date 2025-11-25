@@ -305,7 +305,7 @@ func TestDataPreparationAddPieceHandler(t *testing.T) {
 			FileSize:      100,
 			StorageID:     ptr.Of(model.StorageID(1)),
 			StoragePath:   "test1.car",
-			PreparationID: 1,
+			PreparationID: ptr.Of(model.PreparationID(1)),
 		}, nil)
 		_, _, err := runner.Run(ctx, "singularity prep add-piece --piece-cid xxx --piece-size 100 --file-size 100 1")
 		require.NoError(t, err)
@@ -342,7 +342,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					FileSize:      200,
 					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test1.car",
-					PreparationID: 1,
+					PreparationID: ptr.Of(model.PreparationID(1)),
 				}, {
 					ID:            2,
 					CreatedAt:     time.Time{},
@@ -351,7 +351,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					FileSize:      400,
 					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test2.car",
-					PreparationID: 1,
+					PreparationID: ptr.Of(model.PreparationID(1)),
 				}},
 			},
 			{
@@ -363,7 +363,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					FileSize:      600,
 					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test3.car",
-					PreparationID: 1,
+					PreparationID: ptr.Of(model.PreparationID(1)),
 				}, {
 					ID:            4,
 					CreatedAt:     time.Time{},
@@ -372,7 +372,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					FileSize:      800,
 					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test4.car",
-					PreparationID: 1,
+					PreparationID: ptr.Of(model.PreparationID(1)),
 				}},
 			},
 		}, nil)

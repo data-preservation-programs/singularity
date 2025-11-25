@@ -9,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -41,9 +42,9 @@ func TestPrepareToPackSourceHandler(t *testing.T) {
 			Path:         "1.bin",
 			Hash:         "",
 			Size:         500_000,
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			Directory: &model.Directory{
-				AttachmentID: 1,
+				AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			},
 			FileRanges: []model.FileRange{{
 				Offset: 0,
@@ -53,9 +54,9 @@ func TestPrepareToPackSourceHandler(t *testing.T) {
 			Path:         "2.bin",
 			Hash:         "",
 			Size:         500_000,
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			Directory: &model.Directory{
-				AttachmentID: 1,
+				AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			},
 			FileRanges: []model.FileRange{{
 				Offset: 0,
@@ -65,9 +66,9 @@ func TestPrepareToPackSourceHandler(t *testing.T) {
 			Path:         "3.bin",
 			Hash:         "",
 			Size:         500_000,
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			Directory: &model.Directory{
-				AttachmentID: 1,
+				AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			},
 			FileRanges: []model.FileRange{{
 				Offset: 0,
@@ -123,9 +124,9 @@ func TestPackHandler_Success(t *testing.T) {
 						Path:             "test.txt",
 						Size:             4,
 						LastModifiedNano: stat.ModTime().UnixNano(),
-						AttachmentID:     1,
+						AttachmentID:     ptr.Of(model.SourceAttachmentID(1)),
 						Directory: &model.Directory{
-							AttachmentID: 1,
+							AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 						},
 					},
 				},
@@ -190,7 +191,7 @@ func TestStartPackHandler_StartExisting(t *testing.T) {
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Job{
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			State:        model.Error,
 			Type:         model.Pack,
 		}).Error
@@ -212,7 +213,7 @@ func TestStartPackHandler_AlreadyProcessing(t *testing.T) {
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Job{
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			State:        model.Processing,
 			Type:         model.Pack,
 		}).Error
@@ -234,7 +235,7 @@ func TestStartPackHandler_All(t *testing.T) {
 				}).Error
 				require.NoError(t, err)
 				err = db.Create(&model.Job{
-					AttachmentID: 1,
+					AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 					State:        model.Error,
 					Type:         model.Pack,
 				}).Error
@@ -261,7 +262,7 @@ func TestPausePackHandler_All(t *testing.T) {
 				}).Error
 				require.NoError(t, err)
 				err = db.Create(&model.Job{
-					AttachmentID: 1,
+					AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 					State:        model.Ready,
 					Type:         model.Pack,
 				}).Error
@@ -285,7 +286,7 @@ func TestPausePackHandler_Existing(t *testing.T) {
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Job{
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			State:        model.Ready,
 			Type:         model.Pack,
 		}).Error
@@ -307,7 +308,7 @@ func TestPausePackHandler_JobNotExist(t *testing.T) {
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Job{
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			State:        model.Ready,
 			Type:         model.Pack,
 		}).Error
@@ -326,7 +327,7 @@ func TestPausePackHandler_AlreadyPaused(t *testing.T) {
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Job{
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			State:        model.Paused,
 			Type:         model.Pack,
 		}).Error

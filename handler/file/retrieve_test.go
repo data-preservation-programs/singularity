@@ -104,7 +104,7 @@ func TestRetrieveFileHandler(t *testing.T) {
 				jobs := make([]model.Job, 2)
 				for i := 0; i < 2; i++ {
 					job := model.Job{
-						AttachmentID: file.Attachment.ID,
+						AttachmentID: &file.Attachment.ID,
 					}
 					err = db.Create(&job).Error
 					require.NoError(t, err)
@@ -132,7 +132,7 @@ func TestRetrieveFileHandler(t *testing.T) {
 					car := model.Car{
 						JobID:         ptr.Of(job.ID),
 						PieceCID:      model.CID(testCids[i]),
-						PreparationID: file.Attachment.PreparationID,
+						PreparationID: &file.Attachment.PreparationID,
 					}
 					err = db.Create(&car).Error
 					require.NoError(t, err)
@@ -450,7 +450,7 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 	jobs := make([]model.Job, 2)
 	for i := 0; i < 2; i++ {
 		job := model.Job{
-			AttachmentID: file.Attachment.ID,
+			AttachmentID: &file.Attachment.ID,
 		}
 		err = db.Create(&job).Error
 		require.NoError(b, err)
@@ -478,7 +478,7 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 		car := model.Car{
 			JobID:         ptr.Of(job.ID),
 			PieceCID:      model.CID(testCids[i]),
-			PreparationID: file.Attachment.PreparationID,
+			PreparationID: &file.Attachment.PreparationID,
 		}
 		err = db.Create(&car).Error
 		require.NoError(b, err)

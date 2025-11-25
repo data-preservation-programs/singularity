@@ -41,15 +41,15 @@ func TestExploreHandler(t *testing.T) {
 				require.NoError(t, err)
 				err = db.Create([]model.Directory{
 					{
-						AttachmentID: 1,
+						AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 					},
 					{
-						AttachmentID: 1,
+						AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 						ParentID:     ptr.Of(model.DirectoryID(1)),
 						Name:         "sub1",
 					},
 					{
-						AttachmentID: 1,
+						AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 						ParentID:     ptr.Of(model.DirectoryID(2)),
 						Name:         "sub2",
 					},
@@ -61,7 +61,7 @@ func TestExploreHandler(t *testing.T) {
 						Hash:             "hash",
 						Size:             100,
 						LastModifiedNano: 100,
-						AttachmentID:     1,
+						AttachmentID:     ptr.Of(model.SourceAttachmentID(1)),
 						DirectoryID:      ptr.Of(model.DirectoryID(2)),
 					},
 					{
@@ -69,7 +69,7 @@ func TestExploreHandler(t *testing.T) {
 						Hash:             "hash",
 						Size:             100,
 						LastModifiedNano: 100,
-						AttachmentID:     1,
+						AttachmentID:     ptr.Of(model.SourceAttachmentID(1)),
 						DirectoryID:      ptr.Of(model.DirectoryID(2)),
 					},
 					{
@@ -77,7 +77,7 @@ func TestExploreHandler(t *testing.T) {
 						Hash:             "hash2",
 						Size:             200,
 						LastModifiedNano: 200,
-						AttachmentID:     1,
+						AttachmentID:     ptr.Of(model.SourceAttachmentID(1)),
 						DirectoryID:      ptr.Of(model.DirectoryID(2)),
 					},
 				}).Error

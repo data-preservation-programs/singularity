@@ -9,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/google/uuid"
+	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-log/v2"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -56,7 +57,7 @@ func TestScan(t *testing.T) {
 		err := db.Create(&job).Error
 		require.NoError(t, err)
 		dir := model.Directory{
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 		}
 		err = db.Create(&dir).Error
 		require.NoError(t, err)

@@ -81,7 +81,7 @@ func TestLastPieceBehaviorE2ENoInline(t *testing.T) {
 
 		// 4. Run the scan job to discover files and create pack jobs
 		err = db.Create(&model.Directory{
-			AttachmentID: sourceAttachment.ID,
+			AttachmentID: &sourceAttachment.ID,
 			Name:         "", // Root directory has empty name
 			ParentID:     nil,
 		}).Error
@@ -297,7 +297,7 @@ func TestLastPieceBehaviorE2EInline(t *testing.T) {
 
 		// 4. Run the scan job to discover files and create pack jobs
 		err = db.Create(&model.Directory{
-			AttachmentID: sourceAttachment.ID,
+			AttachmentID: &sourceAttachment.ID,
 			Name:         "", // Root directory has empty name
 			ParentID:     nil,
 		}).Error
