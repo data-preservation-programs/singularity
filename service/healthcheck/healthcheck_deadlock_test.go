@@ -68,12 +68,13 @@ func TestHealthCheckCleanupNoDeadlock(t *testing.T) {
 			req.NoError(err)
 
 			// Create jobs assigned to this worker
+			attachmentID := attachment.ID
 			for range numJobsPerWorker {
 				job := model.Job{
 					Type:         model.Pack,
 					State:        model.Processing,
 					WorkerID:     &workerID,
-					AttachmentID: attachment.ID,
+					AttachmentID: &attachmentID,
 				}
 				err = db.Create(&job).Error
 				req.NoError(err)

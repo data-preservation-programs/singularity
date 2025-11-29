@@ -52,7 +52,7 @@ The metadata API does not return any credentials required to access the data fro
 
 Inline preparation introduces a minimal overhead, primarily in terms of the storage space required. Additionally, computational and bandwidth overhead is also minimal.
 
-Metadata for each block of data is stored as a database row, requiring 100 bytes for every 1MiB block of prepared data. For a 1PiB dataset, this translates to a requisite of 10TiB of disk space to store the mapping metadata. While this isn't typically an issue, datasets with a large number of small files may result in a significantly higher disk overhead.
+Metadata for each block of data is stored as a database row, requiring approximately 100 bytes for every 1MiB block of prepared data. For a 1PiB dataset, this translates to approximately 100GiB of disk space to store the mapping metadata. While this isn't typically an issue, datasets with a large number of small files may result in a significantly higher disk overhead.
 
 Later, when CAR files are dynamically regenerated from the original data source, it's necessary to cross-reference these mappings in the database. However, this is generally not a concern. A bandwidth of 1GB/sec equates to 1,000 database entry lookups, which is far from the bottleneck capabilities of all supported database backends. Additionally, future optimizations may further reduce this overhead.
 

@@ -28,7 +28,7 @@ var testDagGenJob = model.Job{
 	Type:         model.DagGen,
 	State:        model.Ready,
 	WorkerID:     nil,
-	AttachmentID: 1,
+	AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 }
 
 func TestDataPrepStartDagGenHandler(t *testing.T) {
@@ -68,7 +68,7 @@ var testScanJob = model.Job{
 	Type:         model.Scan,
 	State:        model.Ready,
 	WorkerID:     nil,
-	AttachmentID: 1,
+	AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 }
 
 func TestDataPrepStartScanHandler(t *testing.T) {
@@ -108,7 +108,7 @@ var testPackJob = model.Job{
 	Type:         model.Pack,
 	State:        model.Ready,
 	WorkerID:     nil,
-	AttachmentID: 1,
+	AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 }
 
 func TestDataPrepStartPackHandler(t *testing.T) {
@@ -178,7 +178,7 @@ func TestDataPreparationGetStatusHandler(t *testing.T) {
 						Type:         model.Pack,
 						State:        model.Processing,
 						WorkerID:     ptr.Of(uuid.NewString()),
-						AttachmentID: 1,
+						AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 					},
 				},
 			},

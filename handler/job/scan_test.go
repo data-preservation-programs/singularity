@@ -7,6 +7,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -63,7 +64,7 @@ func TestStartScanHandler_StartExisting(t *testing.T) {
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Job{
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			State:        model.Error,
 			Type:         model.Scan,
 		}).Error
@@ -85,7 +86,7 @@ func TestStartScanHandler_AlreadyProcessing(t *testing.T) {
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Job{
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			State:        model.Processing,
 			Type:         model.Scan,
 		}).Error
@@ -118,7 +119,7 @@ func TestPauseScanHandler_JobNotRunning(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, err)
 		err = db.Create(&model.Job{
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			State:        model.Error,
 			Type:         model.Scan,
 		}).Error
@@ -142,7 +143,7 @@ func TestPauseScanHandler_JobPaused(t *testing.T) {
 				require.NoError(t, err)
 				require.NoError(t, err)
 				err = db.Create(&model.Job{
-					AttachmentID: 1,
+					AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 					State:        model.Processing,
 					Type:         model.Scan,
 				}).Error

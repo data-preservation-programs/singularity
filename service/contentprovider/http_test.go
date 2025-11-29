@@ -12,6 +12,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/gotidy/ptr"
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
@@ -63,7 +64,7 @@ func TestHTTPServerHandler(t *testing.T) {
 			PieceSize:     128,
 			FileSize:      59 + 1 + 36 + 5,
 			StoragePath:   "",
-			PreparationID: 1,
+			PreparationID: ptr.Of(model.PreparationID(1)),
 			PieceType:     model.DataPiece,
 			Attachment: &model.SourceAttachment{
 				Preparation: &model.Preparation{},
@@ -75,7 +76,7 @@ func TestHTTPServerHandler(t *testing.T) {
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.CarBlock{
-			CarID:          1,
+			CarID:          ptr.Of(model.CarID(1)),
 			CID:            model.CID(testutil.TestCid),
 			CarOffset:      59,
 			CarBlockLength: 1 + 36 + 5,
@@ -180,7 +181,7 @@ func TestHTTPServerHandler(t *testing.T) {
 			err = db.Create(&model.Car{
 				PieceCID:      model.CID(dagPieceCID),
 				PieceSize:     256,
-				PreparationID: preparation.ID,
+				PreparationID: &preparation.ID,
 				PieceType:     model.DagPiece,
 				AttachmentID:  &attachment.ID,
 				RootCID:       model.CID(testutil.TestCid),

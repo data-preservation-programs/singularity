@@ -182,12 +182,12 @@ type Job struct {
 	ErrorMessage    string   `json:"errorMessage"`
 	ErrorStackTrace string   `json:"errorStackTrace"      table:"verbose"`
 
-	// Associations
-	WorkerID     *string            `gorm:"size:63;index"                                                  json:"workerId,omitempty"`
-	Worker       *Worker            `gorm:"foreignKey:WorkerID;references:ID;constraint:OnDelete:SET NULL" json:"worker,omitempty"     swaggerignore:"true" table:"verbose;expand"`
-	AttachmentID SourceAttachmentID `gorm:"index"                                                          json:"attachmentId"                                                   table:"verbose"`
-	Attachment   *SourceAttachment  `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE"            json:"attachment,omitempty" swaggerignore:"true" table:"expand"`
-	FileRanges   []FileRange        `gorm:"foreignKey:JobID;constraint:OnDelete:SET NULL"                  json:"fileRanges,omitempty" swaggerignore:"true" table:"-"`
+	// Associations - AttachmentID SET NULL for fast prep deletion, async cleanup
+	WorkerID     *string             `gorm:"size:63;index"                                                  json:"workerId,omitempty"`
+	Worker       *Worker             `gorm:"foreignKey:WorkerID;references:ID;constraint:OnDelete:SET NULL" json:"worker,omitempty"     swaggerignore:"true" table:"verbose;expand"`
+	AttachmentID *SourceAttachmentID `gorm:"index"                                                          json:"attachmentId"         table:"verbose"`
+	Attachment   *SourceAttachment   `gorm:"foreignKey:AttachmentID;constraint:OnDelete:SET NULL"           json:"attachment,omitempty" swaggerignore:"true" table:"expand"`
+	FileRanges   []FileRange         `gorm:"foreignKey:JobID;constraint:OnDelete:SET NULL"                  json:"fileRanges,omitempty" swaggerignore:"true" table:"-"`
 }
 
 type FileID uint64
@@ -203,12 +203,12 @@ type File struct {
 	Size             int64  `cbor:"4,keyasint,omitempty" json:"size"`                                                            // Size is the size of the file in bytes.
 	LastModifiedNano int64  `cbor:"5,keyasint,omitempty" json:"lastModifiedNano"`
 
-	// Associations
-	AttachmentID SourceAttachmentID `cbor:"-" gorm:"index"                                               json:"attachmentId"`
-	Attachment   *SourceAttachment  `cbor:"-" gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
-	DirectoryID  *DirectoryID       `cbor:"-" gorm:"index"                                               json:"directoryId"`
-	Directory    *Directory         `cbor:"-" gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"  json:"directory,omitempty"  swaggerignore:"true"`
-	FileRanges   []FileRange        `cbor:"-" gorm:"constraint:OnDelete:CASCADE"                         json:"fileRanges,omitempty"`
+	// Associations - AttachmentID SET NULL for fast prep deletion, async cleanup
+	AttachmentID *SourceAttachmentID `cbor:"-" gorm:"index"                                                json:"attachmentId"`
+	Attachment   *SourceAttachment   `cbor:"-" gorm:"foreignKey:AttachmentID;constraint:OnDelete:SET NULL" json:"attachment,omitempty" swaggerignore:"true"`
+	DirectoryID  *DirectoryID        `cbor:"-" gorm:"index"                                                json:"directoryId"`
+	Directory    *Directory          `cbor:"-" gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"   json:"directory,omitempty"  swaggerignore:"true"`
+	FileRanges   []FileRange         `cbor:"-" gorm:"constraint:OnDelete:CASCADE"                          json:"fileRanges,omitempty"`
 }
 
 func (i File) FileName() string {
@@ -226,11 +226,11 @@ type Directory struct {
 	Name     string      `json:"name"`                                                  // Name is the name of the directory.
 	Exported bool        `json:"exported"`                                              // Exported is a flag that indicates whether the directory has been exported to the DAG.
 
-	// Associations
-	AttachmentID SourceAttachmentID `gorm:"index:directory_source_parent"                       json:"attachmentId"`
-	Attachment   *SourceAttachment  `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
-	ParentID     *DirectoryID       `gorm:"index:directory_source_parent"                       json:"parentId"`
-	Parent       *Directory         `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE"     json:"parent,omitempty"     swaggerignore:"true"`
+	// Associations - AttachmentID SET NULL for fast prep deletion, async cleanup
+	AttachmentID *SourceAttachmentID `gorm:"index:directory_source_parent"                        json:"attachmentId"`
+	Attachment   *SourceAttachment   `gorm:"foreignKey:AttachmentID;constraint:OnDelete:SET NULL" json:"attachment,omitempty" swaggerignore:"true"`
+	ParentID     *DirectoryID        `gorm:"index:directory_source_parent"                        json:"parentId"`
+	Parent       *Directory          `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE"      json:"parent,omitempty"     swaggerignore:"true"`
 }
 
 type FileRangeID uint64
@@ -271,13 +271,13 @@ type Car struct {
 	StoragePath         string     `cbor:"-"                    json:"storagePath"` // StoragePath is the path to the CAR file inside the storage. If the StorageID is nil but StoragePath is not empty, it means the CAR file is stored at the local absolute path.
 	NumOfFiles          int64      `cbor:"-"                    json:"numOfFiles"                                        table:"verbose"`
 
-	// Association
-	PreparationID PreparationID       `cbor:"-" gorm:"index"                                                json:"preparationId"                                        table:"-"`
-	Preparation   *Preparation        `cbor:"-" gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"-"`
-	AttachmentID  *SourceAttachmentID `cbor:"-" gorm:"index"                                                json:"attachmentId"                                         table:"-"`
-	Attachment    *SourceAttachment   `cbor:"-" gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE"  json:"attachment,omitempty"  swaggerignore:"true" table:"-"`
-	JobID         *JobID              `cbor:"-" gorm:"index"                                                json:"jobId,omitempty"                                      table:"-"`
-	Job           *Job                `cbor:"-" gorm:"foreignKey:JobID;constraint:OnDelete:SET NULL"        json:"job,omitempty"         swaggerignore:"true" table:"-"`
+	// Association - SET NULL for fast prep deletion, async cleanup
+	PreparationID *PreparationID      `cbor:"-" gorm:"index"                                                 json:"preparationId"         table:"-"`
+	Preparation   *Preparation        `cbor:"-" gorm:"foreignKey:PreparationID;constraint:OnDelete:SET NULL" json:"preparation,omitempty" swaggerignore:"true" table:"-"`
+	AttachmentID  *SourceAttachmentID `cbor:"-" gorm:"index"                                                 json:"attachmentId"          table:"-"`
+	Attachment    *SourceAttachment   `cbor:"-" gorm:"foreignKey:AttachmentID;constraint:OnDelete:SET NULL"  json:"attachment,omitempty"  swaggerignore:"true" table:"-"`
+	JobID         *JobID              `cbor:"-" gorm:"index"                                                 json:"jobId,omitempty"       table:"-"`
+	Job           *Job                `cbor:"-" gorm:"foreignKey:JobID;constraint:OnDelete:SET NULL"         json:"job,omitempty"         swaggerignore:"true" table:"-"`
 }
 
 type CarBlockID uint64
@@ -300,11 +300,11 @@ type CarBlock struct {
 	// Internal Caching
 	blockLength int32 // Block length in bytes
 
-	// Associations
-	CarID  CarID   `cbor:"-"                    gorm:"index"                                         json:"carId"`
-	Car    *Car    `cbor:"-"                    gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE"  json:"car,omitempty"  swaggerignore:"true"`
+	// Associations - SET NULL for fast prep deletion, async cleanup
+	CarID  *CarID  `cbor:"-"                    gorm:"index"                                          json:"carId"`
+	Car    *Car    `cbor:"-"                    gorm:"foreignKey:CarID;constraint:OnDelete:SET NULL"  json:"car,omitempty"  swaggerignore:"true"`
 	FileID *FileID `cbor:"7,keyasint,omitempty" json:"fileId"`
-	File   *File   `cbor:"-"                    gorm:"foreignKey:FileID;constraint:OnDelete:CASCADE" json:"file,omitempty" swaggerignore:"true"`
+	File   *File   `cbor:"-"                    gorm:"foreignKey:FileID;constraint:OnDelete:SET NULL" json:"file,omitempty" swaggerignore:"true"`
 }
 
 // BlockLength computes and returns the length of the block data in bytes.

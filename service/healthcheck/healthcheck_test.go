@@ -47,6 +47,40 @@ func TestHealthCheckReport(t *testing.T) {
 	})
 }
 
+func TestCleanupOrphanedRecords(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		// Create orphaned records (NULL foreign keys)
+		db.Exec("INSERT INTO jobs (type, state) VALUES (?, ?)", model.Pack, model.Complete)
+		db.Exec("INSERT INTO cars (piece_size) VALUES (1024)")
+		db.Exec("INSERT INTO directories (name) VALUES ('orphan')")
+		db.Exec("INSERT INTO files (path, size) VALUES ('orphan.txt', 100)")
+		db.Exec("INSERT INTO car_blocks (car_offset) VALUES (0)")
+
+		// Verify records exist
+		var counts [5]int64
+		db.Model(&model.Job{}).Count(&counts[0])
+		db.Model(&model.Car{}).Count(&counts[1])
+		db.Model(&model.Directory{}).Count(&counts[2])
+		db.Model(&model.File{}).Count(&counts[3])
+		db.Model(&model.CarBlock{}).Count(&counts[4])
+		for i, c := range counts {
+			require.Equal(t, int64(1), c, "table %d should have 1 record", i)
+		}
+
+		cleanupOrphanedRecords(ctx, db)
+
+		// Verify all orphaned records deleted
+		db.Model(&model.Job{}).Count(&counts[0])
+		db.Model(&model.Car{}).Count(&counts[1])
+		db.Model(&model.Directory{}).Count(&counts[2])
+		db.Model(&model.File{}).Count(&counts[3])
+		db.Model(&model.CarBlock{}).Count(&counts[4])
+		for i, c := range counts {
+			require.Equal(t, int64(0), c, "table %d should be empty", i)
+		}
+	})
+}
+
 func TestHealthCheck(t *testing.T) {
 	req := require.New(t)
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {

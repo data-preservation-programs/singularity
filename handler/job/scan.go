@@ -73,7 +73,7 @@ func StartJobHandler(
 				job = model.Job{
 					State:        model.Ready,
 					Type:         jobType,
-					AttachmentID: sourceAttachment.ID,
+					AttachmentID: &sourceAttachment.ID,
 				}
 				return errors.WithStack(db.Create(&job).Error)
 			}

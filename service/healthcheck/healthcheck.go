@@ -80,12 +80,13 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	}
 
 	if len(staleWorkers) == 0 {
+		// Clean up orphaned records even if no stale workers
+		cleanupOrphanedRecords(ctx, db)
 		return
 	}
 
 	// Process each stale worker individually to avoid lock ordering issues
 	for _, worker := range staleWorkers {
-		// First, just update jobs without trying to delete the worker
 		err := database.DoRetry(ctx, func() error {
 			return db.Transaction(func(tx *gorm.DB) error {
 				// Lock and update jobs owned by this specific worker with SKIP LOCKED
@@ -100,7 +101,6 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 					return errors.WithStack(err)
 				}
 
-				// Update the jobs we successfully locked
 				if len(jobsToUpdate) > 0 {
 					jobIDsToUpdate := make([]model.JobID, len(jobsToUpdate))
 					for i, job := range jobsToUpdate {
@@ -124,7 +124,7 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 			logger.Errorw("failed to cleanup jobs for worker", "workerID", worker.ID, "error", err)
 		}
 
-		// Now check if the worker has any jobs left
+		// Only delete the worker if it has no jobs left
 		var jobCount int64
 		err = db.Model(&model.Job{}).Where("worker_id = ?", worker.ID).Count(&jobCount).Error
 		if err != nil {
@@ -132,7 +132,6 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 			continue
 		}
 
-		// Only delete the worker if it has no jobs
 		if jobCount == 0 {
 			result := db.Where("id = ?", worker.ID).Delete(&model.Worker{})
 			if result.Error != nil {
@@ -143,6 +142,69 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 		} else {
 			logger.Debugw("worker still has jobs, will retry later", "workerID", worker.ID, "jobCount", jobCount)
 		}
+	}
+
+	// Clean up orphaned records from deleted preparations (SET NULL cascades)
+	cleanupOrphanedRecords(ctx, db)
+}
+
+// cleanupOrphanedRecords deletes orphaned records in batches.
+// When preparations are deleted, FK cascades set attachment_id/preparation_id to NULL.
+// This function gradually cleans up those orphaned records.
+func cleanupOrphanedRecords(ctx context.Context, db *gorm.DB) {
+	dialect := db.Dialector.Name()
+
+	// Delete orphaned car_blocks - largest table, 10K per cycle
+	result := execBatchDelete(db, dialect, "car_blocks", "car_id", 10000)
+	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
+		logger.Errorw("failed to clean up orphaned car_blocks", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		logger.Infow("cleaned up orphaned car_blocks", "count", result.RowsAffected)
+	}
+
+	// Delete orphaned files - large table, 1000 per cycle
+	result = execBatchDelete(db, dialect, "files", "attachment_id", 1000)
+	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
+		logger.Errorw("failed to clean up orphaned files", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		logger.Infow("cleaned up orphaned files", "count", result.RowsAffected)
+	}
+
+	// Delete orphaned cars - 100 per cycle
+	result = execBatchDelete(db, dialect, "cars", "preparation_id", 100)
+	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
+		logger.Errorw("failed to clean up orphaned cars", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		logger.Infow("cleaned up orphaned cars", "count", result.RowsAffected)
+	}
+
+	// Delete orphaned directories - 100 per cycle
+	result = execBatchDelete(db, dialect, "directories", "attachment_id", 100)
+	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
+		logger.Errorw("failed to clean up orphaned directories", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		logger.Infow("cleaned up orphaned directories", "count", result.RowsAffected)
+	}
+
+	// Delete orphaned jobs - 100 per cycle
+	result = execBatchDelete(db, dialect, "jobs", "attachment_id", 100)
+	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
+		logger.Errorw("failed to clean up orphaned jobs", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		logger.Infow("cleaned up orphaned jobs", "count", result.RowsAffected)
+	}
+}
+
+// execBatchDelete deletes rows where column IS NULL with a batch limit.
+// Uses dialect-specific SQL because MariaDB doesn't support LIMIT in IN subqueries.
+func execBatchDelete(db *gorm.DB, dialect, table, column string, limit int) *gorm.DB {
+	switch dialect {
+	case "mysql":
+		// MySQL/MariaDB support DELETE ... LIMIT directly
+		return db.Exec("DELETE FROM "+table+" WHERE "+column+" IS NULL LIMIT ?", limit)
+	default:
+		// PostgreSQL and SQLite support LIMIT in subqueries
+		return db.Exec("DELETE FROM "+table+" WHERE id IN (SELECT id FROM "+table+" WHERE "+column+" IS NULL LIMIT ?)", limit)
 	}
 }
 

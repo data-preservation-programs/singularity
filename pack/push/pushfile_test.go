@@ -57,7 +57,7 @@ func TestPushFile(t *testing.T) {
 		err := db.Create(&attachment).Error
 		require.NoError(t, err)
 		root := model.Directory{
-			AttachmentID: attachment.ID,
+			AttachmentID: &attachment.ID,
 		}
 		err = db.Create(&root).Error
 		require.NoError(t, err)
@@ -97,13 +97,13 @@ func TestEnsureParentDirectories(t *testing.T) {
 		err := db.Create(&attachment).Error
 		require.NoError(t, err)
 		root := model.Directory{
-			AttachmentID: attachment.ID,
+			AttachmentID: &attachment.ID,
 		}
 		err = db.Create(&root).Error
 		require.NoError(t, err)
 		err = EnsureParentDirectories(ctx, db, &model.File{
 			Path:         "sub1/sub2/sub3/sub4/test.txt",
-			AttachmentID: attachment.ID,
+			AttachmentID: &attachment.ID,
 		}, 1, cache)
 		require.NoError(t, err)
 		var dirs []model.Directory
@@ -113,13 +113,13 @@ func TestEnsureParentDirectories(t *testing.T) {
 
 		err = EnsureParentDirectories(ctx, db, &model.File{
 			Path:         "sub1/sub2/c/d/test.txt",
-			AttachmentID: attachment.ID,
+			AttachmentID: &attachment.ID,
 		}, 1, cache)
 		require.NoError(t, err)
 
 		err = EnsureParentDirectories(ctx, db, &model.File{
 			Path:         "x/y/z/test.txt",
-			AttachmentID: attachment.ID,
+			AttachmentID: &attachment.ID,
 		}, 1, cache)
 		require.NoError(t, err)
 		err = db.Find(&dirs).Error
@@ -139,7 +139,7 @@ func TestCreatePackJob(t *testing.T) {
 		fileRanges := []model.FileRange{
 			{
 				File: &model.File{
-					AttachmentID: attachment.ID,
+					AttachmentID: &attachment.ID,
 				},
 			},
 		}
@@ -147,6 +147,6 @@ func TestCreatePackJob(t *testing.T) {
 		require.NoError(t, err)
 		job, err := CreatePackJob(ctx, db, attachment.ID, []model.FileRangeID{1})
 		require.NoError(t, err)
-		require.Equal(t, attachment.ID, job.AttachmentID)
+		require.Equal(t, attachment.ID, *job.AttachmentID)
 	})
 }

@@ -89,7 +89,7 @@ func PushFile(
 	}
 
 	file := model.File{
-		AttachmentID:     attachment.ID,
+		AttachmentID:     &attachment.ID,
 		Path:             obj.Remote(),
 		Size:             size,
 		LastModifiedNano: lastModified.UnixNano(),
@@ -187,7 +187,7 @@ func CreatePackJob(
 	db = db.WithContext(ctx)
 	job := model.Job{
 		Type:         model.Pack,
-		AttachmentID: attachmentID,
+		AttachmentID: &attachmentID,
 		State:        model.Ready,
 	}
 

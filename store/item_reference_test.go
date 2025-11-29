@@ -34,7 +34,7 @@ func TestFileReferenceBlockStore_Has(t *testing.T) {
 					Preparation: &model.Preparation{},
 					Storage:     &model.Storage{},
 				},
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 			},
 			CID: model.CID(testutil.TestCid),
 		}).Error
@@ -71,7 +71,7 @@ func TestFileReferenceBlockStore_GetSize(t *testing.T) {
 					Preparation: &model.Preparation{},
 					Storage:     &model.Storage{},
 				},
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 			},
 			CID:      model.CID(cidValue),
 			RawBlock: []byte("test"),
@@ -99,7 +99,7 @@ func TestFileReferenceBlockStore_Get_RawBlock(t *testing.T) {
 					Preparation: &model.Preparation{},
 					Storage:     &model.Storage{},
 				},
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 			},
 			CID:      model.CID(cidValue),
 			RawBlock: []byte("test"),
@@ -136,11 +136,11 @@ func TestFileReferenceBlockStore_Get_FileBlock(t *testing.T) {
 		err = db.Create(&model.CarBlock{
 			Car: &model.Car{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
-				PreparationID: 1,
+				PreparationID: ptr.Of(model.PreparationID(1)),
 			},
 			CID: model.CID(cidValue),
 			File: &model.File{
-				AttachmentID:     1,
+				AttachmentID:     ptr.Of(model.SourceAttachmentID(1)),
 				Path:             "1.txt",
 				Size:             4,
 				LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),

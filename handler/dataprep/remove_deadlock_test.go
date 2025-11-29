@@ -69,10 +69,11 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 
 			// Create directories
 			directories := make([]model.Directory, numDirsPerPrep)
+			attachmentID := attachment.ID
 			for j := range numDirsPerPrep {
 				dir := model.Directory{
 					Name:         "dir-" + uuid.New().String()[:8],
-					AttachmentID: attachment.ID,
+					AttachmentID: &attachmentID,
 					CID:          model.CID(testutil.TestCid),
 					Data:         []byte("test"),
 				}
@@ -87,7 +88,7 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 				file := model.File{
 					Path:             "/test/file-" + uuid.New().String()[:8],
 					Size:             1024,
-					AttachmentID:     attachment.ID,
+					AttachmentID:     &attachmentID,
 					DirectoryID:      &directories[dirIdx].ID,
 					CID:              model.CID(testutil.TestCid),
 					Hash:             "test-hash",
@@ -103,7 +104,7 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 				job := model.Job{
 					Type:         model.Pack,
 					State:        model.Ready,
-					AttachmentID: attachment.ID,
+					AttachmentID: &attachmentID,
 				}
 				err = db.Create(&job).Error
 				req.NoError(err)
@@ -125,10 +126,11 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 			}
 
 			// Create cars
+			prepID := prep.ID
 			for range numCarsPerPrep {
 				car := model.Car{
-					PreparationID: prep.ID,
-					AttachmentID:  &attachment.ID,
+					PreparationID: &prepID,
+					AttachmentID:  &attachmentID,
 					PieceCID:      model.CID(testutil.TestCid),
 					PieceSize:     1 << 20,
 					RootCID:       model.CID(testutil.TestCid),
@@ -140,9 +142,10 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 				allCarIDs = append(allCarIDs, car.ID)
 
 				// Create car blocks
+				carID := car.ID
 				for k := range numBlocksPerCar {
 					block := model.CarBlock{
-						CarID:          car.ID,
+						CarID:          &carID,
 						CID:            model.CID(testutil.TestCid),
 						CarOffset:      int64(k * 1024),
 						CarBlockLength: 1024,
@@ -248,8 +251,9 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 				defer cancel()
 
 				carIdx := iteration % len(allCarIDs)
+				carID := allCarIDs[carIdx]
 				block := model.CarBlock{
-					CarID:          allCarIDs[carIdx],
+					CarID:          &carID,
 					CID:            model.CID(testutil.TestCid),
 					CarOffset:      int64(1000 + iteration),
 					CarBlockLength: 512,

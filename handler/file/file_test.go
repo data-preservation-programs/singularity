@@ -7,6 +7,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -35,7 +36,7 @@ func TestGetFile(t *testing.T) {
 			},
 			FileRanges: []model.FileRange{{
 				Job: &model.Job{
-					AttachmentID: 1,
+					AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 				},
 			}},
 		}

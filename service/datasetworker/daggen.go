@@ -349,8 +349,8 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 		MinPieceSizePadding: minPieceSizePadding,
 		StorageID:           storageID,
 		StoragePath:         filename,
-		AttachmentID:        &job.AttachmentID,
-		PreparationID:       job.Attachment.PreparationID,
+		AttachmentID:        job.AttachmentID,
+		PreparationID:       &job.Attachment.PreparationID,
 		PieceType:           model.DagPiece,
 	}
 
@@ -362,7 +362,7 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 			}
 			if len(dagGenerator.carBlocks) > 0 {
 				for i := range dagGenerator.carBlocks {
-					dagGenerator.carBlocks[i].CarID = car.ID
+					dagGenerator.carBlocks[i].CarID = &car.ID
 				}
 				err = db.CreateInBatches(dagGenerator.carBlocks, util.BatchSize).Error
 				if err != nil {

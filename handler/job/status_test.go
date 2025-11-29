@@ -7,6 +7,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -27,7 +28,7 @@ func TestGetStatusHandler(t *testing.T) {
 				require.NoError(t, err)
 
 				err = db.Create(&model.Job{
-					AttachmentID: 1,
+					AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 					State:        model.Ready,
 					Type:         model.Pack,
 				}).Error

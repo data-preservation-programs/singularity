@@ -184,7 +184,7 @@ func (DefaultHandler) CreatePreparationHandler(
 
 		for _, attachment := range attachments {
 			err = db.Create(&model.Directory{
-				AttachmentID: attachment.ID,
+				AttachmentID: &attachment.ID,
 			}).Error
 			if err != nil {
 				return errors.WithStack(err)

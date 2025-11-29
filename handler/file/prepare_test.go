@@ -36,7 +36,7 @@ func TestPrepareToPackFileHandler(t *testing.T) {
 				},
 			},
 			Directory: &model.Directory{
-				AttachmentID: 1,
+				AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			},
 			FileRanges: []model.FileRange{{
 				Offset: 0,
@@ -55,7 +55,7 @@ func TestPrepareToPackFileHandler(t *testing.T) {
 
 		file2 := model.File{
 			Size:         900000,
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 			DirectoryID:  ptr.Of(model.DirectoryID(1)),
 			FileRanges: []model.FileRange{{
 				Offset: 0,

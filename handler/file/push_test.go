@@ -9,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -57,7 +58,7 @@ func TestPushFileHandler(t *testing.T) {
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Directory{
-			AttachmentID: 1,
+			AttachmentID: ptr.Of(model.SourceAttachmentID(1)),
 		}).Error
 		require.NoError(t, err)
 		file, err := Default.PushFileHandler(ctx, db, "prep", "source", Info{Path: "test.txt"})
