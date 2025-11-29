@@ -159,16 +159,19 @@ func migrateFKConstraints(db *gorm.DB) error {
 
 		// Drop and recreate with SET NULL
 		if dialect == "postgres" {
-			err = db.Exec(`ALTER TABLE ` + fk.table + ` DROP CONSTRAINT ` + fk.constraint).Error
+			// Postgres DDL is transactional - wrap DROP+ADD so failure rolls back both
+			err = db.Transaction(func(tx *gorm.DB) error {
+				if err := tx.Exec(`ALTER TABLE ` + fk.table + ` DROP CONSTRAINT ` + fk.constraint).Error; err != nil {
+					return err
+				}
+				return tx.Exec(`ALTER TABLE ` + fk.table + ` ADD CONSTRAINT ` + fk.constraint +
+					` FOREIGN KEY (` + fk.column + `) REFERENCES ` + fk.refTable + `(id) ON DELETE SET NULL`).Error
+			})
 			if err != nil {
-				return errors.Wrapf(err, "failed to drop constraint %s", fk.constraint)
-			}
-			err = db.Exec(`ALTER TABLE ` + fk.table + ` ADD CONSTRAINT ` + fk.constraint +
-				` FOREIGN KEY (` + fk.column + `) REFERENCES ` + fk.refTable + `(id) ON DELETE SET NULL`).Error
-			if err != nil {
-				return errors.Wrapf(err, "failed to create constraint %s", fk.constraint)
+				return errors.Wrapf(err, "failed to migrate constraint %s", fk.constraint)
 			}
 		} else if dialect == "mysql" {
+			// MySQL DDL causes implicit commit, so no transaction benefit here
 			err = db.Exec(`ALTER TABLE ` + fk.table + ` DROP FOREIGN KEY ` + fk.constraint).Error
 			if err != nil {
 				return errors.Wrapf(err, "failed to drop constraint %s", fk.constraint)
