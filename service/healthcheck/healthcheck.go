@@ -152,10 +152,10 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 // When preparations are deleted, FK cascades set attachment_id/preparation_id to NULL.
 // This function gradually cleans up those orphaned records.
 func cleanupOrphanedRecords(ctx context.Context, db *gorm.DB) {
+	dialect := db.Dialector.Name()
+
 	// Delete orphaned car_blocks - largest table, 10K per cycle
-	result := db.Exec(`DELETE FROM car_blocks WHERE id IN (
-		SELECT id FROM car_blocks WHERE car_id IS NULL LIMIT 10000
-	)`)
+	result := execBatchDelete(db, dialect, "car_blocks", "car_id", 10000)
 	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
 		logger.Errorw("failed to clean up orphaned car_blocks", "error", result.Error)
 	} else if result.RowsAffected > 0 {
@@ -163,9 +163,7 @@ func cleanupOrphanedRecords(ctx context.Context, db *gorm.DB) {
 	}
 
 	// Delete orphaned files - large table, 1000 per cycle
-	result = db.Exec(`DELETE FROM files WHERE id IN (
-		SELECT id FROM files WHERE attachment_id IS NULL LIMIT 1000
-	)`)
+	result = execBatchDelete(db, dialect, "files", "attachment_id", 1000)
 	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
 		logger.Errorw("failed to clean up orphaned files", "error", result.Error)
 	} else if result.RowsAffected > 0 {
@@ -173,9 +171,7 @@ func cleanupOrphanedRecords(ctx context.Context, db *gorm.DB) {
 	}
 
 	// Delete orphaned cars - 100 per cycle
-	result = db.Exec(`DELETE FROM cars WHERE id IN (
-		SELECT id FROM cars WHERE preparation_id IS NULL LIMIT 100
-	)`)
+	result = execBatchDelete(db, dialect, "cars", "preparation_id", 100)
 	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
 		logger.Errorw("failed to clean up orphaned cars", "error", result.Error)
 	} else if result.RowsAffected > 0 {
@@ -183,9 +179,7 @@ func cleanupOrphanedRecords(ctx context.Context, db *gorm.DB) {
 	}
 
 	// Delete orphaned directories - 100 per cycle
-	result = db.Exec(`DELETE FROM directories WHERE id IN (
-		SELECT id FROM directories WHERE attachment_id IS NULL LIMIT 100
-	)`)
+	result = execBatchDelete(db, dialect, "directories", "attachment_id", 100)
 	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
 		logger.Errorw("failed to clean up orphaned directories", "error", result.Error)
 	} else if result.RowsAffected > 0 {
@@ -193,13 +187,24 @@ func cleanupOrphanedRecords(ctx context.Context, db *gorm.DB) {
 	}
 
 	// Delete orphaned jobs - 100 per cycle
-	result = db.Exec(`DELETE FROM jobs WHERE id IN (
-		SELECT id FROM jobs WHERE attachment_id IS NULL LIMIT 100
-	)`)
+	result = execBatchDelete(db, dialect, "jobs", "attachment_id", 100)
 	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
 		logger.Errorw("failed to clean up orphaned jobs", "error", result.Error)
 	} else if result.RowsAffected > 0 {
 		logger.Infow("cleaned up orphaned jobs", "count", result.RowsAffected)
+	}
+}
+
+// execBatchDelete deletes rows where column IS NULL with a batch limit.
+// Uses dialect-specific SQL because MariaDB doesn't support LIMIT in IN subqueries.
+func execBatchDelete(db *gorm.DB, dialect, table, column string, limit int) *gorm.DB {
+	switch dialect {
+	case "mysql":
+		// MySQL/MariaDB support DELETE ... LIMIT directly
+		return db.Exec("DELETE FROM "+table+" WHERE "+column+" IS NULL LIMIT ?", limit)
+	default:
+		// PostgreSQL and SQLite support LIMIT in subqueries
+		return db.Exec("DELETE FROM "+table+" WHERE id IN (SELECT id FROM "+table+" WHERE "+column+" IS NULL LIMIT ?)", limit)
 	}
 }
 
