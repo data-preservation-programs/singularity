@@ -49,6 +49,11 @@ yarn-error.log*
 
 dist/
 
+# Profiling and logs
+*.prof
+*.log
+*.csv
+
 /test.db*
 dump_extracted.sql
 dump_postgres_reordered_data_only.sql

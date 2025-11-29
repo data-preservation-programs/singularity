@@ -213,8 +213,9 @@ func TestExportDag_WithMinPieceSize_LocalStorage(t *testing.T) {
 		dir1Data, err := dir1.MarshalBinary(ctx)
 		require.NoError(t, err)
 
+		attachmentID := model.SourceAttachmentID(1)
 		dirs := []model.Directory{
-			{AttachmentID: 1, Data: dir1Data, CID: model.CID(packutil.EmptyFileCid)},
+			{AttachmentID: &attachmentID, Data: dir1Data, CID: model.CID(packutil.EmptyFileCid)},
 		}
 		err = thread.dbNoContext.Create(&dirs).Error
 		require.NoError(t, err)
@@ -307,8 +308,9 @@ func TestExportDag_WithMinPieceSize_RemoteStorage(t *testing.T) {
 		dir1Data, err := dir1.MarshalBinary(ctx)
 		require.NoError(t, err)
 
+		attachmentID := model.SourceAttachmentID(1)
 		dirs := []model.Directory{
-			{AttachmentID: 1, Data: dir1Data, CID: model.CID(packutil.EmptyFileCid)},
+			{AttachmentID: &attachmentID, Data: dir1Data, CID: model.CID(packutil.EmptyFileCid)},
 		}
 		err = thread.dbNoContext.Create(&dirs).Error
 		require.NoError(t, err)
