@@ -59,11 +59,9 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 
 // HealthCheckCleanup is a function that cleans up stale workers and work files in the database.
 //
-// It first removes all workers that haven't sent a heartbeat for a certain threshold (staleThreshold).
-// If there's an error removing the workers, it logs the error and continues.
-//
-// Then, it resets the state of any jobs that are marked as being processed by a worker that no longer exists.
-// If there's an error updating the sources, it logs the error and continues.
+// It first finds workers that haven't sent a heartbeat for a certain threshold (staleThreshold).
+// Then it explicitly updates jobs owned by those workers to prevent CASCADE lock contention.
+// Worker deletion is deferred to avoid deadlocks during concurrent operations.
 //
 // All database operations are retried on failure using the DoRetry function.
 //
@@ -72,25 +70,78 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	db = db.WithContext(ctx)
 	logger.Debugw("running healthcheck cleanup")
-	// Remove all workers that haven't sent heartbeat for 5 minutes.
-	err := database.DoRetry(ctx, func() error {
-		return db.Where("last_heartbeat < ?", time.Now().UTC().Add(-staleThreshold)).Delete(&model.Worker{}).Error
-	})
-	if err != nil && !errors.Is(err, context.Canceled) {
-		log.Logger("healthcheck").Errorw("failed to remove dead workers", "error", err)
+
+	// Find stale workers
+	var staleWorkers []model.Worker
+	err := db.Where("last_heartbeat < ?", time.Now().UTC().Add(-staleThreshold)).Find(&staleWorkers).Error
+	if err != nil {
+		logger.Errorw("failed to find stale workers", "error", err)
+		return
 	}
 
-	// In case there are some works that have stale foreign key referenced to dead workers, we need to remove them
-	err = database.DoRetry(ctx, func() error {
-		return db.Model(&model.Job{}).Where("(worker_id NOT IN (?) OR worker_id IS NULL) AND state = ?",
-			db.Table("workers").Select("id"), model.Processing).
-			Updates(map[string]any{
-				"worker_id": nil,
-				"state":     model.Ready,
-			}).Error
-	})
-	if err != nil && !errors.Is(err, context.Canceled) {
-		logger.Errorw("failed to remove stale workers", "error", err)
+	if len(staleWorkers) == 0 {
+		// Clean up orphaned records even if no stale workers
+		cleanupOrphanedRecords(ctx, db)
+		return
+	}
+
+	// Process each stale worker individually to avoid lock ordering issues
+	for _, worker := range staleWorkers {
+		err := database.DoRetry(ctx, func() error {
+			return db.Transaction(func(tx *gorm.DB) error {
+				// Lock and update jobs owned by this specific worker with SKIP LOCKED
+				var jobsToUpdate []model.Job
+				err := tx.Clauses(clause.Locking{
+					Strength: "UPDATE",
+					Options:  "SKIP LOCKED",
+				}).Select("id").
+					Where("worker_id = ? AND state = ?", worker.ID, model.Processing).
+					Find(&jobsToUpdate).Error
+				if err != nil {
+					return errors.WithStack(err)
+				}
+
+				if len(jobsToUpdate) > 0 {
+					jobIDsToUpdate := make([]model.JobID, len(jobsToUpdate))
+					for i, job := range jobsToUpdate {
+						jobIDsToUpdate[i] = job.ID
+					}
+
+					err = tx.Model(&model.Job{}).
+						Where("id IN ?", jobIDsToUpdate).
+						Updates(map[string]any{
+							"worker_id": nil,
+							"state":     model.Ready,
+						}).Error
+					if err != nil {
+						return errors.WithStack(err)
+					}
+				}
+				return nil
+			})
+		})
+		if err != nil && !errors.Is(err, context.Canceled) {
+			logger.Errorw("failed to cleanup jobs for worker", "workerID", worker.ID, "error", err)
+		}
+
+		// Only delete the worker if it has no jobs left
+		var jobCount int64
+		err = db.Model(&model.Job{}).Where("worker_id = ?", worker.ID).Count(&jobCount).Error
+		if err != nil {
+			logger.Errorw("failed to count jobs for worker", "workerID", worker.ID, "error", err)
+			continue
+		}
+
+		if jobCount == 0 {
+			result := db.Where("id = ?", worker.ID).Delete(&model.Worker{})
+			if result.Error != nil {
+				logger.Errorw("failed to delete worker", "workerID", worker.ID, "error", result.Error)
+			} else if result.RowsAffected > 0 {
+				logger.Debugw("deleted stale worker", "workerID", worker.ID)
+			}
+		} else {
+			logger.Debugw("worker still has jobs, will retry later", "workerID", worker.ID, "jobCount", jobCount)
+		}
 	}
 
 	// Clean up orphaned records from deleted preparations (SET NULL cascades)
@@ -100,7 +151,6 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 // cleanupOrphanedRecords deletes orphaned records in batches.
 // When preparations are deleted, FK cascades set attachment_id/preparation_id to NULL.
 // This function gradually cleans up those orphaned records.
-// Batch sizes are proportional to typical table cardinality.
 func cleanupOrphanedRecords(ctx context.Context, db *gorm.DB) {
 	// Delete orphaned car_blocks - largest table, 10K per cycle
 	result := db.Exec(`DELETE FROM car_blocks WHERE id IN (

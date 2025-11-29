@@ -333,6 +333,7 @@ func TestLastPiecePadding(t *testing.T) {
 				// Create and execute the packing job
 				err := db.Create(&job).Error
 				require.NoError(t, err)
+
 				car, err := Pack(ctx, db, job)
 				require.NoError(t, err)
 
@@ -457,6 +458,7 @@ func TestMultiplePiecesWithLastPiece(t *testing.T) {
 				// Create and execute the packing job
 				err := db.Create(&job).Error
 				require.NoError(t, err)
+
 				car, err := Pack(ctx, db, job)
 				require.NoError(t, err)
 

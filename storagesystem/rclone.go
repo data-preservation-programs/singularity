@@ -17,6 +17,7 @@ import (
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/config/configmap"
 	"github.com/rclone/rclone/fs/object"
+	"github.com/rclone/rclone/fs/operations"
 )
 
 var logger = log.Logger("storage")
@@ -53,10 +54,19 @@ func (h RCloneHandler) Write(ctx context.Context, path string, in io.Reader) (fs
 }
 
 func (h RCloneHandler) Move(ctx context.Context, from fs.Object, to string) (fs.Object, error) {
-	if h.fs.Features().Move != nil {
-		return h.fs.Features().Move(ctx, from, to)
+	// Use rclone's operations.Move which handles all fallback logic:
+	// - Uses server-side Move if available
+	// - Falls back to server-side Copy+Delete if Move not supported
+	// - Falls back to download+upload+delete as last resort
+	logger.Debugf("Moving %s to %s", from.Remote(), to)
+
+	// operations.Move expects the destination fs and remote path
+	newObj, err := operations.Move(ctx, h.fs, nil, to, from)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to move %s to %s", from.Remote(), to)
 	}
-	return nil, errors.Wrapf(ErrMoveNotSupported, "backend: %s", h.fs.String())
+
+	return newObj, nil
 }
 
 func (h RCloneHandler) Remove(ctx context.Context, obj fs.Object) error {
