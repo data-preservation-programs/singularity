@@ -160,12 +160,14 @@ func migrateFKConstraints(db *gorm.DB) error {
 		// Drop and recreate with SET NULL
 		if dialect == "postgres" {
 			// Postgres DDL is transactional - wrap DROP+ADD so failure rolls back both
+			// Use NOT VALID to skip row validation - existing rows were valid under CASCADE,
+			// so they're still valid under SET NULL.
 			err = db.Transaction(func(tx *gorm.DB) error {
 				if err := tx.Exec(`ALTER TABLE ` + fk.table + ` DROP CONSTRAINT ` + fk.constraint).Error; err != nil {
 					return err
 				}
 				return tx.Exec(`ALTER TABLE ` + fk.table + ` ADD CONSTRAINT ` + fk.constraint +
-					` FOREIGN KEY (` + fk.column + `) REFERENCES ` + fk.refTable + `(id) ON DELETE SET NULL`).Error
+					` FOREIGN KEY (` + fk.column + `) REFERENCES ` + fk.refTable + `(id) ON DELETE SET NULL NOT VALID`).Error
 			})
 			if err != nil {
 				return errors.Wrapf(err, "failed to migrate constraint %s", fk.constraint)
