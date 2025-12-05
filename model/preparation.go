@@ -304,7 +304,7 @@ type CarBlock struct {
 	CarID  *CarID  `cbor:"-"                    gorm:"index"                                          json:"carId"`
 	Car    *Car    `cbor:"-"                    gorm:"foreignKey:CarID;constraint:OnDelete:SET NULL"  json:"car,omitempty"  swaggerignore:"true"`
 	FileID *FileID `cbor:"7,keyasint,omitempty" json:"fileId"`
-	File   *File   `cbor:"-"                    gorm:"foreignKey:FileID;constraint:OnDelete:SET NULL" json:"file,omitempty" swaggerignore:"true"`
+	File   *File   `cbor:"-"                    gorm:"foreignKey:FileID"                              json:"file,omitempty" swaggerignore:"true"` // No FK constraint - avoids slow cascade scans
 }
 
 // BlockLength computes and returns the length of the block data in bytes.
