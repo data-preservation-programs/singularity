@@ -344,6 +344,7 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	// Piece
 	e.GET("/api/preparation/:id/piece", s.toEchoHandler(s.dataprepHandler.ListPiecesHandler))
 	e.POST("/api/preparation/:id/piece", s.toEchoHandler(s.dataprepHandler.AddPieceHandler))
+	e.DELETE("/api/preparation/:id/piece/:piece_cid", s.toEchoHandler(s.dataprepHandler.DeletePieceHandler))
 
 	// Wallet
 	e.POST("/api/wallet", s.toEchoHandler(s.walletHandler.ImportHandler))

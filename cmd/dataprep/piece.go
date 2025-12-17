@@ -82,3 +82,38 @@ var AddPieceCmd = &cli.Command{
 		return nil
 	},
 }
+
+var DeletePieceCmd = &cli.Command{
+	Name:      "delete-piece",
+	Usage:     "Delete a piece from a preparation",
+	Category:  "Piece Management",
+	ArgsUsage: "<preparation id|name> <piece-cid>",
+	Before:    cliutil.CheckNArgs,
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:  "delete-car",
+			Usage: "Delete the physical CAR file from storage",
+			Value: true,
+		},
+		&cli.BoolFlag{
+			Name:  "force",
+			Usage: "Delete even if deals reference this piece",
+		},
+	},
+	Action: func(c *cli.Context) error {
+		db, closer, err := database.OpenFromCLI(c)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		defer closer.Close()
+
+		return dataprep.Default.DeletePieceHandler(
+			c.Context, db,
+			c.Args().Get(0),
+			c.Args().Get(1),
+			dataprep.DeletePieceRequest{
+				DeleteCar: c.Bool("delete-car"),
+				Force:     c.Bool("force"),
+			})
+	},
+}
