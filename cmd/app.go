@@ -203,6 +203,7 @@ Upgrading:
 				dataprep.PauseDagGenCmd,
 				dataprep.ListPiecesCmd,
 				dataprep.AddPieceCmd,
+				dataprep.DeletePieceCmd,
 				dataprep.ExploreCmd,
 				dataprep.AttachWalletCmd,
 				dataprep.ListWalletsCmd,

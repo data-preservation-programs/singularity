@@ -43,6 +43,14 @@ type Handler interface {
 		request AddPieceRequest,
 	) (*model.Car, error)
 
+	DeletePieceHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		prepName string,
+		pieceCID string,
+		request DeletePieceRequest,
+	) error
+
 	AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id string, source string) (*model.Preparation, error)
 	ListSchedulesHandler(
 		ctx context.Context,
@@ -118,6 +126,11 @@ func (m *MockDataPrep) ListPiecesHandler(ctx context.Context, db *gorm.DB, id st
 func (m *MockDataPrep) AddPieceHandler(ctx context.Context, db *gorm.DB, id string, request AddPieceRequest) (*model.Car, error) {
 	args := m.Called(ctx, db, id, request)
 	return args.Get(0).(*model.Car), args.Error(1)
+}
+
+func (m *MockDataPrep) DeletePieceHandler(ctx context.Context, db *gorm.DB, prepName string, pieceCID string, request DeletePieceRequest) error {
+	args := m.Called(ctx, db, prepName, pieceCID, request)
+	return args.Error(0)
 }
 
 func (m *MockDataPrep) AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id string, source string) (*model.Preparation, error) {
