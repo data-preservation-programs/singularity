@@ -98,7 +98,7 @@ func OpenWithLogger(connString string) (*gorm.DB, io.Closer, error) {
 	}
 	return open(connString, &gorm.Config{
 		Logger:         &gormLogger,
-		TranslateError: true,
+		TranslateError: false, // disabled to capture raw pgconn errors
 	})
 }
 
