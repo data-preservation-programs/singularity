@@ -9,6 +9,7 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/cockroachdb/errors"
 	logging "github.com/ipfs/go-log/v2"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 	logger2 "gorm.io/gorm/logger"
@@ -25,7 +26,16 @@ var (
 )
 
 func DoRetry(ctx context.Context, f func() error) error {
-	return retry.Do(f, retry.RetryIf(retryOn), retry.LastErrorOnly(true), retry.Context(ctx))
+	attempt := 0
+	return retry.Do(func() error {
+		attempt++
+		err := f()
+		if err != nil {
+			logger.Debugw("db op failed", "attempt", attempt, "err", err)
+			logPgError(err)
+		}
+		return err
+	}, retry.RetryIf(retryOn), retry.LastErrorOnly(true), retry.Context(ctx))
 }
 
 type databaseLogger struct {
@@ -97,12 +107,30 @@ func OpenFromCLI(c *cli.Context) (*gorm.DB, io.Closer, error) {
 	return OpenWithLogger(connString)
 }
 
+func logPgError(err error) {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		logger.Warnw("pg error detail",
+			"code", pgErr.Code,
+			"message", pgErr.Message,
+			"detail", pgErr.Detail,
+			"hint", pgErr.Hint,
+			"constraint", pgErr.ConstraintName,
+			"table", pgErr.TableName)
+	}
+}
+
 func retryOn(err error) bool {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		// only retry on serialization failure or deadlock
+		return pgErr.Code == "40001" || pgErr.Code == "40P01"
+	}
+
+	// sqlite/mysql fallback
 	emsg := err.Error()
-	return strings.Contains(emsg, sqlSerializationFailure) ||
-		strings.Contains(emsg, "database is locked") ||
+	return strings.Contains(emsg, "database is locked") ||
 		strings.Contains(emsg, "database table is locked") ||
-		// MySQL/InnoDB serialization conflict
 		strings.Contains(emsg, "Record has changed since last read") ||
 		strings.Contains(emsg, "Error 1020 (HY000)")
 }
