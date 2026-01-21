@@ -58,3 +58,4 @@ dist/
 dump_extracted.sql
 dump_postgres_reordered_data_only.sql
 dump_postgres_reordered_fixed.sql
+TODO.md
