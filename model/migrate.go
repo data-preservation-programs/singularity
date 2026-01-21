@@ -107,6 +107,16 @@ func AutoMigrate(db *gorm.DB) error {
 		return errors.Wrap(err, "failed to create salt")
 	}
 
+	// Fix postgres sequences if they're out of sync (e.g., after data import)
+	if err := fixPostgresSequences(db); err != nil {
+		return errors.Wrap(err, "failed to fix sequences")
+	}
+
+	// Infer piece_type for cars that predate the column
+	if err := inferPieceTypes(db); err != nil {
+		return errors.Wrap(err, "failed to infer piece types")
+	}
+
 	return nil
 }
 
@@ -186,6 +196,113 @@ func migrateFKConstraints(db *gorm.DB) error {
 		}
 	}
 
+	return nil
+}
+
+// sequenceTable maps table names to their primary key column for sequence fixing.
+// Only tables with numeric auto-increment PKs are included.
+var sequenceTables = []string{
+	"preparations",
+	"storages",
+	"output_attachments",
+	"source_attachments",
+	"jobs",
+	"files",
+	"file_ranges",
+	"directories",
+	"cars",
+	"car_blocks",
+	"deals",
+	"schedules",
+}
+
+// fixPostgresSequences detects and fixes out-of-sync sequences.
+// This can happen when data is imported with explicit IDs (e.g., from MySQL).
+// PostgreSQL sequences don't auto-update on INSERT with explicit ID values.
+func fixPostgresSequences(db *gorm.DB) error {
+	if db.Dialector.Name() != "postgres" {
+		return nil
+	}
+
+	for _, table := range sequenceTables {
+		var maxID, lastValue int64
+
+		// get max id from table
+		err := db.Raw(`SELECT COALESCE(MAX(id), 0) FROM ` + table).Scan(&maxID).Error
+		if err != nil {
+			// table might not exist yet
+			logger.Debugw("skipping sequence check", "table", table, "error", err)
+			continue
+		}
+
+		// get sequence name and current value
+		seqName := table + "_id_seq"
+		err = db.Raw(`SELECT last_value FROM ` + seqName).Scan(&lastValue).Error
+		if err != nil {
+			logger.Debugw("skipping sequence check", "sequence", seqName, "error", err)
+			continue
+		}
+
+		// if max(id) >= sequence value, sequence is stale
+		if maxID >= lastValue {
+			logger.Infow("fixing stale sequence", "table", table, "maxID", maxID, "lastValue", lastValue)
+			err = db.Exec(`SELECT setval(?, ?, true)`, seqName, maxID).Error
+			if err != nil {
+				return errors.Wrapf(err, "failed to fix sequence %s", seqName)
+			}
+		}
+	}
+
+	return nil
+}
+
+// inferPieceTypes sets piece_type for cars that predate the column.
+// A piece is "data" if any of its blocks reference files (contain file content).
+// A piece is "dag" if none of its blocks reference files (directory metadata only).
+// This is idempotent - only updates rows where piece_type is NULL or empty.
+func inferPieceTypes(db *gorm.DB) error {
+	dialect := db.Dialector.Name()
+
+	// check if any cars need updating
+	var count int64
+	err := db.Raw(`SELECT COUNT(*) FROM cars WHERE piece_type IS NULL OR piece_type = ''`).Scan(&count).Error
+	if err != nil {
+		// table might not exist or column missing
+		logger.Debugw("skipping piece type inference", "error", err)
+		return nil
+	}
+
+	if count == 0 {
+		return nil
+	}
+
+	logger.Infow("inferring piece types for legacy cars", "count", count)
+
+	// dialect-specific UPDATE with subquery
+	var query string
+	if dialect == "sqlite" {
+		query = `
+			UPDATE cars SET piece_type = (
+				CASE WHEN EXISTS (
+					SELECT 1 FROM car_blocks WHERE car_blocks.car_id = cars.id AND car_blocks.file_id IS NOT NULL
+				) THEN 'data' ELSE 'dag' END
+			) WHERE piece_type IS NULL OR piece_type = ''`
+	} else {
+		// postgres/mysql support correlated subquery in CASE
+		query = `
+			UPDATE cars c SET piece_type = CASE
+				WHEN EXISTS (
+					SELECT 1 FROM car_blocks cb WHERE cb.car_id = c.id AND cb.file_id IS NOT NULL
+				) THEN 'data' ELSE 'dag'
+			END WHERE c.piece_type IS NULL OR c.piece_type = ''`
+	}
+
+	result := db.Exec(query)
+	if result.Error != nil {
+		return errors.Wrap(result.Error, "failed to infer piece types")
+	}
+
+	logger.Infow("inferred piece types", "updated", result.RowsAffected)
 	return nil
 }
 
