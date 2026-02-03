@@ -30,7 +30,6 @@ func init() {
 // @title Singularity API
 // @version beta
 // @description This is the API for Singularity, a tool for large-scale clients with PB-scale data onboarding to Filecoin network.
-// @host localhost:9090
 // @BasePath /api
 // @securityDefinitions none
 // @externalDocs.description  OpenAPI
