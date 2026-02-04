@@ -4,10 +4,10 @@ import (
 	"bufio"
 	"context"
 	"os"
-	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/dustin/go-humanize"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/packutil"
@@ -19,7 +19,7 @@ import (
 
 type AddPieceRequest struct {
 	PieceCID  string `binding:"required" json:"pieceCid"`      // CID of the piece
-	PieceSize string `binding:"required" json:"pieceSize"`     // Size of the piece
+	PieceSize string `json:"pieceSize"`                        // Size of the piece (required for external import, optional if piece exists in DB)
 	FilePath  string `json:"filePath"    swaggerignore:"true"` // Path to the CAR file, used to determine the size of the file and root CID
 	RootCID   string `json:"rootCid"`                          // Root CID of the CAR file, used to populate the label field of storage deal
 	FileSize  int64  `json:"fileSize"`                         // File size of the CAR file, this is required for boost online deal
@@ -124,14 +124,11 @@ func _() {}
 // @Router /preparation/{id}/piece [post]
 func _() {}
 
-// AddPieceHandler adds a new piece (represented by the Car model) to a given preparation.
+// AddPieceHandler adds a piece to a given preparation.
 //
-// This function fetches a preparation based on the provided ID. It then parses and validates the
-// provided piece CID and size from the request. If a root CID is provided in the request, it is
-// parsed; if a file path is provided instead, the root CID is extracted from the file.
-//
-// Once the necessary information is extracted and validated, a new piece (Car model) is created in
-// the database associated with the given preparation.
+// If the piece CID already exists in the database (from a previous preparation), the metadata
+// is copied to create a new record for the target preparation. Otherwise, piece-size must be
+// provided for external import.
 //
 // Parameters:
 //   - ctx: The context for database transactions and other operations.
@@ -152,7 +149,7 @@ func (DefaultHandler) AddPieceHandler(
 	var preparation model.Preparation
 	err := preparation.FindByIDOrName(db, id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", id)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation '%s' not found", id)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -165,13 +162,59 @@ func (DefaultHandler) AddPieceHandler(
 	if pieceCID.Type() != cid.FilCommitmentUnsealed {
 		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "piece CID must be commp")
 	}
-	pieceSize, err := strconv.ParseInt(request.PieceSize, 10, 64)
+
+	// try to find existing piece by CID
+	var existingCar model.Car
+	err = db.Where("piece_cid = ?", model.CID(pieceCID)).First(&existingCar).Error
+	if err == nil {
+		// found existing piece - copy metadata to new preparation
+		mCar := model.Car{
+			PieceCID:      existingCar.PieceCID,
+			PieceSize:     existingCar.PieceSize,
+			RootCID:       existingCar.RootCID,
+			FileSize:      existingCar.FileSize,
+			StoragePath:   existingCar.StoragePath,
+			PreparationID: &preparation.ID,
+			PieceType:     existingCar.PieceType,
+		}
+		// allow overrides from request
+		if request.FilePath != "" {
+			mCar.StoragePath = request.FilePath
+		}
+		if request.FileSize != 0 {
+			mCar.FileSize = request.FileSize
+		}
+		if request.RootCID != "" {
+			rootCID, err := cid.Parse(request.RootCID)
+			if err != nil {
+				return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "invalid root CID %s", request.RootCID))
+			}
+			mCar.RootCID = model.CID(rootCID)
+		}
+
+		err = database.DoRetry(ctx, func() error { return db.Create(&mCar).Error })
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		return &mCar, nil
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.WithStack(err)
+	}
+
+	// piece not found in database - external import requires piece-size
+	if request.PieceSize == "" {
+		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "piece not found in database; --piece-size required for external import")
+	}
+	pieceSizeU64, err := humanize.ParseBytes(request.PieceSize)
 	if err != nil {
 		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "invalid piece size %s", request.PieceSize))
 	}
+	pieceSize := int64(pieceSizeU64)
 	if (pieceSize & (pieceSize - 1)) != 0 {
 		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "piece size must be a power of 2")
 	}
+
 	rootCID := packutil.EmptyFileCid
 	fileSize := request.FileSize
 	if request.RootCID != "" {
