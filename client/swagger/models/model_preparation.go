@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -86,11 +87,15 @@ func (m *ModelPreparation) validateOutputStorages(formats strfmt.Registry) error
 
 		if m.OutputStorages[i] != nil {
 			if err := m.OutputStorages[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("outputStorages" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("outputStorages" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -112,11 +117,15 @@ func (m *ModelPreparation) validateSourceStorages(formats strfmt.Registry) error
 
 		if m.SourceStorages[i] != nil {
 			if err := m.SourceStorages[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("sourceStorages" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("sourceStorages" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -155,11 +164,15 @@ func (m *ModelPreparation) contextValidateOutputStorages(ctx context.Context, fo
 			}
 
 			if err := m.OutputStorages[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("outputStorages" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("outputStorages" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -180,11 +193,15 @@ func (m *ModelPreparation) contextValidateSourceStorages(ctx context.Context, fo
 			}
 
 			if err := m.SourceStorages[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("sourceStorages" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("sourceStorages" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}

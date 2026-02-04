@@ -2,7 +2,6 @@ module github.com/data-preservation-programs/singularity
 
 go 1.24.6
 
-toolchain go1.24.9
 
 require (
 	github.com/alecthomas/units v0.0.0-20240927000941-0f3dac36c52b

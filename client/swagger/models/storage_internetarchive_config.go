@@ -20,6 +20,9 @@ type StorageInternetarchiveConfig struct {
 	// IAS3 Access Key.
 	AccessKeyID string `json:"accessKeyId,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// Don't ask the server to test against MD5 checksum calculated by rclone.
 	DisableChecksum *bool `json:"disableChecksum,omitempty"`
 

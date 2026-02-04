@@ -50,7 +50,7 @@ const (
 )
 
 // for schema
-var modelJobStateEnum []interface{}
+var modelJobStateEnum []any
 
 func init() {
 	var res []ModelJobState

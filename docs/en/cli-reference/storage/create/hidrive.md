@@ -107,6 +107,9 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --client-id value      OAuth Client Id. [$CLIENT_ID]
@@ -118,6 +121,7 @@ OPTIONS:
 
    --auth-url value                 Auth server URL. [$AUTH_URL]
    --chunk-size value               Chunksize for chunked uploads. (default: "48Mi") [$CHUNK_SIZE]
+   --description value              Description of the remote. [$DESCRIPTION]
    --disable-fetching-member-count  Do not fetch number of objects in directories unless it is absolutely necessary. (default: false) [$DISABLE_FETCHING_MEMBER_COUNT]
    --encoding value                 The encoding for the backend. (default: "Slash,Dot") [$ENCODING]
    --endpoint value                 Endpoint for the service. (default: "https://api.hidrive.strato.com/2.1") [$ENDPOINT]
@@ -141,7 +145,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

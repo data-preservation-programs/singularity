@@ -79,7 +79,7 @@ type ClientService interface {
 Pack packs a pack job into car files
 */
 func (a *Client) Pack(params *PackParams, opts ...ClientOption) (*PackOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewPackParams()
 	}
@@ -98,17 +98,22 @@ func (a *Client) Pack(params *PackParams, opts ...ClientOption) (*PackOK, error)
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*PackOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for Pack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -117,7 +122,7 @@ func (a *Client) Pack(params *PackParams, opts ...ClientOption) (*PackOK, error)
 PauseDagGen pauses an ongoing d a g generation job
 */
 func (a *Client) PauseDagGen(params *PauseDagGenParams, opts ...ClientOption) (*PauseDagGenOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewPauseDagGenParams()
 	}
@@ -136,17 +141,22 @@ func (a *Client) PauseDagGen(params *PauseDagGenParams, opts ...ClientOption) (*
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*PauseDagGenOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PauseDagGen: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -155,7 +165,7 @@ func (a *Client) PauseDagGen(params *PauseDagGenParams, opts ...ClientOption) (*
 PausePack pauses a specific packing job
 */
 func (a *Client) PausePack(params *PausePackParams, opts ...ClientOption) (*PausePackOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewPausePackParams()
 	}
@@ -174,17 +184,22 @@ func (a *Client) PausePack(params *PausePackParams, opts ...ClientOption) (*Paus
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*PausePackOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PausePack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -193,7 +208,7 @@ func (a *Client) PausePack(params *PausePackParams, opts ...ClientOption) (*Paus
 PauseScan pauses an ongoing scanning job
 */
 func (a *Client) PauseScan(params *PauseScanParams, opts ...ClientOption) (*PauseScanOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewPauseScanParams()
 	}
@@ -212,17 +227,22 @@ func (a *Client) PauseScan(params *PauseScanParams, opts ...ClientOption) (*Paus
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*PauseScanOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PauseScan: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -231,7 +251,7 @@ func (a *Client) PauseScan(params *PauseScanParams, opts ...ClientOption) (*Paus
 PrepareToPackSource prepares to pack a data source
 */
 func (a *Client) PrepareToPackSource(params *PrepareToPackSourceParams, opts ...ClientOption) (*PrepareToPackSourceNoContent, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewPrepareToPackSourceParams()
 	}
@@ -250,17 +270,22 @@ func (a *Client) PrepareToPackSource(params *PrepareToPackSourceParams, opts ...
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*PrepareToPackSourceNoContent)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PrepareToPackSource: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -269,7 +294,7 @@ func (a *Client) PrepareToPackSource(params *PrepareToPackSourceParams, opts ...
 StartDagGen starts a new d a g generation job
 */
 func (a *Client) StartDagGen(params *StartDagGenParams, opts ...ClientOption) (*StartDagGenOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewStartDagGenParams()
 	}
@@ -288,17 +313,22 @@ func (a *Client) StartDagGen(params *StartDagGenParams, opts ...ClientOption) (*
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*StartDagGenOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for StartDagGen: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -307,7 +337,7 @@ func (a *Client) StartDagGen(params *StartDagGenParams, opts ...ClientOption) (*
 StartPack starts or restart a specific packing job
 */
 func (a *Client) StartPack(params *StartPackParams, opts ...ClientOption) (*StartPackOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewStartPackParams()
 	}
@@ -326,17 +356,22 @@ func (a *Client) StartPack(params *StartPackParams, opts ...ClientOption) (*Star
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*StartPackOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for StartPack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -345,7 +380,7 @@ func (a *Client) StartPack(params *StartPackParams, opts ...ClientOption) (*Star
 StartScan starts a new scanning job
 */
 func (a *Client) StartScan(params *StartScanParams, opts ...ClientOption) (*StartScanOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewStartScanParams()
 	}
@@ -364,17 +399,22 @@ func (a *Client) StartScan(params *StartScanParams, opts ...ClientOption) (*Star
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*StartScanOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for StartScan: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }

@@ -26,11 +26,17 @@ type StorageYandexConfig struct {
 	// OAuth Client Secret.
 	ClientSecret string `json:"clientSecret,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 
 	// Delete files permanently rather than putting them into the trash.
 	HardDelete *bool `json:"hardDelete,omitempty"`
+
+	// Set the user agent to match an official version of the yandex disk client. May help with upload performance.
+	SpoofUa *bool `json:"spoofUa,omitempty"`
 
 	// OAuth Access Token as a JSON blob.
 	Token string `json:"token,omitempty"`

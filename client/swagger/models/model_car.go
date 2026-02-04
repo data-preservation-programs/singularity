@@ -32,6 +32,9 @@ type ModelCar struct {
 	// job Id
 	JobID int64 `json:"jobId,omitempty"`
 
+	// MinPieceSizePadding tracks virtual padding for inline mode only. Inline: stores padding amount, PieceReader serves zeros virtually. Non-inline: always 0, literal zeros are written to CAR file for Curio TreeD compatibility.
+	MinPieceSizePadding int64 `json:"minPieceSizePadding,omitempty"`
+
 	// num of files
 	NumOfFiles int64 `json:"numOfFiles,omitempty"`
 
@@ -44,7 +47,7 @@ type ModelCar struct {
 	// PieceType indicates whether this is a data piece or DAG piece
 	PieceType string `json:"pieceType,omitempty"`
 
-	// Association
+	// Association - SET NULL for fast prep deletion, async cleanup
 	PreparationID int64 `json:"preparationId,omitempty"`
 
 	// root cid

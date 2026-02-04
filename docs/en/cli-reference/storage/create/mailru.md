@@ -9,6 +9,29 @@ USAGE:
    singularity storage create mailru [command options]
 
 DESCRIPTION:
+   --client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
+   --client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
+
+   --token
+      OAuth Access Token as a JSON blob.
+
+   --auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
+   --token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
+
    --user
       User name (usually email).
 
@@ -91,21 +114,30 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
-   --help, -h        show help
-   --pass value      Password. [$PASS]
-   --speedup-enable  Skip full upload if there is another file with same data hash. (default: true) [$SPEEDUP_ENABLE]
-   --user value      User name (usually email). [$USER]
+   --client-id value      OAuth Client Id. [$CLIENT_ID]
+   --client-secret value  OAuth Client Secret. [$CLIENT_SECRET]
+   --help, -h             show help
+   --pass value           Password. [$PASS]
+   --speedup-enable       Skip full upload if there is another file with same data hash. (default: true) [$SPEEDUP_ENABLE]
+   --user value           User name (usually email). [$USER]
 
    Advanced
 
+   --auth-url value               Auth server URL. [$AUTH_URL]
    --check-hash                   What should copy do if file checksum is mismatched or invalid. (default: true) [$CHECK_HASH]
+   --description value            Description of the remote. [$DESCRIPTION]
    --encoding value               The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --quirks value                 Comma separated list of internal maintenance flags. [$QUIRKS]
    --speedup-file-patterns value  Comma separated list of file name patterns eligible for speedup (put by hash). (default: "*.mkv,*.avi,*.mp4,*.mp3,*.zip,*.gz,*.rar,*.pdf") [$SPEEDUP_FILE_PATTERNS]
    --speedup-max-disk value       This option allows you to disable speedup (put by hash) for large files. (default: "3Gi") [$SPEEDUP_MAX_DISK]
    --speedup-max-memory value     Files larger than the size given below will always be hashed on disk. (default: "32Mi") [$SPEEDUP_MAX_MEMORY]
+   --token value                  OAuth Access Token as a JSON blob. [$TOKEN]
+   --token-url value              Token server url. [$TOKEN_URL]
    --user-agent value             HTTP user agent used internally by client. [$USER_AGENT]
 
    Client Config
@@ -121,7 +153,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

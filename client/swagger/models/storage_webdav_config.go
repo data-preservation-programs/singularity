@@ -23,14 +23,32 @@ type StorageWebdavConfig struct {
 	// Command to run to get a bearer token.
 	BearerTokenCommand string `json:"bearerTokenCommand,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding string `json:"encoding,omitempty"`
 
 	// Set HTTP headers for all transactions.
 	Headers string `json:"headers,omitempty"`
 
+	// Nextcloud upload chunk size.
+	NextcloudChunkSize *string `json:"nextcloudChunkSize,omitempty"`
+
+	// Exclude ownCloud mounted storages
+	OwncloudExcludeMounts *bool `json:"owncloudExcludeMounts,omitempty"`
+
+	// Exclude ownCloud shares
+	OwncloudExcludeShares *bool `json:"owncloudExcludeShares,omitempty"`
+
+	// Minimum time to sleep between API calls.
+	PacerMinSleep *string `json:"pacerMinSleep,omitempty"`
+
 	// Password.
 	Pass string `json:"pass,omitempty"`
+
+	// Path to a unix domain socket to dial to, instead of opening a TCP connection directly
+	UnixSocket string `json:"unixSocket,omitempty"`
 
 	// URL of http host to connect to.
 	URL string `json:"url,omitempty"`
@@ -39,7 +57,7 @@ type StorageWebdavConfig struct {
 	User string `json:"user,omitempty"`
 
 	// Name of the WebDAV site/service/software you are using.
-	// Example: nextcloud
+	// Example: fastmail
 	Vendor string `json:"vendor,omitempty"`
 }
 

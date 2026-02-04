@@ -20,8 +20,14 @@ type StorageUptoboxConfig struct {
 	// Your access token.
 	AccessToken string `json:"accessToken,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
+
+	// Set to make uploaded files private
+	Private *bool `json:"private,omitempty"`
 }
 
 // Validate validates this storage uptobox config

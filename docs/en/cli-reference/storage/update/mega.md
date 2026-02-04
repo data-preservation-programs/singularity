@@ -34,13 +34,16 @@ DESCRIPTION:
       MEGA uses plain text HTTP connections by default.
       Some ISPs throttle HTTP connections, this causes transfers to become very slow.
       Enabling this will force MEGA to use HTTPS for all transfers.
-      HTTPS is normally not necesary since all data is already encrypted anyway.
+      HTTPS is normally not necessary since all data is already encrypted anyway.
       Enabling it will increase CPU usage and add network overhead.
 
    --encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --description
+      Description of the remote.
 
 
 OPTIONS:
@@ -50,10 +53,11 @@ OPTIONS:
 
    Advanced
 
-   --debug           Output more debug from Mega. (default: false) [$DEBUG]
-   --encoding value  The encoding for the backend. (default: "Slash,InvalidUtf8,Dot") [$ENCODING]
-   --hard-delete     Delete files permanently rather than putting them into the trash. (default: false) [$HARD_DELETE]
-   --use-https       Use HTTPS for transfers. (default: false) [$USE_HTTPS]
+   --debug              Output more debug from Mega. (default: false) [$DEBUG]
+   --description value  Description of the remote. [$DESCRIPTION]
+   --encoding value     The encoding for the backend. (default: "Slash,InvalidUtf8,Dot") [$ENCODING]
+   --hard-delete        Delete files permanently rather than putting them into the trash. (default: false) [$HARD_DELETE]
+   --use-https          Use HTTPS for transfers. (default: false) [$USE_HTTPS]
 
    Client Config
 
@@ -68,7 +72,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone default)
 
    Retry Strategy
 

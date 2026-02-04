@@ -20,6 +20,9 @@ type StorageSmbConfig struct {
 	// Whether the server is configured to be case-insensitive.
 	CaseInsensitive *bool `json:"caseInsensitive,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// Domain name for NTLM authentication.
 	Domain *string `json:"domain,omitempty"`
 

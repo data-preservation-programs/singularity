@@ -26,6 +26,9 @@ type StorageFtpConfig struct {
 	// Maximum number of FTP simultaneous connections, 0 for unlimited.
 	Concurrency int64 `json:"concurrency,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// Disable using EPSV even if server advertises support.
 	DisableEpsv *bool `json:"disableEpsv,omitempty"`
 
@@ -65,6 +68,9 @@ type StorageFtpConfig struct {
 
 	// Maximum time to wait for data connection closing status.
 	ShutTimeout *string `json:"shutTimeout,omitempty"`
+
+	// Socks 5 proxy host.
+	SocksProxy string `json:"socksProxy,omitempty"`
 
 	// Use Implicit FTPS (FTP over TLS).
 	TLS *bool `json:"tls,omitempty"`

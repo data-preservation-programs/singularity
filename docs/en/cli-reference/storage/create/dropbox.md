@@ -80,6 +80,20 @@ DESCRIPTION:
       Note that we don't unmount the shared folder afterwards so the 
       --dropbox-shared-folders can be omitted after the first use of a particular 
       shared folder.
+      
+      See also --dropbox-root-namespace for an alternative way to work with shared
+      folders.
+
+   --pacer-min-sleep
+      Minimum time to sleep between API calls.
+
+   --encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --root-namespace
+      Specify a different Dropbox namespace ID to use as the root for all paths.
 
    --batch-mode
       Upload file batching sync|async|off.
@@ -103,7 +117,7 @@ DESCRIPTION:
       
       This sets the batch size of files to upload. It has to be less than 1000.
       
-      By default this is 0 which means rclone which calculate the batch size
+      By default this is 0 which means rclone will calculate the batch size
       depending on the setting of batch_mode.
       
       - batch_mode: async - default batch_size is 100
@@ -127,18 +141,16 @@ DESCRIPTION:
       The default for this is 0 which means rclone will choose a sensible
       default based on the batch_mode in use.
       
-      - batch_mode: async - default batch_timeout is 500ms
-      - batch_mode: sync - default batch_timeout is 10s
+      - batch_mode: async - default batch_timeout is 10s
+      - batch_mode: sync - default batch_timeout is 500ms
       - batch_mode: off - not in use
       
 
    --batch-commit-timeout
       Max time to wait for a batch to finish committing
 
-   --encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+   --description
+      Description of the remote.
 
 
 OPTIONS:
@@ -154,8 +166,11 @@ OPTIONS:
    --batch-size value            Max number of files in upload batch. (default: 0) [$BATCH_SIZE]
    --batch-timeout value         Max time to allow an idle upload batch before uploading. (default: "0s") [$BATCH_TIMEOUT]
    --chunk-size value            Upload chunk size (< 150Mi). (default: "48Mi") [$CHUNK_SIZE]
+   --description value           Description of the remote. [$DESCRIPTION]
    --encoding value              The encoding for the backend. (default: "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot") [$ENCODING]
    --impersonate value           Impersonate this user when using a business account. [$IMPERSONATE]
+   --pacer-min-sleep value       Minimum time to sleep between API calls. (default: "10ms") [$PACER_MIN_SLEEP]
+   --root-namespace value        Specify a different Dropbox namespace ID to use as the root for all paths. [$ROOT_NAMESPACE]
    --shared-files                Instructs rclone to work on individual shared files. (default: false) [$SHARED_FILES]
    --shared-folders              Instructs rclone to work on shared folders. (default: false) [$SHARED_FOLDERS]
    --token value                 OAuth Access Token as a JSON blob. [$TOKEN]
@@ -174,7 +189,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

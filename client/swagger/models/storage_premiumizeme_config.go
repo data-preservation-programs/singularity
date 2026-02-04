@@ -20,8 +20,26 @@ type StoragePremiumizemeConfig struct {
 	// API Key.
 	APIKey string `json:"apiKey,omitempty"`
 
+	// Auth server URL.
+	AuthURL string `json:"authUrl,omitempty"`
+
+	// OAuth Client Id.
+	ClientID string `json:"clientId,omitempty"`
+
+	// OAuth Client Secret.
+	ClientSecret string `json:"clientSecret,omitempty"`
+
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
+
+	// OAuth Access Token as a JSON blob.
+	Token string `json:"token,omitempty"`
+
+	// Token server url.
+	TokenURL string `json:"tokenUrl,omitempty"`
 }
 
 // Validate validates this storage premiumizeme config

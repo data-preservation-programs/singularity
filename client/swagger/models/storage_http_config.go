@@ -17,8 +17,14 @@ import (
 // swagger:model storage.httpConfig
 type StorageHTTPConfig struct {
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// Set HTTP headers for all transactions.
 	Headers string `json:"headers,omitempty"`
+
+	// Do not escape URL metacharacters in path names.
+	NoEscape *bool `json:"noEscape,omitempty"`
 
 	// Don't use HEAD requests.
 	NoHead *bool `json:"noHead,omitempty"`

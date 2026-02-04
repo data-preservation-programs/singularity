@@ -69,7 +69,7 @@ type ClientService interface {
 AttachWallet attaches a new wallet with a preparation
 */
 func (a *Client) AttachWallet(params *AttachWalletParams, opts ...ClientOption) (*AttachWalletOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewAttachWalletParams()
 	}
@@ -88,17 +88,22 @@ func (a *Client) AttachWallet(params *AttachWalletParams, opts ...ClientOption) 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*AttachWalletOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for AttachWallet: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -107,7 +112,7 @@ func (a *Client) AttachWallet(params *AttachWalletParams, opts ...ClientOption) 
 DetachWallet detaches a new wallet from a preparation
 */
 func (a *Client) DetachWallet(params *DetachWalletParams, opts ...ClientOption) (*DetachWalletOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewDetachWalletParams()
 	}
@@ -126,17 +131,22 @@ func (a *Client) DetachWallet(params *DetachWalletParams, opts ...ClientOption) 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*DetachWalletOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for DetachWallet: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -145,7 +155,7 @@ func (a *Client) DetachWallet(params *DetachWalletParams, opts ...ClientOption) 
 ListAttachedWallets lists all wallets of a preparation
 */
 func (a *Client) ListAttachedWallets(params *ListAttachedWalletsParams, opts ...ClientOption) (*ListAttachedWalletsOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewListAttachedWalletsParams()
 	}
@@ -164,17 +174,22 @@ func (a *Client) ListAttachedWallets(params *ListAttachedWalletsParams, opts ...
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*ListAttachedWalletsOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for ListAttachedWallets: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }

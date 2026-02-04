@@ -20,11 +20,26 @@ type StorageGphotosConfig struct {
 	// Auth server URL.
 	AuthURL string `json:"authUrl,omitempty"`
 
+	// Max time to wait for a batch to finish committing
+	BatchCommitTimeout *string `json:"batchCommitTimeout,omitempty"`
+
+	// Upload file batching sync|async|off.
+	BatchMode *string `json:"batchMode,omitempty"`
+
+	// Max number of files in upload batch.
+	BatchSize int64 `json:"batchSize,omitempty"`
+
+	// Max time to allow an idle upload batch before uploading.
+	BatchTimeout *string `json:"batchTimeout,omitempty"`
+
 	// OAuth Client Id.
 	ClientID string `json:"clientId,omitempty"`
 
 	// OAuth Client Secret.
 	ClientSecret string `json:"clientSecret,omitempty"`
+
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
 
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`

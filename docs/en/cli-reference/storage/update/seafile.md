@@ -45,6 +45,9 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --2fa                Two-factor authentication ('true' if the account has 2FA enabled). (default: false) [$2FA]
@@ -58,8 +61,9 @@ OPTIONS:
 
    Advanced
 
-   --create-library  Should rclone create a library if it doesn't exist. (default: false) [$CREATE_LIBRARY]
-   --encoding value  The encoding for the backend. (default: "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8") [$ENCODING]
+   --create-library     Should rclone create a library if it doesn't exist. (default: false) [$CREATE_LIBRARY]
+   --description value  Description of the remote. [$DESCRIPTION]
+   --encoding value     The encoding for the backend. (default: "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8") [$ENCODING]
 
    Client Config
 
@@ -74,7 +78,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone default)
 
    Retry Strategy
 

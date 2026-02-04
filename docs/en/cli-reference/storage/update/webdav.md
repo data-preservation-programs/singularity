@@ -18,10 +18,12 @@ DESCRIPTION:
       Name of the WebDAV site/service/software you are using.
 
       Examples:
+         | fastmail        | Fastmail Files
          | nextcloud       | Nextcloud
          | owncloud        | Owncloud
          | sharepoint      | Sharepoint Online, authenticated by Microsoft account
          | sharepoint-ntlm | Sharepoint with NTLM authentication, usually self-hosted or on-premises
+         | rclone          | rclone WebDAV server to serve a remote over HTTP via the WebDAV protocol
          | other           | Other site/service or software
 
    --user
@@ -58,6 +60,30 @@ DESCRIPTION:
       You can set multiple headers, e.g. '"Cookie","name=value","Authorization","xxx"'.
       
 
+   --pacer-min-sleep
+      Minimum time to sleep between API calls.
+
+   --nextcloud-chunk-size
+      Nextcloud upload chunk size.
+      
+      We recommend configuring your NextCloud instance to increase the max chunk size to 1 GB for better upload performances.
+      See https://docs.nextcloud.com/server/latest/admin_manual/configuration_files/big_file_upload_configuration.html#adjust-chunk-size-on-nextcloud-side
+      
+      Set to 0 to disable chunked uploading.
+      
+
+   --owncloud-exclude-shares
+      Exclude ownCloud shares
+
+   --owncloud-exclude-mounts
+      Exclude ownCloud mounted storages
+
+   --unix-socket
+      Path to a unix domain socket to dial to, instead of opening a TCP connection directly
+
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --bearer-token value  Bearer token instead of user/pass (e.g. a Macaroon). [$BEARER_TOKEN]
@@ -70,8 +96,14 @@ OPTIONS:
    Advanced
 
    --bearer-token-command value  Command to run to get a bearer token. [$BEARER_TOKEN_COMMAND]
+   --description value           Description of the remote. [$DESCRIPTION]
    --encoding value              The encoding for the backend. [$ENCODING]
    --headers value               Set HTTP headers for all transactions. [$HEADERS]
+   --nextcloud-chunk-size value  Nextcloud upload chunk size. (default: "10Mi") [$NEXTCLOUD_CHUNK_SIZE]
+   --owncloud-exclude-mounts     Exclude ownCloud mounted storages (default: false) [$OWNCLOUD_EXCLUDE_MOUNTS]
+   --owncloud-exclude-shares     Exclude ownCloud shares (default: false) [$OWNCLOUD_EXCLUDE_SHARES]
+   --pacer-min-sleep value       Minimum time to sleep between API calls. (default: "10ms") [$PACER_MIN_SLEEP]
+   --unix-socket value           Path to a unix domain socket to dial to, instead of opening a TCP connection directly [$UNIX_SOCKET]
 
    Client Config
 
@@ -86,7 +118,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone default)
 
    Retry Strategy
 

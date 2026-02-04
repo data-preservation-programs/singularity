@@ -44,14 +44,24 @@ type StorageDriveConfig struct {
 	// Server side copy contents of shortcuts instead of the shortcut.
 	CopyShortcutContent *bool `json:"copyShortcutContent,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// Disable drive using http2.
 	DisableHttp2 *bool `json:"disableHttp2,omitempty"`
 
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 
+	// Get IAM credentials from runtime (environment variables or instance meta data if no env vars).
+	// Example: false
+	EnvAuth *bool `json:"envAuth,omitempty"`
+
 	// Comma separated list of preferred formats for downloading Google docs.
 	ExportFormats *string `json:"exportFormats,omitempty"`
+
+	// Work around a bug in Google Drive listing.
+	FastListBugFix *bool `json:"fastListBugFix,omitempty"`
 
 	// Deprecated: See export_formats.
 	Formats string `json:"formats,omitempty"`
@@ -68,6 +78,18 @@ type StorageDriveConfig struct {
 	// Size of listing chunk 100-1000, 0 to disable.
 	ListChunk *int64 `json:"listChunk,omitempty"`
 
+	// Control whether labels should be read or written in metadata.
+	// Example: off
+	MetadataLabels *string `json:"metadataLabels,omitempty"`
+
+	// Control whether owner should be read or written in metadata.
+	// Example: off
+	MetadataOwner *string `json:"metadataOwner,omitempty"`
+
+	// Control whether permissions should be read or written in metadata.
+	// Example: off
+	MetadataPermissions *string `json:"metadataPermissions,omitempty"`
+
 	// Number of API calls to allow without sleeping.
 	PacerBurst *int64 `json:"pacerBurst,omitempty"`
 
@@ -80,11 +102,11 @@ type StorageDriveConfig struct {
 	// ID of the root folder.
 	RootFolderID string `json:"rootFolderId,omitempty"`
 
-	// Scope that rclone should use when requesting access from drive.
+	// Comma separated list of scopes that rclone should use when requesting access from drive.
 	// Example: drive
 	Scope string `json:"scope,omitempty"`
 
-	// Allow server-side operations (e.g. copy) to work across different drive configs.
+	// Deprecated: use --server-side-across-configs instead.
 	ServerSideAcrossConfigs *bool `json:"serverSideAcrossConfigs,omitempty"`
 
 	// Service Account Credentials JSON blob.
@@ -96,10 +118,13 @@ type StorageDriveConfig struct {
 	// Only show files that are shared with me.
 	SharedWithMe *bool `json:"sharedWithMe,omitempty"`
 
+	// Show all Google Docs including non-exportable ones in listings.
+	ShowAllGdocs *bool `json:"showAllGdocs,omitempty"`
+
 	// Show sizes as storage quota usage, not actual size.
 	SizeAsQuota *bool `json:"sizeAsQuota,omitempty"`
 
-	// Skip MD5 checksum on Google photos and videos only.
+	// Skip checksums on Google photos and videos only.
 	SkipChecksumGphotos *bool `json:"skipChecksumGphotos,omitempty"`
 
 	// If set skip dangling shortcut files.

@@ -41,9 +41,8 @@ DESCRIPTION:
       Chunk size to use for uploading.
       
       When uploading files larger than upload_cutoff or files with unknown
-      size (e.g. from "rclone rcat" or uploaded with "rclone mount" or google
-      photos or google docs) they will be uploaded as multipart uploads
-      using this chunk size.
+      size (e.g. from "rclone rcat" or uploaded with "rclone mount" they will be uploaded 
+      as multipart uploads using this chunk size.
       
       Note that "upload_concurrency" chunks of this size are buffered
       in memory per transfer.
@@ -62,6 +61,18 @@ DESCRIPTION:
       
       Increasing the chunk size decreases the accuracy of the progress
       statistics displayed with "-P" flag.
+      
+
+   --max-upload-parts
+      Maximum number of parts in a multipart upload.
+      
+      This option defines the maximum number of multipart chunks to use
+      when doing a multipart upload.
+      
+      OCI has max parts limit of 10,000 chunks.
+      
+      Rclone will automatically increase the chunk size when uploading a
+      large file of a known size to stay below this number of chunks limit.
       
 
    --upload-concurrency
@@ -102,12 +113,22 @@ DESCRIPTION:
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --leave-parts-on-error
-      If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+      If true avoid calling abort upload on a failure, leaving all successfully uploaded parts for manual recovery.
       
       It should be set to true for resuming uploads across different sessions.
       
       WARNING: Storing parts of an incomplete multipart upload counts towards space usage on object storage and will add
       additional costs if not cleaned up.
+      
+
+   --attempt-resume-upload
+      If true attempt to resume previously started multipart upload for the object.
+      This will be helpful to speed up multipart transfers by resuming uploads from past session.
+      
+      WARNING: If chunk size differs in resumed session from past incomplete session, then the resumed multipart upload is 
+      aborted and a new multipart upload is started with the new chunk size.
+      
+      The flag leave_parts_on_error must be true to resume and optimize to skip parts that were already uploaded successfully.
       
 
    --no-check-bucket
@@ -145,7 +166,7 @@ DESCRIPTION:
          | <unset> | None
 
    --sse-kms-key-id
-      if using using your own master key in vault, this header specifies the 
+      if using your own master key in vault, this header specifies the
       OCID (https://docs.cloud.oracle.com/Content/General/Concepts/identifiers.htm) of a master encryption key used to call
       the Key Management service to generate a data encryption key or to encrypt or decrypt a data encryption key.
       Please note only one of sse_customer_key_file|sse_customer_key|sse_kms_key_id is needed.
@@ -162,6 +183,9 @@ DESCRIPTION:
          | <unset> | None
          | AES256  | AES256
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --compartment value  Object storage compartment OCID [$COMPARTMENT]
@@ -172,18 +196,21 @@ OPTIONS:
 
    Advanced
 
+   --attempt-resume-upload          If true attempt to resume previously started multipart upload for the object. (default: false) [$ATTEMPT_RESUME_UPLOAD]
    --chunk-size value               Chunk size to use for uploading. (default: "5Mi") [$CHUNK_SIZE]
    --copy-cutoff value              Cutoff for switching to multipart copy. (default: "4.656Gi") [$COPY_CUTOFF]
    --copy-timeout value             Timeout for copy. (default: "1m0s") [$COPY_TIMEOUT]
+   --description value              Description of the remote. [$DESCRIPTION]
    --disable-checksum               Don't store MD5 checksum with object metadata. (default: false) [$DISABLE_CHECKSUM]
    --encoding value                 The encoding for the backend. (default: "Slash,InvalidUtf8,Dot") [$ENCODING]
-   --leave-parts-on-error           If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery. (default: false) [$LEAVE_PARTS_ON_ERROR]
+   --leave-parts-on-error           If true avoid calling abort upload on a failure, leaving all successfully uploaded parts for manual recovery. (default: false) [$LEAVE_PARTS_ON_ERROR]
+   --max-upload-parts value         Maximum number of parts in a multipart upload. (default: 10000) [$MAX_UPLOAD_PARTS]
    --no-check-bucket                If set, don't attempt to check the bucket exists or create it. (default: false) [$NO_CHECK_BUCKET]
    --sse-customer-algorithm value   If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm. [$SSE_CUSTOMER_ALGORITHM]
    --sse-customer-key value         To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to [$SSE_CUSTOMER_KEY]
    --sse-customer-key-file value    To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated [$SSE_CUSTOMER_KEY_FILE]
    --sse-customer-key-sha256 value  If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption [$SSE_CUSTOMER_KEY_SHA256]
-   --sse-kms-key-id value           if using using your own master key in vault, this header specifies the [$SSE_KMS_KEY_ID]
+   --sse-kms-key-id value           if using your own master key in vault, this header specifies the [$SSE_KMS_KEY_ID]
    --storage-tier value             The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm (default: "Standard") [$STORAGE_TIER]
    --upload-concurrency value       Concurrency for multipart uploads. (default: 10) [$UPLOAD_CONCURRENCY]
    --upload-cutoff value            Cutoff for switching to chunked upload. (default: "200Mi") [$UPLOAD_CUTOFF]
@@ -201,7 +228,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

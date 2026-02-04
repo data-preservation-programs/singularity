@@ -19,6 +19,9 @@ type StorageStorjExistingConfig struct {
 
 	// Access grant.
 	AccessGrant string `json:"accessGrant,omitempty"`
+
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
 }
 
 // Validate validates this storage storj existing config

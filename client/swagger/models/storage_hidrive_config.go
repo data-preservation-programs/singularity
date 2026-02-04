@@ -29,6 +29,9 @@ type StorageHidriveConfig struct {
 	// OAuth Client Secret.
 	ClientSecret string `json:"clientSecret,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// Do not fetch number of objects in directories unless it is absolutely necessary.
 	DisableFetchingMemberCount *bool `json:"disableFetchingMemberCount,omitempty"`
 

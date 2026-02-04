@@ -26,6 +26,9 @@ DESCRIPTION:
       Note that these chunks are buffered in memory so increasing them will
       increase memory use.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --help, -h        show help
@@ -34,8 +37,9 @@ OPTIONS:
 
    Advanced
 
-   --chunk-size value  Files will be uploaded in chunks this size. (default: "10Mi") [$CHUNK_SIZE]
-   --encoding value    The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot") [$ENCODING]
+   --chunk-size value   Files will be uploaded in chunks this size. (default: "10Mi") [$CHUNK_SIZE]
+   --description value  Description of the remote. [$DESCRIPTION]
+   --encoding value     The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot") [$ENCODING]
 
    Client Config
 
@@ -50,7 +54,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

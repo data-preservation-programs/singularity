@@ -20,6 +20,9 @@ type StorageStorjNewConfig struct {
 	// API key.
 	APIKey string `json:"apiKey,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// Encryption passphrase.
 	Passphrase string `json:"passphrase,omitempty"`
 

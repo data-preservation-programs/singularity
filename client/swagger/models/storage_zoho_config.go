@@ -26,6 +26,9 @@ type StorageZohoConfig struct {
 	// OAuth Client Secret.
 	ClientSecret string `json:"clientSecret,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 

@@ -195,10 +195,10 @@ DESCRIPTION:
       avoid the time out.
 
    --access-tier
-      Access tier of blob: hot, cool or archive.
+      Access tier of blob: hot, cool, cold or archive.
       
-      Archived blobs can be restored by setting access tier to hot or
-      cool. Leave blank if you intend to use default access tier, which is
+      Archived blobs can be restored by setting access tier to hot, cool or
+      cold. Leave blank if you intend to use default access tier, which is
       set at account level
       
       If there is no "access tier" specified, rclone doesn't apply any tier.
@@ -206,7 +206,7 @@ DESCRIPTION:
       are not modified, specifying "access tier" to new one will have no effect.
       If blobs are in "archive tier" at remote, trying to perform data transfer
       operations from remote will not be allowed. User should first restore by
-      tiering blob to "Hot" or "Cool".
+      tiering blob to "Hot", "Cool" or "Cold".
 
    --archive-tier-delete
       Delete archive tier blobs before overwriting.
@@ -233,13 +233,10 @@ DESCRIPTION:
       to start uploading.
 
    --memory-pool-flush-time
-      How often internal memory buffer pools will be flushed.
-      
-      Uploads which requires additional buffers (f.e multipart) will use memory pool for allocations.
-      This option controls how often unused buffers will be removed from the pool.
+      How often internal memory buffer pools will be flushed. (no longer used)
 
    --memory-pool-use-mmap
-      Whether to use mmap buffers in internal memory pool.
+      Whether to use mmap buffers in internal memory pool. (no longer used)
 
    --encoding
       The encoding for the backend.
@@ -255,6 +252,16 @@ DESCRIPTION:
          | blob      | Blob data within this container can be read via anonymous request.
          | container | Allow full public read access for container and blob data.
 
+   --directory-markers
+      Upload an empty object with a trailing slash when a new directory is created
+      
+      Empty folders are unsupported for bucket based remotes, this option
+      creates an empty object ending with "/", to persist the folder.
+      
+      This object also has the metadata "hdi_isfolder = true" to conform to
+      the Microsoft standard.
+       
+
    --no-check-container
       If set, don't attempt to check the container exists or create it.
       
@@ -264,6 +271,17 @@ DESCRIPTION:
 
    --no-head-object
       If set, do not do HEAD before GET when getting objects.
+
+   --delete-snapshots
+      Set to specify how to deal with snapshots on blob deletion.
+
+      Examples:
+         | <unset> | By default, the delete operation fails if a blob has snapshots
+         | include | Specify 'include' to remove the root blob and all its snapshots
+         | only    | Specify 'only' to remove only the snapshots but keep the root blob.
+
+   --description
+      Description of the remote.
 
 
 OPTIONS:
@@ -280,16 +298,19 @@ OPTIONS:
 
    Advanced
 
-   --access-tier value              Access tier of blob: hot, cool or archive. [$ACCESS_TIER]
+   --access-tier value              Access tier of blob: hot, cool, cold or archive. [$ACCESS_TIER]
    --archive-tier-delete            Delete archive tier blobs before overwriting. (default: false) [$ARCHIVE_TIER_DELETE]
    --chunk-size value               Upload chunk size. (default: "4Mi") [$CHUNK_SIZE]
    --client-send-certificate-chain  Send the certificate chain when using certificate auth. (default: false) [$CLIENT_SEND_CERTIFICATE_CHAIN]
+   --delete-snapshots value         Set to specify how to deal with snapshots on blob deletion. [$DELETE_SNAPSHOTS]
+   --description value              Description of the remote. [$DESCRIPTION]
+   --directory-markers              Upload an empty object with a trailing slash when a new directory is created (default: false) [$DIRECTORY_MARKERS]
    --disable-checksum               Don't store MD5 checksum with object metadata. (default: false) [$DISABLE_CHECKSUM]
    --encoding value                 The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8") [$ENCODING]
    --endpoint value                 Endpoint for the service. [$ENDPOINT]
    --list-chunk value               Size of blob list. (default: 5000) [$LIST_CHUNK]
-   --memory-pool-flush-time value   How often internal memory buffer pools will be flushed. (default: "1m0s") [$MEMORY_POOL_FLUSH_TIME]
-   --memory-pool-use-mmap           Whether to use mmap buffers in internal memory pool. (default: false) [$MEMORY_POOL_USE_MMAP]
+   --memory-pool-flush-time value   How often internal memory buffer pools will be flushed. (no longer used) (default: "1m0s") [$MEMORY_POOL_FLUSH_TIME]
+   --memory-pool-use-mmap           Whether to use mmap buffers in internal memory pool. (no longer used) (default: false) [$MEMORY_POOL_USE_MMAP]
    --msi-client-id value            Object ID of the user-assigned MSI to use, if any. [$MSI_CLIENT_ID]
    --msi-mi-res-id value            Azure resource ID of the user-assigned MSI to use, if any. [$MSI_MI_RES_ID]
    --msi-object-id value            Object ID of the user-assigned MSI to use, if any. [$MSI_OBJECT_ID]
@@ -317,7 +338,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone default)
 
    Retry Strategy
 

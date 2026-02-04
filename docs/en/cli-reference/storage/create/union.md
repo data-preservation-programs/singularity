@@ -34,6 +34,9 @@ DESCRIPTION:
       If a remote has less than this much free space then it won't be
       considered for use in lfs or eplfs policies.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --action-policy value  Policy to choose upstream on ACTION category. (default: "epall") [$ACTION_POLICY]
@@ -45,6 +48,7 @@ OPTIONS:
 
    Advanced
 
+   --description value     Description of the remote. [$DESCRIPTION]
    --min-free-space value  Minimum viable free space for lfs/eplfs policies. (default: "1Gi") [$MIN_FREE_SPACE]
 
    Client Config
@@ -60,7 +64,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

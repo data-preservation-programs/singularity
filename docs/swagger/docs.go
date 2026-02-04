@@ -721,6 +721,70 @@ const docTemplate = `{
                 }
             }
         },
+        "/preparation/{id}/piece/{piece_cid}": {
+            "delete": {
+                "description": "Deletes a piece (CAR) and its associated records. For data pieces, resets file ranges\nto allow re-packing. For DAG pieces, resets directory export flags for re-generation.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Piece"
+                ],
+                "summary": "Delete a piece from a preparation",
+                "operationId": "DeletePiece",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Preparation ID or name",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Piece CID",
+                        "name": "piece_cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Delete options",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataprep.DeletePieceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/preparation/{id}/schedules": {
             "get": {
                 "consumes": [
@@ -1882,52 +1946,6 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/model.Storage"
                             }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/storage/acd": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Storage"
-                ],
-                "summary": "Create Acd storage",
-                "operationId": "CreateAcdStorage",
-                "parameters": [
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/storage.createAcdStorageRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -3233,6 +3251,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/oos/workload_identity_auth": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Oos storage with workload_identity_auth - use workload identity to grant OCI Container Engine for Kubernetes workloads policy-driven access to OCI resources using OCI Identity and Access Management (IAM).",
+                "operationId": "CreateOosWorkload_identity_authStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createOosWorkload_identity_authStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/opendrive": {
             "post": {
                 "consumes": [
@@ -3831,6 +3895,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/s3/gcs": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with GCS - Google Cloud Storage",
+                "operationId": "CreateS3GCSStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3GCSStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/s3/huaweiobs": {
             "post": {
                 "consumes": [
@@ -4015,6 +4125,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/s3/leviia": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Leviia - Leviia Object Storage",
+                "operationId": "CreateS3LeviiaStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3LeviiaStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/s3/liara": {
             "post": {
                 "consumes": [
@@ -4061,6 +4217,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/s3/linode": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Linode - Linode Object Storage",
+                "operationId": "CreateS3LinodeStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3LinodeStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/s3/lyvecloud": {
             "post": {
                 "consumes": [
@@ -4082,6 +4284,52 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/storage.createS3LyveCloudStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/magalu": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Magalu - Magalu Object Storage",
+                "operationId": "CreateS3MagaluStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3MagaluStorageRequest"
                         }
                     }
                 ],
@@ -4245,6 +4493,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/s3/petabox": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Petabox - Petabox Object Storage",
+                "operationId": "CreateS3PetaboxStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3PetaboxStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/s3/qiniu": {
             "post": {
                 "consumes": [
@@ -4312,6 +4606,52 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/storage.createS3RackCorpStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/rclone": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Rclone - Rclone S3 Server",
+                "operationId": "CreateS3RcloneStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3RcloneStorageRequest"
                         }
                     }
                 ],
@@ -4496,6 +4836,52 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/storage.createS3StorjStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/synology": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Synology - Synology C2 Object Storage",
+                "operationId": "CreateS3SynologyStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3SynologyStorageRequest"
                         }
                     }
                 ],
@@ -5665,6 +6051,19 @@ const docTemplate = `{
                 }
             }
         },
+        "dataprep.DeletePieceRequest": {
+            "type": "object",
+            "properties": {
+                "deleteCar": {
+                    "description": "Delete the physical CAR file from storage (default: true)",
+                    "type": "boolean"
+                },
+                "force": {
+                    "description": "Delete even if deals reference this piece",
+                    "type": "boolean"
+                }
+            }
+        },
         "dataprep.DirEntry": {
             "type": "object",
             "properties": {
@@ -5949,6 +6348,10 @@ const docTemplate = `{
                 "jobId": {
                     "type": "integer"
                 },
+                "minPieceSizePadding": {
+                    "description": "MinPieceSizePadding tracks virtual padding for inline mode only. Inline: stores padding amount, PieceReader serves zeros virtually. Non-inline: always 0, literal zeros are written to CAR file for Curio TreeD compatibility.",
+                    "type": "integer"
+                },
                 "numOfFiles": {
                     "type": "integer"
                 },
@@ -5963,7 +6366,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "preparationId": {
-                    "description": "Association",
+                    "description": "Association - SET NULL for fast prep deletion, async cleanup",
                     "type": "integer"
                 },
                 "rootCid": {
@@ -6166,7 +6569,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "attachmentId": {
-                    "description": "Associations",
+                    "description": "Associations - AttachmentID SET NULL for fast prep deletion, async cleanup",
                     "type": "integer"
                 },
                 "cid": {
@@ -6251,7 +6654,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/model.JobType"
                 },
                 "workerId": {
-                    "description": "Associations",
+                    "description": "Associations - AttachmentID SET NULL for fast prep deletion, async cleanup",
                     "type": "string"
                 }
             }
@@ -6766,55 +7169,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.acdConfig": {
-            "type": "object",
-            "properties": {
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "checkpoint": {
-                    "description": "Checkpoint for internal polling (debug).",
-                    "type": "string"
-                },
-                "clientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,InvalidUtf8,Dot"
-                },
-                "templinkThreshold": {
-                    "description": "Files \u003e= this size will be downloaded via their tempLink.",
-                    "type": "string",
-                    "default": "9Gi"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "uploadWaitPerGb": {
-                    "description": "Additional time per GiB to wait after a failed complete upload to see if it appears.",
-                    "type": "string",
-                    "default": "3m0s"
-                }
-            }
-        },
         "storage.azureblobConfig": {
             "type": "object",
             "properties": {
                 "accessTier": {
-                    "description": "Access tier of blob: hot, cool or archive.",
+                    "description": "Access tier of blob: hot, cool, cold or archive.",
                     "type": "string"
                 },
                 "account": {
@@ -6852,6 +7211,20 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "deleteSnapshots": {
+                    "description": "Set to specify how to deal with snapshots on blob deletion.",
+                    "type": "string",
+                    "example": ""
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "boolean",
@@ -6881,12 +7254,12 @@ const docTemplate = `{
                     "default": 5000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -6975,13 +7348,17 @@ const docTemplate = `{
                     "type": "string",
                     "default": "4Gi"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "disableChecksum": {
                     "description": "Disable checksums for large (\u003e upload cutoff) files.",
                     "type": "boolean",
                     "default": false
                 },
                 "downloadAuthDuration": {
-                    "description": "Time before the authorization token will expire in s or suffix ms|s|m|h|d.",
+                    "description": "Time before the public link authorization token will expire in s or suffix ms|s|m|h|d.",
                     "type": "string",
                     "default": "1w"
                 },
@@ -7007,19 +7384,29 @@ const docTemplate = `{
                     "description": "Application Key.",
                     "type": "string"
                 },
+                "lifecycle": {
+                    "description": "Set the number of days deleted files should be kept when creating a bucket.",
+                    "type": "integer",
+                    "default": 0
+                },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
                 "testMode": {
                     "description": "A flag string for X-Bz-Test-Mode header for debugging.",
                     "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
                 },
                 "uploadCutoff": {
                     "description": "Cutoff for switching to chunked upload.",
@@ -7071,10 +7458,18 @@ const docTemplate = `{
                     "type": "integer",
                     "default": 100
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
                     "default": "Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"
+                },
+                "impersonate": {
+                    "description": "Impersonate this user ID when using a service account.",
+                    "type": "string"
                 },
                 "listChunk": {
                     "description": "Size of listing chunk 1-1000.",
@@ -7102,36 +7497,6 @@ const docTemplate = `{
                     "description": "Cutoff for switching to multipart upload (\u003e= 50 MiB).",
                     "type": "string",
                     "default": "50Mi"
-                }
-            }
-        },
-        "storage.createAcdStorageRequest": {
-            "type": "object",
-            "properties": {
-                "clientConfig": {
-                    "description": "config for underlying HTTP client",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.ClientConfig"
-                        }
-                    ]
-                },
-                "config": {
-                    "description": "config for the storage",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/storage.acdConfig"
-                        }
-                    ]
-                },
-                "name": {
-                    "description": "Name of the storage, must be unique",
-                    "type": "string",
-                    "example": "my-storage"
-                },
-                "path": {
-                    "description": "Path of the storage",
-                    "type": "string"
                 }
             }
         },
@@ -7975,6 +8340,36 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.createOosWorkload_identity_authStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.oosWorkload_identity_authConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
         "storage.createOpendriveStorageRequest": {
             "type": "object",
             "properties": {
@@ -8365,6 +8760,36 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.createS3GCSStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3GCSConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
         "storage.createS3HuaweiOBSStorageRequest": {
             "type": "object",
             "properties": {
@@ -8485,6 +8910,36 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.createS3LeviiaStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3LeviiaConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
         "storage.createS3LiaraStorageRequest": {
             "type": "object",
             "properties": {
@@ -8515,6 +8970,36 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.createS3LinodeStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3LinodeConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
         "storage.createS3LyveCloudStorageRequest": {
             "type": "object",
             "properties": {
@@ -8531,6 +9016,36 @@ const docTemplate = `{
                     "allOf": [
                         {
                             "$ref": "#/definitions/storage.s3LyveCloudConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3MagaluStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3MagaluConfig"
                         }
                     ]
                 },
@@ -8635,6 +9150,36 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.createS3PetaboxStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3PetaboxConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
         "storage.createS3QiniuStorageRequest": {
             "type": "object",
             "properties": {
@@ -8681,6 +9226,36 @@ const docTemplate = `{
                     "allOf": [
                         {
                             "$ref": "#/definitions/storage.s3RackCorpConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3RcloneStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3RcloneConfig"
                         }
                     ]
                 },
@@ -8801,6 +9376,36 @@ const docTemplate = `{
                     "allOf": [
                         {
                             "$ref": "#/definitions/storage.s3StorjConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3SynologyStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3SynologyConfig"
                         }
                     ]
                 },
@@ -9340,6 +9945,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "disableHttp2": {
                     "description": "Disable drive using http2.",
                     "type": "boolean",
@@ -9350,10 +9959,21 @@ const docTemplate = `{
                     "type": "string",
                     "default": "InvalidUtf8"
                 },
+                "envAuth": {
+                    "description": "Get IAM credentials from runtime (environment variables or instance meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
                 "exportFormats": {
                     "description": "Comma separated list of preferred formats for downloading Google docs.",
                     "type": "string",
                     "default": "docx,xlsx,pptx,svg"
+                },
+                "fastListBugFix": {
+                    "description": "Work around a bug in Google Drive listing.",
+                    "type": "boolean",
+                    "default": true
                 },
                 "formats": {
                     "description": "Deprecated: See export_formats.",
@@ -9377,6 +9997,24 @@ const docTemplate = `{
                     "type": "integer",
                     "default": 1000
                 },
+                "metadataLabels": {
+                    "description": "Control whether labels should be read or written in metadata.",
+                    "type": "string",
+                    "default": "off",
+                    "example": "off"
+                },
+                "metadataOwner": {
+                    "description": "Control whether owner should be read or written in metadata.",
+                    "type": "string",
+                    "default": "read",
+                    "example": "off"
+                },
+                "metadataPermissions": {
+                    "description": "Control whether permissions should be read or written in metadata.",
+                    "type": "string",
+                    "default": "off",
+                    "example": "off"
+                },
                 "pacerBurst": {
                     "description": "Number of API calls to allow without sleeping.",
                     "type": "integer",
@@ -9396,12 +10034,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "scope": {
-                    "description": "Scope that rclone should use when requesting access from drive.",
+                    "description": "Comma separated list of scopes that rclone should use when requesting access from drive.",
                     "type": "string",
                     "example": "drive"
                 },
                 "serverSideAcrossConfigs": {
-                    "description": "Allow server-side operations (e.g. copy) to work across different drive configs.",
+                    "description": "Deprecated: use --server-side-across-configs instead.",
                     "type": "boolean",
                     "default": false
                 },
@@ -9418,13 +10056,18 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "showAllGdocs": {
+                    "description": "Show all Google Docs including non-exportable ones in listings.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "sizeAsQuota": {
                     "description": "Show sizes as storage quota usage, not actual size.",
                     "type": "boolean",
                     "default": false
                 },
                 "skipChecksumGphotos": {
-                    "description": "Skip MD5 checksum on Google photos and videos only.",
+                    "description": "Skip checksums on Google photos and videos only.",
                     "type": "boolean",
                     "default": false
                 },
@@ -9542,6 +10185,10 @@ const docTemplate = `{
                     "description": "OAuth Client Secret.",
                     "type": "string"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -9549,6 +10196,15 @@ const docTemplate = `{
                 },
                 "impersonate": {
                     "description": "Impersonate this user when using a business account.",
+                    "type": "string"
+                },
+                "pacerMinSleep": {
+                    "description": "Minimum time to sleep between API calls.",
+                    "type": "string",
+                    "default": "10ms"
+                },
+                "rootNamespace": {
+                    "description": "Specify a different Dropbox namespace ID to use as the root for all paths.",
                     "type": "string"
                 },
                 "sharedFiles": {
@@ -9578,6 +10234,15 @@ const docTemplate = `{
                     "description": "Your API Key, get it from https://1fichier.com/console/params.pl.",
                     "type": "string"
                 },
+                "cdn": {
+                    "description": "Set if you wish to use CDN download links.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -9600,6 +10265,10 @@ const docTemplate = `{
         "storage.filefabricConfig": {
             "type": "object",
             "properties": {
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -9649,6 +10318,10 @@ const docTemplate = `{
                     "description": "Maximum number of FTP simultaneous connections, 0 for unlimited.",
                     "type": "integer",
                     "default": 0
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
                 },
                 "disableEpsv": {
                     "description": "Disable using EPSV even if server advertises support.",
@@ -9714,6 +10387,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "1m0s"
                 },
+                "socksProxy": {
+                    "description": "Socks 5 proxy host.",
+                    "type": "string"
+                },
                 "tls": {
                     "description": "Use Implicit FTPS (FTP over TLS).",
                     "type": "boolean",
@@ -9771,6 +10448,15 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -9825,6 +10511,10 @@ const docTemplate = `{
                 "tokenUrl": {
                     "description": "Token server url.",
                     "type": "string"
+                },
+                "userProject": {
+                    "description": "User project.",
+                    "type": "string"
                 }
             }
         },
@@ -9835,12 +10525,36 @@ const docTemplate = `{
                     "description": "Auth server URL.",
                     "type": "string"
                 },
+                "batchCommitTimeout": {
+                    "description": "Max time to wait for a batch to finish committing",
+                    "type": "string",
+                    "default": "10m0s"
+                },
+                "batchMode": {
+                    "description": "Upload file batching sync|async|off.",
+                    "type": "string",
+                    "default": "sync"
+                },
+                "batchSize": {
+                    "description": "Max number of files in upload batch.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "batchTimeout": {
+                    "description": "Max time to allow an idle upload batch before uploading.",
+                    "type": "string",
+                    "default": "0s"
+                },
                 "clientId": {
                     "description": "OAuth Client Id.",
                     "type": "string"
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
                     "type": "string"
                 },
                 "encoding": {
@@ -9886,13 +10600,17 @@ const docTemplate = `{
                     "type": "string",
                     "example": "privacy"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
                     "default": "Slash,Colon,Del,Ctl,InvalidUtf8,Dot"
                 },
                 "namenode": {
-                    "description": "Hadoop name node and port.",
+                    "description": "Hadoop name nodes and ports.",
                     "type": "string"
                 },
                 "servicePrincipalName": {
@@ -9924,6 +10642,10 @@ const docTemplate = `{
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
                     "type": "string"
                 },
                 "disableFetchingMemberCount": {
@@ -9982,9 +10704,18 @@ const docTemplate = `{
         "storage.httpConfig": {
             "type": "object",
             "properties": {
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "headers": {
                     "description": "Set HTTP headers for all transactions.",
                     "type": "string"
+                },
+                "noEscape": {
+                    "description": "Do not escape URL metacharacters in path names.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "noHead": {
                     "description": "Don't use HEAD requests.",
@@ -10007,6 +10738,10 @@ const docTemplate = `{
             "properties": {
                 "accessKeyId": {
                     "description": "IAS3 Access Key.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
                     "type": "string"
                 },
                 "disableChecksum": {
@@ -10043,6 +10778,22 @@ const docTemplate = `{
         "storage.jottacloudConfig": {
             "type": "object",
             "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -10063,6 +10814,14 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
                 "trashedOnly": {
                     "description": "Only show files that are in the trash.",
                     "type": "boolean",
@@ -10078,6 +10837,10 @@ const docTemplate = `{
         "storage.koofrDigistorageConfig": {
             "type": "object",
             "properties": {
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -10088,7 +10851,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "description": "Your password for rclone (generate one at https://storage.rcs-rds.ro/app/admin/preferences/password).",
+                    "description": "Your password for rclone generate one at https://storage.rcs-rds.ro/app/admin/preferences/password.",
                     "type": "string"
                 },
                 "setmtime": {
@@ -10105,6 +10868,10 @@ const docTemplate = `{
         "storage.koofrKoofrConfig": {
             "type": "object",
             "properties": {
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -10115,7 +10882,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "description": "Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password).",
+                    "description": "Your password for rclone generate one at https://app.koofr.net/app/admin/preferences/password.",
                     "type": "string"
                 },
                 "setmtime": {
@@ -10132,6 +10899,10 @@ const docTemplate = `{
         "storage.koofrOtherConfig": {
             "type": "object",
             "properties": {
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -10178,6 +10949,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -10190,6 +10965,11 @@ const docTemplate = `{
                 },
                 "noCheckUpdated": {
                     "description": "Don't check to see if the files change during upload.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noClone": {
+                    "description": "Disable reflink cloning for server-side copies.",
                     "type": "boolean",
                     "default": false
                 },
@@ -10224,6 +11004,12 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "timeType": {
+                    "description": "Set what kind of time is returned.",
+                    "type": "string",
+                    "default": "mtime",
+                    "example": "mtime"
+                },
                 "unicodeNormalization": {
                     "description": "Apply unicode NFC normalization to paths and filenames.",
                     "type": "boolean",
@@ -10239,11 +11025,27 @@ const docTemplate = `{
         "storage.mailruConfig": {
             "type": "object",
             "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
                 "checkHash": {
                     "description": "What should copy do if file checksum is mismatched or invalid.",
                     "type": "boolean",
                     "default": true,
                     "example": true
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -10282,6 +11084,14 @@ const docTemplate = `{
                     "default": "32Mi",
                     "example": "0"
                 },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
                 "user": {
                     "description": "User name (usually email).",
                     "type": "string"
@@ -10299,6 +11109,10 @@ const docTemplate = `{
                     "description": "Output more debug from Mega.",
                     "type": "boolean",
                     "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -10332,6 +11146,10 @@ const docTemplate = `{
                     "description": "Set the NetStorage account name",
                     "type": "string"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "host": {
                     "description": "Domain+path of NetStorage host to connect to.",
                     "type": "string"
@@ -10361,6 +11179,11 @@ const docTemplate = `{
                     "description": "Auth server URL.",
                     "type": "string"
                 },
+                "avOverride": {
+                    "description": "Allows download of files the server thinks has a virus.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "chunkSize": {
                     "description": "Chunk size to upload files with - must be multiple of 320k (327,680 bytes).",
                     "type": "string",
@@ -10372,6 +11195,15 @@ const docTemplate = `{
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "delta": {
+                    "description": "If set rclone will use delta listing to implement recursive listings.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
                     "type": "string"
                 },
                 "disableSitePermission": {
@@ -10394,6 +11226,11 @@ const docTemplate = `{
                 },
                 "exposeOnenoteFiles": {
                     "description": "Set to make OneNote files show up in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "hardDelete": {
+                    "description": "Permanently delete files on removal.",
                     "type": "boolean",
                     "default": false
                 },
@@ -10424,6 +11261,12 @@ const docTemplate = `{
                     "type": "integer",
                     "default": 1000
                 },
+                "metadataPermissions": {
+                    "description": "Control whether permissions should be read or written in metadata.",
+                    "type": "string",
+                    "default": "off",
+                    "example": "off"
+                },
                 "noVersions": {
                     "description": "Remove all versions on modifying operations.",
                     "type": "boolean",
@@ -10440,7 +11283,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "serverSideAcrossConfigs": {
-                    "description": "Allow server-side operations (e.g. copy) to work across different onedrive configs.",
+                    "description": "Deprecated: use --server-side-across-configs instead.",
                     "type": "boolean",
                     "default": false
                 },
@@ -10457,6 +11300,11 @@ const docTemplate = `{
         "storage.oosEnv_authConfig": {
             "type": "object",
             "properties": {
+                "attemptResumeUpload": {
+                    "description": "If true attempt to resume previously started multipart upload for the object.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "chunkSize": {
                     "description": "Chunk size to use for uploading.",
                     "type": "string",
@@ -10476,6 +11324,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "1m0s"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "boolean",
@@ -10491,9 +11343,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "leavePartsOnError": {
-                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts for manual recovery.",
                     "type": "boolean",
                     "default": false
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
                 },
                 "namespace": {
                     "description": "Object storage namespace",
@@ -10529,7 +11386,7 @@ const docTemplate = `{
                     "example": ""
                 },
                 "sseKmsKeyId": {
-                    "description": "if using using your own master key in vault, this header specifies the",
+                    "description": "if using your own master key in vault, this header specifies the",
                     "type": "string",
                     "example": ""
                 },
@@ -10554,6 +11411,11 @@ const docTemplate = `{
         "storage.oosInstance_principal_authConfig": {
             "type": "object",
             "properties": {
+                "attemptResumeUpload": {
+                    "description": "If true attempt to resume previously started multipart upload for the object.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "chunkSize": {
                     "description": "Chunk size to use for uploading.",
                     "type": "string",
@@ -10573,6 +11435,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "1m0s"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "boolean",
@@ -10588,9 +11454,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "leavePartsOnError": {
-                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts for manual recovery.",
                     "type": "boolean",
                     "default": false
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
                 },
                 "namespace": {
                     "description": "Object storage namespace",
@@ -10626,7 +11497,7 @@ const docTemplate = `{
                     "example": ""
                 },
                 "sseKmsKeyId": {
-                    "description": "if using using your own master key in vault, this header specifies the",
+                    "description": "if using your own master key in vault, this header specifies the",
                     "type": "string",
                     "example": ""
                 },
@@ -10651,6 +11522,11 @@ const docTemplate = `{
         "storage.oosNo_authConfig": {
             "type": "object",
             "properties": {
+                "attemptResumeUpload": {
+                    "description": "If true attempt to resume previously started multipart upload for the object.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "chunkSize": {
                     "description": "Chunk size to use for uploading.",
                     "type": "string",
@@ -10665,6 +11541,10 @@ const docTemplate = `{
                     "description": "Timeout for copy.",
                     "type": "string",
                     "default": "1m0s"
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
                 },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
@@ -10681,9 +11561,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "leavePartsOnError": {
-                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts for manual recovery.",
                     "type": "boolean",
                     "default": false
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
                 },
                 "namespace": {
                     "description": "Object storage namespace",
@@ -10719,7 +11604,7 @@ const docTemplate = `{
                     "example": ""
                 },
                 "sseKmsKeyId": {
-                    "description": "if using using your own master key in vault, this header specifies the",
+                    "description": "if using your own master key in vault, this header specifies the",
                     "type": "string",
                     "example": ""
                 },
@@ -10744,6 +11629,11 @@ const docTemplate = `{
         "storage.oosResource_principal_authConfig": {
             "type": "object",
             "properties": {
+                "attemptResumeUpload": {
+                    "description": "If true attempt to resume previously started multipart upload for the object.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "chunkSize": {
                     "description": "Chunk size to use for uploading.",
                     "type": "string",
@@ -10763,6 +11653,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "1m0s"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "boolean",
@@ -10778,9 +11672,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "leavePartsOnError": {
-                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts for manual recovery.",
                     "type": "boolean",
                     "default": false
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
                 },
                 "namespace": {
                     "description": "Object storage namespace",
@@ -10816,7 +11715,7 @@ const docTemplate = `{
                     "example": ""
                 },
                 "sseKmsKeyId": {
-                    "description": "if using using your own master key in vault, this header specifies the",
+                    "description": "if using your own master key in vault, this header specifies the",
                     "type": "string",
                     "example": ""
                 },
@@ -10841,6 +11740,11 @@ const docTemplate = `{
         "storage.oosUser_principal_authConfig": {
             "type": "object",
             "properties": {
+                "attemptResumeUpload": {
+                    "description": "If true attempt to resume previously started multipart upload for the object.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "chunkSize": {
                     "description": "Chunk size to use for uploading.",
                     "type": "string",
@@ -10872,6 +11776,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "1m0s"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "boolean",
@@ -10887,9 +11795,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "leavePartsOnError": {
-                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts for manual recovery.",
                     "type": "boolean",
                     "default": false
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
                 },
                 "namespace": {
                     "description": "Object storage namespace",
@@ -10925,7 +11838,118 @@ const docTemplate = `{
                     "example": ""
                 },
                 "sseKmsKeyId": {
-                    "description": "if using using your own master key in vault, this header specifies the",
+                    "description": "if using your own master key in vault, this header specifies the",
+                    "type": "string",
+                    "example": ""
+                },
+                "storageTier": {
+                    "description": "The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm",
+                    "type": "string",
+                    "default": "Standard",
+                    "example": "Standard"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 10
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                }
+            }
+        },
+        "storage.oosWorkload_identity_authConfig": {
+            "type": "object",
+            "properties": {
+                "attemptResumeUpload": {
+                    "description": "If true attempt to resume previously started multipart upload for the object.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "compartment": {
+                    "description": "Object storage compartment OCID",
+                    "type": "string"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "copyTimeout": {
+                    "description": "Timeout for copy.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Object storage API.",
+                    "type": "string"
+                },
+                "leavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts for manual recovery.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "namespace": {
+                    "description": "Object storage namespace",
+                    "type": "string"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "region": {
+                    "description": "Object storage Region",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the optional header that specifies \"AES256\" as the encryption algorithm.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyFile": {
+                    "description": "To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeySha256": {
+                    "description": "If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseKmsKeyId": {
+                    "description": "if using your own master key in vault, this header specifies the",
                     "type": "string",
                     "example": ""
                 },
@@ -10955,6 +11979,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "10Mi"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -10983,6 +12011,10 @@ const docTemplate = `{
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
                     "type": "string"
                 },
                 "encoding": {
@@ -11026,20 +12058,68 @@ const docTemplate = `{
                     "description": "API Key.",
                     "type": "string"
                 },
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
                     "default": "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
                 }
             }
         },
         "storage.putioConfig": {
             "type": "object",
             "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
                     "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
                 }
             }
         },
@@ -11059,6 +12139,10 @@ const docTemplate = `{
                     "description": "Number of connection retries.",
                     "type": "integer",
                     "default": 3
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -11127,6 +12211,15 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "boolean",
@@ -11192,12 +12285,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -11239,6 +12332,11 @@ const docTemplate = `{
                     "description": "Enables requester pays option when interacting with S3 bucket.",
                     "type": "boolean",
                     "default": false
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
                 },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
@@ -11288,11 +12386,11 @@ const docTemplate = `{
                     "example": ""
                 },
                 "stsEndpoint": {
-                    "description": "Endpoint for STS.",
+                    "description": "Endpoint for STS (deprecated).",
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -11306,8 +12404,28 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -11315,6 +12433,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -11325,6 +12448,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -11361,6 +12489,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -11420,12 +12557,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -11458,6 +12595,11 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -11476,7 +12618,7 @@ const docTemplate = `{
                     "example": ""
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -11485,8 +12627,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -11494,6 +12656,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -11504,6 +12671,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -11543,6 +12715,15 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "boolean",
@@ -11565,7 +12746,7 @@ const docTemplate = `{
                 "endpoint": {
                     "description": "Endpoint for Arvan Cloud Object Storage (AOS) API.",
                     "type": "string",
-                    "example": "s3.ir-thr-at1.arvanstorage.com"
+                    "example": "s3.ir-thr-at1.arvanstorage.ir"
                 },
                 "envAuth": {
                     "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
@@ -11604,12 +12785,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -11642,6 +12823,11 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -11660,7 +12846,7 @@ const docTemplate = `{
                     "example": "STANDARD"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -11669,8 +12855,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -11678,6 +12884,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -11688,6 +12899,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -11724,6 +12940,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -11786,12 +13011,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -11828,6 +13053,11 @@ const docTemplate = `{
                     "description": "Region to connect to.",
                     "type": "string",
                     "example": ""
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
                 },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
@@ -11872,7 +13102,7 @@ const docTemplate = `{
                     "example": ""
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -11881,8 +13111,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -11890,6 +13140,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -11900,6 +13155,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -11936,6 +13196,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -12000,12 +13269,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -12037,6 +13306,11 @@ const docTemplate = `{
                 "profile": {
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
                 },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
@@ -12081,7 +13355,7 @@ const docTemplate = `{
                     "example": ""
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -12090,8 +13364,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -12099,6 +13393,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -12109,6 +13408,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -12141,6 +13445,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -12199,12 +13512,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -12242,6 +13555,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": "auto"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -12255,7 +13573,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -12264,8 +13582,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -12273,6 +13611,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -12283,6 +13626,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -12319,6 +13667,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -12382,12 +13739,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -12425,6 +13782,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": ""
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -12438,7 +13800,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -12447,8 +13809,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -12456,6 +13838,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -12466,6 +13853,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -12502,6 +13894,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -12565,12 +13966,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -12608,6 +14009,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": ""
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -12621,7 +14027,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -12630,8 +14036,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -12639,6 +14065,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -12649,6 +14080,238 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3GCSConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Google Cloud Storage.",
+                    "type": "string",
+                    "example": "https://storage.googleapis.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -12685,6 +14348,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -12744,12 +14416,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -12787,6 +14459,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": "af-south-1"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -12800,7 +14477,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -12809,8 +14486,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -12818,6 +14515,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -12828,6 +14530,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -12865,6 +14572,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -12929,12 +14645,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -12972,6 +14688,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": ""
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -12985,7 +14706,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -12994,8 +14715,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13003,6 +14744,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -13013,6 +14759,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -13049,6 +14800,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -13103,12 +14863,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -13141,6 +14901,11 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -13154,7 +14919,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -13163,8 +14928,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13172,6 +14957,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -13182,6 +14972,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -13218,6 +15013,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -13277,12 +15081,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -13320,6 +15124,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": "de"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -13333,7 +15142,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -13342,8 +15151,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13351,6 +15180,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -13361,6 +15195,233 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3LeviiaConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -13397,6 +15458,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -13456,12 +15526,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -13494,6 +15564,11 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -13512,7 +15587,7 @@ const docTemplate = `{
                     "example": "STANDARD"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -13521,8 +15596,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13530,6 +15625,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -13540,6 +15640,229 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3LinodeConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Linode Object Storage API.",
+                    "type": "string",
+                    "example": "us-southeast-1.linodeobjects.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -13576,6 +15899,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -13639,12 +15971,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -13682,6 +16014,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": ""
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -13695,7 +16032,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -13704,8 +16041,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13713,6 +16070,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -13723,6 +16085,234 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3MagaluConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "br-se1.magaluobjects.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in Magalu.",
+                    "type": "string",
+                    "example": "STANDARD"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -13759,6 +16349,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -13821,12 +16420,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -13863,6 +16462,11 @@ const docTemplate = `{
                     "description": "Region to connect to.",
                     "type": "string",
                     "example": ""
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
                 },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
@@ -13907,7 +16511,7 @@ const docTemplate = `{
                     "example": ""
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -13916,8 +16520,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13925,6 +16549,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -13935,6 +16564,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -13974,6 +16608,15 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "boolean",
@@ -14033,12 +16676,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -14076,6 +16719,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": ""
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -14089,7 +16737,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -14098,8 +16746,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14107,6 +16775,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -14117,6 +16790,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -14156,6 +16834,15 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "boolean",
@@ -14215,12 +16902,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -14258,6 +16945,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": ""
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -14271,7 +16963,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -14280,8 +16972,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14289,6 +17001,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -14299,6 +17016,234 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3PetaboxConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Petabox S3 Object Storage.",
+                    "type": "string",
+                    "example": "s3.petabox.io"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region where your bucket will be created and your data stored.",
+                    "type": "string",
+                    "example": "us-east-1"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -14335,6 +17280,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -14399,12 +17353,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -14442,6 +17396,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": "cn-east-1"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -14460,7 +17419,7 @@ const docTemplate = `{
                     "example": "STANDARD"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -14469,8 +17428,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14478,6 +17457,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -14488,6 +17472,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -14524,6 +17513,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -14588,12 +17586,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -14631,6 +17629,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": "global"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -14644,7 +17647,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -14653,8 +17656,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14662,6 +17685,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -14672,6 +17700,237 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3RcloneConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -14708,6 +17967,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -14767,12 +18035,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -14810,6 +18078,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": "nl-ams"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -14828,7 +18101,7 @@ const docTemplate = `{
                     "example": ""
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -14837,8 +18110,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14846,6 +18139,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -14856,6 +18154,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -14892,6 +18195,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -14955,12 +18267,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -14998,6 +18310,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": ""
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -15011,7 +18328,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -15020,8 +18337,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15029,6 +18366,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -15039,6 +18381,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -15075,6 +18422,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -15134,12 +18490,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -15177,6 +18533,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": ""
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -15190,7 +18551,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -15199,8 +18560,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15208,6 +18589,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -15218,6 +18604,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -15250,6 +18641,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -15309,12 +18709,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -15347,6 +18747,11 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -15360,7 +18765,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -15369,8 +18774,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15378,6 +18803,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -15388,6 +18818,234 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3SynologyConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Synology C2 Object Storage API.",
+                    "type": "string",
+                    "example": "eu-001.s3.synologyc2.net"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region where your data stored.",
+                    "type": "string",
+                    "example": "eu-001"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -15425,6 +19083,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -15484,12 +19151,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -15522,6 +19189,11 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -15540,7 +19212,7 @@ const docTemplate = `{
                     "example": ""
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -15549,8 +19221,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15558,6 +19250,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -15568,6 +19265,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -15604,6 +19306,15 @@ const docTemplate = `{
                 },
                 "decompress": {
                     "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
                     "default": false
                 },
@@ -15667,12 +19378,12 @@ const docTemplate = `{
                     "default": 10000
                 },
                 "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
                     "type": "string",
                     "default": "1m0s"
                 },
                 "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
                     "type": "boolean",
                     "default": false
                 },
@@ -15710,6 +19421,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": ""
                 },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -15723,7 +19439,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
+                    "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
                     "default": 4
                 },
@@ -15732,8 +19448,28 @@ const docTemplate = `{
                     "type": "string",
                     "default": "200Mi"
                 },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
                 "useMultipartEtag": {
                     "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15741,6 +19477,11 @@ const docTemplate = `{
                     "description": "Whether to use a presigned request or PutObject for single part uploads",
                     "type": "boolean",
                     "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "v2Auth": {
                     "description": "If true use v2 authentication.",
@@ -15751,6 +19492,11 @@ const docTemplate = `{
                     "description": "Show file versions as they were at the specified time.",
                     "type": "string",
                     "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "versions": {
                     "description": "Include old versions in directory listings.",
@@ -15775,6 +19521,10 @@ const docTemplate = `{
                     "description": "Should rclone create a library if it doesn't exist.",
                     "type": "boolean",
                     "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -15826,6 +19576,20 @@ const docTemplate = `{
                     "type": "integer",
                     "default": 64
                 },
+                "connections": {
+                    "description": "Maximum number of SFTP simultaneous connections, 0 for unlimited.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "copyIsHardlink": {
+                    "description": "Set to enable server side copies using hardlinks.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "disableConcurrentReads": {
                     "description": "If set don't use concurrent reads.",
                     "type": "boolean",
@@ -15843,6 +19607,10 @@ const docTemplate = `{
                 },
                 "host": {
                     "description": "SSH host to connect to.",
+                    "type": "string"
+                },
+                "hostKeyAlgorithms": {
+                    "description": "Space separated list of host key algorithms, ordered by preference.",
                     "type": "string"
                 },
                 "idleTimeout": {
@@ -15928,6 +19696,14 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "socksProxy": {
+                    "description": "Socks 5 proxy host.",
+                    "type": "string"
+                },
+                "ssh": {
+                    "description": "Path and arguments to external ssh binary.",
+                    "type": "string"
+                },
                 "subsystem": {
                     "description": "Specifies the SSH2 subsystem on the remote host.",
                     "type": "string",
@@ -15954,10 +19730,26 @@ const docTemplate = `{
         "storage.sharefileConfig": {
             "type": "object",
             "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
                 "chunkSize": {
                     "description": "Upload chunk size.",
                     "type": "string",
                     "default": "64Mi"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -15972,6 +19764,14 @@ const docTemplate = `{
                     "description": "ID of the root folder.",
                     "type": "string",
                     "example": ""
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
                 },
                 "uploadCutoff": {
                     "description": "Cutoff for switching to multipart upload.",
@@ -15992,6 +19792,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "http://127.0.0.1:9980"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -16011,6 +19815,10 @@ const docTemplate = `{
                     "description": "Whether the server is configured to be case-insensitive.",
                     "type": "boolean",
                     "default": true
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
                 },
                 "domain": {
                     "description": "Domain name for NTLM authentication.",
@@ -16062,6 +19870,10 @@ const docTemplate = `{
                 "accessGrant": {
                     "description": "Access grant.",
                     "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
                 }
             }
         },
@@ -16070,6 +19882,10 @@ const docTemplate = `{
             "properties": {
                 "apiKey": {
                     "description": "API key.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
                     "type": "string"
                 },
                 "passphrase": {
@@ -16105,6 +19921,10 @@ const docTemplate = `{
                 },
                 "deletedId": {
                     "description": "Sugarsync deleted folder id.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
                     "type": "string"
                 },
                 "encoding": {
@@ -16165,9 +19985,13 @@ const docTemplate = `{
                     "default": 0
                 },
                 "chunkSize": {
-                    "description": "Above this size files will be chunked into a _segments container.",
+                    "description": "Above this size files will be chunked.",
                     "type": "string",
                     "default": "5Gi"
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
                 },
                 "domain": {
                     "description": "User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)",
@@ -16190,6 +20014,11 @@ const docTemplate = `{
                     "default": false,
                     "example": false
                 },
+                "fetchUntilEmptyPage": {
+                    "description": "When paginating, always fetch unless we received an empty page.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "key": {
                     "description": "API key or password (OS_PASSWORD).",
                     "type": "string"
@@ -16208,6 +20037,11 @@ const docTemplate = `{
                     "description": "Disable support for static and dynamic large objects",
                     "type": "boolean",
                     "default": false
+                },
+                "partialPageFetchThreshold": {
+                    "description": "When paginating, fetch if the current page is within this percentage of the limit.",
+                    "type": "integer",
+                    "default": 0
                 },
                 "region": {
                     "description": "Region name - optional (OS_REGION_NAME).",
@@ -16233,6 +20067,11 @@ const docTemplate = `{
                 "tenantId": {
                     "description": "Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID).",
                     "type": "string"
+                },
+                "useSegmentsContainer": {
+                    "description": "Choose destination for large object segments",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "user": {
                     "description": "User name to log in (OS_USERNAME).",
@@ -16262,6 +20101,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "epmfs"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "minFreeSpace": {
                     "description": "Minimum viable free space for lfs/eplfs policies.",
                     "type": "string",
@@ -16285,10 +20128,19 @@ const docTemplate = `{
                     "description": "Your access token.",
                     "type": "string"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
                     "default": "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"
+                },
+                "private": {
+                    "description": "Set to make uploaded files private",
+                    "type": "boolean",
+                    "default": false
                 }
             }
         },
@@ -16303,6 +20155,10 @@ const docTemplate = `{
                     "description": "Command to run to get a bearer token.",
                     "type": "string"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string"
@@ -16311,8 +20167,32 @@ const docTemplate = `{
                     "description": "Set HTTP headers for all transactions.",
                     "type": "string"
                 },
+                "nextcloudChunkSize": {
+                    "description": "Nextcloud upload chunk size.",
+                    "type": "string",
+                    "default": "10Mi"
+                },
+                "owncloudExcludeMounts": {
+                    "description": "Exclude ownCloud mounted storages",
+                    "type": "boolean",
+                    "default": false
+                },
+                "owncloudExcludeShares": {
+                    "description": "Exclude ownCloud shares",
+                    "type": "boolean",
+                    "default": false
+                },
+                "pacerMinSleep": {
+                    "description": "Minimum time to sleep between API calls.",
+                    "type": "string",
+                    "default": "10ms"
+                },
                 "pass": {
                     "description": "Password.",
+                    "type": "string"
+                },
+                "unixSocket": {
+                    "description": "Path to a unix domain socket to dial to, instead of opening a TCP connection directly",
                     "type": "string"
                 },
                 "url": {
@@ -16326,7 +20206,7 @@ const docTemplate = `{
                 "vendor": {
                     "description": "Name of the WebDAV site/service/software you are using.",
                     "type": "string",
-                    "example": "nextcloud"
+                    "example": "fastmail"
                 }
             }
         },
@@ -16345,6 +20225,10 @@ const docTemplate = `{
                     "description": "OAuth Client Secret.",
                     "type": "string"
                 },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -16354,6 +20238,11 @@ const docTemplate = `{
                     "description": "Delete files permanently rather than putting them into the trash.",
                     "type": "boolean",
                     "default": false
+                },
+                "spoofUa": {
+                    "description": "Set the user agent to match an official version of the yandex disk client. May help with upload performance.",
+                    "type": "boolean",
+                    "default": true
                 },
                 "token": {
                     "description": "OAuth Access Token as a JSON blob.",
@@ -16378,6 +20267,10 @@ const docTemplate = `{
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the remote.",
                     "type": "string"
                 },
                 "encoding": {
@@ -16422,7 +20315,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "beta",
-	Host:             "localhost:9090",
+	Host:             "",
 	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Singularity API",

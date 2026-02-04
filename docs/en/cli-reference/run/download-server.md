@@ -25,13 +25,7 @@ OPTIONS:
 
    --netstorage-secret value  Set the NetStorage account secret/G2O key for authentication. [$NETSTORAGE_SECRET]
 
-   Amazon Drive
-
-   --acd-client-secret value  OAuth Client Secret. [$ACD_CLIENT_SECRET]
-   --acd-token value          OAuth Access Token as a JSON blob. [$ACD_TOKEN]
-   --acd-token-url value      Token server url. [$ACD_TOKEN_URL]
-
-   Amazon S3 Compliant Storage Providers including AWS, Alibaba, Ceph, China Mobile, Cloudflare, ArvanCloud, DigitalOcean, Dreamhost, Huawei OBS, IBM COS, IDrive e2, IONOS Cloud, Liara, Lyve Cloud, Minio, Netease, RackCorp, Scaleway, SeaweedFS, StackPath, Storj, Tencent COS, Qiniu and Wasabi
+   Amazon S3 Compliant Storage Providers including AWS, Alibaba, ArvanCloud, Ceph, ChinaMobile, Cloudflare, DigitalOcean, Dreamhost, GCS, HuaweiOBS, IBMCOS, IDrive, IONOS, LyveCloud, Leviia, Liara, Linode, Magalu, Minio, Netease, Petabox, RackCorp, Rclone, Scaleway, SeaweedFS, StackPath, Storj, Synology, TencentCOS, Wasabi, Qiniu and others
 
    --s3-access-key-id value            AWS Access Key ID. [$S3_ACCESS_KEY_ID]
    --s3-secret-access-key value        AWS Secret Access Key (password). [$S3_SECRET_ACCESS_KEY]
@@ -52,6 +46,12 @@ OPTIONS:
    --box-token value          OAuth Access Token as a JSON blob. [$BOX_TOKEN]
    --box-token-url value      Token server url. [$BOX_TOKEN_URL]
 
+   Citrix Sharefile
+
+   --sharefile-client-secret value  OAuth Client Secret. [$SHAREFILE_CLIENT_SECRET]
+   --sharefile-token value          OAuth Access Token as a JSON blob. [$SHAREFILE_TOKEN]
+   --sharefile-token-url value      Token server url. [$SHAREFILE_TOKEN_URL]
+
    Client Config
 
    --client-ca-cert value                           Path to CA certificate used to verify servers. To remove, use empty string.
@@ -65,7 +65,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone default)
 
    Dropbox
 
@@ -86,8 +86,8 @@ OPTIONS:
 
    General Config
 
-   --bind value          Address to bind the HTTP server to (default: "127.0.0.1:8888")
-   --metadata-api value  URL of the metadata API (default: "http://127.0.0.1:7777")
+   --bind value                       Address to bind the HTTP server to (default: "127.0.0.1:8888")
+   --metadata-api value, --api value  URL of the metadata API (default: "http://127.0.0.1:7777")
 
    Google Cloud Storage (this is not Google Drive)
 
@@ -119,13 +119,22 @@ OPTIONS:
    --internetarchive-access-key-id value      IAS3 Access Key. [$INTERNETARCHIVE_ACCESS_KEY_ID]
    --internetarchive-secret-access-key value  IAS3 Secret Key (password). [$INTERNETARCHIVE_SECRET_ACCESS_KEY]
 
+   Jottacloud
+
+   --jottacloud-client-secret value  OAuth Client Secret. [$JOTTACLOUD_CLIENT_SECRET]
+   --jottacloud-token value          OAuth Access Token as a JSON blob. [$JOTTACLOUD_TOKEN]
+   --jottacloud-token-url value      Token server url. [$JOTTACLOUD_TOKEN_URL]
+
    Koofr, Digi Storage and other Koofr-compatible storage providers
 
-   --koofr-password value  Your password for rclone (generate one at https://storage.rcs-rds.ro/app/admin/preferences/password). [$KOOFR_PASSWORD]
+   --koofr-password value  Your password for rclone generate one at https://storage.rcs-rds.ro/app/admin/preferences/password. [$KOOFR_PASSWORD]
 
    Mail.ru Cloud
 
-   --mailru-pass value  Password. [$MAILRU_PASS]
+   --mailru-client-secret value  OAuth Client Secret. [$MAILRU_CLIENT_SECRET]
+   --mailru-pass value           Password. [$MAILRU_PASS]
+   --mailru-token value          OAuth Access Token as a JSON blob. [$MAILRU_TOKEN]
+   --mailru-token-url value      Token server url. [$MAILRU_TOKEN_URL]
 
    Mega
 
@@ -149,7 +158,7 @@ OPTIONS:
 
    --opendrive-password value  Password. [$OPENDRIVE_PASSWORD]
 
-   OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
+   OpenStack Swift (Rackspace Cloud Files, Blomp Cloud Storage, Memset Memstore, OVH)
 
    --swift-application-credential-secret value  Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET). [$SWIFT_APPLICATION_CREDENTIAL_SECRET]
    --swift-auth-token value                     Auth Token from alternate authentication - optional (OS_AUTH_TOKEN). [$SWIFT_AUTH_TOKEN]
@@ -160,7 +169,7 @@ OPTIONS:
    --oos-sse-customer-key value         To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to [$OOS_SSE_CUSTOMER_KEY]
    --oos-sse-customer-key-file value    To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated [$OOS_SSE_CUSTOMER_KEY_FILE]
    --oos-sse-customer-key-sha256 value  If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption [$OOS_SSE_CUSTOMER_KEY_SHA256]
-   --oos-sse-kms-key-id value           if using using your own master key in vault, this header specifies the [$OOS_SSE_KMS_KEY_ID]
+   --oos-sse-kms-key-id value           if using your own master key in vault, this header specifies the [$OOS_SSE_KMS_KEY_ID]
 
    Pcloud
 
@@ -168,6 +177,12 @@ OPTIONS:
    --pcloud-password value       Your pcloud password. [$PCLOUD_PASSWORD]
    --pcloud-token value          OAuth Access Token as a JSON blob. [$PCLOUD_TOKEN]
    --pcloud-token-url value      Token server url. [$PCLOUD_TOKEN_URL]
+
+   Put.io
+
+   --putio-client-secret value  OAuth Client Secret. [$PUTIO_CLIENT_SECRET]
+   --putio-token value          OAuth Access Token as a JSON blob. [$PUTIO_TOKEN]
+   --putio-token-url value      Token server url. [$PUTIO_TOKEN_URL]
 
    QingCloud Object Storage
 
@@ -189,14 +204,15 @@ OPTIONS:
 
    SSH/SFTP
 
-   --sftp-ask-password         Allow asking for SFTP password when needed. (default: false) [$SFTP_ASK_PASSWORD]
-   --sftp-key-exchange value   Space separated list of key exchange algorithms, ordered by preference. [$SFTP_KEY_EXCHANGE]
-   --sftp-key-file value       Path to PEM-encoded private key file. [$SFTP_KEY_FILE]
-   --sftp-key-file-pass value  The passphrase to decrypt the PEM-encoded private key file. [$SFTP_KEY_FILE_PASS]
-   --sftp-key-pem value        Raw PEM-encoded private key. [$SFTP_KEY_PEM]
-   --sftp-key-use-agent        When set forces the usage of the ssh-agent. (default: false) [$SFTP_KEY_USE_AGENT]
-   --sftp-pass value           SSH password, leave blank to use ssh-agent. [$SFTP_PASS]
-   --sftp-pubkey-file value    Optional path to public key file. [$SFTP_PUBKEY_FILE]
+   --sftp-ask-password               Allow asking for SFTP password when needed. (default: false) [$SFTP_ASK_PASSWORD]
+   --sftp-host-key-algorithms value  Space separated list of host key algorithms, ordered by preference. [$SFTP_HOST_KEY_ALGORITHMS]
+   --sftp-key-exchange value         Space separated list of key exchange algorithms, ordered by preference. [$SFTP_KEY_EXCHANGE]
+   --sftp-key-file value             Path to PEM-encoded private key file. [$SFTP_KEY_FILE]
+   --sftp-key-file-pass value        The passphrase to decrypt the PEM-encoded private key file. [$SFTP_KEY_FILE_PASS]
+   --sftp-key-pem value              Raw PEM-encoded private key. [$SFTP_KEY_PEM]
+   --sftp-key-use-agent              When set forces the usage of the ssh-agent. (default: false) [$SFTP_KEY_USE_AGENT]
+   --sftp-pass value                 SSH password, leave blank to use ssh-agent. [$SFTP_PASS]
+   --sftp-pubkey-file value          Optional path to public key file. [$SFTP_PUBKEY_FILE]
 
    Sia Decentralized Cloud
 
@@ -237,7 +253,10 @@ OPTIONS:
 
    premiumize.me
 
-   --premiumizeme-api-key value  API Key. [$PREMIUMIZEME_API_KEY]
+   --premiumizeme-api-key value        API Key. [$PREMIUMIZEME_API_KEY]
+   --premiumizeme-client-secret value  OAuth Client Secret. [$PREMIUMIZEME_CLIENT_SECRET]
+   --premiumizeme-token value          OAuth Access Token as a JSON blob. [$PREMIUMIZEME_TOKEN]
+   --premiumizeme-token-url value      Token server url. [$PREMIUMIZEME_TOKEN_URL]
 
    seafile
 
