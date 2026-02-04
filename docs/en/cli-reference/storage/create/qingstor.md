@@ -85,6 +85,9 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --access-key-id value      QingStor Access Key ID. [$ACCESS_KEY_ID]
@@ -98,6 +101,7 @@ OPTIONS:
 
    --chunk-size value          Chunk size to use for uploading. (default: "4Mi") [$CHUNK_SIZE]
    --connection-retries value  Number of connection retries. (default: 3) [$CONNECTION_RETRIES]
+   --description value         Description of the remote. [$DESCRIPTION]
    --encoding value            The encoding for the backend. (default: "Slash,Ctl,InvalidUtf8") [$ENCODING]
    --upload-concurrency value  Concurrency for multipart uploads. (default: 1) [$UPLOAD_CONCURRENCY]
    --upload-cutoff value       Cutoff for switching to chunked upload. (default: "200Mi") [$UPLOAD_CUTOFF]
@@ -115,7 +119,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

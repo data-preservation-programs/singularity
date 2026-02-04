@@ -58,6 +58,8 @@ type ClientOption func(*runtime.ClientOperation)
 type ClientService interface {
 	AddPiece(params *AddPieceParams, opts ...ClientOption) (*AddPieceOK, error)
 
+	DeletePiece(params *DeletePieceParams, opts ...ClientOption) (*DeletePieceNoContent, error)
+
 	GetPieceIDMetadata(params *GetPieceIDMetadataParams, opts ...ClientOption) (*GetPieceIDMetadataOK, error)
 
 	ListPieces(params *ListPiecesParams, opts ...ClientOption) (*ListPiecesOK, error)
@@ -69,7 +71,7 @@ type ClientService interface {
 AddPiece adds a piece to a preparation
 */
 func (a *Client) AddPiece(params *AddPieceParams, opts ...ClientOption) (*AddPieceOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewAddPieceParams()
 	}
@@ -88,18 +90,70 @@ func (a *Client) AddPiece(params *AddPieceParams, opts ...ClientOption) (*AddPie
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*AddPieceOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for AddPiece: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+	DeletePiece deletes a piece from a preparation
+
+	Deletes a piece (CAR) and its associated records. For data pieces, resets file ranges
+
+to allow re-packing. For DAG pieces, resets directory export flags for re-generation.
+*/
+func (a *Client) DeletePiece(params *DeletePieceParams, opts ...ClientOption) (*DeletePieceNoContent, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewDeletePieceParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "DeletePiece",
+		Method:             "DELETE",
+		PathPattern:        "/preparation/{id}/piece/{piece_cid}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &DeletePieceReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*DeletePieceNoContent)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for DeletePiece: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -109,7 +163,7 @@ GetPieceIDMetadata gets metadata for a piece
 Get metadata for a piece for how it may be reassembled from the data source
 */
 func (a *Client) GetPieceIDMetadata(params *GetPieceIDMetadataParams, opts ...ClientOption) (*GetPieceIDMetadataOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewGetPieceIDMetadataParams()
 	}
@@ -128,17 +182,22 @@ func (a *Client) GetPieceIDMetadata(params *GetPieceIDMetadataParams, opts ...Cl
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*GetPieceIDMetadataOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for GetPieceIDMetadata: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -147,7 +206,7 @@ func (a *Client) GetPieceIDMetadata(params *GetPieceIDMetadataParams, opts ...Cl
 ListPieces lists all prepared pieces for a preparation
 */
 func (a *Client) ListPieces(params *ListPiecesParams, opts ...ClientOption) (*ListPiecesOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewListPiecesParams()
 	}
@@ -166,17 +225,22 @@ func (a *Client) ListPieces(params *ListPiecesParams, opts ...ClientOption) (*Li
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*ListPiecesOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for ListPieces: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }

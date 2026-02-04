@@ -26,6 +26,9 @@ type StorageSeafileConfig struct {
 	// Should rclone create a library if it doesn't exist.
 	CreateLibrary *bool `json:"createLibrary,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 

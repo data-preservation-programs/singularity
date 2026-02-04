@@ -59,6 +59,9 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --domain value  Domain name for NTLM authentication. (default: "WORKGROUP") [$DOMAIN]
@@ -72,6 +75,7 @@ OPTIONS:
    Advanced
 
    --case-insensitive    Whether the server is configured to be case-insensitive. (default: true) [$CASE_INSENSITIVE]
+   --description value   Description of the remote. [$DESCRIPTION]
    --encoding value      The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot") [$ENCODING]
    --hide-special-share  Hide special shares (e.g. print$) which users aren't supposed to access. (default: true) [$HIDE_SPECIAL_SHARE]
    --idle-timeout value  Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
@@ -89,7 +93,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

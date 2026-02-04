@@ -26,6 +26,9 @@ type StorageLocalConfig struct {
 	// Follow symlinks and copy the pointed to item.
 	CopyLinks *bool `json:"copyLinks,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 
@@ -34,6 +37,9 @@ type StorageLocalConfig struct {
 
 	// Don't check to see if the files change during upload.
 	NoCheckUpdated *bool `json:"noCheckUpdated,omitempty"`
+
+	// Disable reflink cloning for server-side copies.
+	NoClone *bool `json:"noClone,omitempty"`
 
 	// Disable preallocation of disk space for transferred files.
 	NoPreallocate *bool `json:"noPreallocate,omitempty"`
@@ -53,6 +59,10 @@ type StorageLocalConfig struct {
 
 	// Don't warn about skipped symlinks.
 	SkipLinks *bool `json:"skipLinks,omitempty"`
+
+	// Set what kind of time is returned.
+	// Example: mtime
+	TimeType *string `json:"timeType,omitempty"`
 
 	// Apply unicode NFC normalization to paths and filenames.
 	UnicodeNormalization *bool `json:"unicodeNormalization,omitempty"`

@@ -26,10 +26,13 @@ type StorageB2Config struct {
 	// Cutoff for switching to multipart copy.
 	CopyCutoff *string `json:"copyCutoff,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// Disable checksums for large (> upload cutoff) files.
 	DisableChecksum *bool `json:"disableChecksum,omitempty"`
 
-	// Time before the authorization token will expire in s or suffix ms|s|m|h|d.
+	// Time before the public link authorization token will expire in s or suffix ms|s|m|h|d.
 	DownloadAuthDuration *string `json:"downloadAuthDuration,omitempty"`
 
 	// Custom endpoint for downloads.
@@ -47,14 +50,20 @@ type StorageB2Config struct {
 	// Application Key.
 	Key string `json:"key,omitempty"`
 
-	// How often internal memory buffer pools will be flushed.
+	// Set the number of days deleted files should be kept when creating a bucket.
+	Lifecycle int64 `json:"lifecycle,omitempty"`
+
+	// How often internal memory buffer pools will be flushed. (no longer used)
 	MemoryPoolFlushTime *string `json:"memoryPoolFlushTime,omitempty"`
 
-	// Whether to use mmap buffers in internal memory pool.
+	// Whether to use mmap buffers in internal memory pool. (no longer used)
 	MemoryPoolUseMmap *bool `json:"memoryPoolUseMmap,omitempty"`
 
 	// A flag string for X-Bz-Test-Mode header for debugging.
 	TestMode string `json:"testMode,omitempty"`
+
+	// Concurrency for multipart uploads.
+	UploadConcurrency *int64 `json:"uploadConcurrency,omitempty"`
 
 	// Cutoff for switching to chunked upload.
 	UploadCutoff *string `json:"uploadCutoff,omitempty"`

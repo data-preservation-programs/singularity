@@ -39,6 +39,12 @@ type StorageGcsConfig struct {
 	// If set this will decompress gzip encoded objects.
 	Decompress *bool `json:"decompress,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
+	// Upload an empty object with a trailing slash when a new directory is created
+	DirectoryMarkers *bool `json:"directoryMarkers,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 
@@ -76,6 +82,9 @@ type StorageGcsConfig struct {
 
 	// Token server url.
 	TokenURL string `json:"tokenUrl,omitempty"`
+
+	// User project.
+	UserProject string `json:"userProject,omitempty"`
 }
 
 // Validate validates this storage gcs config

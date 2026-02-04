@@ -20,6 +20,12 @@ type StorageFichierConfig struct {
 	// Your API Key, get it from https://1fichier.com/console/params.pl.
 	APIKey string `json:"apiKey,omitempty"`
 
+	// Set if you wish to use CDN download links.
+	Cdn *bool `json:"cdn,omitempty"`
+
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 

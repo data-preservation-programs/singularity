@@ -17,13 +17,16 @@ import (
 // swagger:model storage.koofrDigistorageConfig
 type StorageKoofrDigistorageConfig struct {
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 
 	// Mount ID of the mount to use.
 	Mountid string `json:"mountid,omitempty"`
 
-	// Your password for rclone (generate one at https://storage.rcs-rds.ro/app/admin/preferences/password).
+	// Your password for rclone generate one at https://storage.rcs-rds.ro/app/admin/preferences/password.
 	Password string `json:"password,omitempty"`
 
 	// Does the backend support setting modification time.

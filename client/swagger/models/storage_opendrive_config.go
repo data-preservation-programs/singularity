@@ -20,6 +20,9 @@ type StorageOpendriveConfig struct {
 	// Files will be uploaded in chunks this size.
 	ChunkSize *string `json:"chunkSize,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 

@@ -81,7 +81,7 @@ type ClientService interface {
 AddOutputStorage attaches an output storage with a preparation
 */
 func (a *Client) AddOutputStorage(params *AddOutputStorageParams, opts ...ClientOption) (*AddOutputStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewAddOutputStorageParams()
 	}
@@ -100,17 +100,22 @@ func (a *Client) AddOutputStorage(params *AddOutputStorageParams, opts ...Client
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*AddOutputStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for AddOutputStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -119,7 +124,7 @@ func (a *Client) AddOutputStorage(params *AddOutputStorageParams, opts ...Client
 AddSourceStorage attaches a source storage with a preparation
 */
 func (a *Client) AddSourceStorage(params *AddSourceStorageParams, opts ...ClientOption) (*AddSourceStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewAddSourceStorageParams()
 	}
@@ -138,17 +143,22 @@ func (a *Client) AddSourceStorage(params *AddSourceStorageParams, opts ...Client
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*AddSourceStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for AddSourceStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -157,7 +167,7 @@ func (a *Client) AddSourceStorage(params *AddSourceStorageParams, opts ...Client
 CreatePreparation creates a new preparation
 */
 func (a *Client) CreatePreparation(params *CreatePreparationParams, opts ...ClientOption) (*CreatePreparationOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreatePreparationParams()
 	}
@@ -176,17 +186,22 @@ func (a *Client) CreatePreparation(params *CreatePreparationParams, opts ...Clie
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreatePreparationOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreatePreparation: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -195,7 +210,7 @@ func (a *Client) CreatePreparation(params *CreatePreparationParams, opts ...Clie
 ExplorePreparation explores a directory in a prepared source storage
 */
 func (a *Client) ExplorePreparation(params *ExplorePreparationParams, opts ...ClientOption) (*ExplorePreparationOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewExplorePreparationParams()
 	}
@@ -214,17 +229,22 @@ func (a *Client) ExplorePreparation(params *ExplorePreparationParams, opts ...Cl
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*ExplorePreparationOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for ExplorePreparation: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -233,7 +253,7 @@ func (a *Client) ExplorePreparation(params *ExplorePreparationParams, opts ...Cl
 GetPreparationStatus gets the status of a preparation
 */
 func (a *Client) GetPreparationStatus(params *GetPreparationStatusParams, opts ...ClientOption) (*GetPreparationStatusOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewGetPreparationStatusParams()
 	}
@@ -252,17 +272,22 @@ func (a *Client) GetPreparationStatus(params *GetPreparationStatusParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*GetPreparationStatusOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for GetPreparationStatus: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -271,7 +296,7 @@ func (a *Client) GetPreparationStatus(params *GetPreparationStatusParams, opts .
 ListPreparations lists all preparations
 */
 func (a *Client) ListPreparations(params *ListPreparationsParams, opts ...ClientOption) (*ListPreparationsOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewListPreparationsParams()
 	}
@@ -290,17 +315,22 @@ func (a *Client) ListPreparations(params *ListPreparationsParams, opts ...Client
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*ListPreparationsOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for ListPreparations: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -309,7 +339,7 @@ func (a *Client) ListPreparations(params *ListPreparationsParams, opts ...Client
 RemoveOutputStorage detaches an output storage from a preparation
 */
 func (a *Client) RemoveOutputStorage(params *RemoveOutputStorageParams, opts ...ClientOption) (*RemoveOutputStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewRemoveOutputStorageParams()
 	}
@@ -328,17 +358,22 @@ func (a *Client) RemoveOutputStorage(params *RemoveOutputStorageParams, opts ...
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*RemoveOutputStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for RemoveOutputStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -347,7 +382,7 @@ func (a *Client) RemoveOutputStorage(params *RemoveOutputStorageParams, opts ...
 RemovePreparation removes a preparation
 */
 func (a *Client) RemovePreparation(params *RemovePreparationParams, opts ...ClientOption) (*RemovePreparationNoContent, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewRemovePreparationParams()
 	}
@@ -366,17 +401,22 @@ func (a *Client) RemovePreparation(params *RemovePreparationParams, opts ...Clie
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*RemovePreparationNoContent)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for RemovePreparation: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -385,7 +425,7 @@ func (a *Client) RemovePreparation(params *RemovePreparationParams, opts ...Clie
 RenamePreparation renames a preparation
 */
 func (a *Client) RenamePreparation(params *RenamePreparationParams, opts ...ClientOption) (*RenamePreparationOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewRenamePreparationParams()
 	}
@@ -404,17 +444,22 @@ func (a *Client) RenamePreparation(params *RenamePreparationParams, opts ...Clie
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*RenamePreparationOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for RenamePreparation: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }

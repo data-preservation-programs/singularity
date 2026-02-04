@@ -17,7 +17,7 @@ import (
 // swagger:model storage.azureblobConfig
 type StorageAzureblobConfig struct {
 
-	// Access tier of blob: hot, cool or archive.
+	// Access tier of blob: hot, cool, cold or archive.
 	AccessTier string `json:"accessTier,omitempty"`
 
 	// Azure Storage Account Name.
@@ -44,6 +44,15 @@ type StorageAzureblobConfig struct {
 	// Send the certificate chain when using certificate auth.
 	ClientSendCertificateChain *bool `json:"clientSendCertificateChain,omitempty"`
 
+	// Set to specify how to deal with snapshots on blob deletion.
+	DeleteSnapshots string `json:"deleteSnapshots,omitempty"`
+
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
+	// Upload an empty object with a trailing slash when a new directory is created
+	DirectoryMarkers *bool `json:"directoryMarkers,omitempty"`
+
 	// Don't store MD5 checksum with object metadata.
 	DisableChecksum *bool `json:"disableChecksum,omitempty"`
 
@@ -62,10 +71,10 @@ type StorageAzureblobConfig struct {
 	// Size of blob list.
 	ListChunk *int64 `json:"listChunk,omitempty"`
 
-	// How often internal memory buffer pools will be flushed.
+	// How often internal memory buffer pools will be flushed. (no longer used)
 	MemoryPoolFlushTime *string `json:"memoryPoolFlushTime,omitempty"`
 
-	// Whether to use mmap buffers in internal memory pool.
+	// Whether to use mmap buffers in internal memory pool. (no longer used)
 	MemoryPoolUseMmap *bool `json:"memoryPoolUseMmap,omitempty"`
 
 	// Object ID of the user-assigned MSI to use, if any.

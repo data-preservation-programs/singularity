@@ -26,6 +26,9 @@ type StorageQingstorConfig struct {
 	// Number of connection retries.
 	ConnectionRetries *int64 `json:"connectionRetries,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 

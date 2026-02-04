@@ -47,6 +47,9 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --access-key-id value      IAS3 Access Key. [$ACCESS_KEY_ID]
@@ -55,6 +58,7 @@ OPTIONS:
 
    Advanced
 
+   --description value     Description of the remote. [$DESCRIPTION]
    --disable-checksum      Don't ask the server to test against MD5 checksum calculated by rclone. (default: true) [$DISABLE_CHECKSUM]
    --encoding value        The encoding for the backend. (default: "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --endpoint value        IAS3 Endpoint. (default: "https://s3.us.archive.org") [$ENDPOINT]
@@ -74,7 +78,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

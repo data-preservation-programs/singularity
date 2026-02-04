@@ -104,6 +104,16 @@ DESCRIPTION:
       If this is set and no password is supplied then rclone will ask for a password
       
 
+   --socks-proxy
+      Socks 5 proxy host.
+          
+          Supports the format user:pass@host:port, user@host:port, host:port.
+          
+          Example:
+          
+            myUser:myPass@localhost:9005
+          
+
    --encoding
       The encoding for the backend.
       
@@ -113,6 +123,9 @@ DESCRIPTION:
          | Asterisk,Ctl,Dot,Slash                               | ProFTPd can't handle '*' in file names
          | BackSlash,Ctl,Del,Dot,RightSpace,Slash,SquareBracket | PureFTPd can't handle '[]' or '*' in file names
          | Ctl,LeftPeriod,Slash                                 | VsFTPd can't handle file names starting with dot
+
+   --description
+      Description of the remote.
 
 
 OPTIONS:
@@ -129,6 +142,7 @@ OPTIONS:
    --ask-password          Allow asking for FTP password when needed. (default: false) [$ASK_PASSWORD]
    --close-timeout value   Maximum time to wait for a response to close. (default: "1m0s") [$CLOSE_TIMEOUT]
    --concurrency value     Maximum number of FTP simultaneous connections, 0 for unlimited. (default: 0) [$CONCURRENCY]
+   --description value     Description of the remote. [$DESCRIPTION]
    --disable-epsv          Disable using EPSV even if server advertises support. (default: false) [$DISABLE_EPSV]
    --disable-mlsd          Disable using MLSD even if server advertises support. (default: false) [$DISABLE_MLSD]
    --disable-tls13         Disable TLS 1.3 (workaround for FTP servers with buggy TLS) (default: false) [$DISABLE_TLS13]
@@ -138,6 +152,7 @@ OPTIONS:
    --idle-timeout value    Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
    --no-check-certificate  Do not verify the TLS certificate of the server. (default: false) [$NO_CHECK_CERTIFICATE]
    --shut-timeout value    Maximum time to wait for data connection closing status. (default: "1m0s") [$SHUT_TIMEOUT]
+   --socks-proxy value     Socks 5 proxy host. [$SOCKS_PROXY]
    --tls-cache-size value  Size of TLS session cache for all control and data connections. (default: 32) [$TLS_CACHE_SIZE]
    --writing-mdtm          Use MDTM to set modification time (VsFtpd quirk) (default: false) [$WRITING_MDTM]
 
@@ -154,7 +169,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

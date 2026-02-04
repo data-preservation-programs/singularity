@@ -13,10 +13,10 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// StorageCreateAcdStorageRequest storage create acd storage request
+// StorageCreateS3LinodeStorageRequest storage create s3 linode storage request
 //
-// swagger:model storage.createAcdStorageRequest
-type StorageCreateAcdStorageRequest struct {
+// swagger:model storage.createS3LinodeStorageRequest
+type StorageCreateS3LinodeStorageRequest struct {
 
 	// config for underlying HTTP client
 	ClientConfig struct {
@@ -25,7 +25,7 @@ type StorageCreateAcdStorageRequest struct {
 
 	// config for the storage
 	Config struct {
-		StorageAcdConfig
+		StorageS3LinodeConfig
 	} `json:"config,omitempty"`
 
 	// Name of the storage, must be unique
@@ -36,8 +36,8 @@ type StorageCreateAcdStorageRequest struct {
 	Path string `json:"path,omitempty"`
 }
 
-// Validate validates this storage create acd storage request
-func (m *StorageCreateAcdStorageRequest) Validate(formats strfmt.Registry) error {
+// Validate validates this storage create s3 linode storage request
+func (m *StorageCreateS3LinodeStorageRequest) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateClientConfig(formats); err != nil {
@@ -54,7 +54,7 @@ func (m *StorageCreateAcdStorageRequest) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *StorageCreateAcdStorageRequest) validateClientConfig(formats strfmt.Registry) error {
+func (m *StorageCreateS3LinodeStorageRequest) validateClientConfig(formats strfmt.Registry) error {
 	if swag.IsZero(m.ClientConfig) { // not required
 		return nil
 	}
@@ -62,7 +62,7 @@ func (m *StorageCreateAcdStorageRequest) validateClientConfig(formats strfmt.Reg
 	return nil
 }
 
-func (m *StorageCreateAcdStorageRequest) validateConfig(formats strfmt.Registry) error {
+func (m *StorageCreateS3LinodeStorageRequest) validateConfig(formats strfmt.Registry) error {
 	if swag.IsZero(m.Config) { // not required
 		return nil
 	}
@@ -70,8 +70,8 @@ func (m *StorageCreateAcdStorageRequest) validateConfig(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validate this storage create acd storage request based on the context it is used
-func (m *StorageCreateAcdStorageRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this storage create s3 linode storage request based on the context it is used
+func (m *StorageCreateS3LinodeStorageRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateClientConfig(ctx, formats); err != nil {
@@ -88,18 +88,18 @@ func (m *StorageCreateAcdStorageRequest) ContextValidate(ctx context.Context, fo
 	return nil
 }
 
-func (m *StorageCreateAcdStorageRequest) contextValidateClientConfig(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageCreateS3LinodeStorageRequest) contextValidateClientConfig(ctx context.Context, formats strfmt.Registry) error {
 
 	return nil
 }
 
-func (m *StorageCreateAcdStorageRequest) contextValidateConfig(ctx context.Context, formats strfmt.Registry) error {
+func (m *StorageCreateS3LinodeStorageRequest) contextValidateConfig(ctx context.Context, formats strfmt.Registry) error {
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *StorageCreateAcdStorageRequest) MarshalBinary() ([]byte, error) {
+func (m *StorageCreateS3LinodeStorageRequest) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -107,8 +107,8 @@ func (m *StorageCreateAcdStorageRequest) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *StorageCreateAcdStorageRequest) UnmarshalBinary(b []byte) error {
-	var res StorageCreateAcdStorageRequest
+func (m *StorageCreateS3LinodeStorageRequest) UnmarshalBinary(b []byte) error {
+	var res StorageCreateS3LinodeStorageRequest
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

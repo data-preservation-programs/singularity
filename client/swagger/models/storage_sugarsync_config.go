@@ -32,6 +32,9 @@ type StorageSugarsyncConfig struct {
 	// Sugarsync deleted folder id.
 	DeletedID string `json:"deletedId,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 

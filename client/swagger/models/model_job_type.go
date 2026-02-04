@@ -41,7 +41,7 @@ const (
 )
 
 // for schema
-var modelJobTypeEnum []interface{}
+var modelJobTypeEnum []any
 
 func init() {
 	var res []ModelJobType

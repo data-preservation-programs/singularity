@@ -9,6 +9,29 @@ USAGE:
    singularity storage create sharefile [command options]
 
 DESCRIPTION:
+   --client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
+   --client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
+
+   --token
+      OAuth Access Token as a JSON blob.
+
+   --auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
+   --token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
+
    --upload-cutoff
       Cutoff for switching to multipart upload.
 
@@ -47,16 +70,25 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
+   --client-id value       OAuth Client Id. [$CLIENT_ID]
+   --client-secret value   OAuth Client Secret. [$CLIENT_SECRET]
    --help, -h              show help
    --root-folder-id value  ID of the root folder. [$ROOT_FOLDER_ID]
 
    Advanced
 
+   --auth-url value       Auth server URL. [$AUTH_URL]
    --chunk-size value     Upload chunk size. (default: "64Mi") [$CHUNK_SIZE]
+   --description value    Description of the remote. [$DESCRIPTION]
    --encoding value       The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot") [$ENCODING]
    --endpoint value       Endpoint for API calls. [$ENDPOINT]
+   --token value          OAuth Access Token as a JSON blob. [$TOKEN]
+   --token-url value      Token server url. [$TOKEN_URL]
    --upload-cutoff value  Cutoff for switching to multipart upload. (default: "128Mi") [$UPLOAD_CUTOFF]
 
    Client Config
@@ -72,7 +104,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

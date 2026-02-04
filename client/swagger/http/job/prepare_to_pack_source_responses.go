@@ -7,6 +7,7 @@ package job
 
 import (
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"io"
 
@@ -20,7 +21,7 @@ type PrepareToPackSourceReader struct {
 }
 
 // ReadResponse reads a server response into the received o.
-func (o *PrepareToPackSourceReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
+func (o *PrepareToPackSourceReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (any, error) {
 	switch response.Code() {
 	case 204:
 		result := NewPrepareToPackSourceNoContent()
@@ -162,7 +163,7 @@ func (o *PrepareToPackSourceBadRequest) GetPayload() string {
 func (o *PrepareToPackSourceBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 
@@ -230,7 +231,7 @@ func (o *PrepareToPackSourceInternalServerError) GetPayload() string {
 func (o *PrepareToPackSourceInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 

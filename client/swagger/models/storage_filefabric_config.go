@@ -17,6 +17,9 @@ import (
 // swagger:model storage.filefabricConfig
 type StorageFilefabricConfig struct {
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 

@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -19,7 +20,7 @@ import (
 // swagger:model model.File
 type ModelFile struct {
 
-	// Associations
+	// Associations - AttachmentID SET NULL for fast prep deletion, async cleanup
 	AttachmentID int64 `json:"attachmentId,omitempty"`
 
 	// CID is the CID of the file.
@@ -73,11 +74,15 @@ func (m *ModelFile) validateFileRanges(formats strfmt.Registry) error {
 
 		if m.FileRanges[i] != nil {
 			if err := m.FileRanges[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("fileRanges" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("fileRanges" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -112,11 +117,15 @@ func (m *ModelFile) contextValidateFileRanges(ctx context.Context, formats strfm
 			}
 
 			if err := m.FileRanges[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("fileRanges" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("fileRanges" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}

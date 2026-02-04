@@ -17,9 +17,21 @@ import (
 // swagger:model storage.mailruConfig
 type StorageMailruConfig struct {
 
+	// Auth server URL.
+	AuthURL string `json:"authUrl,omitempty"`
+
 	// What should copy do if file checksum is mismatched or invalid.
 	// Example: true
 	CheckHash *bool `json:"checkHash,omitempty"`
+
+	// OAuth Client Id.
+	ClientID string `json:"clientId,omitempty"`
+
+	// OAuth Client Secret.
+	ClientSecret string `json:"clientSecret,omitempty"`
+
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
 
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
@@ -44,6 +56,12 @@ type StorageMailruConfig struct {
 	// Files larger than the size given below will always be hashed on disk.
 	// Example: 0
 	SpeedupMaxMemory *string `json:"speedupMaxMemory,omitempty"`
+
+	// OAuth Access Token as a JSON blob.
+	Token string `json:"token,omitempty"`
+
+	// Token server url.
+	TokenURL string `json:"tokenUrl,omitempty"`
 
 	// User name (usually email).
 	User string `json:"user,omitempty"`

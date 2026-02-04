@@ -39,8 +39,14 @@ type StorageBoxConfig struct {
 	// Max number of times to try committing a multipart file.
 	CommitRetries *int64 `json:"commitRetries,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
+
+	// Impersonate this user ID when using a service account.
+	Impersonate string `json:"impersonate,omitempty"`
 
 	// Size of listing chunk 1-1000.
 	ListChunk *int64 `json:"listChunk,omitempty"`

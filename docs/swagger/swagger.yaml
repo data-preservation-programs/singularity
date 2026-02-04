@@ -78,6 +78,15 @@ definitions:
     required:
     - name
     type: object
+  dataprep.DeletePieceRequest:
+    properties:
+      deleteCar:
+        description: 'Delete the physical CAR file from storage (default: true)'
+        type: boolean
+      force:
+        description: Delete even if deals reference this piece
+        type: boolean
+    type: object
   dataprep.DirEntry:
     properties:
       cid:
@@ -276,6 +285,11 @@ definitions:
         type: integer
       jobId:
         type: integer
+      minPieceSizePadding:
+        description: 'MinPieceSizePadding tracks virtual padding for inline mode only.
+          Inline: stores padding amount, PieceReader serves zeros virtually. Non-inline:
+          always 0, literal zeros are written to CAR file for Curio TreeD compatibility.'
+        type: integer
       numOfFiles:
         type: integer
       pieceCid:
@@ -286,7 +300,7 @@ definitions:
         description: PieceType indicates whether this is a data piece or DAG piece
         type: string
       preparationId:
-        description: Association
+        description: Association - SET NULL for fast prep deletion, async cleanup
         type: integer
       rootCid:
         type: string
@@ -437,7 +451,8 @@ definitions:
   model.File:
     properties:
       attachmentId:
-        description: Associations
+        description: Associations - AttachmentID SET NULL for fast prep deletion,
+          async cleanup
         type: integer
       cid:
         description: CID is the CID of the file.
@@ -496,7 +511,8 @@ definitions:
       type:
         $ref: '#/definitions/model.JobType'
       workerId:
-        description: Associations
+        description: Associations - AttachmentID SET NULL for fast prep deletion,
+          async cleanup
         type: string
     type: object
   model.JobState:
@@ -870,44 +886,10 @@ definitions:
     required:
     - name
     type: object
-  storage.acdConfig:
-    properties:
-      authUrl:
-        description: Auth server URL.
-        type: string
-      checkpoint:
-        description: Checkpoint for internal polling (debug).
-        type: string
-      clientId:
-        description: OAuth Client Id.
-        type: string
-      clientSecret:
-        description: OAuth Client Secret.
-        type: string
-      encoding:
-        default: Slash,InvalidUtf8,Dot
-        description: The encoding for the backend.
-        type: string
-      templinkThreshold:
-        default: 9Gi
-        description: Files >= this size will be downloaded via their tempLink.
-        type: string
-      token:
-        description: OAuth Access Token as a JSON blob.
-        type: string
-      tokenUrl:
-        description: Token server url.
-        type: string
-      uploadWaitPerGb:
-        default: 3m0s
-        description: Additional time per GiB to wait after a failed complete upload
-          to see if it appears.
-        type: string
-    type: object
   storage.azureblobConfig:
     properties:
       accessTier:
-        description: 'Access tier of blob: hot, cool or archive.'
+        description: 'Access tier of blob: hot, cool, cold or archive.'
         type: string
       account:
         description: Azure Storage Account Name.
@@ -937,6 +919,18 @@ definitions:
         default: false
         description: Send the certificate chain when using certificate auth.
         type: boolean
+      deleteSnapshots:
+        description: Set to specify how to deal with snapshots on blob deletion.
+        example: ""
+        type: string
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
       disableChecksum:
         default: false
         description: Don't store MD5 checksum with object metadata.
@@ -962,11 +956,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       msiClientId:
         description: Object ID of the user-assigned MSI to use, if any.
@@ -1036,14 +1032,17 @@ definitions:
         default: 4Gi
         description: Cutoff for switching to multipart copy.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       disableChecksum:
         default: false
         description: Disable checksums for large (> upload cutoff) files.
         type: boolean
       downloadAuthDuration:
         default: 1w
-        description: Time before the authorization token will expire in s or suffix
-          ms|s|m|h|d.
+        description: Time before the public link authorization token will expire in
+          s or suffix ms|s|m|h|d.
         type: string
       downloadUrl:
         description: Custom endpoint for downloads.
@@ -1062,17 +1061,28 @@ definitions:
       key:
         description: Application Key.
         type: string
+      lifecycle:
+        default: 0
+        description: Set the number of days deleted files should be kept when creating
+          a bucket.
+        type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       testMode:
         description: A flag string for X-Bz-Test-Mode header for debugging.
         type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
@@ -1111,9 +1121,15 @@ definitions:
         default: 100
         description: Max number of times to try committing a multipart file.
         type: integer
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
+        type: string
+      impersonate:
+        description: Impersonate this user ID when using a service account.
         type: string
       listChunk:
         default: 1000
@@ -1135,24 +1151,6 @@ definitions:
       uploadCutoff:
         default: 50Mi
         description: Cutoff for switching to multipart upload (>= 50 MiB).
-        type: string
-    type: object
-  storage.createAcdStorageRequest:
-    properties:
-      clientConfig:
-        allOf:
-        - $ref: '#/definitions/model.ClientConfig'
-        description: config for underlying HTTP client
-      config:
-        allOf:
-        - $ref: '#/definitions/storage.acdConfig'
-        description: config for the storage
-      name:
-        description: Name of the storage, must be unique
-        example: my-storage
-        type: string
-      path:
-        description: Path of the storage
         type: string
     type: object
   storage.createAzureblobStorageRequest:
@@ -1659,6 +1657,24 @@ definitions:
         description: Path of the storage
         type: string
     type: object
+  storage.createOosWorkload_identity_authStorageRequest:
+    properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
+      config:
+        allOf:
+        - $ref: '#/definitions/storage.oosWorkload_identity_authConfig'
+        description: config for the storage
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
+    type: object
   storage.createOpendriveStorageRequest:
     properties:
       clientConfig:
@@ -1893,6 +1909,24 @@ definitions:
         description: Path of the storage
         type: string
     type: object
+  storage.createS3GCSStorageRequest:
+    properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
+      config:
+        allOf:
+        - $ref: '#/definitions/storage.s3GCSConfig'
+        description: config for the storage
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
+    type: object
   storage.createS3HuaweiOBSStorageRequest:
     properties:
       clientConfig:
@@ -1965,6 +1999,24 @@ definitions:
         description: Path of the storage
         type: string
     type: object
+  storage.createS3LeviiaStorageRequest:
+    properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
+      config:
+        allOf:
+        - $ref: '#/definitions/storage.s3LeviiaConfig'
+        description: config for the storage
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
+    type: object
   storage.createS3LiaraStorageRequest:
     properties:
       clientConfig:
@@ -1983,6 +2035,24 @@ definitions:
         description: Path of the storage
         type: string
     type: object
+  storage.createS3LinodeStorageRequest:
+    properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
+      config:
+        allOf:
+        - $ref: '#/definitions/storage.s3LinodeConfig'
+        description: config for the storage
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
+    type: object
   storage.createS3LyveCloudStorageRequest:
     properties:
       clientConfig:
@@ -1992,6 +2062,24 @@ definitions:
       config:
         allOf:
         - $ref: '#/definitions/storage.s3LyveCloudConfig'
+        description: config for the storage
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
+    type: object
+  storage.createS3MagaluStorageRequest:
+    properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
+      config:
+        allOf:
+        - $ref: '#/definitions/storage.s3MagaluConfig'
         description: config for the storage
       name:
         description: Name of the storage, must be unique
@@ -2055,6 +2143,24 @@ definitions:
         description: Path of the storage
         type: string
     type: object
+  storage.createS3PetaboxStorageRequest:
+    properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
+      config:
+        allOf:
+        - $ref: '#/definitions/storage.s3PetaboxConfig'
+        description: config for the storage
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
+    type: object
   storage.createS3QiniuStorageRequest:
     properties:
       clientConfig:
@@ -2082,6 +2188,24 @@ definitions:
       config:
         allOf:
         - $ref: '#/definitions/storage.s3RackCorpConfig'
+        description: config for the storage
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
+    type: object
+  storage.createS3RcloneStorageRequest:
+    properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
+      config:
+        allOf:
+        - $ref: '#/definitions/storage.s3RcloneConfig'
         description: config for the storage
       name:
         description: Name of the storage, must be unique
@@ -2154,6 +2278,24 @@ definitions:
       config:
         allOf:
         - $ref: '#/definitions/storage.s3StorjConfig'
+        description: config for the storage
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
+    type: object
+  storage.createS3SynologyStorageRequest:
+    properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
+      config:
+        allOf:
+        - $ref: '#/definitions/storage.s3SynologyConfig'
         description: config for the storage
       name:
         description: Name of the storage, must be unique
@@ -2487,6 +2629,9 @@ definitions:
         default: false
         description: Server side copy contents of shortcuts instead of the shortcut.
         type: boolean
+      description:
+        description: Description of the remote.
+        type: string
       disableHttp2:
         default: true
         description: Disable drive using http2.
@@ -2495,11 +2640,21 @@ definitions:
         default: InvalidUtf8
         description: The encoding for the backend.
         type: string
+      envAuth:
+        default: false
+        description: Get IAM credentials from runtime (environment variables or instance
+          meta data if no env vars).
+        example: false
+        type: boolean
       exportFormats:
         default: docx,xlsx,pptx,svg
         description: Comma separated list of preferred formats for downloading Google
           docs.
         type: string
+      fastListBugFix:
+        default: true
+        description: Work around a bug in Google Drive listing.
+        type: boolean
       formats:
         description: 'Deprecated: See export_formats.'
         type: string
@@ -2518,6 +2673,21 @@ definitions:
         default: 1000
         description: Size of listing chunk 100-1000, 0 to disable.
         type: integer
+      metadataLabels:
+        default: "off"
+        description: Control whether labels should be read or written in metadata.
+        example: "off"
+        type: string
+      metadataOwner:
+        default: read
+        description: Control whether owner should be read or written in metadata.
+        example: "off"
+        type: string
+      metadataPermissions:
+        default: "off"
+        description: Control whether permissions should be read or written in metadata.
+        example: "off"
+        type: string
       pacerBurst:
         default: 100
         description: Number of API calls to allow without sleeping.
@@ -2533,13 +2703,13 @@ definitions:
         description: ID of the root folder.
         type: string
       scope:
-        description: Scope that rclone should use when requesting access from drive.
+        description: Comma separated list of scopes that rclone should use when requesting
+          access from drive.
         example: drive
         type: string
       serverSideAcrossConfigs:
         default: false
-        description: Allow server-side operations (e.g. copy) to work across different
-          drive configs.
+        description: 'Deprecated: use --server-side-across-configs instead.'
         type: boolean
       serviceAccountCredentials:
         description: Service Account Credentials JSON blob.
@@ -2551,13 +2721,17 @@ definitions:
         default: false
         description: Only show files that are shared with me.
         type: boolean
+      showAllGdocs:
+        default: false
+        description: Show all Google Docs including non-exportable ones in listings.
+        type: boolean
       sizeAsQuota:
         default: false
         description: Show sizes as storage quota usage, not actual size.
         type: boolean
       skipChecksumGphotos:
         default: false
-        description: Skip MD5 checksum on Google photos and videos only.
+        description: Skip checksums on Google photos and videos only.
         type: boolean
       skipDanglingShortcuts:
         default: false
@@ -2648,12 +2822,23 @@ definitions:
       clientSecret:
         description: OAuth Client Secret.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
       impersonate:
         description: Impersonate this user when using a business account.
+        type: string
+      pacerMinSleep:
+        default: 10ms
+        description: Minimum time to sleep between API calls.
+        type: string
+      rootNamespace:
+        description: Specify a different Dropbox namespace ID to use as the root for
+          all paths.
         type: string
       sharedFiles:
         default: false
@@ -2675,6 +2860,13 @@ definitions:
       apiKey:
         description: Your API Key, get it from https://1fichier.com/console/params.pl.
         type: string
+      cdn:
+        default: false
+        description: Set if you wish to use CDN download links.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2693,6 +2885,9 @@ definitions:
     type: object
   storage.filefabricConfig:
     properties:
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2731,6 +2926,9 @@ definitions:
         default: 0
         description: Maximum number of FTP simultaneous connections, 0 for unlimited.
         type: integer
+      description:
+        description: Description of the remote.
+        type: string
       disableEpsv:
         default: false
         description: Disable using EPSV even if server advertises support.
@@ -2783,6 +2981,9 @@ definitions:
         default: 1m0s
         description: Maximum time to wait for data connection closing status.
         type: string
+      socksProxy:
+        description: Socks 5 proxy host.
+        type: string
       tls:
         default: false
         description: Use Implicit FTPS (FTP over TLS).
@@ -2826,6 +3027,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       encoding:
         default: Slash,CrLf,InvalidUtf8,Dot
@@ -2872,17 +3081,39 @@ definitions:
       tokenUrl:
         description: Token server url.
         type: string
+      userProject:
+        description: User project.
+        type: string
     type: object
   storage.gphotosConfig:
     properties:
       authUrl:
         description: Auth server URL.
         type: string
+      batchCommitTimeout:
+        default: 10m0s
+        description: Max time to wait for a batch to finish committing
+        type: string
+      batchMode:
+        default: sync
+        description: Upload file batching sync|async|off.
+        type: string
+      batchSize:
+        default: 0
+        description: Max number of files in upload batch.
+        type: integer
+      batchTimeout:
+        default: 0s
+        description: Max time to allow an idle upload batch before uploading.
+        type: string
       clientId:
         description: OAuth Client Id.
         type: string
       clientSecret:
         description: OAuth Client Secret.
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       encoding:
         default: Slash,CrLf,InvalidUtf8,Dot
@@ -2918,12 +3149,15 @@ definitions:
         description: 'Kerberos data transfer protection: authentication|integrity|privacy.'
         example: privacy
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,Colon,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
       namenode:
-        description: Hadoop name node and port.
+        description: Hadoop name nodes and ports.
         type: string
       servicePrincipalName:
         description: Kerberos service principal name for the namenode.
@@ -2947,6 +3181,9 @@ definitions:
         type: string
       clientSecret:
         description: OAuth Client Secret.
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       disableFetchingMemberCount:
         default: false
@@ -2995,9 +3232,16 @@ definitions:
     type: object
   storage.httpConfig:
     properties:
+      description:
+        description: Description of the remote.
+        type: string
       headers:
         description: Set HTTP headers for all transactions.
         type: string
+      noEscape:
+        default: false
+        description: Do not escape URL metacharacters in path names.
+        type: boolean
       noHead:
         default: false
         description: Don't use HEAD requests.
@@ -3014,6 +3258,9 @@ definitions:
     properties:
       accessKeyId:
         description: IAS3 Access Key.
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       disableChecksum:
         default: true
@@ -3043,6 +3290,18 @@ definitions:
     type: object
   storage.jottacloudConfig:
     properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3061,6 +3320,12 @@ definitions:
         description: Avoid server side versioning by deleting files and recreating
           files instead of overwriting them.
         type: boolean
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
       trashedOnly:
         default: false
         description: Only show files that are in the trash.
@@ -3072,6 +3337,9 @@ definitions:
     type: object
   storage.koofrDigistorageConfig:
     properties:
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3080,7 +3348,7 @@ definitions:
         description: Mount ID of the mount to use.
         type: string
       password:
-        description: Your password for rclone (generate one at https://storage.rcs-rds.ro/app/admin/preferences/password).
+        description: Your password for rclone generate one at https://storage.rcs-rds.ro/app/admin/preferences/password.
         type: string
       setmtime:
         default: true
@@ -3092,6 +3360,9 @@ definitions:
     type: object
   storage.koofrKoofrConfig:
     properties:
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3100,7 +3371,7 @@ definitions:
         description: Mount ID of the mount to use.
         type: string
       password:
-        description: Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password).
+        description: Your password for rclone generate one at https://app.koofr.net/app/admin/preferences/password.
         type: string
       setmtime:
         default: true
@@ -3112,6 +3383,9 @@ definitions:
     type: object
   storage.koofrOtherConfig:
     properties:
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3148,6 +3422,9 @@ definitions:
         default: false
         description: Follow symlinks and copy the pointed to item.
         type: boolean
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,Dot
         description: The encoding for the backend.
@@ -3160,6 +3437,10 @@ definitions:
       noCheckUpdated:
         default: false
         description: Don't check to see if the files change during upload.
+        type: boolean
+      noClone:
+        default: false
+        description: Disable reflink cloning for server-side copies.
         type: boolean
       noPreallocate:
         default: false
@@ -3186,6 +3467,11 @@ definitions:
         default: false
         description: Don't warn about skipped symlinks.
         type: boolean
+      timeType:
+        default: mtime
+        description: Set what kind of time is returned.
+        example: mtime
+        type: string
       unicodeNormalization:
         default: false
         description: Apply unicode NFC normalization to paths and filenames.
@@ -3198,11 +3484,23 @@ definitions:
     type: object
   storage.mailruConfig:
     properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
       checkHash:
         default: true
         description: What should copy do if file checksum is mismatched or invalid.
         example: true
         type: boolean
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3236,6 +3534,12 @@ definitions:
           on disk.
         example: "0"
         type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
       user:
         description: User name (usually email).
         type: string
@@ -3249,6 +3553,9 @@ definitions:
         default: false
         description: Output more debug from Mega.
         type: boolean
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3272,6 +3579,9 @@ definitions:
     properties:
       account:
         description: Set the NetStorage account name
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       host:
         description: Domain+path of NetStorage host to connect to.
@@ -3297,6 +3607,10 @@ definitions:
       authUrl:
         description: Auth server URL.
         type: string
+      avOverride:
+        default: false
+        description: Allows download of files the server thinks has a virus.
+        type: boolean
       chunkSize:
         default: 10Mi
         description: Chunk size to upload files with - must be multiple of 320k (327,680
@@ -3307,6 +3621,13 @@ definitions:
         type: string
       clientSecret:
         description: OAuth Client Secret.
+        type: string
+      delta:
+        default: false
+        description: If set rclone will use delta listing to implement recursive listings.
+        type: boolean
+      description:
+        description: Description of the remote.
         type: string
       disableSitePermission:
         default: false
@@ -3325,6 +3646,10 @@ definitions:
       exposeOnenoteFiles:
         default: false
         description: Set to make OneNote files show up in directory listings.
+        type: boolean
+      hardDelete:
+        default: false
+        description: Permanently delete files on removal.
         type: boolean
       hashType:
         default: auto
@@ -3348,6 +3673,11 @@ definitions:
         default: 1000
         description: Size of listing chunk.
         type: integer
+      metadataPermissions:
+        default: "off"
+        description: Control whether permissions should be read or written in metadata.
+        example: "off"
+        type: string
       noVersions:
         default: false
         description: Remove all versions on modifying operations.
@@ -3362,8 +3692,7 @@ definitions:
         type: string
       serverSideAcrossConfigs:
         default: false
-        description: Allow server-side operations (e.g. copy) to work across different
-          onedrive configs.
+        description: 'Deprecated: use --server-side-across-configs instead.'
         type: boolean
       token:
         description: OAuth Access Token as a JSON blob.
@@ -3374,6 +3703,11 @@ definitions:
     type: object
   storage.oosEnv_authConfig:
     properties:
+      attemptResumeUpload:
+        default: false
+        description: If true attempt to resume previously started multipart upload
+          for the object.
+        type: boolean
       chunkSize:
         default: 5Mi
         description: Chunk size to use for uploading.
@@ -3389,6 +3723,9 @@ definitions:
         default: 1m0s
         description: Timeout for copy.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       disableChecksum:
         default: false
         description: Don't store MD5 checksum with object metadata.
@@ -3403,8 +3740,12 @@ definitions:
       leavePartsOnError:
         default: false
         description: If true avoid calling abort upload on a failure, leaving all
-          successfully uploaded parts on S3 for manual recovery.
+          successfully uploaded parts for manual recovery.
         type: boolean
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
       namespace:
         description: Object storage namespace
         type: string
@@ -3436,7 +3777,7 @@ definitions:
         example: ""
         type: string
       sseKmsKeyId:
-        description: if using using your own master key in vault, this header specifies
+        description: if using your own master key in vault, this header specifies
           the
         example: ""
         type: string
@@ -3457,6 +3798,11 @@ definitions:
     type: object
   storage.oosInstance_principal_authConfig:
     properties:
+      attemptResumeUpload:
+        default: false
+        description: If true attempt to resume previously started multipart upload
+          for the object.
+        type: boolean
       chunkSize:
         default: 5Mi
         description: Chunk size to use for uploading.
@@ -3472,6 +3818,9 @@ definitions:
         default: 1m0s
         description: Timeout for copy.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       disableChecksum:
         default: false
         description: Don't store MD5 checksum with object metadata.
@@ -3486,8 +3835,12 @@ definitions:
       leavePartsOnError:
         default: false
         description: If true avoid calling abort upload on a failure, leaving all
-          successfully uploaded parts on S3 for manual recovery.
+          successfully uploaded parts for manual recovery.
         type: boolean
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
       namespace:
         description: Object storage namespace
         type: string
@@ -3519,7 +3872,7 @@ definitions:
         example: ""
         type: string
       sseKmsKeyId:
-        description: if using using your own master key in vault, this header specifies
+        description: if using your own master key in vault, this header specifies
           the
         example: ""
         type: string
@@ -3540,6 +3893,11 @@ definitions:
     type: object
   storage.oosNo_authConfig:
     properties:
+      attemptResumeUpload:
+        default: false
+        description: If true attempt to resume previously started multipart upload
+          for the object.
+        type: boolean
       chunkSize:
         default: 5Mi
         description: Chunk size to use for uploading.
@@ -3551,6 +3909,9 @@ definitions:
       copyTimeout:
         default: 1m0s
         description: Timeout for copy.
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       disableChecksum:
         default: false
@@ -3566,8 +3927,12 @@ definitions:
       leavePartsOnError:
         default: false
         description: If true avoid calling abort upload on a failure, leaving all
-          successfully uploaded parts on S3 for manual recovery.
+          successfully uploaded parts for manual recovery.
         type: boolean
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
       namespace:
         description: Object storage namespace
         type: string
@@ -3599,7 +3964,7 @@ definitions:
         example: ""
         type: string
       sseKmsKeyId:
-        description: if using using your own master key in vault, this header specifies
+        description: if using your own master key in vault, this header specifies
           the
         example: ""
         type: string
@@ -3620,6 +3985,11 @@ definitions:
     type: object
   storage.oosResource_principal_authConfig:
     properties:
+      attemptResumeUpload:
+        default: false
+        description: If true attempt to resume previously started multipart upload
+          for the object.
+        type: boolean
       chunkSize:
         default: 5Mi
         description: Chunk size to use for uploading.
@@ -3635,6 +4005,9 @@ definitions:
         default: 1m0s
         description: Timeout for copy.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       disableChecksum:
         default: false
         description: Don't store MD5 checksum with object metadata.
@@ -3649,8 +4022,12 @@ definitions:
       leavePartsOnError:
         default: false
         description: If true avoid calling abort upload on a failure, leaving all
-          successfully uploaded parts on S3 for manual recovery.
+          successfully uploaded parts for manual recovery.
         type: boolean
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
       namespace:
         description: Object storage namespace
         type: string
@@ -3682,7 +4059,7 @@ definitions:
         example: ""
         type: string
       sseKmsKeyId:
-        description: if using using your own master key in vault, this header specifies
+        description: if using your own master key in vault, this header specifies
           the
         example: ""
         type: string
@@ -3703,6 +4080,11 @@ definitions:
     type: object
   storage.oosUser_principal_authConfig:
     properties:
+      attemptResumeUpload:
+        default: false
+        description: If true attempt to resume previously started multipart upload
+          for the object.
+        type: boolean
       chunkSize:
         default: 5Mi
         description: Chunk size to use for uploading.
@@ -3728,6 +4110,9 @@ definitions:
         default: 1m0s
         description: Timeout for copy.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       disableChecksum:
         default: false
         description: Don't store MD5 checksum with object metadata.
@@ -3742,8 +4127,12 @@ definitions:
       leavePartsOnError:
         default: false
         description: If true avoid calling abort upload on a failure, leaving all
-          successfully uploaded parts on S3 for manual recovery.
+          successfully uploaded parts for manual recovery.
         type: boolean
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
       namespace:
         description: Object storage namespace
         type: string
@@ -3775,7 +4164,102 @@ definitions:
         example: ""
         type: string
       sseKmsKeyId:
-        description: if using using your own master key in vault, this header specifies
+        description: if using your own master key in vault, this header specifies
+          the
+        example: ""
+        type: string
+      storageTier:
+        default: Standard
+        description: The storage class to use when storing new objects in storage.
+          https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+        example: Standard
+        type: string
+      uploadConcurrency:
+        default: 10
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+    type: object
+  storage.oosWorkload_identity_authConfig:
+    properties:
+      attemptResumeUpload:
+        default: false
+        description: If true attempt to resume previously started multipart upload
+          for the object.
+        type: boolean
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      compartment:
+        description: Object storage compartment OCID
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      copyTimeout:
+        default: 1m0s
+        description: Timeout for copy.
+        type: string
+      description:
+        description: Description of the remote.
+        type: string
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Object storage API.
+        type: string
+      leavePartsOnError:
+        default: false
+        description: If true avoid calling abort upload on a failure, leaving all
+          successfully uploaded parts for manual recovery.
+        type: boolean
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      namespace:
+        description: Object storage namespace
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      region:
+        description: Object storage Region
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the optional header that specifies "AES256" as
+          the encryption algorithm.
+        example: ""
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C, the optional header that specifies the base64-encoded
+          256-bit encryption key to use to
+        example: ""
+        type: string
+      sseCustomerKeyFile:
+        description: To use SSE-C, a file containing the base64-encoded string of
+          the AES-256 encryption key associated
+        example: ""
+        type: string
+      sseCustomerKeySha256:
+        description: If using SSE-C, The optional header that specifies the base64-encoded
+          SHA256 hash of the encryption
+        example: ""
+        type: string
+      sseKmsKeyId:
+        description: if using your own master key in vault, this header specifies
           the
         example: ""
         type: string
@@ -3800,6 +4284,9 @@ definitions:
         default: 10Mi
         description: Files will be uploaded in chunks this size.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3821,6 +4308,9 @@ definitions:
         type: string
       clientSecret:
         description: OAuth Client Secret.
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
@@ -3853,16 +4343,52 @@ definitions:
       apiKey:
         description: API Key.
         type: string
+      authUrl:
+        description: Auth server URL.
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
     type: object
   storage.putioConfig:
     properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
         type: string
     type: object
   storage.qingstorConfig:
@@ -3878,6 +4404,9 @@ definitions:
         default: 3
         description: Number of connection retries.
         type: integer
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,Ctl,InvalidUtf8
         description: The encoding for the backend.
@@ -3931,6 +4460,14 @@ definitions:
         default: false
         description: If set this will decompress gzip encoded objects.
         type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
       disableChecksum:
         default: false
         description: Don't store MD5 checksum with object metadata.
@@ -3986,11 +4523,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -4023,6 +4562,10 @@ definitions:
         default: false
         description: Enables requester pays option when interacting with S3 bucket.
         type: boolean
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -4066,11 +4609,11 @@ definitions:
         example: ""
         type: string
       stsEndpoint:
-        description: Endpoint for STS.
+        description: Endpoint for STS (deprecated).
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
@@ -4080,15 +4623,36 @@ definitions:
         default: false
         description: If true use the AWS S3 accelerated endpoint.
         type: boolean
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -4097,6 +4661,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -4126,6 +4694,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -4174,11 +4750,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -4203,6 +4781,10 @@ definitions:
       profile:
         description: Profile to use in the shared credentials file.
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -4218,21 +4800,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -4241,6 +4844,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -4271,6 +4878,14 @@ definitions:
         default: false
         description: If set this will decompress gzip encoded objects.
         type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
       disableChecksum:
         default: false
         description: Don't store MD5 checksum with object metadata.
@@ -4288,7 +4903,7 @@ definitions:
         type: string
       endpoint:
         description: Endpoint for Arvan Cloud Object Storage (AOS) API.
-        example: s3.ir-thr-at1.arvanstorage.com
+        example: s3.ir-thr-at1.arvanstorage.ir
         type: string
       envAuth:
         default: false
@@ -4322,11 +4937,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -4351,6 +4968,10 @@ definitions:
       profile:
         description: Profile to use in the shared credentials file.
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -4366,21 +4987,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -4389,6 +5031,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -4418,6 +5064,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -4468,11 +5122,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -4500,6 +5156,10 @@ definitions:
       region:
         description: Region to connect to.
         example: ""
+        type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
         type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
@@ -4541,21 +5201,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -4564,6 +5245,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -4593,6 +5278,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -4646,11 +5339,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -4674,6 +5369,10 @@ definitions:
         type: boolean
       profile:
         description: Profile to use in the shared credentials file.
+        type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
         type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
@@ -4715,21 +5414,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -4738,6 +5458,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -4763,6 +5487,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -4810,11 +5542,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -4843,6 +5577,10 @@ definitions:
         description: Region to connect to.
         example: auto
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -4854,21 +5592,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -4877,6 +5636,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -4906,6 +5669,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -4957,11 +5728,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -4990,6 +5763,10 @@ definitions:
         description: Region to connect to.
         example: ""
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -5001,21 +5778,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -5024,6 +5822,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -5053,6 +5855,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -5104,11 +5914,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -5137,6 +5949,10 @@ definitions:
         description: Region to connect to.
         example: ""
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -5148,21 +5964,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -5171,6 +6008,196 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.s3GCSConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Google Cloud Storage.
+        example: https://storage.googleapis.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads and copies.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -5200,6 +6227,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -5248,11 +6283,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -5282,6 +6319,10 @@ definitions:
           created and your data stored. Need bo be same with your endpoint.
         example: af-south-1
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -5293,21 +6334,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -5316,6 +6378,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -5346,6 +6412,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -5399,11 +6473,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -5432,6 +6508,10 @@ definitions:
         description: Region to connect to.
         example: ""
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -5443,21 +6523,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -5466,6 +6567,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -5495,6 +6600,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -5539,11 +6652,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -5568,6 +6683,10 @@ definitions:
       profile:
         description: Profile to use in the shared credentials file.
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -5579,21 +6698,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -5602,6 +6742,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -5631,6 +6775,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -5679,11 +6831,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -5712,6 +6866,10 @@ definitions:
         description: Region where your bucket will be created and your data stored.
         example: de
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -5723,21 +6881,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -5746,6 +6925,192 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.s3LeviiaConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads and copies.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -5775,6 +7140,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -5823,11 +7196,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -5852,6 +7227,10 @@ definitions:
       profile:
         description: Profile to use in the shared credentials file.
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -5867,21 +7246,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -5890,6 +7290,189 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.s3LinodeConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Linode Object Storage API.
+        example: us-southeast-1.linodeobjects.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads and copies.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -5919,6 +7502,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -5970,11 +7561,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -6003,6 +7596,10 @@ definitions:
         description: Region to connect to.
         example: ""
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -6014,21 +7611,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -6037,6 +7655,193 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.s3MagaluConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        example: br-se1.magaluobjects.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      storageClass:
+        description: The storage class to use when storing new objects in Magalu.
+        example: STANDARD
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads and copies.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -6066,6 +7871,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -6116,11 +7929,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -6148,6 +7963,10 @@ definitions:
       region:
         description: Region to connect to.
         example: ""
+        type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
         type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
@@ -6189,21 +8008,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -6212,6 +8052,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -6242,6 +8086,14 @@ definitions:
         default: false
         description: If set this will decompress gzip encoded objects.
         type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
       disableChecksum:
         default: false
         description: Don't store MD5 checksum with object metadata.
@@ -6291,11 +8143,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -6324,6 +8178,10 @@ definitions:
         description: Region to connect to.
         example: ""
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -6335,21 +8193,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -6358,6 +8237,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -6388,6 +8271,14 @@ definitions:
         default: false
         description: If set this will decompress gzip encoded objects.
         type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
       disableChecksum:
         default: false
         description: Don't store MD5 checksum with object metadata.
@@ -6437,11 +8328,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -6470,6 +8363,10 @@ definitions:
         description: Region to connect to.
         example: ""
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -6481,21 +8378,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -6504,6 +8422,193 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.s3PetaboxConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Petabox S3 Object Storage.
+        example: s3.petabox.io
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region where your bucket will be created and your data stored.
+        example: us-east-1
+        type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads and copies.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -6533,6 +8638,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -6585,11 +8698,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -6618,6 +8733,10 @@ definitions:
         description: Region to connect to.
         example: cn-east-1
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -6633,21 +8752,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -6656,6 +8796,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -6685,6 +8829,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -6738,11 +8890,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -6772,6 +8926,10 @@ definitions:
           data stored.
         example: global
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -6783,21 +8941,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -6806,6 +8985,195 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.s3RcloneConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads and copies.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -6835,6 +9203,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -6883,11 +9259,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -6916,6 +9294,10 @@ definitions:
         description: Region to connect to.
         example: nl-ams
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -6931,21 +9313,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -6954,6 +9357,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -6983,6 +9390,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -7034,11 +9449,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -7067,6 +9484,10 @@ definitions:
         description: Region to connect to.
         example: ""
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -7078,21 +9499,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -7101,6 +9543,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -7130,6 +9576,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -7178,11 +9632,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -7211,6 +9667,10 @@ definitions:
         description: Region to connect to.
         example: ""
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -7222,21 +9682,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -7245,6 +9726,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -7270,6 +9755,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -7318,11 +9811,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -7347,6 +9842,10 @@ definitions:
       profile:
         description: Profile to use in the shared credentials file.
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -7358,21 +9857,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -7381,6 +9901,192 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.s3SynologyConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Synology C2 Object Storage API.
+        example: eu-001.s3.synologyc2.net
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region where your data stored.
+        example: eu-001
+        type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads and copies.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -7411,6 +10117,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -7459,11 +10173,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -7488,6 +10204,10 @@ definitions:
       profile:
         description: Profile to use in the shared credentials file.
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -7504,21 +10224,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -7527,6 +10268,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -7556,6 +10301,14 @@ definitions:
       decompress:
         default: false
         description: If set this will decompress gzip encoded objects.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
+      directoryMarkers:
+        default: false
+        description: Upload an empty object with a trailing slash when a new directory
+          is created
         type: boolean
       disableChecksum:
         default: false
@@ -7607,11 +10360,13 @@ definitions:
         type: integer
       memoryPoolFlushTime:
         default: 1m0s
-        description: How often internal memory buffer pools will be flushed.
+        description: How often internal memory buffer pools will be flushed. (no longer
+          used)
         type: string
       memoryPoolUseMmap:
         default: false
-        description: Whether to use mmap buffers in internal memory pool.
+        description: Whether to use mmap buffers in internal memory pool. (no longer
+          used)
         type: boolean
       mightGzip:
         default: unset
@@ -7640,6 +10395,10 @@ definitions:
         description: Region to connect to.
         example: ""
         type: string
+      sdkLogMode:
+        default: "Off"
+        description: Set to debug the SDK
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -7651,21 +10410,42 @@ definitions:
         type: string
       uploadConcurrency:
         default: 4
-        description: Concurrency for multipart uploads.
+        description: Concurrency for multipart uploads and copies.
         type: integer
       uploadCutoff:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+      useAcceptEncodingGzip:
+        default: unset
+        description: 'Whether to send `Accept-Encoding: gzip` header.'
+        type: string
+      useAlreadyExists:
+        default: unset
+        description: Set if rclone should report BucketAlreadyExists errors on bucket
+          creation.
+        type: string
+      useDualStack:
+        default: false
+        description: If true use AWS S3 dual-stack endpoint (IPv6 support).
+        type: boolean
       useMultipartEtag:
         default: unset
         description: Whether to use ETag in multipart uploads for verification
+        type: string
+      useMultipartUploads:
+        default: unset
+        description: Set if rclone should use multipart uploads.
         type: string
       usePresignedRequest:
         default: false
         description: Whether to use a presigned request or PutObject for single part
           uploads
         type: boolean
+      useUnsignedPayload:
+        default: unset
+        description: Whether to use an unsigned payload in PutObject
+        type: string
       v2Auth:
         default: false
         description: If true use v2 authentication.
@@ -7674,6 +10454,10 @@ definitions:
         default: "off"
         description: Show file versions as they were at the specified time.
         type: string
+      versionDeleted:
+        default: false
+        description: Show deleted file markers when using versions.
+        type: boolean
       versions:
         default: false
         description: Include old versions in directory listings.
@@ -7692,6 +10476,9 @@ definitions:
         default: false
         description: Should rclone create a library if it doesn't exist.
         type: boolean
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8
         description: The encoding for the backend.
@@ -7731,6 +10518,17 @@ definitions:
         default: 64
         description: The maximum number of outstanding requests for one file
         type: integer
+      connections:
+        default: 0
+        description: Maximum number of SFTP simultaneous connections, 0 for unlimited.
+        type: integer
+      copyIsHardlink:
+        default: false
+        description: Set to enable server side copies using hardlinks.
+        type: boolean
+      description:
+        description: Description of the remote.
+        type: string
       disableConcurrentReads:
         default: false
         description: If set don't use concurrent reads.
@@ -7746,6 +10544,9 @@ definitions:
         type: boolean
       host:
         description: SSH host to connect to.
+        type: string
+      hostKeyAlgorithms:
+        description: Space separated list of host key algorithms, ordered by preference.
         type: string
       idleTimeout:
         default: 1m0s
@@ -7813,6 +10614,12 @@ definitions:
         default: false
         description: Set to skip any symlinks and any other non regular files.
         type: boolean
+      socksProxy:
+        description: Socks 5 proxy host.
+        type: string
+      ssh:
+        description: Path and arguments to external ssh binary.
+        type: string
       subsystem:
         default: sftp
         description: Specifies the SSH2 subsystem on the remote host.
@@ -7833,9 +10640,21 @@ definitions:
     type: object
   storage.sharefileConfig:
     properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
       chunkSize:
         default: 64Mi
         description: Upload chunk size.
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot
@@ -7847,6 +10666,12 @@ definitions:
       rootFolderId:
         description: ID of the root folder.
         example: ""
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
         type: string
       uploadCutoff:
         default: 128Mi
@@ -7861,6 +10686,9 @@ definitions:
       apiUrl:
         default: http://127.0.0.1:9980
         description: Sia daemon API URL, like http://sia.daemon.host:9980.
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       encoding:
         default: Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot
@@ -7877,6 +10705,9 @@ definitions:
         default: true
         description: Whether the server is configured to be case-insensitive.
         type: boolean
+      description:
+        description: Description of the remote.
+        type: string
       domain:
         default: WORKGROUP
         description: Domain name for NTLM authentication.
@@ -7917,11 +10748,17 @@ definitions:
       accessGrant:
         description: Access grant.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
     type: object
   storage.storjNewConfig:
     properties:
       apiKey:
         description: API key.
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       passphrase:
         description: Encryption passphrase.
@@ -7948,6 +10785,9 @@ definitions:
         type: string
       deletedId:
         description: Sugarsync deleted folder id.
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       encoding:
         default: Slash,Ctl,InvalidUtf8,Dot
@@ -7995,7 +10835,10 @@ definitions:
         type: integer
       chunkSize:
         default: 5Gi
-        description: Above this size files will be chunked into a _segments container.
+        description: Above this size files will be chunked.
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       domain:
         description: User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)
@@ -8015,6 +10858,10 @@ definitions:
           OpenStack form.
         example: false
         type: boolean
+      fetchUntilEmptyPage:
+        default: false
+        description: When paginating, always fetch unless we received an empty page.
+        type: boolean
       key:
         description: API key or password (OS_PASSWORD).
         type: string
@@ -8030,6 +10877,11 @@ definitions:
         default: false
         description: Disable support for static and dynamic large objects
         type: boolean
+      partialPageFetchThreshold:
+        default: 0
+        description: When paginating, fetch if the current page is within this percentage
+          of the limit.
+        type: integer
       region:
         description: Region name - optional (OS_REGION_NAME).
         type: string
@@ -8050,6 +10902,10 @@ definitions:
       tenantId:
         description: Tenant ID - optional for v1 auth, this or tenant required otherwise
           (OS_TENANT_ID).
+        type: string
+      useSegmentsContainer:
+        default: unset
+        description: Choose destination for large object segments
         type: string
       user:
         description: User name to log in (OS_USERNAME).
@@ -8073,6 +10929,9 @@ definitions:
         default: epmfs
         description: Policy to choose upstream on CREATE category.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       minFreeSpace:
         default: 1Gi
         description: Minimum viable free space for lfs/eplfs policies.
@@ -8090,10 +10949,17 @@ definitions:
       accessToken:
         description: Your access token.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
+      private:
+        default: false
+        description: Set to make uploaded files private
+        type: boolean
     type: object
   storage.webdavConfig:
     properties:
@@ -8103,14 +10969,37 @@ definitions:
       bearerTokenCommand:
         description: Command to run to get a bearer token.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         description: The encoding for the backend.
         type: string
       headers:
         description: Set HTTP headers for all transactions.
         type: string
+      nextcloudChunkSize:
+        default: 10Mi
+        description: Nextcloud upload chunk size.
+        type: string
+      owncloudExcludeMounts:
+        default: false
+        description: Exclude ownCloud mounted storages
+        type: boolean
+      owncloudExcludeShares:
+        default: false
+        description: Exclude ownCloud shares
+        type: boolean
+      pacerMinSleep:
+        default: 10ms
+        description: Minimum time to sleep between API calls.
+        type: string
       pass:
         description: Password.
+        type: string
+      unixSocket:
+        description: Path to a unix domain socket to dial to, instead of opening a
+          TCP connection directly
         type: string
       url:
         description: URL of http host to connect to.
@@ -8120,7 +11009,7 @@ definitions:
         type: string
       vendor:
         description: Name of the WebDAV site/service/software you are using.
-        example: nextcloud
+        example: fastmail
         type: string
     type: object
   storage.yandexConfig:
@@ -8134,6 +11023,9 @@ definitions:
       clientSecret:
         description: OAuth Client Secret.
         type: string
+      description:
+        description: Description of the remote.
+        type: string
       encoding:
         default: Slash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -8141,6 +11033,11 @@ definitions:
       hardDelete:
         default: false
         description: Delete files permanently rather than putting them into the trash.
+        type: boolean
+      spoofUa:
+        default: true
+        description: Set the user agent to match an official version of the yandex
+          disk client. May help with upload performance.
         type: boolean
       token:
         description: OAuth Access Token as a JSON blob.
@@ -8159,6 +11056,9 @@ definitions:
         type: string
       clientSecret:
         description: OAuth Client Secret.
+        type: string
+      description:
+        description: Description of the remote.
         type: string
       encoding:
         default: Del,Ctl,InvalidUtf8
@@ -8186,7 +11086,6 @@ definitions:
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: localhost:9090
 info:
   contact:
     name: Singularity Team
@@ -8656,6 +11555,51 @@ paths:
           schema:
             $ref: '#/definitions/api.HTTPError'
       summary: Add a piece to a preparation
+      tags:
+      - Piece
+  /preparation/{id}/piece/{piece_cid}:
+    delete:
+      consumes:
+      - application/json
+      description: |-
+        Deletes a piece (CAR) and its associated records. For data pieces, resets file ranges
+        to allow re-packing. For DAG pieces, resets directory export flags for re-generation.
+      operationId: DeletePiece
+      parameters:
+      - description: Preparation ID or name
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Piece CID
+        in: path
+        name: piece_cid
+        required: true
+        type: string
+      - description: Delete options
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dataprep.DeletePieceRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Delete a piece from a preparation
       tags:
       - Piece
   /preparation/{id}/schedules:
@@ -9573,36 +12517,6 @@ paths:
       summary: Rename a storage connection
       tags:
       - Storage
-  /storage/acd:
-    post:
-      consumes:
-      - application/json
-      operationId: CreateAcdStorage
-      parameters:
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/storage.createAcdStorageRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Storage'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-      summary: Create Acd storage
-      tags:
-      - Storage
   /storage/azureblob:
     post:
       consumes:
@@ -10449,6 +13363,38 @@ paths:
         API key for authentication.
       tags:
       - Storage
+  /storage/oos/workload_identity_auth:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateOosWorkload_identity_authStorage
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/storage.createOosWorkload_identity_authStorageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Storage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create Oos storage with workload_identity_auth - use workload identity
+        to grant OCI Container Engine for Kubernetes workloads policy-driven access
+        to OCI resources using OCI Identity and Access Management (IAM).
+      tags:
+      - Storage
   /storage/opendrive:
     post:
       consumes:
@@ -10841,6 +13787,36 @@ paths:
       summary: Create S3 storage with Dreamhost - Dreamhost DreamObjects
       tags:
       - Storage
+  /storage/s3/gcs:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateS3GCSStorage
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/storage.createS3GCSStorageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Storage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create S3 storage with GCS - Google Cloud Storage
+      tags:
+      - Storage
   /storage/s3/huaweiobs:
     post:
       consumes:
@@ -10961,6 +13937,36 @@ paths:
       summary: Create S3 storage with IONOS - IONOS Cloud
       tags:
       - Storage
+  /storage/s3/leviia:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateS3LeviiaStorage
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/storage.createS3LeviiaStorageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Storage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create S3 storage with Leviia - Leviia Object Storage
+      tags:
+      - Storage
   /storage/s3/liara:
     post:
       consumes:
@@ -10991,6 +13997,36 @@ paths:
       summary: Create S3 storage with Liara - Liara Object Storage
       tags:
       - Storage
+  /storage/s3/linode:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateS3LinodeStorage
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/storage.createS3LinodeStorageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Storage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create S3 storage with Linode - Linode Object Storage
+      tags:
+      - Storage
   /storage/s3/lyvecloud:
     post:
       consumes:
@@ -11019,6 +14055,36 @@ paths:
           schema:
             $ref: '#/definitions/api.HTTPError'
       summary: Create S3 storage with LyveCloud - Seagate Lyve Cloud
+      tags:
+      - Storage
+  /storage/s3/magalu:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateS3MagaluStorage
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/storage.createS3MagaluStorageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Storage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create S3 storage with Magalu - Magalu Object Storage
       tags:
       - Storage
   /storage/s3/minio:
@@ -11111,6 +14177,36 @@ paths:
       summary: Create S3 storage with Other - Any other S3 compatible provider
       tags:
       - Storage
+  /storage/s3/petabox:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateS3PetaboxStorage
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/storage.createS3PetaboxStorageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Storage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create S3 storage with Petabox - Petabox Object Storage
+      tags:
+      - Storage
   /storage/s3/qiniu:
     post:
       consumes:
@@ -11169,6 +14265,36 @@ paths:
           schema:
             $ref: '#/definitions/api.HTTPError'
       summary: Create S3 storage with RackCorp - RackCorp Object Storage
+      tags:
+      - Storage
+  /storage/s3/rclone:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateS3RcloneStorage
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/storage.createS3RcloneStorageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Storage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create S3 storage with Rclone - Rclone S3 Server
       tags:
       - Storage
   /storage/s3/scaleway:
@@ -11289,6 +14415,36 @@ paths:
           schema:
             $ref: '#/definitions/api.HTTPError'
       summary: Create S3 storage with Storj - Storj (S3 Compatible Gateway)
+      tags:
+      - Storage
+  /storage/s3/synology:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateS3SynologyStorage
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/storage.createS3SynologyStorageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Storage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create S3 storage with Synology - Synology C2 Object Storage
       tags:
       - Storage
   /storage/s3/tencentcos:

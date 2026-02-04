@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -62,11 +63,15 @@ func (m *DataprepPieceList) validatePieces(formats strfmt.Registry) error {
 
 		if m.Pieces[i] != nil {
 			if err := m.Pieces[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("pieces" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("pieces" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -83,11 +88,15 @@ func (m *DataprepPieceList) validateSource(formats strfmt.Registry) error {
 
 	if m.Source != nil {
 		if err := m.Source.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("source")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("source")
 			}
+
 			return err
 		}
 	}
@@ -124,11 +133,15 @@ func (m *DataprepPieceList) contextValidatePieces(ctx context.Context, formats s
 			}
 
 			if err := m.Pieces[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("pieces" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("pieces" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -147,11 +160,15 @@ func (m *DataprepPieceList) contextValidateSource(ctx context.Context, formats s
 		}
 
 		if err := m.Source.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("source")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("source")
 			}
+
 			return err
 		}
 	}

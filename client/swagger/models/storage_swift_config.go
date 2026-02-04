@@ -36,8 +36,11 @@ type StorageSwiftConfig struct {
 	// AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION).
 	AuthVersion int64 `json:"authVersion,omitempty"`
 
-	// Above this size files will be chunked into a _segments container.
+	// Above this size files will be chunked.
 	ChunkSize *string `json:"chunkSize,omitempty"`
+
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
 
 	// User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)
 	Domain string `json:"domain,omitempty"`
@@ -53,6 +56,9 @@ type StorageSwiftConfig struct {
 	// Example: false
 	EnvAuth *bool `json:"envAuth,omitempty"`
 
+	// When paginating, always fetch unless we received an empty page.
+	FetchUntilEmptyPage *bool `json:"fetchUntilEmptyPage,omitempty"`
+
 	// API key or password (OS_PASSWORD).
 	Key string `json:"key,omitempty"`
 
@@ -64,6 +70,9 @@ type StorageSwiftConfig struct {
 
 	// Disable support for static and dynamic large objects
 	NoLargeObjects *bool `json:"noLargeObjects,omitempty"`
+
+	// When paginating, fetch if the current page is within this percentage of the limit.
+	PartialPageFetchThreshold int64 `json:"partialPageFetchThreshold,omitempty"`
 
 	// Region name - optional (OS_REGION_NAME).
 	Region string `json:"region,omitempty"`
@@ -82,6 +91,9 @@ type StorageSwiftConfig struct {
 
 	// Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID).
 	TenantID string `json:"tenantId,omitempty"`
+
+	// Choose destination for large object segments
+	UseSegmentsContainer *string `json:"useSegmentsContainer,omitempty"`
 
 	// User name to log in (OS_USERNAME).
 	User string `json:"user,omitempty"`

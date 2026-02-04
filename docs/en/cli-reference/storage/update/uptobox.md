@@ -14,10 +14,16 @@ DESCRIPTION:
       
       Get it from https://uptobox.com/my_account.
 
+   --private
+      Set to make uploaded files private
+
    --encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --description
+      Description of the remote.
 
 
 OPTIONS:
@@ -26,7 +32,9 @@ OPTIONS:
 
    Advanced
 
-   --encoding value  The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot") [$ENCODING]
+   --description value  Description of the remote. [$DESCRIPTION]
+   --encoding value     The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot") [$ENCODING]
+   --private            Set to make uploaded files private (default: false) [$PRIVATE]
 
    Client Config
 
@@ -41,7 +49,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone default)
 
    Retry Strategy
 

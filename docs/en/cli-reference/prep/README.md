@@ -21,8 +21,9 @@ COMMANDS:
      start-daggen  Start a DAG generation that creates a snapshot of all folder structures
      pause-daggen  Pause a DAG generation job
    Piece Management:
-     list-pieces  List all generated pieces for a preparation
-     add-piece    Manually add piece info to a preparation. This is useful for pieces prepared by external tools.
+     list-pieces   List all generated pieces for a preparation
+     add-piece     Manually add piece info to a preparation. This is useful for pieces prepared by external tools.
+     delete-piece  Delete a piece from a preparation
    Preparation Management:
      create         Create a new preparation
      list           List all preparations

@@ -12,10 +12,17 @@ DESCRIPTION:
    --access-grant
       Access grant.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --access-grant value  Access grant. [$ACCESS_GRANT]
    --help, -h            show help
+
+   Advanced
+
+   --description value  Description of the remote. [$DESCRIPTION]
 
    Client Config
 
@@ -30,7 +37,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

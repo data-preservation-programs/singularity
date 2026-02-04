@@ -17,6 +17,9 @@ import (
 // swagger:model storage.oosEnv_authConfig
 type StorageOosEnvAuthConfig struct {
 
+	// If true attempt to resume previously started multipart upload for the object.
+	AttemptResumeUpload *bool `json:"attemptResumeUpload,omitempty"`
+
 	// Chunk size to use for uploading.
 	ChunkSize *string `json:"chunkSize,omitempty"`
 
@@ -29,6 +32,9 @@ type StorageOosEnvAuthConfig struct {
 	// Timeout for copy.
 	CopyTimeout *string `json:"copyTimeout,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// Don't store MD5 checksum with object metadata.
 	DisableChecksum *bool `json:"disableChecksum,omitempty"`
 
@@ -38,8 +44,11 @@ type StorageOosEnvAuthConfig struct {
 	// Endpoint for Object storage API.
 	Endpoint string `json:"endpoint,omitempty"`
 
-	// If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+	// If true avoid calling abort upload on a failure, leaving all successfully uploaded parts for manual recovery.
 	LeavePartsOnError *bool `json:"leavePartsOnError,omitempty"`
+
+	// Maximum number of parts in a multipart upload.
+	MaxUploadParts *int64 `json:"maxUploadParts,omitempty"`
 
 	// Object storage namespace
 	Namespace string `json:"namespace,omitempty"`
@@ -62,7 +71,7 @@ type StorageOosEnvAuthConfig struct {
 	// If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
 	SseCustomerKeySha256 string `json:"sseCustomerKeySha256,omitempty"`
 
-	// if using using your own master key in vault, this header specifies the
+	// if using your own master key in vault, this header specifies the
 	SseKmsKeyID string `json:"sseKmsKeyId,omitempty"`
 
 	// The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm

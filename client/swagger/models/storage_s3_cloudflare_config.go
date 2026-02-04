@@ -33,6 +33,12 @@ type StorageS3CloudflareConfig struct {
 	// If set this will decompress gzip encoded objects.
 	Decompress *bool `json:"decompress,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
+	// Upload an empty object with a trailing slash when a new directory is created
+	DirectoryMarkers *bool `json:"directoryMarkers,omitempty"`
+
 	// Don't store MD5 checksum with object metadata.
 	DisableChecksum *bool `json:"disableChecksum,omitempty"`
 
@@ -67,10 +73,10 @@ type StorageS3CloudflareConfig struct {
 	// Maximum number of parts in a multipart upload.
 	MaxUploadParts *int64 `json:"maxUploadParts,omitempty"`
 
-	// How often internal memory buffer pools will be flushed.
+	// How often internal memory buffer pools will be flushed. (no longer used)
 	MemoryPoolFlushTime *string `json:"memoryPoolFlushTime,omitempty"`
 
-	// Whether to use mmap buffers in internal memory pool.
+	// Whether to use mmap buffers in internal memory pool. (no longer used)
 	MemoryPoolUseMmap *bool `json:"memoryPoolUseMmap,omitempty"`
 
 	// Set this if the backend might gzip objects.
@@ -95,6 +101,9 @@ type StorageS3CloudflareConfig struct {
 	// Example: auto
 	Region string `json:"region,omitempty"`
 
+	// Set to debug the SDK
+	SdkLogMode *string `json:"sdkLogMode,omitempty"`
+
 	// AWS Secret Access Key (password).
 	SecretAccessKey string `json:"secretAccessKey,omitempty"`
 
@@ -104,23 +113,41 @@ type StorageS3CloudflareConfig struct {
 	// Path to the shared credentials file.
 	SharedCredentialsFile string `json:"sharedCredentialsFile,omitempty"`
 
-	// Concurrency for multipart uploads.
+	// Concurrency for multipart uploads and copies.
 	UploadConcurrency *int64 `json:"uploadConcurrency,omitempty"`
 
 	// Cutoff for switching to chunked upload.
 	UploadCutoff *string `json:"uploadCutoff,omitempty"`
 
+	// Whether to send `Accept-Encoding: gzip` header.
+	UseAcceptEncodingGzip *string `json:"useAcceptEncodingGzip,omitempty"`
+
+	// Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseAlreadyExists *string `json:"useAlreadyExists,omitempty"`
+
+	// If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseDualStack *bool `json:"useDualStack,omitempty"`
+
 	// Whether to use ETag in multipart uploads for verification
 	UseMultipartEtag *string `json:"useMultipartEtag,omitempty"`
 
+	// Set if rclone should use multipart uploads.
+	UseMultipartUploads *string `json:"useMultipartUploads,omitempty"`
+
 	// Whether to use a presigned request or PutObject for single part uploads
 	UsePresignedRequest *bool `json:"usePresignedRequest,omitempty"`
+
+	// Whether to use an unsigned payload in PutObject
+	UseUnsignedPayload *string `json:"useUnsignedPayload,omitempty"`
 
 	// If true use v2 authentication.
 	V2Auth *bool `json:"v2Auth,omitempty"`
 
 	// Show file versions as they were at the specified time.
 	VersionAt *string `json:"versionAt,omitempty"`
+
+	// Show deleted file markers when using versions.
+	VersionDeleted *bool `json:"versionDeleted,omitempty"`
 
 	// Include old versions in directory listings.
 	Versions *bool `json:"versions,omitempty"`

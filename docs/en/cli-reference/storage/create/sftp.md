@@ -26,7 +26,15 @@ DESCRIPTION:
    --key-pem
       Raw PEM-encoded private key.
       
-      If specified, will override key_file parameter.
+      Note that this should be on a single line with line endings replaced with '\n', eg
+      
+          key_pem = -----BEGIN RSA PRIVATE KEY-----\nMaMbaIXtE\n0gAMbMbaSsd\nMbaass\n-----END RSA PRIVATE KEY-----
+      
+      This will generate the single line correctly:
+      
+          awk '{printf "%s\\n", $0}' < ~/.ssh/id_rsa
+      
+      If specified, it will override the key_file parameter.
 
    --key-file
       Path to PEM-encoded private key file.
@@ -112,6 +120,18 @@ DESCRIPTION:
       E.g. if home directory can be found in a shared folder called "home":
       
           rclone sync /home/local/directory remote:/home/directory --sftp-path-override /volume1/homes/USER/directory
+        
+      To specify only the path to the SFTP remote's root, and allow rclone to add any relative subpaths automatically (including unwrapping/decrypting remotes as necessary), add the '@' character to the beginning of the path.
+      
+      E.g. the first example above could be rewritten as:
+      
+        rclone sync /home/local/directory remote:/directory --sftp-path-override @/volume2
+        
+      Note that when using this method with Synology "home" folders, the full "/homes/USER" path should be specified instead of "/home".
+      
+      E.g. the second example above should be rewritten as:
+      
+        rclone sync /home/local/directory remote:/homes/USER/directory --sftp-path-override @/volume1
 
    --set-modtime
       Set the modified time on the remote if set.
@@ -147,6 +167,15 @@ DESCRIPTION:
       Specifies the path or command to run a sftp server on the remote host.
       
       The subsystem option is ignored when server_command is defined.
+      
+      If adding server_command to the configuration file please note that 
+      it should not be enclosed in quotes, since that will make rclone fail.
+      
+      A working example is:
+      
+          [remote_name]
+          type = sftp
+          server_command = sudo /usr/libexec/openssh/sftp-server
 
    --use-fstat
       If set use fstat instead of stat.
@@ -226,6 +255,23 @@ DESCRIPTION:
       cost of using more memory.
       
 
+   --connections
+      Maximum number of SFTP simultaneous connections, 0 for unlimited.
+      
+      Note that setting this is very likely to cause deadlocks so it should
+      be used with care.
+      
+      If you are doing a sync or copy then make sure connections is one more
+      than the sum of `--transfers` and `--checkers`.
+      
+      If you use `--check-first` then it just needs to be one more than the
+      maximum of `--checkers` and `--transfers`.
+      
+      So for `connections 3` you'd use `--checkers 2 --transfers 2
+      --check-first` or `--checkers 1 --transfers 1`.
+      
+      
+
    --set-env
       Environment variables to pass to sftp and commands
       
@@ -239,7 +285,7 @@ DESCRIPTION:
       
           VAR1=value VAR2=value
       
-      and pass variables with spaces in in quotes, eg
+      and pass variables with spaces in quotes, eg
       
           "VAR3=value with space" "VAR4=value with space" VAR5=nospacehere
       
@@ -279,6 +325,77 @@ DESCRIPTION:
           umac-64-etm@openssh.com umac-128-etm@openssh.com hmac-sha2-256-etm@openssh.com
       
 
+   --host-key-algorithms
+      Space separated list of host key algorithms, ordered by preference.
+      
+      At least one must match with server configuration. This can be checked for example using ssh -Q HostKeyAlgorithms.
+      
+      Note: This can affect the outcome of key negotiation with the server even if server host key validation is not enabled.
+      
+      Example:
+      
+          ssh-ed25519 ssh-rsa ssh-dss
+      
+
+   --ssh
+      Path and arguments to external ssh binary.
+      
+      Normally rclone will use its internal ssh library to connect to the
+      SFTP server. However it does not implement all possible ssh options so
+      it may be desirable to use an external ssh binary.
+      
+      Rclone ignores all the internal config if you use this option and
+      expects you to configure the ssh binary with the user/host/port and
+      any other options you need.
+      
+      **Important** The ssh command must log in without asking for a
+      password so needs to be configured with keys or certificates.
+      
+      Rclone will run the command supplied either with the additional
+      arguments "-s sftp" to access the SFTP subsystem or with commands such
+      as "md5sum /path/to/file" appended to read checksums.
+      
+      Any arguments with spaces in should be surrounded by "double quotes".
+      
+      An example setting might be:
+      
+          ssh -o ServerAliveInterval=20 user@example.com
+      
+      Note that when using an external ssh binary rclone makes a new ssh
+      connection for every hash it calculates.
+      
+
+   --socks-proxy
+      Socks 5 proxy host.
+        
+      Supports the format user:pass@host:port, user@host:port, host:port.
+      
+      Example:
+      
+        myUser:myPass@localhost:9005
+        
+
+   --copy-is-hardlink
+      Set to enable server side copies using hardlinks.
+      
+      The SFTP protocol does not define a copy command so normally server
+      side copies are not allowed with the sftp backend.
+      
+      However the SFTP protocol does support hardlinking, and if you enable
+      this flag then the sftp backend will support server side copies. These
+      will be implemented by doing a hardlink from the source to the
+      destination.
+      
+      Not all sftp servers support this.
+      
+      Note that hardlinking two files together will use no additional space
+      as the source and the destination will be the same file.
+      
+      This feature may be useful backups made with --copy-dest.
+
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --disable-hashcheck    Disable the execution of SSH commands to determine if remote file hashing is available. (default: false) [$DISABLE_HASHCHECK]
@@ -291,6 +408,7 @@ OPTIONS:
    --pass value           SSH password, leave blank to use ssh-agent. [$PASS]
    --port value           SSH port number. (default: 22) [$PORT]
    --pubkey-file value    Optional path to public key file. [$PUBKEY_FILE]
+   --ssh value            Path and arguments to external ssh binary. [$SSH]
    --use-insecure-cipher  Enable the use of insecure ciphers and key exchange methods. (default: false) [$USE_INSECURE_CIPHER]
    --user value           SSH username. (default: "$USER") [$USER]
 
@@ -300,8 +418,12 @@ OPTIONS:
    --chunk-size value           Upload and download chunk size. (default: "32Ki") [$CHUNK_SIZE]
    --ciphers value              Space separated list of ciphers to be used for session encryption, ordered by preference. [$CIPHERS]
    --concurrency value          The maximum number of outstanding requests for one file (default: 64) [$CONCURRENCY]
+   --connections value          Maximum number of SFTP simultaneous connections, 0 for unlimited. (default: 0) [$CONNECTIONS]
+   --copy-is-hardlink           Set to enable server side copies using hardlinks. (default: false) [$COPY_IS_HARDLINK]
+   --description value          Description of the remote. [$DESCRIPTION]
    --disable-concurrent-reads   If set don't use concurrent reads. (default: false) [$DISABLE_CONCURRENT_READS]
    --disable-concurrent-writes  If set don't use concurrent writes. (default: false) [$DISABLE_CONCURRENT_WRITES]
+   --host-key-algorithms value  Space separated list of host key algorithms, ordered by preference. [$HOST_KEY_ALGORITHMS]
    --idle-timeout value         Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
    --key-exchange value         Space separated list of key exchange algorithms, ordered by preference. [$KEY_EXCHANGE]
    --known-hosts-file value     Optional path to known_hosts file. [$KNOWN_HOSTS_FILE]
@@ -314,6 +436,7 @@ OPTIONS:
    --sha1sum-command value      The command used to read sha1 hashes. [$SHA1SUM_COMMAND]
    --shell-type value           The type of SSH shell on remote server, if any. [$SHELL_TYPE]
    --skip-links                 Set to skip any symlinks and any other non regular files. (default: false) [$SKIP_LINKS]
+   --socks-proxy value          Socks 5 proxy host. [$SOCKS_PROXY]
    --subsystem value            Specifies the SSH2 subsystem on the remote host. (default: "sftp") [$SUBSYSTEM]
    --use-fstat                  If set use fstat instead of stat. (default: false) [$USE_FSTAT]
 
@@ -330,7 +453,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

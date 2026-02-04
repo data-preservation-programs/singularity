@@ -79,7 +79,7 @@ CreateSchedule creates a new schedule
 Create a new schedule
 */
 func (a *Client) CreateSchedule(params *CreateScheduleParams, opts ...ClientOption) (*CreateScheduleOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateScheduleParams()
 	}
@@ -98,17 +98,22 @@ func (a *Client) CreateSchedule(params *CreateScheduleParams, opts ...ClientOpti
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateScheduleOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateSchedule: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -117,7 +122,7 @@ func (a *Client) CreateSchedule(params *CreateScheduleParams, opts ...ClientOpti
 ListPreparationSchedules lists all schedules for a preparation
 */
 func (a *Client) ListPreparationSchedules(params *ListPreparationSchedulesParams, opts ...ClientOption) (*ListPreparationSchedulesOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewListPreparationSchedulesParams()
 	}
@@ -136,17 +141,22 @@ func (a *Client) ListPreparationSchedules(params *ListPreparationSchedulesParams
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*ListPreparationSchedulesOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for ListPreparationSchedules: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -155,7 +165,7 @@ func (a *Client) ListPreparationSchedules(params *ListPreparationSchedulesParams
 ListSchedules lists all deal making schedules
 */
 func (a *Client) ListSchedules(params *ListSchedulesParams, opts ...ClientOption) (*ListSchedulesOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewListSchedulesParams()
 	}
@@ -174,17 +184,22 @@ func (a *Client) ListSchedules(params *ListSchedulesParams, opts ...ClientOption
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*ListSchedulesOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for ListSchedules: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -193,7 +208,7 @@ func (a *Client) ListSchedules(params *ListSchedulesParams, opts ...ClientOption
 PauseSchedule pauses a specific schedule
 */
 func (a *Client) PauseSchedule(params *PauseScheduleParams, opts ...ClientOption) (*PauseScheduleOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewPauseScheduleParams()
 	}
@@ -212,17 +227,22 @@ func (a *Client) PauseSchedule(params *PauseScheduleParams, opts ...ClientOption
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*PauseScheduleOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PauseSchedule: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -231,7 +251,7 @@ func (a *Client) PauseSchedule(params *PauseScheduleParams, opts ...ClientOption
 RemoveSchedule deletes a specific schedule
 */
 func (a *Client) RemoveSchedule(params *RemoveScheduleParams, opts ...ClientOption) (*RemoveScheduleNoContent, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewRemoveScheduleParams()
 	}
@@ -250,17 +270,22 @@ func (a *Client) RemoveSchedule(params *RemoveScheduleParams, opts ...ClientOpti
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*RemoveScheduleNoContent)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for RemoveSchedule: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -269,7 +294,7 @@ func (a *Client) RemoveSchedule(params *RemoveScheduleParams, opts ...ClientOpti
 ResumeSchedule resumes a specific schedule
 */
 func (a *Client) ResumeSchedule(params *ResumeScheduleParams, opts ...ClientOption) (*ResumeScheduleOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewResumeScheduleParams()
 	}
@@ -288,17 +313,22 @@ func (a *Client) ResumeSchedule(params *ResumeScheduleParams, opts ...ClientOpti
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*ResumeScheduleOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for ResumeSchedule: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -309,7 +339,7 @@ UpdateSchedule updates a schedule
 Update a schedule
 */
 func (a *Client) UpdateSchedule(params *UpdateScheduleParams, opts ...ClientOption) (*UpdateScheduleOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewUpdateScheduleParams()
 	}
@@ -328,17 +358,22 @@ func (a *Client) UpdateSchedule(params *UpdateScheduleParams, opts ...ClientOpti
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*UpdateScheduleOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for UpdateSchedule: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }

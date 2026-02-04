@@ -17,8 +17,20 @@ import (
 // swagger:model storage.sharefileConfig
 type StorageSharefileConfig struct {
 
+	// Auth server URL.
+	AuthURL string `json:"authUrl,omitempty"`
+
 	// Upload chunk size.
 	ChunkSize *string `json:"chunkSize,omitempty"`
+
+	// OAuth Client Id.
+	ClientID string `json:"clientId,omitempty"`
+
+	// OAuth Client Secret.
+	ClientSecret string `json:"clientSecret,omitempty"`
+
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
 
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
@@ -28,6 +40,12 @@ type StorageSharefileConfig struct {
 
 	// ID of the root folder.
 	RootFolderID string `json:"rootFolderId,omitempty"`
+
+	// OAuth Access Token as a JSON blob.
+	Token string `json:"token,omitempty"`
+
+	// Token server url.
+	TokenURL string `json:"tokenUrl,omitempty"`
 
 	// Cutoff for switching to multipart upload.
 	UploadCutoff *string `json:"uploadCutoff,omitempty"`
