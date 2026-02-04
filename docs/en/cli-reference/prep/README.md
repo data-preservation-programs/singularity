@@ -22,7 +22,7 @@ COMMANDS:
      pause-daggen  Pause a DAG generation job
    Piece Management:
      list-pieces   List all generated pieces for a preparation
-     add-piece     Manually add piece info to a preparation. This is useful for pieces prepared by external tools.
+     add-piece     Add a piece to a preparation. If the piece exists in the database, metadata is copied. Otherwise, --piece-size is required.
      delete-piece  Delete a piece from a preparation
    Preparation Management:
      create         Create a new preparation
