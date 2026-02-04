@@ -61,10 +61,11 @@ If DAG pieces were rejected by Curio, you will need to regenerate them:
 - **Download flags** - Harmonize download flags across commands (#599, closes #460)
 - **FK re-scanning** - Avoid re-scanning known valid foreign keys during cleanup (#601)
 - **docker-compose env var** - Fix singularity_init container environment variable (#526)
+- **prep add-piece CLI** - Fix parser bug treating positional args as subcommands; auto-lookup existing pieces by CID for piece consolidation workflows (#607)
 
 ## Database & Performance
 
-- **Nullable FKs for massive deletes** - Use nullable foreign keys and pointers for fast bulk deletion (#600)
+- **Nullable FKs for massive deletes** - Use nullable foreign keys and pointers for fast bulk deletion; orphaned objects cleaned up via reaper task in batches (#600)
 - **Indexes for FK cleanup** - Add indexes on jobs/preps foreign keys for faster operations
 - **SKIP LOCKED for job claiming** - Prevent deadlocks during concurrent job acquisition
 - **Deferred association loading** - Load associations after claiming to reduce lock contention
@@ -75,6 +76,7 @@ If DAG pieces were rejected by Curio, you will need to regenerate them:
 - **Devcontainer CI** - Add devcontainer-based CI workflow with PostgreSQL and MySQL (#586)
 - **Distroless runner** - Use distroless container image for smaller footprint (#592)
 - **Dependency upgrades** - Significantly update gorm, boxo, rclone, libp2p, and security packages (#591, #589)
+- **Swagger fixes** - Remove hardcoded host, dedupe storage type fields, bump go-swagger to v0.33.1 (#605, #606, #608)
 
 ## Breaking Changes
 
@@ -86,6 +88,10 @@ If DAG pieces were rejected by Curio, you will need to regenerate them:
 
 | PR | Title |
 |----|-------|
+| #608 | bump go-swagger to v0.33.1 |
+| #607 | fix add-piece to lookup existing pieces by CID |
+| #606 | dedupe fields in storage types codegen |
+| #605 | remove hardcoded @host in swagger |
 | #602 | feat: add prep delete-piece command |
 | #601 | hotfix: avoid re-scanning known valid FKs |
 | #600 | give in and use nullable FKs/pointers for massive deletes |
