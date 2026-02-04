@@ -56,16 +56,24 @@ DESCRIPTION:
       that directory listings are much quicker, but rclone won't have the times or
       sizes of any files, and some files that don't exist may be in the listing.
 
+   --no-escape
+      Do not escape URL metacharacters in path names.
+
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --help, -h   show help
+   --no-escape  Do not escape URL metacharacters in path names. (default: false) [$NO_ESCAPE]
    --url value  URL of HTTP host to connect to. [$URL]
 
    Advanced
 
-   --headers value  Set HTTP headers for all transactions. [$HEADERS]
-   --no-head        Don't use HEAD requests. (default: false) [$NO_HEAD]
-   --no-slash       Set this if the site doesn't end directories with /. (default: false) [$NO_SLASH]
+   --description value  Description of the remote. [$DESCRIPTION]
+   --headers value      Set HTTP headers for all transactions. [$HEADERS]
+   --no-head            Don't use HEAD requests. (default: false) [$NO_HEAD]
+   --no-slash           Set this if the site doesn't end directories with /. (default: false) [$NO_SLASH]
 
    Client Config
 
@@ -80,7 +88,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

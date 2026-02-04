@@ -29,6 +29,15 @@ type StorageSftpConfig struct {
 	// The maximum number of outstanding requests for one file
 	Concurrency *int64 `json:"concurrency,omitempty"`
 
+	// Maximum number of SFTP simultaneous connections, 0 for unlimited.
+	Connections int64 `json:"connections,omitempty"`
+
+	// Set to enable server side copies using hardlinks.
+	CopyIsHardlink *bool `json:"copyIsHardlink,omitempty"`
+
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// If set don't use concurrent reads.
 	DisableConcurrentReads *bool `json:"disableConcurrentReads,omitempty"`
 
@@ -40,6 +49,9 @@ type StorageSftpConfig struct {
 
 	// SSH host to connect to.
 	Host string `json:"host,omitempty"`
+
+	// Space separated list of host key algorithms, ordered by preference.
+	HostKeyAlgorithms string `json:"hostKeyAlgorithms,omitempty"`
 
 	// Max time before closing idle connections.
 	IdleTimeout *string `json:"idleTimeout,omitempty"`
@@ -99,6 +111,12 @@ type StorageSftpConfig struct {
 
 	// Set to skip any symlinks and any other non regular files.
 	SkipLinks *bool `json:"skipLinks,omitempty"`
+
+	// Socks 5 proxy host.
+	SocksProxy string `json:"socksProxy,omitempty"`
+
+	// Path and arguments to external ssh binary.
+	SSH string `json:"ssh,omitempty"`
 
 	// Specifies the SSH2 subsystem on the remote host.
 	Subsystem *string `json:"subsystem,omitempty"`

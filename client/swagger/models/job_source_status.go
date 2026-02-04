@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -69,11 +70,15 @@ func (m *JobSourceStatus) validateJobs(formats strfmt.Registry) error {
 
 		if m.Jobs[i] != nil {
 			if err := m.Jobs[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("jobs" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("jobs" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -95,11 +100,15 @@ func (m *JobSourceStatus) validateOutput(formats strfmt.Registry) error {
 
 		if m.Output[i] != nil {
 			if err := m.Output[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("output" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("output" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -116,11 +125,15 @@ func (m *JobSourceStatus) validateSource(formats strfmt.Registry) error {
 
 	if m.Source != nil {
 		if err := m.Source.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("source")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("source")
 			}
+
 			return err
 		}
 	}
@@ -161,11 +174,15 @@ func (m *JobSourceStatus) contextValidateJobs(ctx context.Context, formats strfm
 			}
 
 			if err := m.Jobs[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("jobs" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("jobs" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -186,11 +203,15 @@ func (m *JobSourceStatus) contextValidateOutput(ctx context.Context, formats str
 			}
 
 			if err := m.Output[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("output" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("output" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -209,11 +230,15 @@ func (m *JobSourceStatus) contextValidateSource(ctx context.Context, formats str
 		}
 
 		if err := m.Source.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("source")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("source")
 			}
+
 			return err
 		}
 	}

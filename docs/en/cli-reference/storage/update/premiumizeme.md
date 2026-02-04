@@ -9,6 +9,29 @@ USAGE:
    singularity storage update premiumizeme [command options] <name|id>
 
 DESCRIPTION:
+   --client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
+   --client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
+
+   --token
+      OAuth Access Token as a JSON blob.
+
+   --auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
+   --token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
+
    --api-key
       API Key.
       
@@ -20,14 +43,23 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
-   --api-key value  API Key. [$API_KEY]
-   --help, -h       show help
+   --api-key value        API Key. [$API_KEY]
+   --client-id value      OAuth Client Id. [$CLIENT_ID]
+   --client-secret value  OAuth Client Secret. [$CLIENT_SECRET]
+   --help, -h             show help
 
    Advanced
 
-   --encoding value  The encoding for the backend. (default: "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
+   --auth-url value     Auth server URL. [$AUTH_URL]
+   --description value  Description of the remote. [$DESCRIPTION]
+   --encoding value     The encoding for the backend. (default: "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
+   --token value        OAuth Access Token as a JSON blob. [$TOKEN]
+   --token-url value    Token server url. [$TOKEN_URL]
 
    Client Config
 
@@ -42,7 +74,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone default)
 
    Retry Strategy
 

@@ -21,10 +21,13 @@ type StorageHdfsConfig struct {
 	// Example: privacy
 	DataTransferProtection string `json:"dataTransferProtection,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 
-	// Hadoop name node and port.
+	// Hadoop name nodes and ports.
 	Namenode string `json:"namenode,omitempty"`
 
 	// Kerberos service principal name for the namenode.

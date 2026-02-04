@@ -34,7 +34,7 @@ DESCRIPTION:
       Leave blank to use the provider defaults.
 
    --scope
-      Scope that rclone should use when requesting access from drive.
+      Comma separated list of scopes that rclone should use when requesting access from drive.
 
       Examples:
          | drive                   | Full access all files, excluding Application Data Folder.
@@ -95,14 +95,31 @@ DESCRIPTION:
       
       If given, gdocs practically become invisible to rclone.
 
+   --show-all-gdocs
+      Show all Google Docs including non-exportable ones in listings.
+      
+      If you try a server side copy on a Google Form without this flag, you
+      will get this error:
+      
+          No export formats found for "application/vnd.google-apps.form"
+      
+      However adding this flag will allow the form to be server side copied.
+      
+      Note that rclone doesn't add extensions to the Google Docs file names
+      in this mode.
+      
+      Do **not** use this flag when trying to download Google Docs - rclone
+      will fail to download them.
+      
+
    --skip-checksum-gphotos
-      Skip MD5 checksum on Google photos and videos only.
+      Skip checksums on Google photos and videos only.
       
       Use this if you get checksum errors when transferring Google photos or
       videos.
       
       Setting this flag will cause Google photos and videos to return a
-      blank MD5 checksum.
+      blank checksums.
       
       Google photos are identified by being in the "photos" space.
       
@@ -233,6 +250,8 @@ DESCRIPTION:
       Number of API calls to allow without sleeping.
 
    --server-side-across-configs
+      Deprecated: use --server-side-across-configs instead.
+      
       Allow server-side operations (e.g. copy) to work across different drive configs.
       
       This can be useful if you wish to do a server-side copy between two
@@ -311,13 +330,107 @@ DESCRIPTION:
       
       Note also that opening the folder once in the web interface (with the
       user you've authenticated rclone with) seems to be enough so that the
-      resource key is no needed.
+      resource key is not needed.
       
+
+   --fast-list-bug-fix
+      Work around a bug in Google Drive listing.
+      
+      Normally rclone will work around a bug in Google Drive when using
+      --fast-list (ListR) where the search "(A in parents) or (B in
+      parents)" returns nothing sometimes. See #3114, #4289 and
+      https://issuetracker.google.com/issues/149522397
+      
+      Rclone detects this by finding no items in more than one directory
+      when listing and retries them as lists of individual directories.
+      
+      This means that if you have a lot of empty directories rclone will end
+      up listing them all individually and this can take many more API
+      calls.
+      
+      This flag allows the work-around to be disabled. This is **not**
+      recommended in normal use - only if you have a particular case you are
+      having trouble with like many empty directories.
+      
+
+   --metadata-owner
+      Control whether owner should be read or written in metadata.
+      
+      Owner is a standard part of the file metadata so is easy to read. But it
+      isn't always desirable to set the owner from the metadata.
+      
+      Note that you can't set the owner on Shared Drives, and that setting
+      ownership will generate an email to the new owner (this can't be
+      disabled), and you can't transfer ownership to someone outside your
+      organization.
+      
+
+      Examples:
+         | off        | Do not read or write the value
+         | read       | Read the value only
+         | write      | Write the value only
+         | failok     | If writing fails log errors only, don't fail the transfer
+         | read,write | Read and Write the value.
+
+   --metadata-permissions
+      Control whether permissions should be read or written in metadata.
+      
+      Reading permissions metadata from files can be done quickly, but it
+      isn't always desirable to set the permissions from the metadata.
+      
+      Note that rclone drops any inherited permissions on Shared Drives and
+      any owner permission on My Drives as these are duplicated in the owner
+      metadata.
+      
+
+      Examples:
+         | off        | Do not read or write the value
+         | read       | Read the value only
+         | write      | Write the value only
+         | failok     | If writing fails log errors only, don't fail the transfer
+         | read,write | Read and Write the value.
+
+   --metadata-labels
+      Control whether labels should be read or written in metadata.
+      
+      Reading labels metadata from files takes an extra API transaction and
+      will slow down listings. It isn't always desirable to set the labels
+      from the metadata.
+      
+      The format of labels is documented in the drive API documentation at
+      https://developers.google.com/drive/api/reference/rest/v3/Label -
+      rclone just provides a JSON dump of this format.
+      
+      When setting labels, the label and fields must already exist - rclone
+      will not create them. This means that if you are transferring labels
+      from two different accounts you will have to create the labels in
+      advance and use the metadata mapper to translate the IDs between the
+      two accounts.
+      
+
+      Examples:
+         | off        | Do not read or write the value
+         | read       | Read the value only
+         | write      | Write the value only
+         | failok     | If writing fails log errors only, don't fail the transfer
+         | read,write | Read and Write the value.
 
    --encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --env-auth
+      Get IAM credentials from runtime (environment variables or instance meta data if no env vars).
+      
+      Only applies if service_account_file and service_account_credentials is blank.
+
+      Examples:
+         | false | Enter credentials in the next step.
+         | true  | Get GCP IAM credentials from the environment (env vars or IAM).
+
+   --description
+      Description of the remote.
 
 
 OPTIONS:
@@ -325,7 +438,7 @@ OPTIONS:
    --client-id value             Google Application Client Id [$CLIENT_ID]
    --client-secret value         OAuth Client Secret. [$CLIENT_SECRET]
    --help, -h                    show help
-   --scope value                 Scope that rclone should use when requesting access from drive. [$SCOPE]
+   --scope value                 Comma separated list of scopes that rclone should use when requesting access from drive. [$SCOPE]
    --service-account-file value  Service Account Credentials JSON file path. [$SERVICE_ACCOUNT_FILE]
 
    Advanced
@@ -336,23 +449,30 @@ OPTIONS:
    --auth-url value                     Auth server URL. [$AUTH_URL]
    --chunk-size value                   Upload chunk size. (default: "8Mi") [$CHUNK_SIZE]
    --copy-shortcut-content              Server side copy contents of shortcuts instead of the shortcut. (default: false) [$COPY_SHORTCUT_CONTENT]
+   --description value                  Description of the remote. [$DESCRIPTION]
    --disable-http2                      Disable drive using http2. (default: true) [$DISABLE_HTTP2]
    --encoding value                     The encoding for the backend. (default: "InvalidUtf8") [$ENCODING]
+   --env-auth                           Get IAM credentials from runtime (environment variables or instance meta data if no env vars). (default: false) [$ENV_AUTH]
    --export-formats value               Comma separated list of preferred formats for downloading Google docs. (default: "docx,xlsx,pptx,svg") [$EXPORT_FORMATS]
+   --fast-list-bug-fix                  Work around a bug in Google Drive listing. (default: true) [$FAST_LIST_BUG_FIX]
    --formats value                      Deprecated: See export_formats. [$FORMATS]
    --impersonate value                  Impersonate this user when using a service account. [$IMPERSONATE]
    --import-formats value               Comma separated list of preferred formats for uploading Google docs. [$IMPORT_FORMATS]
    --keep-revision-forever              Keep new head revision of each file forever. (default: false) [$KEEP_REVISION_FOREVER]
    --list-chunk value                   Size of listing chunk 100-1000, 0 to disable. (default: 1000) [$LIST_CHUNK]
+   --metadata-labels value              Control whether labels should be read or written in metadata. (default: "off") [$METADATA_LABELS]
+   --metadata-owner value               Control whether owner should be read or written in metadata. (default: "read") [$METADATA_OWNER]
+   --metadata-permissions value         Control whether permissions should be read or written in metadata. (default: "off") [$METADATA_PERMISSIONS]
    --pacer-burst value                  Number of API calls to allow without sleeping. (default: 100) [$PACER_BURST]
    --pacer-min-sleep value              Minimum time to sleep between API calls. (default: "100ms") [$PACER_MIN_SLEEP]
    --resource-key value                 Resource key for accessing a link-shared file. [$RESOURCE_KEY]
    --root-folder-id value               ID of the root folder. [$ROOT_FOLDER_ID]
-   --server-side-across-configs         Allow server-side operations (e.g. copy) to work across different drive configs. (default: false) [$SERVER_SIDE_ACROSS_CONFIGS]
+   --server-side-across-configs         Deprecated: use --server-side-across-configs instead. (default: false) [$SERVER_SIDE_ACROSS_CONFIGS]
    --service-account-credentials value  Service Account Credentials JSON blob. [$SERVICE_ACCOUNT_CREDENTIALS]
    --shared-with-me                     Only show files that are shared with me. (default: false) [$SHARED_WITH_ME]
+   --show-all-gdocs                     Show all Google Docs including non-exportable ones in listings. (default: false) [$SHOW_ALL_GDOCS]
    --size-as-quota                      Show sizes as storage quota usage, not actual size. (default: false) [$SIZE_AS_QUOTA]
-   --skip-checksum-gphotos              Skip MD5 checksum on Google photos and videos only. (default: false) [$SKIP_CHECKSUM_GPHOTOS]
+   --skip-checksum-gphotos              Skip checksums on Google photos and videos only. (default: false) [$SKIP_CHECKSUM_GPHOTOS]
    --skip-dangling-shortcuts            If set skip dangling shortcut files. (default: false) [$SKIP_DANGLING_SHORTCUTS]
    --skip-gdocs                         Skip google documents in all listings. (default: false) [$SKIP_GDOCS]
    --skip-shortcuts                     If set skip shortcut files. (default: false) [$SKIP_SHORTCUTS]
@@ -382,7 +502,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

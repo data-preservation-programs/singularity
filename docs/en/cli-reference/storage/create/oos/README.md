@@ -18,6 +18,8 @@ COMMANDS:
    user_principal_auth      use an OCI user and an API key for authentication.
                             you’ll need to put in a config file your tenancy OCID, user OCID, region, the path, fingerprint to an API key.
                             https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm
+   workload_identity_auth   use workload identity to grant OCI Container Engine for Kubernetes workloads policy-driven access to OCI resources using OCI Identity and Access Management (IAM).
+                            https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contenggrantingworkloadaccesstoresources.htm
    help, h                  Shows a list of commands or help for one command
 
 OPTIONS:

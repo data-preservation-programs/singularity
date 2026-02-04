@@ -41,11 +41,20 @@ type StorageDropboxConfig struct {
 	// OAuth Client Secret.
 	ClientSecret string `json:"clientSecret,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 
 	// Impersonate this user when using a business account.
 	Impersonate string `json:"impersonate,omitempty"`
+
+	// Minimum time to sleep between API calls.
+	PacerMinSleep *string `json:"pacerMinSleep,omitempty"`
+
+	// Specify a different Dropbox namespace ID to use as the root for all paths.
+	RootNamespace string `json:"rootNamespace,omitempty"`
 
 	// Instructs rclone to work on individual shared files.
 	SharedFiles *bool `json:"sharedFiles,omitempty"`

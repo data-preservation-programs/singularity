@@ -9,6 +9,29 @@ USAGE:
    singularity storage update jottacloud [command options] <name|id>
 
 DESCRIPTION:
+   --client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
+   --client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
+
+   --token
+      OAuth Access Token as a JSON blob.
+
+   --auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
+   --token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
+
    --md5-memory-limit
       Files bigger than this will be cached on disk to calculate the MD5 if required.
 
@@ -31,16 +54,25 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
-   --help, -h  show help
+   --client-id value      OAuth Client Id. [$CLIENT_ID]
+   --client-secret value  OAuth Client Secret. [$CLIENT_SECRET]
+   --help, -h             show help
 
    Advanced
 
+   --auth-url value             Auth server URL. [$AUTH_URL]
+   --description value          Description of the remote. [$DESCRIPTION]
    --encoding value             The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --hard-delete                Delete files permanently rather than putting them into the trash. (default: false) [$HARD_DELETE]
    --md5-memory-limit value     Files bigger than this will be cached on disk to calculate the MD5 if required. (default: "10Mi") [$MD5_MEMORY_LIMIT]
    --no-versions                Avoid server side versioning by deleting files and recreating files instead of overwriting them. (default: false) [$NO_VERSIONS]
+   --token value                OAuth Access Token as a JSON blob. [$TOKEN]
+   --token-url value            Token server url. [$TOKEN_URL]
    --trashed-only               Only show files that are in the trash. (default: false) [$TRASHED_ONLY]
    --upload-resume-limit value  Files bigger than this can be resumed if the upload fail's. (default: "10Mi") [$UPLOAD_RESUME_LIMIT]
 
@@ -57,7 +89,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone default)
 
    Retry Strategy
 

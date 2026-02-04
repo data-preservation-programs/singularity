@@ -20,6 +20,9 @@ type StorageMegaConfig struct {
 	// Output more debug from Mega.
 	Debug *bool `json:"debug,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 

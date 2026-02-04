@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -56,11 +57,15 @@ func (m *FileDealsForFileRange) validateDeals(formats strfmt.Registry) error {
 
 		if m.Deals[i] != nil {
 			if err := m.Deals[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("deals" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("deals" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -77,11 +82,15 @@ func (m *FileDealsForFileRange) validateFileRange(formats strfmt.Registry) error
 
 	if m.FileRange != nil {
 		if err := m.FileRange.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("fileRange")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("fileRange")
 			}
+
 			return err
 		}
 	}
@@ -118,11 +127,15 @@ func (m *FileDealsForFileRange) contextValidateDeals(ctx context.Context, format
 			}
 
 			if err := m.Deals[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("deals" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("deals" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -141,11 +154,15 @@ func (m *FileDealsForFileRange) contextValidateFileRange(ctx context.Context, fo
 		}
 
 		if err := m.FileRange.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("fileRange")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("fileRange")
 			}
+
 			return err
 		}
 	}

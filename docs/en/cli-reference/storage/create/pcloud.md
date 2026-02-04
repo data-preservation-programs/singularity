@@ -62,6 +62,9 @@ DESCRIPTION:
    --password
       Your pcloud password.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --client-id value      OAuth Client Id. [$CLIENT_ID]
@@ -71,6 +74,7 @@ OPTIONS:
    Advanced
 
    --auth-url value        Auth server URL. [$AUTH_URL]
+   --description value     Description of the remote. [$DESCRIPTION]
    --encoding value        The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --hostname value        Hostname to connect to. (default: "api.pcloud.com") [$HOSTNAME]
    --password value        Your pcloud password. [$PASSWORD]
@@ -92,7 +96,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

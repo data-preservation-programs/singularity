@@ -1,9 +1,9 @@
-# Amazon S3 Compliant Storage Providers including AWS, Alibaba, Ceph, China Mobile, Cloudflare, ArvanCloud, DigitalOcean, Dreamhost, Huawei OBS, IBM COS, IDrive e2, IONOS Cloud, Liara, Lyve Cloud, Minio, Netease, RackCorp, Scaleway, SeaweedFS, StackPath, Storj, Tencent COS, Qiniu and Wasabi
+# Amazon S3 Compliant Storage Providers including AWS, Alibaba, ArvanCloud, Ceph, ChinaMobile, Cloudflare, DigitalOcean, Dreamhost, GCS, HuaweiOBS, IBMCOS, IDrive, IONOS, LyveCloud, Leviia, Liara, Linode, Magalu, Minio, Netease, Petabox, RackCorp, Rclone, Scaleway, SeaweedFS, StackPath, Storj, Synology, TencentCOS, Wasabi, Qiniu and others
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update s3 - Amazon S3 Compliant Storage Providers including AWS, Alibaba, Ceph, China Mobile, Cloudflare, ArvanCloud, DigitalOcean, Dreamhost, Huawei OBS, IBM COS, IDrive e2, IONOS Cloud, Liara, Lyve Cloud, Minio, Netease, RackCorp, Scaleway, SeaweedFS, StackPath, Storj, Tencent COS, Qiniu and Wasabi
+   singularity storage update s3 - Amazon S3 Compliant Storage Providers including AWS, Alibaba, ArvanCloud, Ceph, ChinaMobile, Cloudflare, DigitalOcean, Dreamhost, GCS, HuaweiOBS, IBMCOS, IDrive, IONOS, LyveCloud, Leviia, Liara, Linode, Magalu, Minio, Netease, Petabox, RackCorp, Rclone, Scaleway, SeaweedFS, StackPath, Storj, Synology, TencentCOS, Wasabi, Qiniu and others
 
 USAGE:
    singularity storage update s3 command [command options]
@@ -17,21 +17,28 @@ COMMANDS:
    cloudflare    Cloudflare R2 Storage
    digitalocean  DigitalOcean Spaces
    dreamhost     Dreamhost DreamObjects
+   gcs           Google Cloud Storage
    huaweiobs     Huawei Object Storage Service
    ibmcos        IBM COS S3
    idrive        IDrive e2
    ionos         IONOS Cloud
+   leviia        Leviia Object Storage
    liara         Liara Object Storage
+   linode        Linode Object Storage
    lyvecloud     Seagate Lyve Cloud
+   magalu        Magalu Object Storage
    minio         Minio Object Storage
    netease       Netease Object Storage (NOS)
    other         Any other S3 compatible provider
+   petabox       Petabox Object Storage
    qiniu         Qiniu Object Storage (Kodo)
    rackcorp      RackCorp Object Storage
+   rclone        Rclone S3 Server
    scaleway      Scaleway Object Storage
    seaweedfs     SeaweedFS S3
    stackpath     StackPath Object Storage
    storj         Storj (S3 Compatible Gateway)
+   synology      Synology C2 Object Storage
    tencentcos    Tencent Cloud Object Storage (COS)
    wasabi        Wasabi Object Storage
    help, h       Shows a list of commands or help for one command

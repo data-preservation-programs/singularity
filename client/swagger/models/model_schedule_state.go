@@ -44,7 +44,7 @@ const (
 )
 
 // for schema
-var modelScheduleStateEnum []interface{}
+var modelScheduleStateEnum []any
 
 func init() {
 	var res []ModelScheduleState

@@ -9,7 +9,6 @@ USAGE:
    singularity storage update command [command options]
 
 COMMANDS:
-   acd              Amazon Drive
    azureblob        Microsoft Azure Blob Storage
    b2               Backblaze B2
    box              Box
@@ -37,7 +36,7 @@ COMMANDS:
    premiumizeme     premiumize.me
    putio            Put.io
    qingstor         QingCloud Object Storage
-   s3               Amazon S3 Compliant Storage Providers including AWS, Alibaba, Ceph, China Mobile, Cloudflare, ArvanCloud, DigitalOcean, Dreamhost, Huawei OBS, IBM COS, IDrive e2, IONOS Cloud, Liara, Lyve Cloud, Minio, Netease, RackCorp, Scaleway, SeaweedFS, StackPath, Storj, Tencent COS, Qiniu and Wasabi
+   s3               Amazon S3 Compliant Storage Providers including AWS, Alibaba, ArvanCloud, Ceph, ChinaMobile, Cloudflare, DigitalOcean, Dreamhost, GCS, HuaweiOBS, IBMCOS, IDrive, IONOS, LyveCloud, Leviia, Liara, Linode, Magalu, Minio, Netease, Petabox, RackCorp, Rclone, Scaleway, SeaweedFS, StackPath, Storj, Synology, TencentCOS, Wasabi, Qiniu and others
    seafile          seafile
    sftp             SSH/SFTP
    sharefile        Citrix Sharefile
@@ -45,7 +44,7 @@ COMMANDS:
    smb              SMB / CIFS
    storj            Storj Decentralized Cloud Storage
    sugarsync        Sugarsync
-   swift            OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
+   swift            OpenStack Swift (Rackspace Cloud Files, Blomp Cloud Storage, Memset Memstore, OVH)
    union            Union merges the contents of several upstream fs
    uptobox          Uptobox
    webdav           WebDAV

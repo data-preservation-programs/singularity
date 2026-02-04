@@ -70,6 +70,61 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --batch-mode
+      Upload file batching sync|async|off.
+      
+      This sets the batch mode used by rclone.
+      
+      This has 3 possible values
+      
+      - off - no batching
+      - sync - batch uploads and check completion (default)
+      - async - batch upload and don't check completion
+      
+      Rclone will close any outstanding batches when it exits which may make
+      a delay on quit.
+      
+
+   --batch-size
+      Max number of files in upload batch.
+      
+      This sets the batch size of files to upload. It has to be less than 50.
+      
+      By default this is 0 which means rclone will calculate the batch size
+      depending on the setting of batch_mode.
+      
+      - batch_mode: async - default batch_size is 50
+      - batch_mode: sync - default batch_size is the same as --transfers
+      - batch_mode: off - not in use
+      
+      Rclone will close any outstanding batches when it exits which may make
+      a delay on quit.
+      
+      Setting this is a great idea if you are uploading lots of small files
+      as it will make them a lot quicker. You can use --transfers 32 to
+      maximise throughput.
+      
+
+   --batch-timeout
+      Max time to allow an idle upload batch before uploading.
+      
+      If an upload batch is idle for more than this long then it will be
+      uploaded.
+      
+      The default for this is 0 which means rclone will choose a sensible
+      default based on the batch_mode in use.
+      
+      - batch_mode: async - default batch_timeout is 10s
+      - batch_mode: sync - default batch_timeout is 1s
+      - batch_mode: off - not in use
+      
+
+   --batch-commit-timeout
+      Max time to wait for a batch to finish committing
+
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --client-id value      OAuth Client Id. [$CLIENT_ID]
@@ -79,13 +134,18 @@ OPTIONS:
 
    Advanced
 
-   --auth-url value    Auth server URL. [$AUTH_URL]
-   --encoding value    The encoding for the backend. (default: "Slash,CrLf,InvalidUtf8,Dot") [$ENCODING]
-   --include-archived  Also view and download archived media. (default: false) [$INCLUDE_ARCHIVED]
-   --read-size         Set to read the size of media items. (default: false) [$READ_SIZE]
-   --start-year value  Year limits the photos to be downloaded to those which are uploaded after the given year. (default: 2000) [$START_YEAR]
-   --token value       OAuth Access Token as a JSON blob. [$TOKEN]
-   --token-url value   Token server url. [$TOKEN_URL]
+   --auth-url value              Auth server URL. [$AUTH_URL]
+   --batch-commit-timeout value  Max time to wait for a batch to finish committing (default: "10m0s") [$BATCH_COMMIT_TIMEOUT]
+   --batch-mode value            Upload file batching sync|async|off. (default: "sync") [$BATCH_MODE]
+   --batch-size value            Max number of files in upload batch. (default: 0) [$BATCH_SIZE]
+   --batch-timeout value         Max time to allow an idle upload batch before uploading. (default: "0s") [$BATCH_TIMEOUT]
+   --description value           Description of the remote. [$DESCRIPTION]
+   --encoding value              The encoding for the backend. (default: "Slash,CrLf,InvalidUtf8,Dot") [$ENCODING]
+   --include-archived            Also view and download archived media. (default: false) [$INCLUDE_ARCHIVED]
+   --read-size                   Set to read the size of media items. (default: false) [$READ_SIZE]
+   --start-year value            Year limits the photos to be downloaded to those which are uploaded after the given year. (default: 2000) [$START_YEAR]
+   --token value                 OAuth Access Token as a JSON blob. [$TOKEN]
+   --token-url value             Token server url. [$TOKEN_URL]
 
    Client Config
 
@@ -100,7 +160,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

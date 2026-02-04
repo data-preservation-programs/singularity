@@ -52,6 +52,9 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --client-id value      OAuth Client Id. [$CLIENT_ID]
@@ -61,10 +64,11 @@ OPTIONS:
 
    Advanced
 
-   --auth-url value   Auth server URL. [$AUTH_URL]
-   --encoding value   The encoding for the backend. (default: "Del,Ctl,InvalidUtf8") [$ENCODING]
-   --token value      OAuth Access Token as a JSON blob. [$TOKEN]
-   --token-url value  Token server url. [$TOKEN_URL]
+   --auth-url value     Auth server URL. [$AUTH_URL]
+   --description value  Description of the remote. [$DESCRIPTION]
+   --encoding value     The encoding for the backend. (default: "Del,Ctl,InvalidUtf8") [$ENCODING]
+   --token value        OAuth Access Token as a JSON blob. [$TOKEN]
+   --token-url value    Token server url. [$TOKEN_URL]
 
    Client Config
 
@@ -79,7 +83,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

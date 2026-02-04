@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -36,7 +37,7 @@ type ModelJob struct {
 	// type
 	Type ModelJobType `json:"type,omitempty"`
 
-	// Associations
+	// Associations - AttachmentID SET NULL for fast prep deletion, async cleanup
 	WorkerID string `json:"workerId,omitempty"`
 }
 
@@ -64,11 +65,15 @@ func (m *ModelJob) validateState(formats strfmt.Registry) error {
 	}
 
 	if err := m.State.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
 			return ve.ValidateName("state")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
 			return ce.ValidateName("state")
 		}
+
 		return err
 	}
 
@@ -81,11 +86,15 @@ func (m *ModelJob) validateType(formats strfmt.Registry) error {
 	}
 
 	if err := m.Type.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
 			return ve.ValidateName("type")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
 			return ce.ValidateName("type")
 		}
+
 		return err
 	}
 
@@ -117,11 +126,15 @@ func (m *ModelJob) contextValidateState(ctx context.Context, formats strfmt.Regi
 	}
 
 	if err := m.State.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
 			return ve.ValidateName("state")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
 			return ce.ValidateName("state")
 		}
+
 		return err
 	}
 
@@ -135,11 +148,15 @@ func (m *ModelJob) contextValidateType(ctx context.Context, formats strfmt.Regis
 	}
 
 	if err := m.Type.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
 			return ve.ValidateName("type")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
 			return ce.ValidateName("type")
 		}
+
 		return err
 	}
 

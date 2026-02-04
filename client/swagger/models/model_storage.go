@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -108,11 +109,15 @@ func (m *ModelStorage) validatePreparationsAsOutput(formats strfmt.Registry) err
 
 		if m.PreparationsAsOutput[i] != nil {
 			if err := m.PreparationsAsOutput[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("preparationsAsOutput" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("preparationsAsOutput" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -134,11 +139,15 @@ func (m *ModelStorage) validatePreparationsAsSource(formats strfmt.Registry) err
 
 		if m.PreparationsAsSource[i] != nil {
 			if err := m.PreparationsAsSource[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("preparationsAsSource" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("preparationsAsSource" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -195,11 +204,15 @@ func (m *ModelStorage) contextValidatePreparationsAsOutput(ctx context.Context, 
 			}
 
 			if err := m.PreparationsAsOutput[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("preparationsAsOutput" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("preparationsAsOutput" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -220,11 +233,15 @@ func (m *ModelStorage) contextValidatePreparationsAsSource(ctx context.Context, 
 			}
 
 			if err := m.PreparationsAsSource[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("preparationsAsSource" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("preparationsAsSource" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}

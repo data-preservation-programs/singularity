@@ -63,6 +63,9 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --access-key-id value       Sugarsync Access Key ID. [$ACCESS_KEY_ID]
@@ -76,6 +79,7 @@ OPTIONS:
    --authorization value         Sugarsync authorization. [$AUTHORIZATION]
    --authorization-expiry value  Sugarsync authorization expiry. [$AUTHORIZATION_EXPIRY]
    --deleted-id value            Sugarsync deleted folder id. [$DELETED_ID]
+   --description value           Description of the remote. [$DESCRIPTION]
    --encoding value              The encoding for the backend. (default: "Slash,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --refresh-token value         Sugarsync refresh token. [$REFRESH_TOKEN]
    --root-id value               Sugarsync root id. [$ROOT_ID]
@@ -94,7 +98,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

@@ -23,6 +23,9 @@ type StorageSiaConfig struct {
 	// Sia daemon API URL, like http://sia.daemon.host:9980.
 	APIURL *string `json:"apiUrl,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 

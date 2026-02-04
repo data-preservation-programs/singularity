@@ -165,6 +165,20 @@ func main() {
 					Description: description,
 				})
 			}
+			// dedupe fields by name, keeping last occurrence (provider-specific overrides generic)
+			seen := make(map[string]int)
+			for i := len(fields) - 1; i >= 0; i-- {
+				if _, exists := seen[fields[i].Name]; !exists {
+					seen[fields[i].Name] = i
+				}
+			}
+			var dedupedFields []Field
+			for i, field := range fields {
+				if seen[field.Name] == i {
+					dedupedFields = append(dedupedFields, field)
+				}
+			}
+			fields = dedupedFields
 			typeName := backend.Prefix + upperFirst(providerOptions.Provider) + "Config"
 			t := Type{
 				Name:   typeName,

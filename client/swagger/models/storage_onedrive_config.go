@@ -24,6 +24,9 @@ type StorageOnedriveConfig struct {
 	// Auth server URL.
 	AuthURL string `json:"authUrl,omitempty"`
 
+	// Allows download of files the server thinks has a virus.
+	AvOverride *bool `json:"avOverride,omitempty"`
+
 	// Chunk size to upload files with - must be multiple of 320k (327,680 bytes).
 	ChunkSize *string `json:"chunkSize,omitempty"`
 
@@ -32,6 +35,12 @@ type StorageOnedriveConfig struct {
 
 	// OAuth Client Secret.
 	ClientSecret string `json:"clientSecret,omitempty"`
+
+	// If set rclone will use delta listing to implement recursive listings.
+	Delta *bool `json:"delta,omitempty"`
+
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
 
 	// Disable the request for Sites.Read.All permission.
 	DisableSitePermission *bool `json:"disableSitePermission,omitempty"`
@@ -47,6 +56,9 @@ type StorageOnedriveConfig struct {
 
 	// Set to make OneNote files show up in directory listings.
 	ExposeOnenoteFiles *bool `json:"exposeOnenoteFiles,omitempty"`
+
+	// Permanently delete files on removal.
+	HardDelete *bool `json:"hardDelete,omitempty"`
 
 	// Specify the hash in use for the backend.
 	// Example: auto
@@ -66,6 +78,10 @@ type StorageOnedriveConfig struct {
 	// Size of listing chunk.
 	ListChunk *int64 `json:"listChunk,omitempty"`
 
+	// Control whether permissions should be read or written in metadata.
+	// Example: off
+	MetadataPermissions *string `json:"metadataPermissions,omitempty"`
+
 	// Remove all versions on modifying operations.
 	NoVersions *bool `json:"noVersions,omitempty"`
 
@@ -76,7 +92,7 @@ type StorageOnedriveConfig struct {
 	// ID of the root folder.
 	RootFolderID string `json:"rootFolderId,omitempty"`
 
-	// Allow server-side operations (e.g. copy) to work across different onedrive configs.
+	// Deprecated: use --server-side-across-configs instead.
 	ServerSideAcrossConfigs *bool `json:"serverSideAcrossConfigs,omitempty"`
 
 	// OAuth Access Token as a JSON blob.

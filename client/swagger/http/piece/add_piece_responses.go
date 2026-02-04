@@ -7,6 +7,7 @@ package piece
 
 import (
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"io"
 
@@ -22,7 +23,7 @@ type AddPieceReader struct {
 }
 
 // ReadResponse reads a server response into the received o.
-func (o *AddPieceReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
+func (o *AddPieceReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (any, error) {
 	switch response.Code() {
 	case 200:
 		result := NewAddPieceOK()
@@ -110,7 +111,7 @@ func (o *AddPieceOK) readResponse(response runtime.ClientResponse, consumer runt
 	o.Payload = new(models.ModelCar)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 
@@ -180,7 +181,7 @@ func (o *AddPieceBadRequest) readResponse(response runtime.ClientResponse, consu
 	o.Payload = new(models.APIHTTPError)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 
@@ -250,7 +251,7 @@ func (o *AddPieceInternalServerError) readResponse(response runtime.ClientRespon
 	o.Payload = new(models.APIHTTPError)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 

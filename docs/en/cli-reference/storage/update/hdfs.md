@@ -10,9 +10,9 @@ USAGE:
 
 DESCRIPTION:
    --namenode
-      Hadoop name node and port.
+      Hadoop name nodes and ports.
       
-      E.g. "namenode:8020" to connect to host namenode at port 8020.
+      E.g. "namenode-1:8020,namenode-2:8020,..." to connect to host namenodes at port 8020.
 
    --username
       Hadoop user name.
@@ -31,9 +31,9 @@ DESCRIPTION:
       Kerberos data transfer protection: authentication|integrity|privacy.
       
       Specifies whether or not authentication, data signature integrity
-      checks, and wire encryption is required when communicating the the
-      datanodes. Possible values are 'authentication', 'integrity' and
-      'privacy'. Used only with KERBEROS enabled.
+      checks, and wire encryption are required when communicating with
+      the datanodes. Possible values are 'authentication', 'integrity'
+      and 'privacy'. Used only with KERBEROS enabled.
 
       Examples:
          | privacy | Ensure authentication, integrity and encryption enabled.
@@ -43,15 +43,19 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --help, -h        show help
-   --namenode value  Hadoop name node and port. [$NAMENODE]
+   --namenode value  Hadoop name nodes and ports. [$NAMENODE]
    --username value  Hadoop user name. [$USERNAME]
 
    Advanced
 
    --data-transfer-protection value  Kerberos data transfer protection: authentication|integrity|privacy. [$DATA_TRANSFER_PROTECTION]
+   --description value               Description of the remote. [$DESCRIPTION]
    --encoding value                  The encoding for the backend. (default: "Slash,Colon,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --service-principal-name value    Kerberos service principal name for the namenode. [$SERVICE_PRINCIPAL_NAME]
 
@@ -68,7 +72,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone default)
 
    Retry Strategy
 

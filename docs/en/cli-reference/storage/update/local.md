@@ -81,6 +81,11 @@ DESCRIPTION:
       - Only checksum the size that stat gave
       - Don't update the stat info for the file
       
+      **NB** do not use this flag on a Windows Volume Shadow (VSS). For some
+      unknown reason, files in a VSS sometimes show different sizes from the
+      directory listing (where the initial stat value comes from on Windows)
+      and when stat is called on them directly. Other copy tools always use
+      the direct stat value and setting this flag will disable that.
       
 
    --one-file-system
@@ -99,6 +104,24 @@ DESCRIPTION:
       Normally the local backend declares itself as case insensitive on
       Windows/macOS and case sensitive for everything else.  Use this flag
       to override the default choice.
+
+   --no-clone
+      Disable reflink cloning for server-side copies.
+      
+      Normally, for local-to-local transfers, rclone will "clone" the file when
+      possible, and fall back to "copying" only when cloning is not supported.
+      
+      Cloning creates a shallow copy (or "reflink") which initially shares blocks with
+      the original file. Unlike a "hardlink", the two files are independent and
+      neither will affect the other if subsequently modified.
+      
+      Cloning is usually preferable to copying, as it is much faster and is
+      deduplicated by default (i.e. having two identical files does not consume more
+      storage than having just one.)  However, for use cases where data redundancy is
+      preferable, --local-no-clone can be used to disable cloning and force "deep" copies.
+      
+      Currently, cloning is only supported when using APFS on macOS (support for other
+      platforms may be added in the future.)
 
    --no-preallocate
       Disable preallocation of disk space for transferred files.
@@ -126,10 +149,40 @@ DESCRIPTION:
       when copying to a CIFS mount owned by another user. If this option is 
       enabled, rclone will no longer update the modtime after copying a file.
 
+   --time-type
+      Set what kind of time is returned.
+      
+      Normally rclone does all operations on the mtime or Modification time.
+      
+      If you set this flag then rclone will return the Modified time as whatever
+      you set here. So if you use "rclone lsl --local-time-type ctime" then
+      you will see ctimes in the listing.
+      
+      If the OS doesn't support returning the time_type specified then rclone
+      will silently replace it with the modification time which all OSes support.
+      
+      - mtime is supported by all OSes
+      - atime is supported on all OSes except: plan9, js
+      - btime is only supported on: Windows, macOS, freebsd, netbsd
+      - ctime is supported on all Oses except: Windows, plan9, js
+      
+      Note that setting the time will still set the modified time so this is
+      only useful for reading.
+      
+
+      Examples:
+         | mtime | The last modification time.
+         | atime | The last access time.
+         | btime | The creation time.
+         | ctime | The last status change time.
+
    --encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --description
+      Description of the remote.
 
 
 OPTIONS:
@@ -140,15 +193,18 @@ OPTIONS:
    --case-insensitive       Force the filesystem to report itself as case insensitive. (default: false) [$CASE_INSENSITIVE]
    --case-sensitive         Force the filesystem to report itself as case sensitive. (default: false) [$CASE_SENSITIVE]
    --copy-links, -L         Follow symlinks and copy the pointed to item. (default: false) [$COPY_LINKS]
+   --description value      Description of the remote. [$DESCRIPTION]
    --encoding value         The encoding for the backend. (default: "Slash,Dot") [$ENCODING]
    --links, -l              Translate symlinks to/from regular files with a '.rclonelink' extension. (default: false) [$LINKS]
    --no-check-updated       Don't check to see if the files change during upload. (default: false) [$NO_CHECK_UPDATED]
+   --no-clone               Disable reflink cloning for server-side copies. (default: false) [$NO_CLONE]
    --no-preallocate         Disable preallocation of disk space for transferred files. (default: false) [$NO_PREALLOCATE]
    --no-set-modtime         Disable setting modtime. (default: false) [$NO_SET_MODTIME]
    --no-sparse              Disable sparse files for multi-thread downloads. (default: false) [$NO_SPARSE]
    --nounc                  Disable UNC (long path names) conversion on Windows. (default: false) [$NOUNC]
    --one-file-system, -x    Don't cross filesystem boundaries (unix/macOS only). (default: false) [$ONE_FILE_SYSTEM]
    --skip-links             Don't warn about skipped symlinks. (default: false) [$SKIP_LINKS]
+   --time-type value        Set what kind of time is returned. (default: "mtime") [$TIME_TYPE]
    --unicode-normalization  Apply unicode NFC normalization to paths and filenames. (default: false) [$UNICODE_NORMALIZATION]
    --zero-size-links        Assume the Stat size of links is zero (and read them instead) (deprecated). (default: false) [$ZERO_SIZE_LINKS]
 

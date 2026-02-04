@@ -56,7 +56,7 @@ const (
 )
 
 // for schema
-var modelDealStateEnum []interface{}
+var modelDealStateEnum []any
 
 func init() {
 	var res []ModelDealState

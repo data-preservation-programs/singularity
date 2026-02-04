@@ -21,10 +21,16 @@ DESCRIPTION:
    --folder-password
       If you want to list the files in a shared folder that is password protected, add this parameter.
 
+   --cdn
+      Set if you wish to use CDN download links.
+
    --encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --description
+      Description of the remote.
 
 
 OPTIONS:
@@ -33,6 +39,8 @@ OPTIONS:
 
    Advanced
 
+   --cdn                    Set if you wish to use CDN download links. (default: false) [$CDN]
+   --description value      Description of the remote. [$DESCRIPTION]
    --encoding value         The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot") [$ENCODING]
    --file-password value    If you want to download a shared file that is password protected, add this parameter. [$FILE_PASSWORD]
    --folder-password value  If you want to list the files in a shared folder that is password protected, add this parameter. [$FOLDER_PASSWORD]
@@ -51,7 +59,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

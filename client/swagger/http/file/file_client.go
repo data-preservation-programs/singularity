@@ -98,7 +98,7 @@ type ClientService interface {
 GetFile gets details about a file
 */
 func (a *Client) GetFile(params *GetFileParams, opts ...ClientOption) (*GetFileOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewGetFileParams()
 	}
@@ -117,17 +117,22 @@ func (a *Client) GetFile(params *GetFileParams, opts ...ClientOption) (*GetFileO
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*GetFileOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for GetFile: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -136,7 +141,7 @@ func (a *Client) GetFile(params *GetFileParams, opts ...ClientOption) (*GetFileO
 GetFileDeals gets all deals that have been made for a file
 */
 func (a *Client) GetFileDeals(params *GetFileDealsParams, opts ...ClientOption) (*GetFileDealsOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewGetFileDealsParams()
 	}
@@ -155,17 +160,22 @@ func (a *Client) GetFileDeals(params *GetFileDealsParams, opts ...ClientOption) 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*GetFileDealsOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for GetFileDeals: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -174,7 +184,7 @@ func (a *Client) GetFileDeals(params *GetFileDealsParams, opts ...ClientOption) 
 PrepareToPackFile prepares job for a given item
 */
 func (a *Client) PrepareToPackFile(params *PrepareToPackFileParams, opts ...ClientOption) (*PrepareToPackFileOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewPrepareToPackFileParams()
 	}
@@ -193,17 +203,22 @@ func (a *Client) PrepareToPackFile(params *PrepareToPackFileParams, opts ...Clie
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*PrepareToPackFileOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PrepareToPackFile: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -214,7 +229,7 @@ PushFile pushes a file to be queued
 Tells Singularity that something is ready to be grabbed for data preparation
 */
 func (a *Client) PushFile(params *PushFileParams, opts ...ClientOption) (*PushFileOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewPushFileParams()
 	}
@@ -233,17 +248,22 @@ func (a *Client) PushFile(params *PushFileParams, opts ...ClientOption) (*PushFi
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*PushFileOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PushFile: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -252,7 +272,7 @@ func (a *Client) PushFile(params *PushFileParams, opts ...ClientOption) (*PushFi
 RetrieveFile gets content of a file
 */
 func (a *Client) RetrieveFile(params *RetrieveFileParams, writer io.Writer, opts ...ClientOption) (*RetrieveFileOK, *RetrieveFilePartialContent, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewRetrieveFileParams()
 	}
@@ -271,18 +291,22 @@ func (a *Client) RetrieveFile(params *RetrieveFileParams, writer io.Writer, opts
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// several success responses have to be checked
 	switch value := result.(type) {
 	case *RetrieveFileOK:
 		return value, nil, nil
 	case *RetrieveFilePartialContent:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for file: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }

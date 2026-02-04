@@ -66,10 +66,27 @@ DESCRIPTION:
    --owned-by
       Only show items owned by the login (email address) passed in.
 
+   --impersonate
+      Impersonate this user ID when using a service account.
+      
+      Setting this flag allows rclone, when using a JWT service account, to
+      act on behalf of another user by setting the as-user header.
+      
+      The user ID is the Box identifier for a user. User IDs can found for
+      any user via the GET /users endpoint, which is only available to
+      admins, or by calling the GET /users/me endpoint with an authenticated
+      user session.
+      
+      See: https://developer.box.com/guides/authentication/jwt/as-user/
+      
+
    --encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --description
+      Description of the remote.
 
 
 OPTIONS:
@@ -84,7 +101,9 @@ OPTIONS:
 
    --auth-url value        Auth server URL. [$AUTH_URL]
    --commit-retries value  Max number of times to try committing a multipart file. (default: 100) [$COMMIT_RETRIES]
+   --description value     Description of the remote. [$DESCRIPTION]
    --encoding value        The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot") [$ENCODING]
+   --impersonate value     Impersonate this user ID when using a service account. [$IMPERSONATE]
    --list-chunk value      Size of listing chunk 1-1000. (default: 1000) [$LIST_CHUNK]
    --owned-by value        Only show items owned by the login (email address) passed in. [$OWNED_BY]
    --root-folder-id value  Fill in for rclone to use a non root folder as its starting point. (default: "0") [$ROOT_FOLDER_ID]
@@ -105,7 +124,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string (default: rclone default)
 
    General
 

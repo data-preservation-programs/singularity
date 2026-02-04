@@ -32,9 +32,9 @@ DESCRIPTION:
       Endpoint for Arvan Cloud Object Storage (AOS) API.
 
       Examples:
-         | s3.ir-thr-at1.arvanstorage.com | The default endpoint - a good choice if you are unsure.
-         |                                | Tehran Iran (Asiatech)
-         | s3.ir-tbz-sh1.arvanstorage.com | Tabriz Iran (Shahriar)
+         | s3.ir-thr-at1.arvanstorage.ir | The default endpoint - a good choice if you are unsure.
+         |                               | Tehran Iran (Simin)
+         | s3.ir-tbz-sh1.arvanstorage.ir | Tabriz Iran (Shahriar)
 
    --location-constraint
       Location constraint - must match endpoint.
@@ -42,7 +42,7 @@ DESCRIPTION:
       Used when creating buckets only.
 
       Examples:
-         | ir-thr-at1 | Tehran Iran (Asiatech)
+         | ir-thr-at1 | Tehran Iran (Simin)
          | ir-tbz-sh1 | Tabriz Iran (Shahriar)
 
    --acl
@@ -180,10 +180,10 @@ DESCRIPTION:
       An AWS session token.
 
    --upload-concurrency
-      Concurrency for multipart uploads.
+      Concurrency for multipart uploads and copies.
       
       This is the number of chunks of the same file that are uploaded
-      concurrently.
+      concurrently for multipart uploads and copies.
       
       If you are uploading small numbers of large files over high-speed links
       and these uploads do not fully utilize your bandwidth, then increasing
@@ -200,6 +200,10 @@ DESCRIPTION:
       Some providers (e.g. AWS, Aliyun OSS, Netease COS, or Tencent COS) require this set to
       false - rclone will do this automatically based on the provider
       setting.
+      
+      Note that if your bucket isn't a valid DNS name, i.e. has '.' or '_' in,
+      you'll need to set this to true.
+      
 
    --v2-auth
       If true use v2 authentication.
@@ -208,6 +212,11 @@ DESCRIPTION:
       If it is set then rclone will use v2 authentication.
       
       Use this only if v4 signatures don't work, e.g. pre Jewel/v10 CEPH.
+
+   --use-dual-stack
+      If true use AWS S3 dual-stack endpoint (IPv6 support).
+      
+      See [AWS Docs on Dualstack Endpoints](https://docs.aws.amazon.com/AmazonS3/latest/userguide/dual-stack-endpoints.html)
 
    --list-chunk
       Size of listing chunk (response list for each ListObject S3 request).
@@ -293,13 +302,10 @@ DESCRIPTION:
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --memory-pool-flush-time
-      How often internal memory buffer pools will be flushed.
-      
-      Uploads which requires additional buffers (f.e multipart) will use memory pool for allocations.
-      This option controls how often unused buffers will be removed from the pool.
+      How often internal memory buffer pools will be flushed. (no longer used)
 
    --memory-pool-use-mmap
-      Whether to use mmap buffers in internal memory pool.
+      Whether to use mmap buffers in internal memory pool. (no longer used)
 
    --disable-http2
       Disable usage of http2 for S3 backends.
@@ -317,8 +323,25 @@ DESCRIPTION:
       This is usually set to a CloudFront CDN URL as AWS S3 offers
       cheaper egress for data downloaded through the CloudFront network.
 
+   --directory-markers
+      Upload an empty object with a trailing slash when a new directory is created
+      
+      Empty folders are unsupported for bucket based remotes, this option creates an empty
+      object ending with "/", to persist the folder.
+      
+
    --use-multipart-etag
       Whether to use ETag in multipart uploads for verification
+      
+      This should be true, false or left unset to use the default for the provider.
+      
+
+   --use-unsigned-payload
+      Whether to use an unsigned payload in PutObject
+      
+      Rclone has to avoid the AWS SDK seeking the body when calling
+      PutObject. The AWS provider can add checksums in the trailer to avoid
+      seeking but other providers can't.
       
       This should be true, false or left unset to use the default for the provider.
       
@@ -348,6 +371,17 @@ DESCRIPTION:
       so you can't upload files or delete them.
       
       See [the time option docs](/docs/#time-option) for valid formats.
+      
+
+   --version-deleted
+      Show deleted file markers when using versions.
+      
+      This shows deleted file markers in the listing when using versions. These will appear
+      as 0 size files. The only operation which can be performed on them is deletion.
+      
+      Deleting a delete marker will reveal the previous version.
+      
+      Deleted files will always show with a timestamp.
       
 
    --decompress
@@ -384,8 +418,81 @@ DESCRIPTION:
       rclone's choice here.
       
 
+   --use-accept-encoding-gzip
+      Whether to send `Accept-Encoding: gzip` header.
+      
+      By default, rclone will append `Accept-Encoding: gzip` to the request to download
+      compressed objects whenever possible.
+      
+      However some providers such as Google Cloud Storage may alter the HTTP headers, breaking
+      the signature of the request.
+      
+      A symptom of this would be receiving errors like
+      
+        SignatureDoesNotMatch: The request signature we calculated does not match the signature you provided.
+      
+      In this case, you might want to try disabling this option.
+      
+
    --no-system-metadata
       Suppress setting and reading of system metadata
+
+   --use-already-exists
+      Set if rclone should report BucketAlreadyExists errors on bucket creation.
+      
+      At some point during the evolution of the s3 protocol, AWS started
+      returning an `AlreadyOwnedByYou` error when attempting to create a
+      bucket that the user already owned, rather than a
+      `BucketAlreadyExists` error.
+      
+      Unfortunately exactly what has been implemented by s3 clones is a
+      little inconsistent, some return `AlreadyOwnedByYou`, some return
+      `BucketAlreadyExists` and some return no error at all.
+      
+      This is important to rclone because it ensures the bucket exists by
+      creating it on quite a lot of operations (unless
+      `--s3-no-check-bucket` is used).
+      
+      If rclone knows the provider can return `AlreadyOwnedByYou` or returns
+      no error then it can report `BucketAlreadyExists` errors when the user
+      attempts to create a bucket not owned by them. Otherwise rclone
+      ignores the `BucketAlreadyExists` error which can lead to confusion.
+      
+      This should be automatically set correctly for all providers rclone
+      knows about - please make a bug report if not.
+      
+
+   --use-multipart-uploads
+      Set if rclone should use multipart uploads.
+      
+      You can change this if you want to disable the use of multipart uploads.
+      This shouldn't be necessary in normal operation.
+      
+      This should be automatically set correctly for all providers rclone
+      knows about - please make a bug report if not.
+      
+
+   --sdk-log-mode
+      Set to debug the SDK
+      
+      This can be set to a comma separated list of the following functions:
+      
+      - `Signing`
+      - `Retries`
+      - `Request`
+      - `RequestWithBody`
+      - `Response`
+      - `ResponseWithBody`
+      - `DeprecatedUsage`
+      - `RequestEventMessage`
+      - `ResponseEventMessage`
+      
+      Use `Off` to disable and `All` to set all log levels. You will need to
+      use `-vv` to see the debug level logs.
+      
+
+   --description
+      Description of the remote.
 
 
 OPTIONS:
@@ -400,36 +507,45 @@ OPTIONS:
 
    Advanced
 
-   --bucket-acl value               Canned ACL used when creating buckets. [$BUCKET_ACL]
-   --chunk-size value               Chunk size to use for uploading. (default: "5Mi") [$CHUNK_SIZE]
-   --copy-cutoff value              Cutoff for switching to multipart copy. (default: "4.656Gi") [$COPY_CUTOFF]
-   --decompress                     If set this will decompress gzip encoded objects. (default: false) [$DECOMPRESS]
-   --disable-checksum               Don't store MD5 checksum with object metadata. (default: false) [$DISABLE_CHECKSUM]
-   --disable-http2                  Disable usage of http2 for S3 backends. (default: false) [$DISABLE_HTTP2]
-   --download-url value             Custom endpoint for downloads. [$DOWNLOAD_URL]
-   --encoding value                 The encoding for the backend. (default: "Slash,InvalidUtf8,Dot") [$ENCODING]
-   --force-path-style               If true use path style access if false use virtual hosted style. (default: true) [$FORCE_PATH_STYLE]
-   --list-chunk value               Size of listing chunk (response list for each ListObject S3 request). (default: 1000) [$LIST_CHUNK]
-   --list-url-encode value          Whether to url encode listings: true/false/unset (default: "unset") [$LIST_URL_ENCODE]
-   --list-version value             Version of ListObjects to use: 1,2 or 0 for auto. (default: 0) [$LIST_VERSION]
-   --max-upload-parts value         Maximum number of parts in a multipart upload. (default: 10000) [$MAX_UPLOAD_PARTS]
-   --memory-pool-flush-time value   How often internal memory buffer pools will be flushed. (default: "1m0s") [$MEMORY_POOL_FLUSH_TIME]
-   --memory-pool-use-mmap           Whether to use mmap buffers in internal memory pool. (default: false) [$MEMORY_POOL_USE_MMAP]
-   --might-gzip value               Set this if the backend might gzip objects. (default: "unset") [$MIGHT_GZIP]
-   --no-check-bucket                If set, don't attempt to check the bucket exists or create it. (default: false) [$NO_CHECK_BUCKET]
-   --no-head                        If set, don't HEAD uploaded objects to check integrity. (default: false) [$NO_HEAD]
-   --no-head-object                 If set, do not do HEAD before GET when getting objects. (default: false) [$NO_HEAD_OBJECT]
-   --no-system-metadata             Suppress setting and reading of system metadata (default: false) [$NO_SYSTEM_METADATA]
-   --profile value                  Profile to use in the shared credentials file. [$PROFILE]
-   --session-token value            An AWS session token. [$SESSION_TOKEN]
-   --shared-credentials-file value  Path to the shared credentials file. [$SHARED_CREDENTIALS_FILE]
-   --upload-concurrency value       Concurrency for multipart uploads. (default: 4) [$UPLOAD_CONCURRENCY]
-   --upload-cutoff value            Cutoff for switching to chunked upload. (default: "200Mi") [$UPLOAD_CUTOFF]
-   --use-multipart-etag value       Whether to use ETag in multipart uploads for verification (default: "unset") [$USE_MULTIPART_ETAG]
-   --use-presigned-request          Whether to use a presigned request or PutObject for single part uploads (default: false) [$USE_PRESIGNED_REQUEST]
-   --v2-auth                        If true use v2 authentication. (default: false) [$V2_AUTH]
-   --version-at value               Show file versions as they were at the specified time. (default: "off") [$VERSION_AT]
-   --versions                       Include old versions in directory listings. (default: false) [$VERSIONS]
+   --bucket-acl value                                Canned ACL used when creating buckets. [$BUCKET_ACL]
+   --chunk-size value                                Chunk size to use for uploading. (default: "5Mi") [$CHUNK_SIZE]
+   --copy-cutoff value                               Cutoff for switching to multipart copy. (default: "4.656Gi") [$COPY_CUTOFF]
+   --decompress                                      If set this will decompress gzip encoded objects. (default: false) [$DECOMPRESS]
+   --description value                               Description of the remote. [$DESCRIPTION]
+   --directory-markers                               Upload an empty object with a trailing slash when a new directory is created (default: false) [$DIRECTORY_MARKERS]
+   --disable-checksum                                Don't store MD5 checksum with object metadata. (default: false) [$DISABLE_CHECKSUM]
+   --disable-http2                                   Disable usage of http2 for S3 backends. (default: false) [$DISABLE_HTTP2]
+   --download-url value                              Custom endpoint for downloads. [$DOWNLOAD_URL]
+   --encoding value                                  The encoding for the backend. (default: "Slash,InvalidUtf8,Dot") [$ENCODING]
+   --force-path-style                                If true use path style access if false use virtual hosted style. (default: true) [$FORCE_PATH_STYLE]
+   --list-chunk value                                Size of listing chunk (response list for each ListObject S3 request). (default: 1000) [$LIST_CHUNK]
+   --list-url-encode value                           Whether to url encode listings: true/false/unset (default: "unset") [$LIST_URL_ENCODE]
+   --list-version value                              Version of ListObjects to use: 1,2 or 0 for auto. (default: 0) [$LIST_VERSION]
+   --max-upload-parts value                          Maximum number of parts in a multipart upload. (default: 10000) [$MAX_UPLOAD_PARTS]
+   --memory-pool-flush-time value                    How often internal memory buffer pools will be flushed. (no longer used) (default: "1m0s") [$MEMORY_POOL_FLUSH_TIME]
+   --memory-pool-use-mmap                            Whether to use mmap buffers in internal memory pool. (no longer used) (default: false) [$MEMORY_POOL_USE_MMAP]
+   --might-gzip value                                Set this if the backend might gzip objects. (default: "unset") [$MIGHT_GZIP]
+   --no-check-bucket                                 If set, don't attempt to check the bucket exists or create it. (default: false) [$NO_CHECK_BUCKET]
+   --no-head                                         If set, don't HEAD uploaded objects to check integrity. (default: false) [$NO_HEAD]
+   --no-head-object                                  If set, do not do HEAD before GET when getting objects. (default: false) [$NO_HEAD_OBJECT]
+   --no-system-metadata                              Suppress setting and reading of system metadata (default: false) [$NO_SYSTEM_METADATA]
+   --profile value                                   Profile to use in the shared credentials file. [$PROFILE]
+   --sdk-log-mode value                              Set to debug the SDK (default: "Off") [$SDK_LOG_MODE]
+   --session-token value                             An AWS session token. [$SESSION_TOKEN]
+   --shared-credentials-file value                   Path to the shared credentials file. [$SHARED_CREDENTIALS_FILE]
+   --upload-concurrency value                        Concurrency for multipart uploads and copies. (default: 4) [$UPLOAD_CONCURRENCY]
+   --upload-cutoff value                             Cutoff for switching to chunked upload. (default: "200Mi") [$UPLOAD_CUTOFF]
+   --use-accept-encoding-gzip Accept-Encoding: gzip  Whether to send Accept-Encoding: gzip header. (default: "unset") [$USE_ACCEPT_ENCODING_GZIP]
+   --use-already-exists value                        Set if rclone should report BucketAlreadyExists errors on bucket creation. (default: "unset") [$USE_ALREADY_EXISTS]
+   --use-dual-stack                                  If true use AWS S3 dual-stack endpoint (IPv6 support). (default: false) [$USE_DUAL_STACK]
+   --use-multipart-etag value                        Whether to use ETag in multipart uploads for verification (default: "unset") [$USE_MULTIPART_ETAG]
+   --use-multipart-uploads value                     Set if rclone should use multipart uploads. (default: "unset") [$USE_MULTIPART_UPLOADS]
+   --use-presigned-request                           Whether to use a presigned request or PutObject for single part uploads (default: false) [$USE_PRESIGNED_REQUEST]
+   --use-unsigned-payload value                      Whether to use an unsigned payload in PutObject (default: "unset") [$USE_UNSIGNED_PAYLOAD]
+   --v2-auth                                         If true use v2 authentication. (default: false) [$V2_AUTH]
+   --version-at value                                Show file versions as they were at the specified time. (default: "off") [$VERSION_AT]
+   --version-deleted                                 Show deleted file markers when using versions. (default: false) [$VERSION_DELETED]
+   --versions                                        Include old versions in directory listings. (default: false) [$VERSIONS]
 
    Client Config
 
@@ -444,7 +560,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone default)
 
    Retry Strategy
 

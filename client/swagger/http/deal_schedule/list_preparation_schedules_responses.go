@@ -7,6 +7,7 @@ package deal_schedule
 
 import (
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"io"
 
@@ -22,7 +23,7 @@ type ListPreparationSchedulesReader struct {
 }
 
 // ReadResponse reads a server response into the received o.
-func (o *ListPreparationSchedulesReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
+func (o *ListPreparationSchedulesReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (any, error) {
 	switch response.Code() {
 	case 200:
 		result := NewListPreparationSchedulesOK()
@@ -108,7 +109,7 @@ func (o *ListPreparationSchedulesOK) GetPayload() []*models.ModelSchedule {
 func (o *ListPreparationSchedulesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 
@@ -178,7 +179,7 @@ func (o *ListPreparationSchedulesBadRequest) readResponse(response runtime.Clien
 	o.Payload = new(models.APIHTTPError)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 
@@ -248,7 +249,7 @@ func (o *ListPreparationSchedulesInternalServerError) readResponse(response runt
 	o.Payload = new(models.APIHTTPError)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 

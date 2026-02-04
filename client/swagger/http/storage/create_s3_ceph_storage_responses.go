@@ -7,6 +7,7 @@ package storage
 
 import (
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"io"
 
@@ -22,7 +23,7 @@ type CreateS3CephStorageReader struct {
 }
 
 // ReadResponse reads a server response into the received o.
-func (o *CreateS3CephStorageReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
+func (o *CreateS3CephStorageReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (any, error) {
 	switch response.Code() {
 	case 200:
 		result := NewCreateS3CephStorageOK()
@@ -110,7 +111,7 @@ func (o *CreateS3CephStorageOK) readResponse(response runtime.ClientResponse, co
 	o.Payload = new(models.ModelStorage)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 
@@ -180,7 +181,7 @@ func (o *CreateS3CephStorageBadRequest) readResponse(response runtime.ClientResp
 	o.Payload = new(models.APIHTTPError)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 
@@ -250,7 +251,7 @@ func (o *CreateS3CephStorageInternalServerError) readResponse(response runtime.C
 	o.Payload = new(models.APIHTTPError)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 

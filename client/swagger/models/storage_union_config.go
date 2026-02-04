@@ -26,6 +26,9 @@ type StorageUnionConfig struct {
 	// Policy to choose upstream on CREATE category.
 	CreatePolicy *string `json:"createPolicy,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// Minimum viable free space for lfs/eplfs policies.
 	MinFreeSpace *string `json:"minFreeSpace,omitempty"`
 

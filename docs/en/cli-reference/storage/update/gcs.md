@@ -37,6 +37,11 @@ DESCRIPTION:
       
       Optional - needed only for list/create/delete buckets - see your developer console.
 
+   --user-project
+      User project.
+      
+      Optional - needed only for requester pays.
+
    --service-account-file
       Service Account Credentials JSON file path.
       
@@ -155,6 +160,13 @@ DESCRIPTION:
          | ARCHIVE                      | Archive storage class
          | DURABLE_REDUCED_AVAILABILITY | Durable reduced availability storage class
 
+   --directory-markers
+      Upload an empty object with a trailing slash when a new directory is created
+      
+      Empty folders are unsupported for bucket based remotes, this option creates an empty
+      object ending with "/", to persist the folder.
+      
+
    --no-check-bucket
       If set, don't attempt to check the bucket exists or create it.
       
@@ -192,6 +204,9 @@ DESCRIPTION:
          | false | Enter credentials in the next step.
          | true  | Get GCP IAM credentials from the environment (env vars or IAM).
 
+   --description
+      Description of the remote.
+
 
 OPTIONS:
    --anonymous                          Access public buckets and objects without credentials. (default: false) [$ANONYMOUS]
@@ -207,16 +222,19 @@ OPTIONS:
    --service-account-credentials value  Service Account Credentials JSON blob. [$SERVICE_ACCOUNT_CREDENTIALS]
    --service-account-file value         Service Account Credentials JSON file path. [$SERVICE_ACCOUNT_FILE]
    --storage-class value                The storage class to use when storing objects in Google Cloud Storage. [$STORAGE_CLASS]
+   --user-project value                 User project. [$USER_PROJECT]
 
    Advanced
 
-   --auth-url value   Auth server URL. [$AUTH_URL]
-   --decompress       If set this will decompress gzip encoded objects. (default: false) [$DECOMPRESS]
-   --encoding value   The encoding for the backend. (default: "Slash,CrLf,InvalidUtf8,Dot") [$ENCODING]
-   --endpoint value   Endpoint for the service. [$ENDPOINT]
-   --no-check-bucket  If set, don't attempt to check the bucket exists or create it. (default: false) [$NO_CHECK_BUCKET]
-   --token value      OAuth Access Token as a JSON blob. [$TOKEN]
-   --token-url value  Token server url. [$TOKEN_URL]
+   --auth-url value     Auth server URL. [$AUTH_URL]
+   --decompress         If set this will decompress gzip encoded objects. (default: false) [$DECOMPRESS]
+   --description value  Description of the remote. [$DESCRIPTION]
+   --directory-markers  Upload an empty object with a trailing slash when a new directory is created (default: false) [$DIRECTORY_MARKERS]
+   --encoding value     The encoding for the backend. (default: "Slash,CrLf,InvalidUtf8,Dot") [$ENCODING]
+   --endpoint value     Endpoint for the service. [$ENDPOINT]
+   --no-check-bucket    If set, don't attempt to check the bucket exists or create it. (default: false) [$NO_CHECK_BUCKET]
+   --token value        OAuth Access Token as a JSON blob. [$TOKEN]
+   --token-url value    Token server url. [$TOKEN_URL]
 
    Client Config
 
@@ -231,7 +249,7 @@ OPTIONS:
    --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
-   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
+   --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone default)
 
    Retry Strategy
 

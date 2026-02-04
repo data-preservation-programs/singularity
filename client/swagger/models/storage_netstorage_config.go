@@ -20,6 +20,9 @@ type StorageNetstorageConfig struct {
 	// Set the NetStorage account name
 	Account string `json:"account,omitempty"`
 
+	// Description of the remote.
+	Description string `json:"description,omitempty"`
+
 	// Domain+path of NetStorage host to connect to.
 	Host string `json:"host,omitempty"`
 

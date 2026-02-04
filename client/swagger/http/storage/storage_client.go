@@ -56,8 +56,6 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	CreateAcdStorage(params *CreateAcdStorageParams, opts ...ClientOption) (*CreateAcdStorageOK, error)
-
 	CreateAzureblobStorage(params *CreateAzureblobStorageParams, opts ...ClientOption) (*CreateAzureblobStorageOK, error)
 
 	CreateB2Storage(params *CreateB2StorageParams, opts ...ClientOption) (*CreateB2StorageOK, error)
@@ -114,6 +112,8 @@ type ClientService interface {
 
 	CreateOosUserPrincipalAuthStorage(params *CreateOosUserPrincipalAuthStorageParams, opts ...ClientOption) (*CreateOosUserPrincipalAuthStorageOK, error)
 
+	CreateOosWorkloadIdentityAuthStorage(params *CreateOosWorkloadIdentityAuthStorageParams, opts ...ClientOption) (*CreateOosWorkloadIdentityAuthStorageOK, error)
+
 	CreateOpendriveStorage(params *CreateOpendriveStorageParams, opts ...ClientOption) (*CreateOpendriveStorageOK, error)
 
 	CreatePcloudStorage(params *CreatePcloudStorageParams, opts ...ClientOption) (*CreatePcloudStorageOK, error)
@@ -140,6 +140,8 @@ type ClientService interface {
 
 	CreateS3DreamhostStorage(params *CreateS3DreamhostStorageParams, opts ...ClientOption) (*CreateS3DreamhostStorageOK, error)
 
+	CreateS3GCSStorage(params *CreateS3GCSStorageParams, opts ...ClientOption) (*CreateS3GCSStorageOK, error)
+
 	CreateS3HuaweiOBSStorage(params *CreateS3HuaweiOBSStorageParams, opts ...ClientOption) (*CreateS3HuaweiOBSStorageOK, error)
 
 	CreateS3IBMCOSStorage(params *CreateS3IBMCOSStorageParams, opts ...ClientOption) (*CreateS3IBMCOSStorageOK, error)
@@ -148,9 +150,15 @@ type ClientService interface {
 
 	CreateS3IONOSStorage(params *CreateS3IONOSStorageParams, opts ...ClientOption) (*CreateS3IONOSStorageOK, error)
 
+	CreateS3LeviiaStorage(params *CreateS3LeviiaStorageParams, opts ...ClientOption) (*CreateS3LeviiaStorageOK, error)
+
 	CreateS3LiaraStorage(params *CreateS3LiaraStorageParams, opts ...ClientOption) (*CreateS3LiaraStorageOK, error)
 
+	CreateS3LinodeStorage(params *CreateS3LinodeStorageParams, opts ...ClientOption) (*CreateS3LinodeStorageOK, error)
+
 	CreateS3LyveCloudStorage(params *CreateS3LyveCloudStorageParams, opts ...ClientOption) (*CreateS3LyveCloudStorageOK, error)
+
+	CreateS3MagaluStorage(params *CreateS3MagaluStorageParams, opts ...ClientOption) (*CreateS3MagaluStorageOK, error)
 
 	CreateS3MinioStorage(params *CreateS3MinioStorageParams, opts ...ClientOption) (*CreateS3MinioStorageOK, error)
 
@@ -158,9 +166,13 @@ type ClientService interface {
 
 	CreateS3OtherStorage(params *CreateS3OtherStorageParams, opts ...ClientOption) (*CreateS3OtherStorageOK, error)
 
+	CreateS3PetaboxStorage(params *CreateS3PetaboxStorageParams, opts ...ClientOption) (*CreateS3PetaboxStorageOK, error)
+
 	CreateS3QiniuStorage(params *CreateS3QiniuStorageParams, opts ...ClientOption) (*CreateS3QiniuStorageOK, error)
 
 	CreateS3RackCorpStorage(params *CreateS3RackCorpStorageParams, opts ...ClientOption) (*CreateS3RackCorpStorageOK, error)
+
+	CreateS3RcloneStorage(params *CreateS3RcloneStorageParams, opts ...ClientOption) (*CreateS3RcloneStorageOK, error)
 
 	CreateS3ScalewayStorage(params *CreateS3ScalewayStorageParams, opts ...ClientOption) (*CreateS3ScalewayStorageOK, error)
 
@@ -169,6 +181,8 @@ type ClientService interface {
 	CreateS3StackPathStorage(params *CreateS3StackPathStorageParams, opts ...ClientOption) (*CreateS3StackPathStorageOK, error)
 
 	CreateS3StorjStorage(params *CreateS3StorjStorageParams, opts ...ClientOption) (*CreateS3StorjStorageOK, error)
+
+	CreateS3SynologyStorage(params *CreateS3SynologyStorageParams, opts ...ClientOption) (*CreateS3SynologyStorageOK, error)
 
 	CreateS3TencentCOSStorage(params *CreateS3TencentCOSStorageParams, opts ...ClientOption) (*CreateS3TencentCOSStorageOK, error)
 
@@ -216,48 +230,10 @@ type ClientService interface {
 }
 
 /*
-CreateAcdStorage creates acd storage
-*/
-func (a *Client) CreateAcdStorage(params *CreateAcdStorageParams, opts ...ClientOption) (*CreateAcdStorageOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewCreateAcdStorageParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "CreateAcdStorage",
-		Method:             "POST",
-		PathPattern:        "/storage/acd",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &CreateAcdStorageReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*CreateAcdStorageOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for CreateAcdStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
 CreateAzureblobStorage creates azureblob storage
 */
 func (a *Client) CreateAzureblobStorage(params *CreateAzureblobStorageParams, opts ...ClientOption) (*CreateAzureblobStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateAzureblobStorageParams()
 	}
@@ -276,17 +252,22 @@ func (a *Client) CreateAzureblobStorage(params *CreateAzureblobStorageParams, op
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateAzureblobStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateAzureblobStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -295,7 +276,7 @@ func (a *Client) CreateAzureblobStorage(params *CreateAzureblobStorageParams, op
 CreateB2Storage creates b2 storage
 */
 func (a *Client) CreateB2Storage(params *CreateB2StorageParams, opts ...ClientOption) (*CreateB2StorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateB2StorageParams()
 	}
@@ -314,17 +295,22 @@ func (a *Client) CreateB2Storage(params *CreateB2StorageParams, opts ...ClientOp
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateB2StorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateB2Storage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -333,7 +319,7 @@ func (a *Client) CreateB2Storage(params *CreateB2StorageParams, opts ...ClientOp
 CreateBoxStorage creates box storage
 */
 func (a *Client) CreateBoxStorage(params *CreateBoxStorageParams, opts ...ClientOption) (*CreateBoxStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateBoxStorageParams()
 	}
@@ -352,17 +338,22 @@ func (a *Client) CreateBoxStorage(params *CreateBoxStorageParams, opts ...Client
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateBoxStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateBoxStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -371,7 +362,7 @@ func (a *Client) CreateBoxStorage(params *CreateBoxStorageParams, opts ...Client
 CreateDriveStorage creates drive storage
 */
 func (a *Client) CreateDriveStorage(params *CreateDriveStorageParams, opts ...ClientOption) (*CreateDriveStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateDriveStorageParams()
 	}
@@ -390,17 +381,22 @@ func (a *Client) CreateDriveStorage(params *CreateDriveStorageParams, opts ...Cl
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateDriveStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateDriveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -409,7 +405,7 @@ func (a *Client) CreateDriveStorage(params *CreateDriveStorageParams, opts ...Cl
 CreateDropboxStorage creates dropbox storage
 */
 func (a *Client) CreateDropboxStorage(params *CreateDropboxStorageParams, opts ...ClientOption) (*CreateDropboxStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateDropboxStorageParams()
 	}
@@ -428,17 +424,22 @@ func (a *Client) CreateDropboxStorage(params *CreateDropboxStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateDropboxStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateDropboxStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -447,7 +448,7 @@ func (a *Client) CreateDropboxStorage(params *CreateDropboxStorageParams, opts .
 CreateFichierStorage creates fichier storage
 */
 func (a *Client) CreateFichierStorage(params *CreateFichierStorageParams, opts ...ClientOption) (*CreateFichierStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateFichierStorageParams()
 	}
@@ -466,17 +467,22 @@ func (a *Client) CreateFichierStorage(params *CreateFichierStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateFichierStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateFichierStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -485,7 +491,7 @@ func (a *Client) CreateFichierStorage(params *CreateFichierStorageParams, opts .
 CreateFilefabricStorage creates filefabric storage
 */
 func (a *Client) CreateFilefabricStorage(params *CreateFilefabricStorageParams, opts ...ClientOption) (*CreateFilefabricStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateFilefabricStorageParams()
 	}
@@ -504,17 +510,22 @@ func (a *Client) CreateFilefabricStorage(params *CreateFilefabricStorageParams, 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateFilefabricStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateFilefabricStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -523,7 +534,7 @@ func (a *Client) CreateFilefabricStorage(params *CreateFilefabricStorageParams, 
 CreateFtpStorage creates ftp storage
 */
 func (a *Client) CreateFtpStorage(params *CreateFtpStorageParams, opts ...ClientOption) (*CreateFtpStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateFtpStorageParams()
 	}
@@ -542,17 +553,22 @@ func (a *Client) CreateFtpStorage(params *CreateFtpStorageParams, opts ...Client
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateFtpStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateFtpStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -561,7 +577,7 @@ func (a *Client) CreateFtpStorage(params *CreateFtpStorageParams, opts ...Client
 CreateGcsStorage creates gcs storage
 */
 func (a *Client) CreateGcsStorage(params *CreateGcsStorageParams, opts ...ClientOption) (*CreateGcsStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateGcsStorageParams()
 	}
@@ -580,17 +596,22 @@ func (a *Client) CreateGcsStorage(params *CreateGcsStorageParams, opts ...Client
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateGcsStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateGcsStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -599,7 +620,7 @@ func (a *Client) CreateGcsStorage(params *CreateGcsStorageParams, opts ...Client
 CreateGphotosStorage creates gphotos storage
 */
 func (a *Client) CreateGphotosStorage(params *CreateGphotosStorageParams, opts ...ClientOption) (*CreateGphotosStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateGphotosStorageParams()
 	}
@@ -618,17 +639,22 @@ func (a *Client) CreateGphotosStorage(params *CreateGphotosStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateGphotosStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateGphotosStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -637,7 +663,7 @@ func (a *Client) CreateGphotosStorage(params *CreateGphotosStorageParams, opts .
 CreateHdfsStorage creates hdfs storage
 */
 func (a *Client) CreateHdfsStorage(params *CreateHdfsStorageParams, opts ...ClientOption) (*CreateHdfsStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateHdfsStorageParams()
 	}
@@ -656,17 +682,22 @@ func (a *Client) CreateHdfsStorage(params *CreateHdfsStorageParams, opts ...Clie
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateHdfsStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateHdfsStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -675,7 +706,7 @@ func (a *Client) CreateHdfsStorage(params *CreateHdfsStorageParams, opts ...Clie
 CreateHidriveStorage creates hidrive storage
 */
 func (a *Client) CreateHidriveStorage(params *CreateHidriveStorageParams, opts ...ClientOption) (*CreateHidriveStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateHidriveStorageParams()
 	}
@@ -694,17 +725,22 @@ func (a *Client) CreateHidriveStorage(params *CreateHidriveStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateHidriveStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateHidriveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -713,7 +749,7 @@ func (a *Client) CreateHidriveStorage(params *CreateHidriveStorageParams, opts .
 CreateHTTPStorage creates Http storage
 */
 func (a *Client) CreateHTTPStorage(params *CreateHTTPStorageParams, opts ...ClientOption) (*CreateHTTPStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateHTTPStorageParams()
 	}
@@ -732,17 +768,22 @@ func (a *Client) CreateHTTPStorage(params *CreateHTTPStorageParams, opts ...Clie
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateHTTPStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateHttpStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -751,7 +792,7 @@ func (a *Client) CreateHTTPStorage(params *CreateHTTPStorageParams, opts ...Clie
 CreateInternetarchiveStorage creates internetarchive storage
 */
 func (a *Client) CreateInternetarchiveStorage(params *CreateInternetarchiveStorageParams, opts ...ClientOption) (*CreateInternetarchiveStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateInternetarchiveStorageParams()
 	}
@@ -770,17 +811,22 @@ func (a *Client) CreateInternetarchiveStorage(params *CreateInternetarchiveStora
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateInternetarchiveStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateInternetarchiveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -789,7 +835,7 @@ func (a *Client) CreateInternetarchiveStorage(params *CreateInternetarchiveStora
 CreateJottacloudStorage creates jottacloud storage
 */
 func (a *Client) CreateJottacloudStorage(params *CreateJottacloudStorageParams, opts ...ClientOption) (*CreateJottacloudStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateJottacloudStorageParams()
 	}
@@ -808,17 +854,22 @@ func (a *Client) CreateJottacloudStorage(params *CreateJottacloudStorageParams, 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateJottacloudStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateJottacloudStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -827,7 +878,7 @@ func (a *Client) CreateJottacloudStorage(params *CreateJottacloudStorageParams, 
 CreateKoofrDigistorageStorage creates koofr storage with digistorage digi storage https storage rcs rds ro
 */
 func (a *Client) CreateKoofrDigistorageStorage(params *CreateKoofrDigistorageStorageParams, opts ...ClientOption) (*CreateKoofrDigistorageStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateKoofrDigistorageStorageParams()
 	}
@@ -846,17 +897,22 @@ func (a *Client) CreateKoofrDigistorageStorage(params *CreateKoofrDigistorageSto
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateKoofrDigistorageStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateKoofrDigistorageStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -865,7 +921,7 @@ func (a *Client) CreateKoofrDigistorageStorage(params *CreateKoofrDigistorageSto
 CreateKoofrKoofrStorage creates koofr storage with koofr koofr https app koofr net
 */
 func (a *Client) CreateKoofrKoofrStorage(params *CreateKoofrKoofrStorageParams, opts ...ClientOption) (*CreateKoofrKoofrStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateKoofrKoofrStorageParams()
 	}
@@ -884,17 +940,22 @@ func (a *Client) CreateKoofrKoofrStorage(params *CreateKoofrKoofrStorageParams, 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateKoofrKoofrStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateKoofrKoofrStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -903,7 +964,7 @@ func (a *Client) CreateKoofrKoofrStorage(params *CreateKoofrKoofrStorageParams, 
 CreateKoofrOtherStorage creates koofr storage with other any other koofr API compatible storage service
 */
 func (a *Client) CreateKoofrOtherStorage(params *CreateKoofrOtherStorageParams, opts ...ClientOption) (*CreateKoofrOtherStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateKoofrOtherStorageParams()
 	}
@@ -922,17 +983,22 @@ func (a *Client) CreateKoofrOtherStorage(params *CreateKoofrOtherStorageParams, 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateKoofrOtherStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateKoofrOtherStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -941,7 +1007,7 @@ func (a *Client) CreateKoofrOtherStorage(params *CreateKoofrOtherStorageParams, 
 CreateLocalStorage creates local storage
 */
 func (a *Client) CreateLocalStorage(params *CreateLocalStorageParams, opts ...ClientOption) (*CreateLocalStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateLocalStorageParams()
 	}
@@ -960,17 +1026,22 @@ func (a *Client) CreateLocalStorage(params *CreateLocalStorageParams, opts ...Cl
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateLocalStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateLocalStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -979,7 +1050,7 @@ func (a *Client) CreateLocalStorage(params *CreateLocalStorageParams, opts ...Cl
 CreateMailruStorage creates mailru storage
 */
 func (a *Client) CreateMailruStorage(params *CreateMailruStorageParams, opts ...ClientOption) (*CreateMailruStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateMailruStorageParams()
 	}
@@ -998,17 +1069,22 @@ func (a *Client) CreateMailruStorage(params *CreateMailruStorageParams, opts ...
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateMailruStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateMailruStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1017,7 +1093,7 @@ func (a *Client) CreateMailruStorage(params *CreateMailruStorageParams, opts ...
 CreateMegaStorage creates mega storage
 */
 func (a *Client) CreateMegaStorage(params *CreateMegaStorageParams, opts ...ClientOption) (*CreateMegaStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateMegaStorageParams()
 	}
@@ -1036,17 +1112,22 @@ func (a *Client) CreateMegaStorage(params *CreateMegaStorageParams, opts ...Clie
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateMegaStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateMegaStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1055,7 +1136,7 @@ func (a *Client) CreateMegaStorage(params *CreateMegaStorageParams, opts ...Clie
 CreateNetstorageStorage creates netstorage storage
 */
 func (a *Client) CreateNetstorageStorage(params *CreateNetstorageStorageParams, opts ...ClientOption) (*CreateNetstorageStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateNetstorageStorageParams()
 	}
@@ -1074,17 +1155,22 @@ func (a *Client) CreateNetstorageStorage(params *CreateNetstorageStorageParams, 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateNetstorageStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateNetstorageStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1093,7 +1179,7 @@ func (a *Client) CreateNetstorageStorage(params *CreateNetstorageStorageParams, 
 CreateOnedriveStorage creates onedrive storage
 */
 func (a *Client) CreateOnedriveStorage(params *CreateOnedriveStorageParams, opts ...ClientOption) (*CreateOnedriveStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateOnedriveStorageParams()
 	}
@@ -1112,17 +1198,22 @@ func (a *Client) CreateOnedriveStorage(params *CreateOnedriveStorageParams, opts
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateOnedriveStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateOnedriveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1131,7 +1222,7 @@ func (a *Client) CreateOnedriveStorage(params *CreateOnedriveStorageParams, opts
 CreateOosEnvAuthStorage creates oos storage with env auth automatically pickup the credentials from runtime env first one to provide auth wins
 */
 func (a *Client) CreateOosEnvAuthStorage(params *CreateOosEnvAuthStorageParams, opts ...ClientOption) (*CreateOosEnvAuthStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateOosEnvAuthStorageParams()
 	}
@@ -1150,17 +1241,22 @@ func (a *Client) CreateOosEnvAuthStorage(params *CreateOosEnvAuthStorageParams, 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateOosEnvAuthStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateOosEnv_authStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1169,7 +1265,7 @@ func (a *Client) CreateOosEnvAuthStorage(params *CreateOosEnvAuthStorageParams, 
 CreateOosInstancePrincipalAuthStorage creates oos storage with instance principal auth use instance principals to authorize an instance to make API calls
 */
 func (a *Client) CreateOosInstancePrincipalAuthStorage(params *CreateOosInstancePrincipalAuthStorageParams, opts ...ClientOption) (*CreateOosInstancePrincipalAuthStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateOosInstancePrincipalAuthStorageParams()
 	}
@@ -1188,17 +1284,22 @@ func (a *Client) CreateOosInstancePrincipalAuthStorage(params *CreateOosInstance
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateOosInstancePrincipalAuthStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateOosInstance_principal_authStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1207,7 +1308,7 @@ func (a *Client) CreateOosInstancePrincipalAuthStorage(params *CreateOosInstance
 CreateOosNoAuthStorage creates oos storage with no auth no credentials needed this is typically for reading public buckets
 */
 func (a *Client) CreateOosNoAuthStorage(params *CreateOosNoAuthStorageParams, opts ...ClientOption) (*CreateOosNoAuthStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateOosNoAuthStorageParams()
 	}
@@ -1226,17 +1327,22 @@ func (a *Client) CreateOosNoAuthStorage(params *CreateOosNoAuthStorageParams, op
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateOosNoAuthStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateOosNo_authStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1245,7 +1351,7 @@ func (a *Client) CreateOosNoAuthStorage(params *CreateOosNoAuthStorageParams, op
 CreateOosResourcePrincipalAuthStorage creates oos storage with resource principal auth use resource principals to make API calls
 */
 func (a *Client) CreateOosResourcePrincipalAuthStorage(params *CreateOosResourcePrincipalAuthStorageParams, opts ...ClientOption) (*CreateOosResourcePrincipalAuthStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateOosResourcePrincipalAuthStorageParams()
 	}
@@ -1264,17 +1370,22 @@ func (a *Client) CreateOosResourcePrincipalAuthStorage(params *CreateOosResource
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateOosResourcePrincipalAuthStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateOosResource_principal_authStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1283,7 +1394,7 @@ func (a *Client) CreateOosResourcePrincipalAuthStorage(params *CreateOosResource
 CreateOosUserPrincipalAuthStorage creates oos storage with user principal auth use an o c i user and an API key for authentication
 */
 func (a *Client) CreateOosUserPrincipalAuthStorage(params *CreateOosUserPrincipalAuthStorageParams, opts ...ClientOption) (*CreateOosUserPrincipalAuthStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateOosUserPrincipalAuthStorageParams()
 	}
@@ -1302,18 +1413,66 @@ func (a *Client) CreateOosUserPrincipalAuthStorage(params *CreateOosUserPrincipa
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateOosUserPrincipalAuthStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateOosUser_principal_authStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateOosWorkloadIdentityAuthStorage creates oos storage with workload identity auth use workload identity to grant o c i container engine for kubernetes workloads policy driven access to o c i resources using o c i identity and access management i a m
+*/
+func (a *Client) CreateOosWorkloadIdentityAuthStorage(params *CreateOosWorkloadIdentityAuthStorageParams, opts ...ClientOption) (*CreateOosWorkloadIdentityAuthStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateOosWorkloadIdentityAuthStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateOosWorkload_identity_authStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/oos/workload_identity_auth",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateOosWorkloadIdentityAuthStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateOosWorkloadIdentityAuthStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateOosWorkload_identity_authStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -1321,7 +1480,7 @@ func (a *Client) CreateOosUserPrincipalAuthStorage(params *CreateOosUserPrincipa
 CreateOpendriveStorage creates opendrive storage
 */
 func (a *Client) CreateOpendriveStorage(params *CreateOpendriveStorageParams, opts ...ClientOption) (*CreateOpendriveStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateOpendriveStorageParams()
 	}
@@ -1340,17 +1499,22 @@ func (a *Client) CreateOpendriveStorage(params *CreateOpendriveStorageParams, op
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateOpendriveStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateOpendriveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1359,7 +1523,7 @@ func (a *Client) CreateOpendriveStorage(params *CreateOpendriveStorageParams, op
 CreatePcloudStorage creates pcloud storage
 */
 func (a *Client) CreatePcloudStorage(params *CreatePcloudStorageParams, opts ...ClientOption) (*CreatePcloudStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreatePcloudStorageParams()
 	}
@@ -1378,17 +1542,22 @@ func (a *Client) CreatePcloudStorage(params *CreatePcloudStorageParams, opts ...
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreatePcloudStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreatePcloudStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1397,7 +1566,7 @@ func (a *Client) CreatePcloudStorage(params *CreatePcloudStorageParams, opts ...
 CreatePremiumizemeStorage creates premiumizeme storage
 */
 func (a *Client) CreatePremiumizemeStorage(params *CreatePremiumizemeStorageParams, opts ...ClientOption) (*CreatePremiumizemeStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreatePremiumizemeStorageParams()
 	}
@@ -1416,17 +1585,22 @@ func (a *Client) CreatePremiumizemeStorage(params *CreatePremiumizemeStoragePara
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreatePremiumizemeStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreatePremiumizemeStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1435,7 +1609,7 @@ func (a *Client) CreatePremiumizemeStorage(params *CreatePremiumizemeStoragePara
 CreatePutioStorage creates putio storage
 */
 func (a *Client) CreatePutioStorage(params *CreatePutioStorageParams, opts ...ClientOption) (*CreatePutioStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreatePutioStorageParams()
 	}
@@ -1454,17 +1628,22 @@ func (a *Client) CreatePutioStorage(params *CreatePutioStorageParams, opts ...Cl
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreatePutioStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreatePutioStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1473,7 +1652,7 @@ func (a *Client) CreatePutioStorage(params *CreatePutioStorageParams, opts ...Cl
 CreateQingstorStorage creates qingstor storage
 */
 func (a *Client) CreateQingstorStorage(params *CreateQingstorStorageParams, opts ...ClientOption) (*CreateQingstorStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateQingstorStorageParams()
 	}
@@ -1492,17 +1671,22 @@ func (a *Client) CreateQingstorStorage(params *CreateQingstorStorageParams, opts
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateQingstorStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateQingstorStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1511,7 +1695,7 @@ func (a *Client) CreateQingstorStorage(params *CreateQingstorStorageParams, opts
 CreateS3AWSStorage creates s3 storage with a w s amazon web services a w s s3
 */
 func (a *Client) CreateS3AWSStorage(params *CreateS3AWSStorageParams, opts ...ClientOption) (*CreateS3AWSStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3AWSStorageParams()
 	}
@@ -1530,17 +1714,22 @@ func (a *Client) CreateS3AWSStorage(params *CreateS3AWSStorageParams, opts ...Cl
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3AWSStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3AWSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1549,7 +1738,7 @@ func (a *Client) CreateS3AWSStorage(params *CreateS3AWSStorageParams, opts ...Cl
 CreateS3AlibabaStorage creates s3 storage with alibaba alibaba cloud object storage system o s s formerly aliyun
 */
 func (a *Client) CreateS3AlibabaStorage(params *CreateS3AlibabaStorageParams, opts ...ClientOption) (*CreateS3AlibabaStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3AlibabaStorageParams()
 	}
@@ -1568,17 +1757,22 @@ func (a *Client) CreateS3AlibabaStorage(params *CreateS3AlibabaStorageParams, op
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3AlibabaStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3AlibabaStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1587,7 +1781,7 @@ func (a *Client) CreateS3AlibabaStorage(params *CreateS3AlibabaStorageParams, op
 CreateS3ArvanCloudStorage creates s3 storage with arvan cloud arvan cloud object storage a o s
 */
 func (a *Client) CreateS3ArvanCloudStorage(params *CreateS3ArvanCloudStorageParams, opts ...ClientOption) (*CreateS3ArvanCloudStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3ArvanCloudStorageParams()
 	}
@@ -1606,17 +1800,22 @@ func (a *Client) CreateS3ArvanCloudStorage(params *CreateS3ArvanCloudStoragePara
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3ArvanCloudStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3ArvanCloudStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1625,7 +1824,7 @@ func (a *Client) CreateS3ArvanCloudStorage(params *CreateS3ArvanCloudStoragePara
 CreateS3CephStorage creates s3 storage with ceph ceph object storage
 */
 func (a *Client) CreateS3CephStorage(params *CreateS3CephStorageParams, opts ...ClientOption) (*CreateS3CephStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3CephStorageParams()
 	}
@@ -1644,17 +1843,22 @@ func (a *Client) CreateS3CephStorage(params *CreateS3CephStorageParams, opts ...
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3CephStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3CephStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1663,7 +1867,7 @@ func (a *Client) CreateS3CephStorage(params *CreateS3CephStorageParams, opts ...
 CreateS3ChinaMobileStorage creates s3 storage with china mobile china mobile ecloud elastic object storage e o s
 */
 func (a *Client) CreateS3ChinaMobileStorage(params *CreateS3ChinaMobileStorageParams, opts ...ClientOption) (*CreateS3ChinaMobileStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3ChinaMobileStorageParams()
 	}
@@ -1682,17 +1886,22 @@ func (a *Client) CreateS3ChinaMobileStorage(params *CreateS3ChinaMobileStoragePa
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3ChinaMobileStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3ChinaMobileStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1701,7 +1910,7 @@ func (a *Client) CreateS3ChinaMobileStorage(params *CreateS3ChinaMobileStoragePa
 CreateS3CloudflareStorage creates s3 storage with cloudflare cloudflare r2 storage
 */
 func (a *Client) CreateS3CloudflareStorage(params *CreateS3CloudflareStorageParams, opts ...ClientOption) (*CreateS3CloudflareStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3CloudflareStorageParams()
 	}
@@ -1720,17 +1929,22 @@ func (a *Client) CreateS3CloudflareStorage(params *CreateS3CloudflareStoragePara
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3CloudflareStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3CloudflareStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1739,7 +1953,7 @@ func (a *Client) CreateS3CloudflareStorage(params *CreateS3CloudflareStoragePara
 CreateS3DigitalOceanStorage creates s3 storage with digital ocean digital ocean spaces
 */
 func (a *Client) CreateS3DigitalOceanStorage(params *CreateS3DigitalOceanStorageParams, opts ...ClientOption) (*CreateS3DigitalOceanStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3DigitalOceanStorageParams()
 	}
@@ -1758,17 +1972,22 @@ func (a *Client) CreateS3DigitalOceanStorage(params *CreateS3DigitalOceanStorage
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3DigitalOceanStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3DigitalOceanStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1777,7 +1996,7 @@ func (a *Client) CreateS3DigitalOceanStorage(params *CreateS3DigitalOceanStorage
 CreateS3DreamhostStorage creates s3 storage with dreamhost dreamhost dream objects
 */
 func (a *Client) CreateS3DreamhostStorage(params *CreateS3DreamhostStorageParams, opts ...ClientOption) (*CreateS3DreamhostStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3DreamhostStorageParams()
 	}
@@ -1796,18 +2015,66 @@ func (a *Client) CreateS3DreamhostStorage(params *CreateS3DreamhostStorageParams
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3DreamhostStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3DreamhostStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3GCSStorage creates s3 storage with g c s google cloud storage
+*/
+func (a *Client) CreateS3GCSStorage(params *CreateS3GCSStorageParams, opts ...ClientOption) (*CreateS3GCSStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3GCSStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3GCSStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/gcs",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3GCSStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3GCSStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3GCSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -1815,7 +2082,7 @@ func (a *Client) CreateS3DreamhostStorage(params *CreateS3DreamhostStorageParams
 CreateS3HuaweiOBSStorage creates s3 storage with huawei o b s huawei object storage service
 */
 func (a *Client) CreateS3HuaweiOBSStorage(params *CreateS3HuaweiOBSStorageParams, opts ...ClientOption) (*CreateS3HuaweiOBSStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3HuaweiOBSStorageParams()
 	}
@@ -1834,17 +2101,22 @@ func (a *Client) CreateS3HuaweiOBSStorage(params *CreateS3HuaweiOBSStorageParams
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3HuaweiOBSStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3HuaweiOBSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1853,7 +2125,7 @@ func (a *Client) CreateS3HuaweiOBSStorage(params *CreateS3HuaweiOBSStorageParams
 CreateS3IBMCOSStorage creates s3 storage with i b m c o s i b m c o s s3
 */
 func (a *Client) CreateS3IBMCOSStorage(params *CreateS3IBMCOSStorageParams, opts ...ClientOption) (*CreateS3IBMCOSStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3IBMCOSStorageParams()
 	}
@@ -1872,17 +2144,22 @@ func (a *Client) CreateS3IBMCOSStorage(params *CreateS3IBMCOSStorageParams, opts
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3IBMCOSStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3IBMCOSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1891,7 +2168,7 @@ func (a *Client) CreateS3IBMCOSStorage(params *CreateS3IBMCOSStorageParams, opts
 CreateS3IDriveStorage creates s3 storage with i drive i drive e2
 */
 func (a *Client) CreateS3IDriveStorage(params *CreateS3IDriveStorageParams, opts ...ClientOption) (*CreateS3IDriveStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3IDriveStorageParams()
 	}
@@ -1910,17 +2187,22 @@ func (a *Client) CreateS3IDriveStorage(params *CreateS3IDriveStorageParams, opts
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3IDriveStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3IDriveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -1929,7 +2211,7 @@ func (a *Client) CreateS3IDriveStorage(params *CreateS3IDriveStorageParams, opts
 CreateS3IONOSStorage creates s3 storage with i o n o s i o n o s cloud
 */
 func (a *Client) CreateS3IONOSStorage(params *CreateS3IONOSStorageParams, opts ...ClientOption) (*CreateS3IONOSStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3IONOSStorageParams()
 	}
@@ -1948,18 +2230,66 @@ func (a *Client) CreateS3IONOSStorage(params *CreateS3IONOSStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3IONOSStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3IONOSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3LeviiaStorage creates s3 storage with leviia leviia object storage
+*/
+func (a *Client) CreateS3LeviiaStorage(params *CreateS3LeviiaStorageParams, opts ...ClientOption) (*CreateS3LeviiaStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3LeviiaStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3LeviiaStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/leviia",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3LeviiaStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3LeviiaStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3LeviiaStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -1967,7 +2297,7 @@ func (a *Client) CreateS3IONOSStorage(params *CreateS3IONOSStorageParams, opts .
 CreateS3LiaraStorage creates s3 storage with liara liara object storage
 */
 func (a *Client) CreateS3LiaraStorage(params *CreateS3LiaraStorageParams, opts ...ClientOption) (*CreateS3LiaraStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3LiaraStorageParams()
 	}
@@ -1986,18 +2316,66 @@ func (a *Client) CreateS3LiaraStorage(params *CreateS3LiaraStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3LiaraStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3LiaraStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3LinodeStorage creates s3 storage with linode linode object storage
+*/
+func (a *Client) CreateS3LinodeStorage(params *CreateS3LinodeStorageParams, opts ...ClientOption) (*CreateS3LinodeStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3LinodeStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3LinodeStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/linode",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3LinodeStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3LinodeStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3LinodeStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -2005,7 +2383,7 @@ func (a *Client) CreateS3LiaraStorage(params *CreateS3LiaraStorageParams, opts .
 CreateS3LyveCloudStorage creates s3 storage with lyve cloud seagate lyve cloud
 */
 func (a *Client) CreateS3LyveCloudStorage(params *CreateS3LyveCloudStorageParams, opts ...ClientOption) (*CreateS3LyveCloudStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3LyveCloudStorageParams()
 	}
@@ -2024,18 +2402,66 @@ func (a *Client) CreateS3LyveCloudStorage(params *CreateS3LyveCloudStorageParams
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3LyveCloudStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3LyveCloudStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3MagaluStorage creates s3 storage with magalu magalu object storage
+*/
+func (a *Client) CreateS3MagaluStorage(params *CreateS3MagaluStorageParams, opts ...ClientOption) (*CreateS3MagaluStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3MagaluStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3MagaluStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/magalu",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3MagaluStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3MagaluStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3MagaluStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -2043,7 +2469,7 @@ func (a *Client) CreateS3LyveCloudStorage(params *CreateS3LyveCloudStorageParams
 CreateS3MinioStorage creates s3 storage with minio minio object storage
 */
 func (a *Client) CreateS3MinioStorage(params *CreateS3MinioStorageParams, opts ...ClientOption) (*CreateS3MinioStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3MinioStorageParams()
 	}
@@ -2062,17 +2488,22 @@ func (a *Client) CreateS3MinioStorage(params *CreateS3MinioStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3MinioStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3MinioStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2081,7 +2512,7 @@ func (a *Client) CreateS3MinioStorage(params *CreateS3MinioStorageParams, opts .
 CreateS3NeteaseStorage creates s3 storage with netease netease object storage n o s
 */
 func (a *Client) CreateS3NeteaseStorage(params *CreateS3NeteaseStorageParams, opts ...ClientOption) (*CreateS3NeteaseStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3NeteaseStorageParams()
 	}
@@ -2100,17 +2531,22 @@ func (a *Client) CreateS3NeteaseStorage(params *CreateS3NeteaseStorageParams, op
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3NeteaseStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3NeteaseStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2119,7 +2555,7 @@ func (a *Client) CreateS3NeteaseStorage(params *CreateS3NeteaseStorageParams, op
 CreateS3OtherStorage creates s3 storage with other any other s3 compatible provider
 */
 func (a *Client) CreateS3OtherStorage(params *CreateS3OtherStorageParams, opts ...ClientOption) (*CreateS3OtherStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3OtherStorageParams()
 	}
@@ -2138,18 +2574,66 @@ func (a *Client) CreateS3OtherStorage(params *CreateS3OtherStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3OtherStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3OtherStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3PetaboxStorage creates s3 storage with petabox petabox object storage
+*/
+func (a *Client) CreateS3PetaboxStorage(params *CreateS3PetaboxStorageParams, opts ...ClientOption) (*CreateS3PetaboxStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3PetaboxStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3PetaboxStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/petabox",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3PetaboxStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3PetaboxStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3PetaboxStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -2157,7 +2641,7 @@ func (a *Client) CreateS3OtherStorage(params *CreateS3OtherStorageParams, opts .
 CreateS3QiniuStorage creates s3 storage with qiniu qiniu object storage kodo
 */
 func (a *Client) CreateS3QiniuStorage(params *CreateS3QiniuStorageParams, opts ...ClientOption) (*CreateS3QiniuStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3QiniuStorageParams()
 	}
@@ -2176,17 +2660,22 @@ func (a *Client) CreateS3QiniuStorage(params *CreateS3QiniuStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3QiniuStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3QiniuStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2195,7 +2684,7 @@ func (a *Client) CreateS3QiniuStorage(params *CreateS3QiniuStorageParams, opts .
 CreateS3RackCorpStorage creates s3 storage with rack corp rack corp object storage
 */
 func (a *Client) CreateS3RackCorpStorage(params *CreateS3RackCorpStorageParams, opts ...ClientOption) (*CreateS3RackCorpStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3RackCorpStorageParams()
 	}
@@ -2214,18 +2703,66 @@ func (a *Client) CreateS3RackCorpStorage(params *CreateS3RackCorpStorageParams, 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3RackCorpStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3RackCorpStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3RcloneStorage creates s3 storage with rclone rclone s3 server
+*/
+func (a *Client) CreateS3RcloneStorage(params *CreateS3RcloneStorageParams, opts ...ClientOption) (*CreateS3RcloneStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3RcloneStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3RcloneStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/rclone",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3RcloneStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3RcloneStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3RcloneStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -2233,7 +2770,7 @@ func (a *Client) CreateS3RackCorpStorage(params *CreateS3RackCorpStorageParams, 
 CreateS3ScalewayStorage creates s3 storage with scaleway scaleway object storage
 */
 func (a *Client) CreateS3ScalewayStorage(params *CreateS3ScalewayStorageParams, opts ...ClientOption) (*CreateS3ScalewayStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3ScalewayStorageParams()
 	}
@@ -2252,17 +2789,22 @@ func (a *Client) CreateS3ScalewayStorage(params *CreateS3ScalewayStorageParams, 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3ScalewayStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3ScalewayStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2271,7 +2813,7 @@ func (a *Client) CreateS3ScalewayStorage(params *CreateS3ScalewayStorageParams, 
 CreateS3SeaweedFSStorage creates s3 storage with seaweed f s seaweed f s s3
 */
 func (a *Client) CreateS3SeaweedFSStorage(params *CreateS3SeaweedFSStorageParams, opts ...ClientOption) (*CreateS3SeaweedFSStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3SeaweedFSStorageParams()
 	}
@@ -2290,17 +2832,22 @@ func (a *Client) CreateS3SeaweedFSStorage(params *CreateS3SeaweedFSStorageParams
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3SeaweedFSStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3SeaweedFSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2309,7 +2856,7 @@ func (a *Client) CreateS3SeaweedFSStorage(params *CreateS3SeaweedFSStorageParams
 CreateS3StackPathStorage creates s3 storage with stack path stack path object storage
 */
 func (a *Client) CreateS3StackPathStorage(params *CreateS3StackPathStorageParams, opts ...ClientOption) (*CreateS3StackPathStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3StackPathStorageParams()
 	}
@@ -2328,17 +2875,22 @@ func (a *Client) CreateS3StackPathStorage(params *CreateS3StackPathStorageParams
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3StackPathStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3StackPathStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2347,7 +2899,7 @@ func (a *Client) CreateS3StackPathStorage(params *CreateS3StackPathStorageParams
 CreateS3StorjStorage creates s3 storage with storj storj s3 compatible gateway
 */
 func (a *Client) CreateS3StorjStorage(params *CreateS3StorjStorageParams, opts ...ClientOption) (*CreateS3StorjStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3StorjStorageParams()
 	}
@@ -2366,18 +2918,66 @@ func (a *Client) CreateS3StorjStorage(params *CreateS3StorjStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3StorjStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3StorjStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3SynologyStorage creates s3 storage with synology synology c2 object storage
+*/
+func (a *Client) CreateS3SynologyStorage(params *CreateS3SynologyStorageParams, opts ...ClientOption) (*CreateS3SynologyStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3SynologyStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3SynologyStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/synology",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3SynologyStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3SynologyStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3SynologyStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -2385,7 +2985,7 @@ func (a *Client) CreateS3StorjStorage(params *CreateS3StorjStorageParams, opts .
 CreateS3TencentCOSStorage creates s3 storage with tencent c o s tencent cloud object storage c o s
 */
 func (a *Client) CreateS3TencentCOSStorage(params *CreateS3TencentCOSStorageParams, opts ...ClientOption) (*CreateS3TencentCOSStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3TencentCOSStorageParams()
 	}
@@ -2404,17 +3004,22 @@ func (a *Client) CreateS3TencentCOSStorage(params *CreateS3TencentCOSStoragePara
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3TencentCOSStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3TencentCOSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2423,7 +3028,7 @@ func (a *Client) CreateS3TencentCOSStorage(params *CreateS3TencentCOSStoragePara
 CreateS3WasabiStorage creates s3 storage with wasabi wasabi object storage
 */
 func (a *Client) CreateS3WasabiStorage(params *CreateS3WasabiStorageParams, opts ...ClientOption) (*CreateS3WasabiStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateS3WasabiStorageParams()
 	}
@@ -2442,17 +3047,22 @@ func (a *Client) CreateS3WasabiStorage(params *CreateS3WasabiStorageParams, opts
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateS3WasabiStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3WasabiStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2461,7 +3071,7 @@ func (a *Client) CreateS3WasabiStorage(params *CreateS3WasabiStorageParams, opts
 CreateSeafileStorage creates seafile storage
 */
 func (a *Client) CreateSeafileStorage(params *CreateSeafileStorageParams, opts ...ClientOption) (*CreateSeafileStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateSeafileStorageParams()
 	}
@@ -2480,17 +3090,22 @@ func (a *Client) CreateSeafileStorage(params *CreateSeafileStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateSeafileStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateSeafileStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2499,7 +3114,7 @@ func (a *Client) CreateSeafileStorage(params *CreateSeafileStorageParams, opts .
 CreateSftpStorage creates sftp storage
 */
 func (a *Client) CreateSftpStorage(params *CreateSftpStorageParams, opts ...ClientOption) (*CreateSftpStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateSftpStorageParams()
 	}
@@ -2518,17 +3133,22 @@ func (a *Client) CreateSftpStorage(params *CreateSftpStorageParams, opts ...Clie
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateSftpStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateSftpStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2537,7 +3157,7 @@ func (a *Client) CreateSftpStorage(params *CreateSftpStorageParams, opts ...Clie
 CreateSharefileStorage creates sharefile storage
 */
 func (a *Client) CreateSharefileStorage(params *CreateSharefileStorageParams, opts ...ClientOption) (*CreateSharefileStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateSharefileStorageParams()
 	}
@@ -2556,17 +3176,22 @@ func (a *Client) CreateSharefileStorage(params *CreateSharefileStorageParams, op
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateSharefileStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateSharefileStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2575,7 +3200,7 @@ func (a *Client) CreateSharefileStorage(params *CreateSharefileStorageParams, op
 CreateSiaStorage creates sia storage
 */
 func (a *Client) CreateSiaStorage(params *CreateSiaStorageParams, opts ...ClientOption) (*CreateSiaStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateSiaStorageParams()
 	}
@@ -2594,17 +3219,22 @@ func (a *Client) CreateSiaStorage(params *CreateSiaStorageParams, opts ...Client
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateSiaStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateSiaStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2613,7 +3243,7 @@ func (a *Client) CreateSiaStorage(params *CreateSiaStorageParams, opts ...Client
 CreateSmbStorage creates smb storage
 */
 func (a *Client) CreateSmbStorage(params *CreateSmbStorageParams, opts ...ClientOption) (*CreateSmbStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateSmbStorageParams()
 	}
@@ -2632,17 +3262,22 @@ func (a *Client) CreateSmbStorage(params *CreateSmbStorageParams, opts ...Client
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateSmbStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateSmbStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2651,7 +3286,7 @@ func (a *Client) CreateSmbStorage(params *CreateSmbStorageParams, opts ...Client
 CreateStorjExistingStorage creates storj storage with existing use an existing access grant
 */
 func (a *Client) CreateStorjExistingStorage(params *CreateStorjExistingStorageParams, opts ...ClientOption) (*CreateStorjExistingStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateStorjExistingStorageParams()
 	}
@@ -2670,17 +3305,22 @@ func (a *Client) CreateStorjExistingStorage(params *CreateStorjExistingStoragePa
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateStorjExistingStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateStorjExistingStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2689,7 +3329,7 @@ func (a *Client) CreateStorjExistingStorage(params *CreateStorjExistingStoragePa
 CreateStorjNewStorage creates storj storage with new create a new access grant from satellite address API key and passphrase
 */
 func (a *Client) CreateStorjNewStorage(params *CreateStorjNewStorageParams, opts ...ClientOption) (*CreateStorjNewStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateStorjNewStorageParams()
 	}
@@ -2708,17 +3348,22 @@ func (a *Client) CreateStorjNewStorage(params *CreateStorjNewStorageParams, opts
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateStorjNewStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateStorjNewStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2727,7 +3372,7 @@ func (a *Client) CreateStorjNewStorage(params *CreateStorjNewStorageParams, opts
 CreateSugarsyncStorage creates sugarsync storage
 */
 func (a *Client) CreateSugarsyncStorage(params *CreateSugarsyncStorageParams, opts ...ClientOption) (*CreateSugarsyncStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateSugarsyncStorageParams()
 	}
@@ -2746,17 +3391,22 @@ func (a *Client) CreateSugarsyncStorage(params *CreateSugarsyncStorageParams, op
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateSugarsyncStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateSugarsyncStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2765,7 +3415,7 @@ func (a *Client) CreateSugarsyncStorage(params *CreateSugarsyncStorageParams, op
 CreateSwiftStorage creates swift storage
 */
 func (a *Client) CreateSwiftStorage(params *CreateSwiftStorageParams, opts ...ClientOption) (*CreateSwiftStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateSwiftStorageParams()
 	}
@@ -2784,17 +3434,22 @@ func (a *Client) CreateSwiftStorage(params *CreateSwiftStorageParams, opts ...Cl
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateSwiftStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateSwiftStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2803,7 +3458,7 @@ func (a *Client) CreateSwiftStorage(params *CreateSwiftStorageParams, opts ...Cl
 CreateUnionStorage creates union storage
 */
 func (a *Client) CreateUnionStorage(params *CreateUnionStorageParams, opts ...ClientOption) (*CreateUnionStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateUnionStorageParams()
 	}
@@ -2822,17 +3477,22 @@ func (a *Client) CreateUnionStorage(params *CreateUnionStorageParams, opts ...Cl
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateUnionStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateUnionStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2841,7 +3501,7 @@ func (a *Client) CreateUnionStorage(params *CreateUnionStorageParams, opts ...Cl
 CreateUptoboxStorage creates uptobox storage
 */
 func (a *Client) CreateUptoboxStorage(params *CreateUptoboxStorageParams, opts ...ClientOption) (*CreateUptoboxStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateUptoboxStorageParams()
 	}
@@ -2860,17 +3520,22 @@ func (a *Client) CreateUptoboxStorage(params *CreateUptoboxStorageParams, opts .
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateUptoboxStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateUptoboxStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2879,7 +3544,7 @@ func (a *Client) CreateUptoboxStorage(params *CreateUptoboxStorageParams, opts .
 CreateWebdavStorage creates webdav storage
 */
 func (a *Client) CreateWebdavStorage(params *CreateWebdavStorageParams, opts ...ClientOption) (*CreateWebdavStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateWebdavStorageParams()
 	}
@@ -2898,17 +3563,22 @@ func (a *Client) CreateWebdavStorage(params *CreateWebdavStorageParams, opts ...
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateWebdavStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateWebdavStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2917,7 +3587,7 @@ func (a *Client) CreateWebdavStorage(params *CreateWebdavStorageParams, opts ...
 CreateYandexStorage creates yandex storage
 */
 func (a *Client) CreateYandexStorage(params *CreateYandexStorageParams, opts ...ClientOption) (*CreateYandexStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateYandexStorageParams()
 	}
@@ -2936,17 +3606,22 @@ func (a *Client) CreateYandexStorage(params *CreateYandexStorageParams, opts ...
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateYandexStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateYandexStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2955,7 +3630,7 @@ func (a *Client) CreateYandexStorage(params *CreateYandexStorageParams, opts ...
 CreateZohoStorage creates zoho storage
 */
 func (a *Client) CreateZohoStorage(params *CreateZohoStorageParams, opts ...ClientOption) (*CreateZohoStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateZohoStorageParams()
 	}
@@ -2974,17 +3649,22 @@ func (a *Client) CreateZohoStorage(params *CreateZohoStorageParams, opts ...Clie
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateZohoStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateZohoStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -2993,7 +3673,7 @@ func (a *Client) CreateZohoStorage(params *CreateZohoStorageParams, opts ...Clie
 ExploreStorage explores directory entries in a storage system
 */
 func (a *Client) ExploreStorage(params *ExploreStorageParams, opts ...ClientOption) (*ExploreStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewExploreStorageParams()
 	}
@@ -3012,17 +3692,22 @@ func (a *Client) ExploreStorage(params *ExploreStorageParams, opts ...ClientOpti
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*ExploreStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for ExploreStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -3031,7 +3716,7 @@ func (a *Client) ExploreStorage(params *ExploreStorageParams, opts ...ClientOpti
 ListStorages lists all storages
 */
 func (a *Client) ListStorages(params *ListStoragesParams, opts ...ClientOption) (*ListStoragesOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewListStoragesParams()
 	}
@@ -3050,17 +3735,22 @@ func (a *Client) ListStorages(params *ListStoragesParams, opts ...ClientOption) 
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*ListStoragesOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for ListStorages: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -3069,7 +3759,7 @@ func (a *Client) ListStorages(params *ListStoragesParams, opts ...ClientOption) 
 RemoveStorage removes a storage
 */
 func (a *Client) RemoveStorage(params *RemoveStorageParams, opts ...ClientOption) (*RemoveStorageNoContent, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewRemoveStorageParams()
 	}
@@ -3088,17 +3778,22 @@ func (a *Client) RemoveStorage(params *RemoveStorageParams, opts ...ClientOption
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*RemoveStorageNoContent)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for RemoveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -3107,7 +3802,7 @@ func (a *Client) RemoveStorage(params *RemoveStorageParams, opts ...ClientOption
 RenameStorage renames a storage connection
 */
 func (a *Client) RenameStorage(params *RenameStorageParams, opts ...ClientOption) (*RenameStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewRenameStorageParams()
 	}
@@ -3126,17 +3821,22 @@ func (a *Client) RenameStorage(params *RenameStorageParams, opts ...ClientOption
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*RenameStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for RenameStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
@@ -3145,7 +3845,7 @@ func (a *Client) RenameStorage(params *RenameStorageParams, opts ...ClientOption
 UpdateStorage updates a storage connection
 */
 func (a *Client) UpdateStorage(params *UpdateStorageParams, opts ...ClientOption) (*UpdateStorageOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewUpdateStorageParams()
 	}
@@ -3164,17 +3864,22 @@ func (a *Client) UpdateStorage(params *UpdateStorageParams, opts ...ClientOption
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*UpdateStorageOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for UpdateStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }

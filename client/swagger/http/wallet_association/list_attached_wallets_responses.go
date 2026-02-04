@@ -7,6 +7,7 @@ package wallet_association
 
 import (
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"io"
 
@@ -22,7 +23,7 @@ type ListAttachedWalletsReader struct {
 }
 
 // ReadResponse reads a server response into the received o.
-func (o *ListAttachedWalletsReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
+func (o *ListAttachedWalletsReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (any, error) {
 	switch response.Code() {
 	case 200:
 		result := NewListAttachedWalletsOK()
@@ -108,7 +109,7 @@ func (o *ListAttachedWalletsOK) GetPayload() []*models.ModelWallet {
 func (o *ListAttachedWalletsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 
@@ -178,7 +179,7 @@ func (o *ListAttachedWalletsBadRequest) readResponse(response runtime.ClientResp
 	o.Payload = new(models.APIHTTPError)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 
@@ -248,7 +249,7 @@ func (o *ListAttachedWalletsInternalServerError) readResponse(response runtime.C
 	o.Payload = new(models.APIHTTPError)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 

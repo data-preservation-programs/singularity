@@ -8,4 +8,4 @@ package models
 // StorePieceReader store piece reader
 //
 // swagger:model store.PieceReader
-type StorePieceReader interface{}
+type StorePieceReader any
