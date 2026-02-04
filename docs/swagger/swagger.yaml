@@ -22,7 +22,8 @@ definitions:
         description: CID of the piece
         type: string
       pieceSize:
-        description: Size of the piece
+        description: Size of the piece (required for external import, optional if
+          piece exists in DB)
         type: string
       rootCid:
         description: Root CID of the CAR file, used to populate the label field of
@@ -30,7 +31,6 @@ definitions:
         type: string
     required:
     - pieceCid
-    - pieceSize
     type: object
   dataprep.CreateRequest:
     properties:

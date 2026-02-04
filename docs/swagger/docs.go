@@ -5974,8 +5974,7 @@ const docTemplate = `{
         "dataprep.AddPieceRequest": {
             "type": "object",
             "required": [
-                "pieceCid",
-                "pieceSize"
+                "pieceCid"
             ],
             "properties": {
                 "fileSize": {
@@ -5987,7 +5986,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "pieceSize": {
-                    "description": "Size of the piece",
+                    "description": "Size of the piece (required for external import, optional if piece exists in DB)",
                     "type": "string"
                 },
                 "rootCid": {

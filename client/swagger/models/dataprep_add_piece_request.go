@@ -26,9 +26,8 @@ type DataprepAddPieceRequest struct {
 	// Required: true
 	PieceCid *string `json:"pieceCid"`
 
-	// Size of the piece
-	// Required: true
-	PieceSize *string `json:"pieceSize"`
+	// Size of the piece (required for external import, optional if piece exists in DB)
+	PieceSize string `json:"pieceSize,omitempty"`
 
 	// Root CID of the CAR file, used to populate the label field of storage deal
 	RootCid string `json:"rootCid,omitempty"`
@@ -42,10 +41,6 @@ func (m *DataprepAddPieceRequest) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validatePieceSize(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -55,15 +50,6 @@ func (m *DataprepAddPieceRequest) Validate(formats strfmt.Registry) error {
 func (m *DataprepAddPieceRequest) validatePieceCid(formats strfmt.Registry) error {
 
 	if err := validate.Required("pieceCid", "body", m.PieceCid); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *DataprepAddPieceRequest) validatePieceSize(formats strfmt.Registry) error {
-
-	if err := validate.Required("pieceSize", "body", m.PieceSize); err != nil {
 		return err
 	}
 
