@@ -1,0 +1,325 @@
+// Package pdptracker provides a service for tracking PDP (Proof of Data Possession) deals
+// using the f41 actor on Filecoin. This is distinct from legacy f05 market deals.
+//
+// PDP deals use proof sets managed through the PDPVerifier contract, where data is verified
+// through cryptographic challenges rather than the traditional sector sealing process.
+//
+// Note: This package requires the go-synapse library for full functionality.
+// See: https://github.com/data-preservation-programs/go-synapse
+package pdptracker
+
+import (
+	"context"
+	"sync"
+	"time"
+
+	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/service/healthcheck"
+	"github.com/google/uuid"
+	"github.com/gotidy/ptr"
+	"github.com/ipfs/go-log/v2"
+	"gorm.io/gorm"
+)
+
+var ErrAlreadyRunning = errors.New("another PDP tracker worker already running")
+
+const (
+	healthRegisterRetryInterval = time.Minute
+	cleanupTimeout              = 5 * time.Second
+)
+
+var Logger = log.Logger("pdptracker")
+
+// ProofSetInfo contains information about a PDP proof set retrieved from on-chain state
+type ProofSetInfo struct {
+	ProofSetID         uint64
+	ClientAddress      string // f4 address of the client
+	ProviderAddress    string // Provider/record keeper address
+	IsLive             bool   // Whether the proof set is actively being challenged
+	NextChallengeEpoch int32  // Next epoch when a challenge is due
+	PieceCIDs          []string
+}
+
+// PDPClient is the interface for interacting with PDP on-chain state.
+// This will be implemented using the go-synapse library once it's available.
+type PDPClient interface {
+	// GetProofSetsForClient returns all proof sets associated with a client address
+	GetProofSetsForClient(ctx context.Context, clientAddress string) ([]ProofSetInfo, error)
+	// GetProofSetInfo returns detailed information about a specific proof set
+	GetProofSetInfo(ctx context.Context, proofSetID uint64) (*ProofSetInfo, error)
+	// IsProofSetLive checks if a proof set is actively being challenged
+	IsProofSetLive(ctx context.Context, proofSetID uint64) (bool, error)
+	// GetNextChallengeEpoch returns the next challenge epoch for a proof set
+	GetNextChallengeEpoch(ctx context.Context, proofSetID uint64) (int32, error)
+}
+
+// PDPTracker tracks PDP deals (f41 actor) on the Filecoin network.
+// It monitors proof sets and updates deal status based on on-chain state.
+type PDPTracker struct {
+	workerID    uuid.UUID
+	dbNoContext *gorm.DB
+	interval    time.Duration
+	pdpClient   PDPClient
+	rpcURL      string
+	once        bool
+	mu          sync.Mutex
+}
+
+// NewPDPTracker creates a new PDP deal tracker.
+//
+// Parameters:
+//   - db: Database connection for storing deal information
+//   - interval: How often to check for updates
+//   - rpcURL: Filecoin RPC endpoint URL
+//   - pdpClient: Client for interacting with PDP contracts (can be nil for stub mode)
+//   - once: If true, run only once instead of continuously
+func NewPDPTracker(
+	db *gorm.DB,
+	interval time.Duration,
+	rpcURL string,
+	pdpClient PDPClient,
+	once bool,
+) PDPTracker {
+	return PDPTracker{
+		workerID:    uuid.New(),
+		dbNoContext: db,
+		interval:    interval,
+		rpcURL:      rpcURL,
+		pdpClient:   pdpClient,
+		once:        once,
+	}
+}
+
+func (*PDPTracker) Name() string {
+	return "PDPTracker"
+}
+
+// Start begins the PDP tracker service.
+func (p *PDPTracker) Start(ctx context.Context, exitErr chan<- error) error {
+	if p.pdpClient == nil {
+		Logger.Warn("PDP client not configured - PDP tracking will be disabled until go-synapse is integrated")
+		if exitErr != nil {
+			exitErr <- nil
+		}
+		return nil
+	}
+
+	var regTimer *time.Timer
+	for {
+		alreadyRunning, err := healthcheck.Register(ctx, p.dbNoContext, p.workerID, model.PDPTracker, false)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		if !alreadyRunning {
+			break
+		}
+
+		Logger.Warnw("another PDP tracker worker already running")
+		if p.once {
+			return ErrAlreadyRunning
+		}
+		Logger.Warn("retrying in 1 minute")
+		if regTimer == nil {
+			regTimer = time.NewTimer(healthRegisterRetryInterval)
+			defer regTimer.Stop()
+		} else {
+			regTimer.Reset(healthRegisterRetryInterval)
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-regTimer.C:
+		}
+	}
+
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(ctx)
+
+	healthcheckDone := make(chan struct{})
+	go func() {
+		defer close(healthcheckDone)
+		healthcheck.StartReportHealth(ctx, p.dbNoContext, p.workerID, model.PDPTracker)
+		Logger.Info("PDP tracker health report stopped")
+	}()
+
+	go func() {
+		var timer *time.Timer
+		var runErr error
+		for {
+			runErr = p.runOnce(ctx)
+			if runErr != nil {
+				if ctx.Err() != nil {
+					if errors.Is(runErr, context.Canceled) {
+						runErr = nil
+					}
+					Logger.Info("PDP tracker run stopped")
+					break
+				}
+				Logger.Errorw("failed to run PDP tracker once", "error", runErr)
+			}
+			if p.once {
+				Logger.Info("PDP tracker run once done")
+				break
+			}
+			if timer == nil {
+				timer = time.NewTimer(p.interval)
+				defer timer.Stop()
+			} else {
+				timer.Reset(p.interval)
+			}
+
+			var stopped bool
+			select {
+			case <-ctx.Done():
+				stopped = true
+			case <-timer.C:
+			}
+			if stopped {
+				Logger.Info("PDP tracker run stopped")
+				break
+			}
+		}
+
+		cancel()
+
+		ctx2, cancel2 := context.WithTimeout(context.Background(), cleanupTimeout)
+		defer cancel2()
+		//nolint:contextcheck
+		err := p.cleanup(ctx2)
+		if err != nil {
+			Logger.Errorw("failed to cleanup PDP tracker", "error", err)
+		} else {
+			Logger.Info("PDP tracker cleanup done")
+		}
+
+		<-healthcheckDone
+
+		if exitErr != nil {
+			exitErr <- runErr
+		}
+	}()
+
+	return nil
+}
+
+func (p *PDPTracker) cleanup(ctx context.Context) error {
+	return database.DoRetry(ctx, func() error {
+		return p.dbNoContext.WithContext(ctx).Where("id = ?", p.workerID).Delete(&model.Worker{}).Error
+	})
+}
+
+// runOnce performs a single cycle of PDP deal tracking.
+// It queries wallets, fetches their PDP proof sets, and updates deal status.
+func (p *PDPTracker) runOnce(ctx context.Context) error {
+	if p.pdpClient == nil {
+		return nil
+	}
+
+	db := p.dbNoContext.WithContext(ctx)
+
+	// Get all wallets to track
+	var wallets []model.Wallet
+	err := db.Find(&wallets).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to get wallets from database")
+	}
+
+	now := time.Now()
+	var updated, inserted int64
+
+	for _, wallet := range wallets {
+		Logger.Infof("tracking PDP deals for wallet %s", wallet.ID)
+
+		// Get proof sets for this wallet
+		proofSets, err := p.pdpClient.GetProofSetsForClient(ctx, wallet.Address)
+		if err != nil {
+			Logger.Warnw("failed to get proof sets for wallet", "wallet", wallet.ID, "error", err)
+			continue
+		}
+
+		for _, ps := range proofSets {
+			for _, pieceCID := range ps.PieceCIDs {
+				// Check if we already have this deal tracked
+				var existingDeal model.Deal
+				err := db.Where("proof_set_id = ? AND piece_cid = ? AND deal_type = ?",
+					ps.ProofSetID, pieceCID, model.DealTypePDP).First(&existingDeal).Error
+
+				if err == nil {
+					// Deal exists, check if status changed
+					needsUpdate := false
+					updates := map[string]any{}
+
+					if existingDeal.ProofSetLive == nil || *existingDeal.ProofSetLive != ps.IsLive {
+						updates["proof_set_live"] = ps.IsLive
+						needsUpdate = true
+					}
+					if existingDeal.NextChallengeEpoch == nil || *existingDeal.NextChallengeEpoch != ps.NextChallengeEpoch {
+						updates["next_challenge_epoch"] = ps.NextChallengeEpoch
+						needsUpdate = true
+					}
+
+					// Update state based on proof set status
+					newState := p.getPDPDealState(ps)
+					if existingDeal.State != newState {
+						updates["state"] = newState
+						needsUpdate = true
+					}
+
+					if needsUpdate {
+						updates["last_verified_at"] = now
+						err = database.DoRetry(ctx, func() error {
+							return db.Model(&model.Deal{}).Where("id = ?", existingDeal.ID).Updates(updates).Error
+						})
+						if err != nil {
+							Logger.Errorw("failed to update PDP deal", "dealID", existingDeal.ID, "error", err)
+							continue
+						}
+						Logger.Infow("PDP deal updated", "dealID", existingDeal.ID, "proofSetID", ps.ProofSetID)
+						updated++
+					}
+				} else if errors.Is(err, gorm.ErrRecordNotFound) {
+					// New PDP deal, insert it
+					newState := p.getPDPDealState(ps)
+					newDeal := model.Deal{
+						DealType:           model.DealTypePDP,
+						State:              newState,
+						ClientID:           wallet.ID,
+						Provider:           ps.ProviderAddress,
+						PieceCID:           model.CID{}, // TODO: Parse CID from string
+						ProofSetID:         ptr.Of(ps.ProofSetID),
+						ProofSetLive:       ptr.Of(ps.IsLive),
+						NextChallengeEpoch: ptr.Of(ps.NextChallengeEpoch),
+						LastVerifiedAt:     ptr.Of(now),
+					}
+
+					err = database.DoRetry(ctx, func() error {
+						return db.Create(&newDeal).Error
+					})
+					if err != nil {
+						Logger.Errorw("failed to insert PDP deal", "proofSetID", ps.ProofSetID, "error", err)
+						continue
+					}
+					Logger.Infow("PDP deal inserted", "proofSetID", ps.ProofSetID, "state", newState)
+					inserted++
+				} else {
+					Logger.Errorw("failed to query existing PDP deal", "error", err)
+				}
+			}
+		}
+	}
+
+	Logger.Infof("PDP tracker: updated %d deals, inserted %d deals", updated, inserted)
+	return nil
+}
+
+// getPDPDealState determines the deal state based on proof set status
+func (p *PDPTracker) getPDPDealState(ps ProofSetInfo) model.DealState {
+	if ps.IsLive {
+		return model.DealActive
+	}
+	// If not live, it might be proposed (waiting for first challenge) or expired
+	// This logic may need refinement based on actual PDP contract semantics
+	return model.DealPublished
+}

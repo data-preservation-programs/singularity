@@ -10,6 +10,9 @@ type DealState string
 
 type ScheduleState string
 
+// DealType represents the type of deal (legacy market vs PDP)
+type DealType string
+
 const (
 	DealProposed        DealState = "proposed"
 	DealPublished       DealState = "published"
@@ -19,6 +22,13 @@ const (
 	DealRejected        DealState = "rejected"
 	DealSlashed         DealState = "slashed"
 	DealErrored         DealState = "error"
+)
+
+const (
+	// DealTypeMarket represents legacy f05 market actor deals
+	DealTypeMarket DealType = "market"
+	// DealTypePDP represents f41 PDP (Proof of Data Possession) deals
+	DealTypePDP DealType = "pdp"
 )
 
 var DealStateStrings = []string{
@@ -41,6 +51,16 @@ var DealStates = []DealState{
 	DealRejected,
 	DealSlashed,
 	DealErrored,
+}
+
+var DealTypeStrings = []string{
+	string(DealTypeMarket),
+	string(DealTypePDP),
+}
+
+var DealTypes = []DealType{
+	DealTypeMarket,
+	DealTypePDP,
 }
 
 const (
@@ -81,6 +101,7 @@ type Deal struct {
 	LastVerifiedAt   *time.Time `json:"lastVerifiedAt"                  table:"verbose;format:2006-01-02 15:04:05"` // LastVerifiedAt is the last time the deal was verified as active by the tracker
 	DealID           *uint64    `gorm:"unique"                          json:"dealId"`
 	State            DealState  `gorm:"index:idx_pending"               json:"state"`
+	DealType         DealType   `gorm:"index;default:'market'"          json:"dealType"`                                               // DealType is the type of deal (market for legacy f05, pdp for f41 PDP deals)
 	Provider         string     `json:"provider"`
 	ProposalID       string     `json:"proposalId"                      table:"verbose"`
 	Label            string     `json:"label"                           table:"verbose"`
@@ -92,6 +113,11 @@ type Deal struct {
 	Price            string     `json:"price"`
 	Verified         bool       `json:"verified"`
 	ErrorMessage     string     `json:"errorMessage"                    table:"verbose"`
+
+	// PDP-specific fields (only populated for DealTypePDP)
+	ProofSetID         *uint64 `json:"proofSetId,omitempty"         table:"verbose"` // ProofSetID is the on-chain proof set ID for PDP deals
+	ProofSetLive       *bool   `json:"proofSetLive,omitempty"       table:"verbose"` // ProofSetLive indicates if the proof set is live (actively being challenged)
+	NextChallengeEpoch *int32  `json:"nextChallengeEpoch,omitempty" table:"verbose"` // NextChallengeEpoch is the next epoch when a challenge proof is due
 
 	// Associations
 	ScheduleID *ScheduleID `json:"scheduleId"                                         table:"verbose"`
