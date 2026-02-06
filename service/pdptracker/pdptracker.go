@@ -10,7 +10,6 @@ package pdptracker
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -64,7 +63,6 @@ type PDPTracker struct {
 	pdpClient   PDPClient
 	rpcURL      string
 	once        bool
-	mu          sync.Mutex
 }
 
 // NewPDPTracker creates a new PDP deal tracker.
