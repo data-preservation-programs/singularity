@@ -20,6 +20,9 @@ import (
 // swagger:model deal.ListDealRequest
 type DealListDealRequest struct {
 
+	// deal type filter (market for f05, pdp for f41)
+	DealTypes []ModelDealType `json:"dealTypes"`
+
 	// preparation ID or name filter
 	Preparations []string `json:"preparations"`
 
@@ -40,6 +43,10 @@ type DealListDealRequest struct {
 func (m *DealListDealRequest) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDealTypes(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateStates(formats); err != nil {
 		res = append(res, err)
 	}
@@ -47,6 +54,31 @@ func (m *DealListDealRequest) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *DealListDealRequest) validateDealTypes(formats strfmt.Registry) error {
+	if swag.IsZero(m.DealTypes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.DealTypes); i++ {
+
+		if err := m.DealTypes[i].Validate(formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("dealTypes" + "." + strconv.Itoa(i))
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("dealTypes" + "." + strconv.Itoa(i))
+			}
+
+			return err
+		}
+
+	}
+
 	return nil
 }
 
@@ -79,6 +111,10 @@ func (m *DealListDealRequest) validateStates(formats strfmt.Registry) error {
 func (m *DealListDealRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDealTypes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateStates(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -86,6 +122,32 @@ func (m *DealListDealRequest) ContextValidate(ctx context.Context, formats strfm
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *DealListDealRequest) contextValidateDealTypes(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.DealTypes); i++ {
+
+		if swag.IsZero(m.DealTypes[i]) { // not required
+			return nil
+		}
+
+		if err := m.DealTypes[i].ContextValidate(ctx, formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("dealTypes" + "." + strconv.Itoa(i))
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("dealTypes" + "." + strconv.Itoa(i))
+			}
+
+			return err
+		}
+
+	}
+
 	return nil
 }
 

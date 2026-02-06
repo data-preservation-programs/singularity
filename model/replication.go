@@ -101,7 +101,7 @@ type Deal struct {
 	LastVerifiedAt   *time.Time `json:"lastVerifiedAt"                  table:"verbose;format:2006-01-02 15:04:05"` // LastVerifiedAt is the last time the deal was verified as active by the tracker
 	DealID           *uint64    `gorm:"unique"                          json:"dealId"`
 	State            DealState  `gorm:"index:idx_pending"               json:"state"`
-	DealType         DealType   `gorm:"index;default:'market'"          json:"dealType"`                                               // DealType is the type of deal (market for legacy f05, pdp for f41 PDP deals)
+	DealType         DealType   `gorm:"index;default:'market'"          json:"dealType"`
 	Provider         string     `json:"provider"`
 	ProposalID       string     `json:"proposalId"                      table:"verbose"`
 	Label            string     `json:"label"                           table:"verbose"`
