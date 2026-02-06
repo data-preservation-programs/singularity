@@ -18,6 +18,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/google/uuid"
 	"github.com/gotidy/ptr"
+	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
@@ -239,10 +240,17 @@ func (p *PDPTracker) runOnce(ctx context.Context) error {
 
 		for _, ps := range proofSets {
 			for _, pieceCID := range ps.PieceCIDs {
+				parsedPieceCID, parseErr := cid.Parse(pieceCID)
+				if parseErr != nil {
+					Logger.Warnw("invalid piece CID from PDP proof set", "pieceCID", pieceCID, "proofSetID", ps.ProofSetID, "error", parseErr)
+					continue
+				}
+				modelPieceCID := model.CID(parsedPieceCID)
+
 				// Check if we already have this deal tracked
 				var existingDeal model.Deal
 				err := db.Where("proof_set_id = ? AND piece_cid = ? AND deal_type = ?",
-					ps.ProofSetID, pieceCID, model.DealTypePDP).First(&existingDeal).Error
+					ps.ProofSetID, modelPieceCID, model.DealTypePDP).First(&existingDeal).Error
 
 				if err == nil {
 					// Deal exists, check if status changed
@@ -285,7 +293,7 @@ func (p *PDPTracker) runOnce(ctx context.Context) error {
 						State:              newState,
 						ClientID:           wallet.ID,
 						Provider:           ps.ProviderAddress,
-						PieceCID:           model.CID{}, // TODO: Parse CID from string
+						PieceCID:           modelPieceCID,
 						ProofSetID:         ptr.Of(ps.ProofSetID),
 						ProofSetLive:       ptr.Of(ps.IsLive),
 						NextChallengeEpoch: ptr.Of(ps.NextChallengeEpoch),

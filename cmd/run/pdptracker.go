@@ -42,10 +42,11 @@ See: https://github.com/data-preservation-programs/go-synapse`,
 		}
 		defer closer.Close()
 
-		// Note: PDPClient is nil until go-synapse integration is complete
-		// When go-synapse is available, instantiate the client here:
-		// pdpClient := synapse.NewPDPClient(c.String("lotus-api"), ...)
-		var pdpClient pdptracker.PDPClient = nil
+		pdpClient, err := pdptracker.NewPDPClient(c.Context, c.String("lotus-api"))
+		if err != nil {
+			return err
+		}
+		defer pdpClient.Close()
 
 		tracker := pdptracker.NewPDPTracker(
 			db,
