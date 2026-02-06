@@ -556,6 +556,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			return db.Create(&model.Deal{
 				DealID:           &dealID,
 				State:            newState,
+				DealType:         model.DealTypeMarket, // Legacy market deal (f05)
 				ClientID:         deal.Proposal.Client,
 				Provider:         deal.Proposal.Provider,
 				Label:            deal.Proposal.Label,

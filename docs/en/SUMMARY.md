@@ -57,6 +57,7 @@
   * [Dataset Worker](cli-reference/run/dataset-worker.md)
   * [Content Provider](cli-reference/run/content-provider.md)
   * [Deal Tracker](cli-reference/run/deal-tracker.md)
+  * [Pdp Tracker](cli-reference/run/pdp-tracker.md)
   * [Deal Pusher](cli-reference/run/deal-pusher.md)
   * [Download Server](cli-reference/run/download-server.md)
 * [Wallet](cli-reference/wallet/README.md)

@@ -14,6 +14,7 @@ OPTIONS:
    --schedule value [ --schedule value ]        Filter deals by schedule
    --provider value [ --provider value ]        Filter deals by provider
    --state value [ --state value ]              Filter deals by state: proposed, published, active, expired, proposal_expired, slashed
+   --deal-type value [ --deal-type value ]      Filter deals by type: market (legacy f05), pdp (f41 PDP deals)
    --help, -h                                   show help
 ```
 {% endcode %}

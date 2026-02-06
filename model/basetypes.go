@@ -287,6 +287,7 @@ const (
 	DealTracker   WorkerType = "deal_tracker"
 	DealPusher    WorkerType = "deal_pusher"
 	DatasetWorker WorkerType = "dataset_worker"
+	PDPTracker    WorkerType = "pdp_tracker"
 )
 
 const (

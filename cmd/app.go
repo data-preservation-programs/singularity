@@ -154,6 +154,7 @@ Upgrading:
 				run.DatasetWorkerCmd,
 				run.ContentProviderCmd,
 				run.DealTrackerCmd,
+				run.PDPTrackerCmd,
 				run.DealPusherCmd,
 				run.DownloadServerCmd,
 			},

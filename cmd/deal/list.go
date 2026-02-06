@@ -34,6 +34,10 @@ var ListCmd = &cli.Command{
 			Name:  "state",
 			Usage: "Filter deals by state: proposed, published, active, expired, proposal_expired, slashed",
 		},
+		&cli.StringSliceFlag{
+			Name:  "deal-type",
+			Usage: "Filter deals by type: market (legacy f05), pdp (f41 PDP deals)",
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -47,6 +51,7 @@ var ListCmd = &cli.Command{
 			Schedules:    underscore.Map(c.IntSlice("schedules"), func(i int) uint32 { return uint32(i) }),
 			Providers:    c.StringSlice("provider"),
 			States:       underscore.Map(c.StringSlice("state"), func(s string) model.DealState { return model.DealState(s) }),
+			DealTypes:    underscore.Map(c.StringSlice("deal-type"), func(s string) model.DealType { return model.DealType(s) }),
 		})
 		if err != nil {
 			return errors.WithStack(err)

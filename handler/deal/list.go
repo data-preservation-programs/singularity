@@ -15,6 +15,7 @@ type ListDealRequest struct {
 	Schedules    []uint32          `json:"schedules"`    // schedule id filter
 	Providers    []string          `json:"providers"`    // provider filter
 	States       []model.DealState `json:"states"`       // state filter
+	DealTypes    []model.DealType  `json:"dealTypes"`    // deal type filter (market for f05, pdp for f41)
 }
 
 // ListHandler retrieves a list of deals from the database based on the specified filtering criteria in ListDealRequest.
@@ -82,6 +83,10 @@ func (DefaultHandler) ListHandler(ctx context.Context, db *gorm.DB, request List
 
 	if len(request.States) > 0 {
 		statement = statement.Where("state IN ?", request.States)
+	}
+
+	if len(request.DealTypes) > 0 {
+		statement = statement.Where("deal_type IN ?", request.DealTypes)
 	}
 
 	// We did not create indexes for all above query and it should be fine for now
