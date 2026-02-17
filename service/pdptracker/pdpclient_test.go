@@ -95,6 +95,10 @@ func (m *mockPDPVerifier) GetActivePieces(_ *bind.CallOpts, setId *big.Int, offs
 }
 
 func TestChainPDPClient_GetProofSetsForClient(t *testing.T) {
+	originalNetwork := address.CurrentNetwork
+	t.Cleanup(func() {
+		address.CurrentNetwork = originalNetwork
+	})
 	address.CurrentNetwork = address.Mainnet
 
 	listener := common.HexToAddress("0x1111111111111111111111111111111111111111")
@@ -144,8 +148,8 @@ func TestChainPDPClient_GetProofSetsForClient(t *testing.T) {
 	require.True(t, proofSet.IsLive)
 	require.EqualValues(t, 42, proofSet.NextChallengeEpoch)
 	require.Len(t, proofSet.PieceCIDs, 2)
-	require.Equal(t, piece1.String(), proofSet.PieceCIDs[0])
-	require.Equal(t, piece2.String(), proofSet.PieceCIDs[1])
+	require.True(t, piece1.Equals(proofSet.PieceCIDs[0]))
+	require.True(t, piece2.Equals(proofSet.PieceCIDs[1]))
 }
 
 func TestChainPDPClient_GetProofSetsForClient_InvalidAddress(t *testing.T) {

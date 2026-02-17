@@ -38,8 +38,8 @@ type ProofSetInfo struct {
 	ClientAddress      string // f4 address of the client
 	ProviderAddress    string // Provider/record keeper address
 	IsLive             bool   // Whether the proof set is actively being challenged
-	NextChallengeEpoch int32  // Next epoch when a challenge is due
-	PieceCIDs          []string
+	NextChallengeEpoch int32     // Next epoch when a challenge is due
+	PieceCIDs          []cid.Cid
 }
 
 // PDPClient is the interface for interacting with PDP on-chain state.
@@ -240,12 +240,11 @@ func (p *PDPTracker) runOnce(ctx context.Context) error {
 
 		for _, ps := range proofSets {
 			for _, pieceCID := range ps.PieceCIDs {
-				parsedPieceCID, parseErr := cid.Parse(pieceCID)
-				if parseErr != nil {
-					Logger.Warnw("invalid piece CID from PDP proof set", "pieceCID", pieceCID, "proofSetID", ps.ProofSetID, "error", parseErr)
+				if pieceCID == cid.Undef {
+					Logger.Warnw("invalid piece CID from PDP proof set", "pieceCID", pieceCID.String(), "proofSetID", ps.ProofSetID)
 					continue
 				}
-				modelPieceCID := model.CID(parsedPieceCID)
+				modelPieceCID := model.CID(pieceCID)
 
 				// Check if we already have this deal tracked
 				var existingDeal model.Deal

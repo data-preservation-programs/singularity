@@ -232,10 +232,10 @@ func (c *ChainPDPClient) buildProofSetInfo(ctx context.Context, setID uint64, li
 	}, nil
 }
 
-func (c *ChainPDPClient) getPieceCIDs(ctx context.Context, setID *big.Int) ([]string, error) {
+func (c *ChainPDPClient) getPieceCIDs(ctx context.Context, setID *big.Int) ([]cid.Cid, error) {
 	var (
 		offset uint64
-		result []string
+		result []cid.Cid
 	)
 
 	for {
@@ -254,7 +254,7 @@ func (c *ChainPDPClient) getPieceCIDs(ctx context.Context, setID *big.Int) ([]st
 			if err != nil {
 				return nil, errors.Wrapf(err, "invalid piece CID at index %d", i)
 			}
-			result = append(result, parsed.String())
+			result = append(result, parsed)
 		}
 
 		if !pieces.HasMore || len(pieces.Pieces) == 0 {

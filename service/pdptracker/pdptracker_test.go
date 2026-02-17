@@ -7,6 +7,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -45,6 +46,8 @@ func TestPDPTracker_RunOnce_UpsertByParsedPieceCID(t *testing.T) {
 		require.NoError(t, err)
 
 		const pieceCID = "baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq"
+		parsedPieceCID, err := cid.Decode(pieceCID)
+		require.NoError(t, err)
 		client := &mockPDPClient{
 			proofSets: map[string][]ProofSetInfo{
 				"f4wallet": {
@@ -54,7 +57,7 @@ func TestPDPTracker_RunOnce_UpsertByParsedPieceCID(t *testing.T) {
 						ProviderAddress:    "f01234",
 						IsLive:             true,
 						NextChallengeEpoch: 10,
-						PieceCIDs:          []string{pieceCID},
+						PieceCIDs:          []cid.Cid{parsedPieceCID},
 					},
 				},
 			},
@@ -109,7 +112,7 @@ func TestPDPTracker_RunOnce_SkipsInvalidPieceCID(t *testing.T) {
 						ProviderAddress:    "f01234",
 						IsLive:             true,
 						NextChallengeEpoch: 10,
-						PieceCIDs:          []string{"not-a-cid"},
+						PieceCIDs:          []cid.Cid{cid.Undef},
 					},
 				},
 			},
