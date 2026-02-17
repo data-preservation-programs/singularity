@@ -128,6 +128,27 @@ func (c *ChainPDPClient) GetProofSetsForClient(ctx context.Context, clientAddres
 		return nil, err
 	}
 
+	allSets, err := c.GetProofSets(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	proofSets := make([]ProofSetInfo, 0, len(allSets))
+	for _, ps := range allSets {
+		clientCommon, err := delegatedAddressToCommon(ps.ClientAddress)
+		if err != nil {
+			Logger.Debugw("failed to decode proof set client address", "proofSetID", ps.ProofSetID, "error", err)
+			continue
+		}
+		if clientCommon == listenerAddr {
+			proofSets = append(proofSets, ps)
+		}
+	}
+	return proofSets, nil
+}
+
+// GetProofSets returns all proof sets visible in the contract.
+func (c *ChainPDPClient) GetProofSets(ctx context.Context) ([]ProofSetInfo, error) {
 	nextID, err := c.contract.GetNextDataSetId(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get next data set ID")
@@ -142,10 +163,6 @@ func (c *ChainPDPClient) GetProofSetsForClient(ctx context.Context, clientAddres
 			Logger.Debugw("failed to get PDP data set listener", "setID", setID, "error", err)
 			continue
 		}
-		if listener != listenerAddr {
-			continue
-		}
-
 		info, err := c.buildProofSetInfo(ctx, setID, listener)
 		if err != nil {
 			Logger.Warnw("failed to build PDP proof set info", "setID", setID, "error", err)

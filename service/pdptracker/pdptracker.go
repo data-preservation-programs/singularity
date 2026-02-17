@@ -56,6 +56,11 @@ type PDPClient interface {
 	GetNextChallengeEpoch(ctx context.Context, proofSetID uint64) (int32, error)
 }
 
+// PDPBulkClient is an optional optimization interface for fetching all proof sets in one call.
+type PDPBulkClient interface {
+	GetProofSets(ctx context.Context) ([]ProofSetInfo, error)
+}
+
 // PDPTracker tracks PDP deals (f41 actor) on the Filecoin network.
 // It monitors proof sets and updates deal status based on on-chain state.
 type PDPTracker struct {
@@ -229,95 +234,105 @@ func (p *PDPTracker) runOnce(ctx context.Context) error {
 	now := time.Now()
 	var updated, inserted int64
 
-	for _, wallet := range wallets {
-		Logger.Infof("tracking PDP deals for wallet %s", wallet.ID)
+	processProofSet := func(wallet model.Wallet, ps ProofSetInfo) {
+		for _, pieceCID := range ps.PieceCIDs {
+			if pieceCID == cid.Undef {
+				Logger.Warnw("invalid piece CID from PDP proof set", "pieceCID", pieceCID.String(), "proofSetID", ps.ProofSetID)
+				continue
+			}
+			modelPieceCID := model.CID(pieceCID)
 
-		// Get proof sets for this wallet
-		walletAddr, err := address.NewFromString(wallet.Address)
-		if err != nil {
-			Logger.Warnw("invalid wallet address for PDP tracking", "walletID", wallet.ID, "address", wallet.Address, "error", err)
-			continue
-		}
+			// Check if we already have this deal tracked.
+			var existingDeal model.Deal
+			err := db.Where("proof_set_id = ? AND piece_cid = ? AND deal_type = ?",
+				ps.ProofSetID, modelPieceCID, model.DealTypePDP).First(&existingDeal).Error
 
-		proofSets, err := p.pdpClient.GetProofSetsForClient(ctx, walletAddr)
-		if err != nil {
-			Logger.Warnw("failed to get proof sets for wallet", "wallet", wallet.ID, "error", err)
-			continue
-		}
-
-		for _, ps := range proofSets {
-			for _, pieceCID := range ps.PieceCIDs {
-				if pieceCID == cid.Undef {
-					Logger.Warnw("invalid piece CID from PDP proof set", "pieceCID", pieceCID.String(), "proofSetID", ps.ProofSetID)
+			if err == nil {
+				// Overwrite tracked state idempotently each cycle instead of diffing fields.
+				updates := map[string]any{
+					"proof_set_live":       ps.IsLive,
+					"next_challenge_epoch": ps.NextChallengeEpoch,
+					"state":                p.getPDPDealState(ps),
+					"last_verified_at":     now,
+				}
+				err = database.DoRetry(ctx, func() error {
+					return db.Model(&model.Deal{}).Where("id = ?", existingDeal.ID).Updates(updates).Error
+				})
+				if err != nil {
+					Logger.Errorw("failed to update PDP deal", "dealID", existingDeal.ID, "error", err)
 					continue
 				}
-				modelPieceCID := model.CID(pieceCID)
-
-				// Check if we already have this deal tracked
-				var existingDeal model.Deal
-				err := db.Where("proof_set_id = ? AND piece_cid = ? AND deal_type = ?",
-					ps.ProofSetID, modelPieceCID, model.DealTypePDP).First(&existingDeal).Error
-
-				if err == nil {
-					// Deal exists, check if status changed
-					needsUpdate := false
-					updates := map[string]any{}
-
-					if existingDeal.ProofSetLive == nil || *existingDeal.ProofSetLive != ps.IsLive {
-						updates["proof_set_live"] = ps.IsLive
-						needsUpdate = true
-					}
-					if existingDeal.NextChallengeEpoch == nil || *existingDeal.NextChallengeEpoch != ps.NextChallengeEpoch {
-						updates["next_challenge_epoch"] = ps.NextChallengeEpoch
-						needsUpdate = true
-					}
-
-					// Update state based on proof set status
-					newState := p.getPDPDealState(ps)
-					if existingDeal.State != newState {
-						updates["state"] = newState
-						needsUpdate = true
-					}
-
-					if needsUpdate {
-						updates["last_verified_at"] = now
-						err = database.DoRetry(ctx, func() error {
-							return db.Model(&model.Deal{}).Where("id = ?", existingDeal.ID).Updates(updates).Error
-						})
-						if err != nil {
-							Logger.Errorw("failed to update PDP deal", "dealID", existingDeal.ID, "error", err)
-							continue
-						}
-						Logger.Infow("PDP deal updated", "dealID", existingDeal.ID, "proofSetID", ps.ProofSetID)
-						updated++
-					}
-				} else if errors.Is(err, gorm.ErrRecordNotFound) {
-					// New PDP deal, insert it
-					newState := p.getPDPDealState(ps)
-					newDeal := model.Deal{
-						DealType:           model.DealTypePDP,
-						State:              newState,
-						ClientID:           wallet.ID,
-						Provider:           ps.ProviderAddress.String(),
-						PieceCID:           modelPieceCID,
-						ProofSetID:         ptr.Of(ps.ProofSetID),
-						ProofSetLive:       ptr.Of(ps.IsLive),
-						NextChallengeEpoch: ptr.Of(ps.NextChallengeEpoch),
-						LastVerifiedAt:     ptr.Of(now),
-					}
-
-					err = database.DoRetry(ctx, func() error {
-						return db.Create(&newDeal).Error
-					})
-					if err != nil {
-						Logger.Errorw("failed to insert PDP deal", "proofSetID", ps.ProofSetID, "error", err)
-						continue
-					}
-					Logger.Infow("PDP deal inserted", "proofSetID", ps.ProofSetID, "state", newState)
-					inserted++
-				} else {
-					Logger.Errorw("failed to query existing PDP deal", "error", err)
+				Logger.Infow("PDP deal updated", "dealID", existingDeal.ID, "proofSetID", ps.ProofSetID)
+				updated++
+			} else if errors.Is(err, gorm.ErrRecordNotFound) {
+				// New PDP deal, insert it.
+				newState := p.getPDPDealState(ps)
+				newDeal := model.Deal{
+					DealType:           model.DealTypePDP,
+					State:              newState,
+					ClientID:           wallet.ID,
+					Provider:           ps.ProviderAddress.String(),
+					PieceCID:           modelPieceCID,
+					ProofSetID:         ptr.Of(ps.ProofSetID),
+					ProofSetLive:       ptr.Of(ps.IsLive),
+					NextChallengeEpoch: ptr.Of(ps.NextChallengeEpoch),
+					LastVerifiedAt:     ptr.Of(now),
 				}
+
+				err = database.DoRetry(ctx, func() error {
+					return db.Create(&newDeal).Error
+				})
+				if err != nil {
+					Logger.Errorw("failed to insert PDP deal", "proofSetID", ps.ProofSetID, "error", err)
+					continue
+				}
+				Logger.Infow("PDP deal inserted", "proofSetID", ps.ProofSetID, "state", newState)
+				inserted++
+			} else {
+				Logger.Errorw("failed to query existing PDP deal", "error", err)
+			}
+		}
+	}
+
+	if bulkClient, ok := p.pdpClient.(PDPBulkClient); ok {
+		walletsByAddress := make(map[string][]model.Wallet, len(wallets))
+		for _, wallet := range wallets {
+			walletAddr, err := address.NewFromString(wallet.Address)
+			if err != nil {
+				Logger.Warnw("invalid wallet address for PDP tracking", "walletID", wallet.ID, "address", wallet.Address, "error", err)
+				continue
+			}
+			walletsByAddress[walletAddr.String()] = append(walletsByAddress[walletAddr.String()], wallet)
+		}
+
+		// Fetch once and fan out by client address to avoid full on-chain scans per wallet.
+		proofSets, err := bulkClient.GetProofSets(ctx)
+		if err != nil {
+			return errors.Wrap(err, "failed to get PDP proof sets")
+		}
+		for _, ps := range proofSets {
+			for _, wallet := range walletsByAddress[ps.ClientAddress.String()] {
+				processProofSet(wallet, ps)
+			}
+		}
+	} else {
+		for _, wallet := range wallets {
+			Logger.Infof("tracking PDP deals for wallet %s", wallet.ID)
+
+			walletAddr, err := address.NewFromString(wallet.Address)
+			if err != nil {
+				Logger.Warnw("invalid wallet address for PDP tracking", "walletID", wallet.ID, "address", wallet.Address, "error", err)
+				continue
+			}
+
+			proofSets, err := p.pdpClient.GetProofSetsForClient(ctx, walletAddr)
+			if err != nil {
+				Logger.Warnw("failed to get proof sets for wallet", "wallet", wallet.ID, "error", err)
+				continue
+			}
+
+			for _, ps := range proofSets {
+				processProofSet(wallet, ps)
 			}
 		}
 	}

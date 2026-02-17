@@ -18,9 +18,6 @@ DESCRIPTION:
    - Updates deal status based on on-chain proof set state
    - Tracks challenge epochs and live status
 
-   Note: Full functionality requires the go-synapse library integration.
-   See: https://github.com/data-preservation-programs/go-synapse
-
 OPTIONS:
    --interval value  How often to check for PDP deal updates (default: 10m0s)
    --eth-rpc value   Ethereum RPC endpoint for FEVM (e.g., https://api.node.glif.io) [$ETH_RPC_URL]

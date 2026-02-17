@@ -15,10 +15,20 @@ import (
 
 type mockPDPClient struct {
 	proofSets map[address.Address][]ProofSetInfo
+	bulkCalls int
 }
 
 func (m *mockPDPClient) GetProofSetsForClient(_ context.Context, clientAddress address.Address) ([]ProofSetInfo, error) {
 	return m.proofSets[clientAddress], nil
+}
+
+func (m *mockPDPClient) GetProofSets(_ context.Context) ([]ProofSetInfo, error) {
+	m.bulkCalls++
+	var all []ProofSetInfo
+	for _, sets := range m.proofSets {
+		all = append(all, sets...)
+	}
+	return all, nil
 }
 
 func (m *mockPDPClient) GetProofSetInfo(_ context.Context, _ uint64) (*ProofSetInfo, error) {
@@ -50,7 +60,7 @@ func TestPDPTracker_RunOnce_UpsertByParsedPieceCID(t *testing.T) {
 		providerAddr, err := address.NewDelegatedAddress(10, providerSubaddr)
 		require.NoError(t, err)
 
-		err := db.Create(&model.Wallet{
+		err = db.Create(&model.Wallet{
 			ID:      "f0100",
 			Address: walletAddr.String(),
 		}).Error
@@ -118,7 +128,7 @@ func TestPDPTracker_RunOnce_SkipsInvalidPieceCID(t *testing.T) {
 		providerAddr, err := address.NewDelegatedAddress(10, providerSubaddr)
 		require.NoError(t, err)
 
-		err := db.Create(&model.Wallet{
+		err = db.Create(&model.Wallet{
 			ID:      "f0100",
 			Address: walletAddr.String(),
 		}).Error
@@ -145,5 +155,47 @@ func TestPDPTracker_RunOnce_SkipsInvalidPieceCID(t *testing.T) {
 		err = db.Model(&model.Deal{}).Where("deal_type = ?", model.DealTypePDP).Count(&count).Error
 		require.NoError(t, err)
 		require.EqualValues(t, 0, count)
+	})
+}
+
+func TestPDPTracker_RunOnce_UsesBulkFetchWhenAvailable(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		walletSubaddr := make([]byte, 20)
+		walletSubaddr[19] = 5
+		walletAddr, err := address.NewDelegatedAddress(10, walletSubaddr)
+		require.NoError(t, err)
+
+		providerSubaddr := make([]byte, 20)
+		providerSubaddr[19] = 6
+		providerAddr, err := address.NewDelegatedAddress(10, providerSubaddr)
+		require.NoError(t, err)
+
+		err = db.Create(&model.Wallet{
+			ID:      "f0101",
+			Address: walletAddr.String(),
+		}).Error
+		require.NoError(t, err)
+
+		pieceCID, err := cid.Decode("baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq")
+		require.NoError(t, err)
+
+		client := &mockPDPClient{
+			proofSets: map[address.Address][]ProofSetInfo{
+				walletAddr: {
+					{
+						ProofSetID:         8,
+						ClientAddress:      walletAddr,
+						ProviderAddress:    providerAddr,
+						IsLive:             true,
+						NextChallengeEpoch: 12,
+						PieceCIDs:          []cid.Cid{pieceCID},
+					},
+				},
+			},
+		}
+
+		tracker := NewPDPTracker(db, time.Minute, "", client, true)
+		require.NoError(t, tracker.runOnce(ctx))
+		require.Equal(t, 1, client.bulkCalls)
 	})
 }
