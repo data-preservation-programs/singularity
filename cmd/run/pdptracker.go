@@ -30,9 +30,9 @@ See: https://github.com/data-preservation-programs/go-synapse`,
 			Value: 10 * time.Minute,
 		},
 		&cli.StringFlag{
-			Name:    "lotus-api",
-			Usage:   "Lotus RPC API endpoint",
-			EnvVars: []string{"LOTUS_API"},
+			Name:    "eth-rpc",
+			Usage:   "Ethereum RPC endpoint for FEVM (e.g., https://api.node.glif.io)",
+			EnvVars: []string{"ETH_RPC_URL"},
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -42,7 +42,7 @@ See: https://github.com/data-preservation-programs/go-synapse`,
 		}
 		defer closer.Close()
 
-		pdpClient, err := pdptracker.NewPDPClient(c.Context, c.String("lotus-api"))
+		pdpClient, err := pdptracker.NewPDPClient(c.Context, c.String("eth-rpc"))
 		if err != nil {
 			return err
 		}
@@ -51,7 +51,7 @@ See: https://github.com/data-preservation-programs/go-synapse`,
 		tracker := pdptracker.NewPDPTracker(
 			db,
 			c.Duration("interval"),
-			c.String("lotus-api"),
+			c.String("eth-rpc"),
 			pdpClient,
 			false,
 		)

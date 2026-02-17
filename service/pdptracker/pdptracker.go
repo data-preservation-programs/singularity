@@ -16,6 +16,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
+	"github.com/filecoin-project/go-address"
 	"github.com/google/uuid"
 	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-cid"
@@ -35,10 +36,10 @@ var Logger = log.Logger("pdptracker")
 // ProofSetInfo contains information about a PDP proof set retrieved from on-chain state
 type ProofSetInfo struct {
 	ProofSetID         uint64
-	ClientAddress      string // f4 address of the client
-	ProviderAddress    string // Provider/record keeper address
-	IsLive             bool   // Whether the proof set is actively being challenged
-	NextChallengeEpoch int32     // Next epoch when a challenge is due
+	ClientAddress      address.Address // f4 address of the client
+	ProviderAddress    address.Address // Provider/record keeper address
+	IsLive             bool            // Whether the proof set is actively being challenged
+	NextChallengeEpoch int32           // Next epoch when a challenge is due
 	PieceCIDs          []cid.Cid
 }
 
@@ -46,7 +47,7 @@ type ProofSetInfo struct {
 // This will be implemented using the go-synapse library once it's available.
 type PDPClient interface {
 	// GetProofSetsForClient returns all proof sets associated with a client address
-	GetProofSetsForClient(ctx context.Context, clientAddress string) ([]ProofSetInfo, error)
+	GetProofSetsForClient(ctx context.Context, clientAddress address.Address) ([]ProofSetInfo, error)
 	// GetProofSetInfo returns detailed information about a specific proof set
 	GetProofSetInfo(ctx context.Context, proofSetID uint64) (*ProofSetInfo, error)
 	// IsProofSetLive checks if a proof set is actively being challenged
@@ -232,7 +233,13 @@ func (p *PDPTracker) runOnce(ctx context.Context) error {
 		Logger.Infof("tracking PDP deals for wallet %s", wallet.ID)
 
 		// Get proof sets for this wallet
-		proofSets, err := p.pdpClient.GetProofSetsForClient(ctx, wallet.Address)
+		walletAddr, err := address.NewFromString(wallet.Address)
+		if err != nil {
+			Logger.Warnw("invalid wallet address for PDP tracking", "walletID", wallet.ID, "address", wallet.Address, "error", err)
+			continue
+		}
+
+		proofSets, err := p.pdpClient.GetProofSetsForClient(ctx, walletAddr)
 		if err != nil {
 			Logger.Warnw("failed to get proof sets for wallet", "wallet", wallet.ID, "error", err)
 			continue
@@ -291,7 +298,7 @@ func (p *PDPTracker) runOnce(ctx context.Context) error {
 						DealType:           model.DealTypePDP,
 						State:              newState,
 						ClientID:           wallet.ID,
-						Provider:           ps.ProviderAddress,
+						Provider:           ps.ProviderAddress.String(),
 						PieceCID:           modelPieceCID,
 						ProofSetID:         ptr.Of(ps.ProofSetID),
 						ProofSetLive:       ptr.Of(ps.IsLive),

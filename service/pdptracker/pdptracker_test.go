@@ -7,16 +7,17 @@ import (
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
 
 type mockPDPClient struct {
-	proofSets map[string][]ProofSetInfo
+	proofSets map[address.Address][]ProofSetInfo
 }
 
-func (m *mockPDPClient) GetProofSetsForClient(_ context.Context, clientAddress string) ([]ProofSetInfo, error) {
+func (m *mockPDPClient) GetProofSetsForClient(_ context.Context, clientAddress address.Address) ([]ProofSetInfo, error) {
 	return m.proofSets[clientAddress], nil
 }
 
@@ -39,9 +40,19 @@ func TestPDPTracker_Name(t *testing.T) {
 
 func TestPDPTracker_RunOnce_UpsertByParsedPieceCID(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		walletSubaddr := make([]byte, 20)
+		walletSubaddr[19] = 1
+		walletAddr, err := address.NewDelegatedAddress(10, walletSubaddr)
+		require.NoError(t, err)
+
+		providerSubaddr := make([]byte, 20)
+		providerSubaddr[19] = 2
+		providerAddr, err := address.NewDelegatedAddress(10, providerSubaddr)
+		require.NoError(t, err)
+
 		err := db.Create(&model.Wallet{
 			ID:      "f0100",
-			Address: "f4wallet",
+			Address: walletAddr.String(),
 		}).Error
 		require.NoError(t, err)
 
@@ -49,12 +60,12 @@ func TestPDPTracker_RunOnce_UpsertByParsedPieceCID(t *testing.T) {
 		parsedPieceCID, err := cid.Decode(pieceCID)
 		require.NoError(t, err)
 		client := &mockPDPClient{
-			proofSets: map[string][]ProofSetInfo{
-				"f4wallet": {
+			proofSets: map[address.Address][]ProofSetInfo{
+				walletAddr: {
 					{
 						ProofSetID:         7,
-						ClientAddress:      "f4wallet",
-						ProviderAddress:    "f01234",
+						ClientAddress:      walletAddr,
+						ProviderAddress:    providerAddr,
 						IsLive:             true,
 						NextChallengeEpoch: 10,
 						PieceCIDs:          []cid.Cid{parsedPieceCID},
@@ -78,8 +89,8 @@ func TestPDPTracker_RunOnce_UpsertByParsedPieceCID(t *testing.T) {
 		require.Equal(t, model.DealActive, first.State)
 		require.NotNil(t, first.LastVerifiedAt)
 
-		client.proofSets["f4wallet"][0].IsLive = false
-		client.proofSets["f4wallet"][0].NextChallengeEpoch = 11
+		client.proofSets[walletAddr][0].IsLive = false
+		client.proofSets[walletAddr][0].NextChallengeEpoch = 11
 		require.NoError(t, tracker.runOnce(ctx))
 
 		var deals []model.Deal
@@ -97,19 +108,29 @@ func TestPDPTracker_RunOnce_UpsertByParsedPieceCID(t *testing.T) {
 
 func TestPDPTracker_RunOnce_SkipsInvalidPieceCID(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		walletSubaddr := make([]byte, 20)
+		walletSubaddr[19] = 3
+		walletAddr, err := address.NewDelegatedAddress(10, walletSubaddr)
+		require.NoError(t, err)
+
+		providerSubaddr := make([]byte, 20)
+		providerSubaddr[19] = 4
+		providerAddr, err := address.NewDelegatedAddress(10, providerSubaddr)
+		require.NoError(t, err)
+
 		err := db.Create(&model.Wallet{
 			ID:      "f0100",
-			Address: "f4wallet",
+			Address: walletAddr.String(),
 		}).Error
 		require.NoError(t, err)
 
 		client := &mockPDPClient{
-			proofSets: map[string][]ProofSetInfo{
-				"f4wallet": {
+			proofSets: map[address.Address][]ProofSetInfo{
+				walletAddr: {
 					{
 						ProofSetID:         7,
-						ClientAddress:      "f4wallet",
-						ProviderAddress:    "f01234",
+						ClientAddress:      walletAddr,
+						ProviderAddress:    providerAddr,
 						IsLive:             true,
 						NextChallengeEpoch: 10,
 						PieceCIDs:          []cid.Cid{cid.Undef},

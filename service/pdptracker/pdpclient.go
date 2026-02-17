@@ -122,8 +122,8 @@ func (c *ChainPDPClient) Close() error {
 }
 
 // GetProofSetsForClient returns all proof sets associated with a client address.
-func (c *ChainPDPClient) GetProofSetsForClient(ctx context.Context, clientAddress string) ([]ProofSetInfo, error) {
-	listenerAddr, err := parseDelegatedAddress(clientAddress)
+func (c *ChainPDPClient) GetProofSetsForClient(ctx context.Context, clientAddress address.Address) ([]ProofSetInfo, error) {
+	listenerAddr, err := delegatedAddressToCommon(clientAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -213,11 +213,11 @@ func (c *ChainPDPClient) buildProofSetInfo(ctx context.Context, setID uint64, li
 		return nil, errors.Wrap(err, "failed to get PDP active pieces")
 	}
 
-	clientAddr, err := formatDelegatedAddress(listener.Bytes())
+	clientAddr, err := commonToDelegatedAddress(listener)
 	if err != nil {
 		return nil, err
 	}
-	providerAddr, err := formatDelegatedAddress(storageProvider.Bytes())
+	providerAddr, err := commonToDelegatedAddress(storageProvider)
 	if err != nil {
 		return nil, err
 	}
@@ -266,17 +266,9 @@ func (c *ChainPDPClient) getPieceCIDs(ctx context.Context, setID *big.Int) ([]ci
 	return result, nil
 }
 
-func parseDelegatedAddress(addressStr string) (common.Address, error) {
-	if addressStr == "" {
+func delegatedAddressToCommon(addr address.Address) (common.Address, error) {
+	if addr == address.Undef {
 		return common.Address{}, errors.New("client address is required")
-	}
-	if common.IsHexAddress(addressStr) {
-		return common.HexToAddress(addressStr), nil
-	}
-
-	addr, err := address.NewFromString(addressStr)
-	if err != nil {
-		return common.Address{}, errors.Wrap(err, "failed to parse client address")
 	}
 	if addr.Protocol() != address.Delegated {
 		return common.Address{}, fmt.Errorf("client address must be delegated (f4), got protocol %d", addr.Protocol())
@@ -297,13 +289,10 @@ func parseDelegatedAddress(addressStr string) (common.Address, error) {
 	return common.BytesToAddress(subaddr), nil
 }
 
-func formatDelegatedAddress(subaddr []byte) (string, error) {
-	if len(subaddr) != common.AddressLength {
-		return "", fmt.Errorf("invalid delegated subaddress length: %d", len(subaddr))
-	}
-	addr, err := address.NewDelegatedAddress(10, subaddr)
+func commonToDelegatedAddress(subaddr common.Address) (address.Address, error) {
+	addr, err := address.NewDelegatedAddress(10, subaddr.Bytes())
 	if err != nil {
-		return "", errors.Wrap(err, "failed to encode delegated address")
+		return address.Undef, errors.Wrap(err, "failed to encode delegated address")
 	}
-	return addr.String(), nil
+	return addr, nil
 }

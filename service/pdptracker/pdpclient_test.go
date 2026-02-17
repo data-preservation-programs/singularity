@@ -137,14 +137,14 @@ func TestChainPDPClient_GetProofSetsForClient(t *testing.T) {
 		pageSize: 1,
 	}
 
-	proofSets, err := client.GetProofSetsForClient(context.Background(), listenerAddr.String())
+	proofSets, err := client.GetProofSetsForClient(context.Background(), listenerAddr)
 	require.NoError(t, err)
 	require.Len(t, proofSets, 1)
 
 	proofSet := proofSets[0]
 	require.EqualValues(t, 1, proofSet.ProofSetID)
-	require.Equal(t, listenerAddr.String(), proofSet.ClientAddress)
-	require.Equal(t, providerAddr.String(), proofSet.ProviderAddress)
+	require.Equal(t, listenerAddr, proofSet.ClientAddress)
+	require.Equal(t, providerAddr, proofSet.ProviderAddress)
 	require.True(t, proofSet.IsLive)
 	require.EqualValues(t, 42, proofSet.NextChallengeEpoch)
 	require.Len(t, proofSet.PieceCIDs, 2)
@@ -158,6 +158,9 @@ func TestChainPDPClient_GetProofSetsForClient_InvalidAddress(t *testing.T) {
 		pageSize: 1,
 	}
 
-	_, err := client.GetProofSetsForClient(context.Background(), "f0100")
+	addr, err := address.NewFromString("f0100")
+	require.NoError(t, err)
+
+	_, err = client.GetProofSetsForClient(context.Background(), addr)
 	require.Error(t, err)
 }

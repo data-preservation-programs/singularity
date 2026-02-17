@@ -22,8 +22,8 @@ DESCRIPTION:
    See: https://github.com/data-preservation-programs/go-synapse
 
 OPTIONS:
-   --interval value   How often to check for PDP deal updates (default: 10m0s)
-   --lotus-api value  Lotus RPC API endpoint [$LOTUS_API]
-   --help, -h         show help
+   --interval value  How often to check for PDP deal updates (default: 10m0s)
+   --eth-rpc value   Ethereum RPC endpoint for FEVM (e.g., https://api.node.glif.io) [$ETH_RPC_URL]
+   --help, -h        show help
 ```
 {% endcode %}
