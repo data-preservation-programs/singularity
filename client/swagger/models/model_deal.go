@@ -28,6 +28,9 @@ type ModelDeal struct {
 	// deal Id
 	DealID int64 `json:"dealId,omitempty"`
 
+	// deal type
+	DealType ModelDealType `json:"dealType,omitempty"`
+
 	// end epoch
 	EndEpoch int64 `json:"endEpoch,omitempty"`
 
@@ -43,6 +46,9 @@ type ModelDeal struct {
 	// LastVerifiedAt is the last time the deal was verified as active by the tracker
 	LastVerifiedAt string `json:"lastVerifiedAt,omitempty"`
 
+	// NextChallengeEpoch is the next epoch when a challenge proof is due
+	NextChallengeEpoch int64 `json:"nextChallengeEpoch,omitempty"`
+
 	// piece cid
 	PieceCid string `json:"pieceCid,omitempty"`
 
@@ -51,6 +57,12 @@ type ModelDeal struct {
 
 	// price
 	Price string `json:"price,omitempty"`
+
+	// PDP-specific fields (only populated for DealTypePDP)
+	ProofSetID int64 `json:"proofSetId,omitempty"`
+
+	// ProofSetLive indicates if the proof set is live (actively being challenged)
+	ProofSetLive bool `json:"proofSetLive,omitempty"`
 
 	// proposal Id
 	ProposalID string `json:"proposalId,omitempty"`
@@ -81,6 +93,10 @@ type ModelDeal struct {
 func (m *ModelDeal) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDealType(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
 	}
@@ -88,6 +104,27 @@ func (m *ModelDeal) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelDeal) validateDealType(formats strfmt.Registry) error {
+	if swag.IsZero(m.DealType) { // not required
+		return nil
+	}
+
+	if err := m.DealType.Validate(formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("dealType")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("dealType")
+		}
+
+		return err
+	}
+
 	return nil
 }
 
@@ -116,6 +153,10 @@ func (m *ModelDeal) validateState(formats strfmt.Registry) error {
 func (m *ModelDeal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDealType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -123,6 +164,28 @@ func (m *ModelDeal) ContextValidate(ctx context.Context, formats strfmt.Registry
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelDeal) contextValidateDealType(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.DealType) { // not required
+		return nil
+	}
+
+	if err := m.DealType.ContextValidate(ctx, formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("dealType")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("dealType")
+		}
+
+		return err
+	}
+
 	return nil
 }
 

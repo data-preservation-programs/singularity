@@ -151,6 +151,11 @@ definitions:
     type: object
   deal.ListDealRequest:
     properties:
+      dealTypes:
+        description: deal type filter (market for f05, pdp for f41)
+        items:
+          $ref: '#/definitions/model.DealType'
+        type: array
       preparations:
         description: preparation ID or name filter
         items:
@@ -392,6 +397,8 @@ definitions:
         type: string
       dealId:
         type: integer
+      dealType:
+        $ref: '#/definitions/model.DealType'
       endEpoch:
         type: integer
       errorMessage:
@@ -404,12 +411,23 @@ definitions:
         description: LastVerifiedAt is the last time the deal was verified as active
           by the tracker
         type: string
+      nextChallengeEpoch:
+        description: NextChallengeEpoch is the next epoch when a challenge proof is
+          due
+        type: integer
       pieceCid:
         type: string
       pieceSize:
         type: integer
       price:
         type: string
+      proofSetId:
+        description: PDP-specific fields (only populated for DealTypePDP)
+        type: integer
+      proofSetLive:
+        description: ProofSetLive indicates if the proof set is live (actively being
+          challenged)
+        type: boolean
       proposalId:
         type: string
       provider:
@@ -448,6 +466,14 @@ definitions:
     - DealRejected
     - DealSlashed
     - DealErrored
+  model.DealType:
+    enum:
+    - market
+    - pdp
+    type: string
+    x-enum-varnames:
+    - DealTypeMarket
+    - DealTypePDP
   model.File:
     properties:
       attachmentId:
