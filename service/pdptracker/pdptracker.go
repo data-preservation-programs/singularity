@@ -3,7 +3,6 @@
 //
 // PDP deals use proof sets managed through the PDPVerifier contract, where data is verified
 // through cryptographic challenges rather than the traditional sector sealing process.
-//
 package pdptracker
 
 import (
@@ -65,7 +64,6 @@ type PDPTracker struct {
 	dbNoContext *gorm.DB
 	config      PDPConfig
 	pdpClient   PDPClient
-	rpcURL      string
 	once        bool
 }
 
@@ -73,14 +71,12 @@ type PDPTracker struct {
 //
 // Parameters:
 //   - db: Database connection for storing deal information
-//   - interval: How often to check for updates
-//   - rpcURL: Filecoin RPC endpoint URL
-//   - pdpClient: Client for interacting with PDP contracts (can be nil to disable tracking)
+//   - config: Tracker runtime configuration
+//   - pdpClient: Client for interacting with PDP contracts
 //   - once: If true, run only once instead of continuously
 func NewPDPTracker(
 	db *gorm.DB,
 	config PDPConfig,
-	rpcURL string,
 	pdpClient PDPClient,
 	once bool,
 ) PDPTracker {
@@ -88,7 +84,6 @@ func NewPDPTracker(
 		workerID:    uuid.New(),
 		dbNoContext: db,
 		config:      config,
-		rpcURL:      rpcURL,
 		pdpClient:   pdpClient,
 		once:        once,
 	}
@@ -101,10 +96,7 @@ func (*PDPTracker) Name() string {
 // Start begins the PDP tracker service.
 func (p *PDPTracker) Start(ctx context.Context, exitErr chan<- error) error {
 	Logger.Infow("PDP tracker started",
-		"batchSize", p.config.BatchSize,
-		"confirmationDepth", p.config.ConfirmationDepth,
 		"pollInterval", p.config.PollingInterval,
-		"gasCap", p.config.GasCap,
 	)
 	var regTimer *time.Timer
 	for {

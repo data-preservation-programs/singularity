@@ -23,20 +23,10 @@ This tracker:
 - Tracks challenge epochs and live status`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:    "eth-rpc",
-			Usage:   "Ethereum RPC endpoint for FEVM (e.g., https://api.node.glif.io)",
-			EnvVars: []string{"ETH_RPC_URL"},
+			Name:     "eth-rpc",
+			Usage:    "Ethereum RPC endpoint for FEVM (e.g., https://api.node.glif.io)",
+			EnvVars:  []string{"ETH_RPC_URL"},
 			Required: true,
-		},
-		&cli.IntFlag{
-			Name:  "pdp-batch-size",
-			Usage: "Max pieces per AddRoots transaction",
-			Value: 100,
-		},
-		&cli.Uint64Flag{
-			Name:  "pdp-confirmation-depth",
-			Usage: "Blocks to wait for PDP transaction confirmation",
-			Value: 5,
 		},
 		&cli.DurationFlag{
 			Name:  "pdp-poll-interval",
@@ -63,9 +53,7 @@ This tracker:
 		defer pdpClient.Close()
 
 		cfg := pdptracker.PDPConfig{
-			BatchSize:         c.Int("pdp-batch-size"),
-			ConfirmationDepth: c.Uint64("pdp-confirmation-depth"),
-			PollingInterval:   c.Duration("pdp-poll-interval"),
+			PollingInterval: c.Duration("pdp-poll-interval"),
 		}
 		if err := cfg.Validate(); err != nil {
 			return err
@@ -74,7 +62,6 @@ This tracker:
 		tracker := pdptracker.NewPDPTracker(
 			db,
 			cfg,
-			rpcURL,
 			pdpClient,
 			false,
 		)
