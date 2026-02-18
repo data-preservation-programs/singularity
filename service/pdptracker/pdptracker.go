@@ -4,8 +4,6 @@
 // PDP deals use proof sets managed through the PDPVerifier contract, where data is verified
 // through cryptographic challenges rather than the traditional sector sealing process.
 //
-// Note: This package requires the go-synapse library for full functionality.
-// See: https://github.com/data-preservation-programs/go-synapse
 package pdptracker
 
 import (
@@ -44,7 +42,6 @@ type ProofSetInfo struct {
 }
 
 // PDPClient is the interface for interacting with PDP on-chain state.
-// This will be implemented using the go-synapse library once it's available.
 type PDPClient interface {
 	// GetProofSetsForClient returns all proof sets associated with a client address
 	GetProofSetsForClient(ctx context.Context, clientAddress address.Address) ([]ProofSetInfo, error)
@@ -78,7 +75,7 @@ type PDPTracker struct {
 //   - db: Database connection for storing deal information
 //   - interval: How often to check for updates
 //   - rpcURL: Filecoin RPC endpoint URL
-//   - pdpClient: Client for interacting with PDP contracts (can be nil for stub mode)
+//   - pdpClient: Client for interacting with PDP contracts (can be nil to disable tracking)
 //   - once: If true, run only once instead of continuously
 func NewPDPTracker(
 	db *gorm.DB,
@@ -104,7 +101,7 @@ func (*PDPTracker) Name() string {
 // Start begins the PDP tracker service.
 func (p *PDPTracker) Start(ctx context.Context, exitErr chan<- error) error {
 	if p.pdpClient == nil {
-		Logger.Warn("PDP client not configured - PDP tracking will be disabled until go-synapse is integrated")
+		Logger.Warn("PDP client not configured - PDP tracking disabled")
 		if exitErr != nil {
 			exitErr <- nil
 		}

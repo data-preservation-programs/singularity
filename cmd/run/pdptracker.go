@@ -19,10 +19,7 @@ where data is verified through cryptographic challenges.
 This tracker:
 - Monitors proof sets for tracked wallets
 - Updates deal status based on on-chain proof set state
-- Tracks challenge epochs and live status
-
-Note: Full functionality requires the go-synapse library integration.
-See: https://github.com/data-preservation-programs/go-synapse`,
+- Tracks challenge epochs and live status`,
 	Flags: []cli.Flag{
 		&cli.DurationFlag{
 			Name:  "interval",
