@@ -100,14 +100,6 @@ func (*PDPTracker) Name() string {
 
 // Start begins the PDP tracker service.
 func (p *PDPTracker) Start(ctx context.Context, exitErr chan<- error) error {
-	if p.pdpClient == nil {
-		Logger.Warn("PDP client not configured - PDP tracking disabled")
-		if exitErr != nil {
-			exitErr <- nil
-		}
-		return nil
-	}
-
 	var regTimer *time.Timer
 	for {
 		alreadyRunning, err := healthcheck.Register(ctx, p.dbNoContext, p.workerID, model.PDPTracker, false)
@@ -215,10 +207,6 @@ func (p *PDPTracker) cleanup(ctx context.Context) error {
 // runOnce performs a single cycle of PDP deal tracking.
 // It queries wallets, fetches their PDP proof sets, and updates deal status.
 func (p *PDPTracker) runOnce(ctx context.Context) error {
-	if p.pdpClient == nil {
-		return nil
-	}
-
 	db := p.dbNoContext.WithContext(ctx)
 
 	// Get all wallets to track
