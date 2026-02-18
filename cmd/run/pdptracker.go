@@ -22,16 +22,26 @@ This tracker:
 - Updates deal status based on on-chain proof set state
 - Tracks challenge epochs and live status`,
 	Flags: []cli.Flag{
-		&cli.DurationFlag{
-			Name:  "interval",
-			Usage: "How often to check for PDP deal updates",
-			Value: 10 * time.Minute,
-		},
 		&cli.StringFlag{
 			Name:    "eth-rpc",
 			Usage:   "Ethereum RPC endpoint for FEVM (e.g., https://api.node.glif.io)",
 			EnvVars: []string{"ETH_RPC_URL"},
 			Required: true,
+		},
+		&cli.IntFlag{
+			Name:  "pdp-batch-size",
+			Usage: "Max pieces per AddRoots transaction",
+			Value: 100,
+		},
+		&cli.Uint64Flag{
+			Name:  "pdp-confirmation-depth",
+			Usage: "Blocks to wait for PDP transaction confirmation",
+			Value: 5,
+		},
+		&cli.DurationFlag{
+			Name:  "pdp-poll-interval",
+			Usage: "Polling interval for PDP transaction status",
+			Value: 30 * time.Second,
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -52,9 +62,18 @@ This tracker:
 		}
 		defer pdpClient.Close()
 
+		cfg := pdptracker.PDPConfig{
+			BatchSize:         c.Int("pdp-batch-size"),
+			ConfirmationDepth: c.Uint64("pdp-confirmation-depth"),
+			PollingInterval:   c.Duration("pdp-poll-interval"),
+		}
+		if err := cfg.Validate(); err != nil {
+			return err
+		}
+
 		tracker := pdptracker.NewPDPTracker(
 			db,
-			c.Duration("interval"),
+			cfg,
 			rpcURL,
 			pdpClient,
 			false,

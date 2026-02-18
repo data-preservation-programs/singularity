@@ -63,7 +63,7 @@ type PDPBulkClient interface {
 type PDPTracker struct {
 	workerID    uuid.UUID
 	dbNoContext *gorm.DB
-	interval    time.Duration
+	config      PDPConfig
 	pdpClient   PDPClient
 	rpcURL      string
 	once        bool
@@ -79,7 +79,7 @@ type PDPTracker struct {
 //   - once: If true, run only once instead of continuously
 func NewPDPTracker(
 	db *gorm.DB,
-	interval time.Duration,
+	config PDPConfig,
 	rpcURL string,
 	pdpClient PDPClient,
 	once bool,
@@ -87,7 +87,7 @@ func NewPDPTracker(
 	return PDPTracker{
 		workerID:    uuid.New(),
 		dbNoContext: db,
-		interval:    interval,
+		config:      config,
 		rpcURL:      rpcURL,
 		pdpClient:   pdpClient,
 		once:        once,
@@ -100,6 +100,12 @@ func (*PDPTracker) Name() string {
 
 // Start begins the PDP tracker service.
 func (p *PDPTracker) Start(ctx context.Context, exitErr chan<- error) error {
+	Logger.Infow("PDP tracker started",
+		"batchSize", p.config.BatchSize,
+		"confirmationDepth", p.config.ConfirmationDepth,
+		"pollInterval", p.config.PollingInterval,
+		"gasCap", p.config.GasCap,
+	)
 	var regTimer *time.Timer
 	for {
 		alreadyRunning, err := healthcheck.Register(ctx, p.dbNoContext, p.workerID, model.PDPTracker, false)
@@ -158,10 +164,10 @@ func (p *PDPTracker) Start(ctx context.Context, exitErr chan<- error) error {
 				break
 			}
 			if timer == nil {
-				timer = time.NewTimer(p.interval)
+				timer = time.NewTimer(p.config.PollingInterval)
 				defer timer.Stop()
 			} else {
-				timer.Reset(p.interval)
+				timer.Reset(p.config.PollingInterval)
 			}
 
 			var stopped bool
@@ -193,6 +199,7 @@ func (p *PDPTracker) Start(ctx context.Context, exitErr chan<- error) error {
 		if exitErr != nil {
 			exitErr <- runErr
 		}
+		Logger.Info("PDP tracker stopped")
 	}()
 
 	return nil
@@ -218,6 +225,7 @@ func (p *PDPTracker) runOnce(ctx context.Context) error {
 
 	now := time.Now()
 	var updated, inserted int64
+	trackedProofSets := make(map[uint64]struct{})
 
 	processProofSet := func(wallet model.Wallet, ps ProofSetInfo) {
 		for _, pieceCID := range ps.PieceCIDs {
@@ -239,6 +247,13 @@ func (p *PDPTracker) runOnce(ctx context.Context) error {
 					"next_challenge_epoch": ps.NextChallengeEpoch,
 					"state":                p.getPDPDealState(ps),
 					"last_verified_at":     now,
+				}
+				if existingDeal.ProofSetLive == nil || *existingDeal.ProofSetLive != ps.IsLive {
+					Logger.Infow("PDP proof set status changed",
+						"proofSetID", ps.ProofSetID,
+						"previousLive", existingDeal.ProofSetLive,
+						"currentLive", ps.IsLive,
+					)
 				}
 				err = database.DoRetry(ctx, func() error {
 					return db.Model(&model.Deal{}).Where("id = ?", existingDeal.ID).Updates(updates).Error
@@ -296,6 +311,7 @@ func (p *PDPTracker) runOnce(ctx context.Context) error {
 			return errors.Wrap(err, "failed to get PDP proof sets")
 		}
 		for _, ps := range proofSets {
+			trackedProofSets[ps.ProofSetID] = struct{}{}
 			for _, wallet := range walletsByAddress[ps.ClientAddress.String()] {
 				processProofSet(wallet, ps)
 			}
@@ -317,12 +333,14 @@ func (p *PDPTracker) runOnce(ctx context.Context) error {
 			}
 
 			for _, ps := range proofSets {
+				trackedProofSets[ps.ProofSetID] = struct{}{}
 				processProofSet(wallet, ps)
 			}
 		}
 	}
 
 	Logger.Infof("PDP tracker: updated %d deals, inserted %d deals", updated, inserted)
+	Logger.Infof("PDP tracker: tracked %d proof sets", len(trackedProofSets))
 	return nil
 }
 

@@ -44,7 +44,7 @@ func (m *mockPDPClient) GetNextChallengeEpoch(_ context.Context, _ uint64) (int3
 }
 
 func TestPDPTracker_Name(t *testing.T) {
-	tracker := NewPDPTracker(nil, time.Minute, "", nil, true)
+	tracker := NewPDPTracker(nil, PDPConfig{BatchSize: 1, ConfirmationDepth: 1, PollingInterval: time.Minute}, "", nil, true)
 	require.Equal(t, "PDPTracker", tracker.Name())
 }
 
@@ -84,7 +84,7 @@ func TestPDPTracker_RunOnce_UpsertByParsedPieceCID(t *testing.T) {
 			},
 		}
 
-		tracker := NewPDPTracker(db, time.Minute, "", client, true)
+		tracker := NewPDPTracker(db, PDPConfig{BatchSize: 1, ConfirmationDepth: 1, PollingInterval: time.Minute}, "", client, true)
 		require.NoError(t, tracker.runOnce(ctx))
 
 		var first model.Deal
@@ -148,7 +148,7 @@ func TestPDPTracker_RunOnce_SkipsInvalidPieceCID(t *testing.T) {
 				},
 			},
 		}
-		tracker := NewPDPTracker(db, time.Minute, "", client, true)
+		tracker := NewPDPTracker(db, PDPConfig{BatchSize: 1, ConfirmationDepth: 1, PollingInterval: time.Minute}, "", client, true)
 		require.NoError(t, tracker.runOnce(ctx))
 
 		var count int64
@@ -194,7 +194,7 @@ func TestPDPTracker_RunOnce_UsesBulkFetchWhenAvailable(t *testing.T) {
 			},
 		}
 
-		tracker := NewPDPTracker(db, time.Minute, "", client, true)
+		tracker := NewPDPTracker(db, PDPConfig{BatchSize: 1, ConfirmationDepth: 1, PollingInterval: time.Minute}, "", client, true)
 		require.NoError(t, tracker.runOnce(ctx))
 		require.Equal(t, 1, client.bulkCalls)
 	})
