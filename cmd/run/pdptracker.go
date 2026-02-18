@@ -1,6 +1,7 @@
 package run
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -19,10 +20,7 @@ where data is verified through cryptographic challenges.
 This tracker:
 - Monitors proof sets for tracked wallets
 - Updates deal status based on on-chain proof set state
-- Tracks challenge epochs and live status
-
-Note: Full functionality requires the go-synapse library integration.
-See: https://github.com/data-preservation-programs/go-synapse`,
+- Tracks challenge epochs and live status`,
 	Flags: []cli.Flag{
 		&cli.DurationFlag{
 			Name:  "interval",
@@ -33,16 +31,22 @@ See: https://github.com/data-preservation-programs/go-synapse`,
 			Name:    "eth-rpc",
 			Usage:   "Ethereum RPC endpoint for FEVM (e.g., https://api.node.glif.io)",
 			EnvVars: []string{"ETH_RPC_URL"},
+			Required: true,
 		},
 	},
 	Action: func(c *cli.Context) error {
+		rpcURL := c.String("eth-rpc")
+		if rpcURL == "" {
+			return fmt.Errorf("eth-rpc is required")
+		}
+
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
 		defer closer.Close()
 
-		pdpClient, err := pdptracker.NewPDPClient(c.Context, c.String("eth-rpc"))
+		pdpClient, err := pdptracker.NewPDPClient(c.Context, rpcURL)
 		if err != nil {
 			return err
 		}
@@ -51,7 +55,7 @@ See: https://github.com/data-preservation-programs/go-synapse`,
 		tracker := pdptracker.NewPDPTracker(
 			db,
 			c.Duration("interval"),
-			c.String("eth-rpc"),
+			rpcURL,
 			pdpClient,
 			false,
 		)
