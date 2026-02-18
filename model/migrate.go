@@ -117,6 +117,11 @@ func AutoMigrate(db *gorm.DB) error {
 		return errors.Wrap(err, "failed to infer piece types")
 	}
 
+	// Set deal_type for existing deals that predate the column
+	if err := inferDealTypes(db); err != nil {
+		return errors.Wrap(err, "failed to infer deal types")
+	}
+
 	return nil
 }
 
@@ -304,6 +309,35 @@ func inferPieceTypes(db *gorm.DB) error {
 	}
 
 	logger.Infow("inferred piece types", "updated", result.RowsAffected)
+	return nil
+}
+
+// inferDealTypes sets deal_type for deals that predate the column.
+// All existing deals are assumed to be legacy market deals (f05).
+// This is idempotent - only updates rows where deal_type is NULL or empty.
+func inferDealTypes(db *gorm.DB) error {
+	// check if any deals need updating
+	var count int64
+	err := db.Raw(`SELECT COUNT(*) FROM deals WHERE deal_type IS NULL OR deal_type = ''`).Scan(&count).Error
+	if err != nil {
+		// table might not exist or column missing
+		logger.Debugw("skipping deal type inference", "error", err)
+		return nil
+	}
+
+	if count == 0 {
+		return nil
+	}
+
+	logger.Infow("setting deal type for legacy deals", "count", count)
+
+	// All existing deals are legacy market deals
+	result := db.Exec(`UPDATE deals SET deal_type = 'market' WHERE deal_type IS NULL OR deal_type = ''`)
+	if result.Error != nil {
+		return errors.Wrap(result.Error, "failed to set deal types")
+	}
+
+	logger.Infow("set deal types", "updated", result.RowsAffected)
 	return nil
 }
 
