@@ -257,9 +257,11 @@ func fixPostgresSequences(db *gorm.DB) error {
 }
 
 // inferPieceTypes sets piece_type for cars that predate the column.
-// A piece is "data" if any of its blocks reference files (contain file content).
-// A piece is "dag" if none of its blocks reference files (directory metadata only).
-// This is idempotent - only updates rows where piece_type is NULL or empty.
+// for inline preps, a car is "data" if any of its car_blocks reference files.
+// for non-inline preps, car_blocks don't reference files (data is on disk),
+// so we fall back to num_of_files > 0 which is only set by the packer.
+// everything else is "dag" (directory metadata only).
+// idempotent - only updates rows where piece_type is NULL or empty.
 func inferPieceTypes(db *gorm.DB) error {
 	dialect := db.Dialector.Name()
 
@@ -283,15 +285,14 @@ func inferPieceTypes(db *gorm.DB) error {
 	if dialect == "sqlite" {
 		query = `
 			UPDATE cars SET piece_type = (
-				CASE WHEN EXISTS (
+				CASE WHEN num_of_files > 0 OR EXISTS (
 					SELECT 1 FROM car_blocks WHERE car_blocks.car_id = cars.id AND car_blocks.file_id IS NOT NULL
 				) THEN 'data' ELSE 'dag' END
 			) WHERE piece_type IS NULL OR piece_type = ''`
 	} else {
-		// postgres/mysql support correlated subquery in CASE
 		query = `
 			UPDATE cars c SET piece_type = CASE
-				WHEN EXISTS (
+				WHEN c.num_of_files > 0 OR EXISTS (
 					SELECT 1 FROM car_blocks cb WHERE cb.car_id = c.id AND cb.file_id IS NOT NULL
 				) THEN 'data' ELSE 'dag'
 			END WHERE c.piece_type IS NULL OR c.piece_type = ''`
