@@ -17,20 +17,16 @@ import (
 
 const pdpDefaultPageSize uint64 = 100
 
-// activePiecesResult wraps the contract return for testability.
 type activePiecesResult struct {
 	Pieces  []contracts.CidsCid
 	HasMore bool
 }
 
-// pdpContractCaller is the subset of PDPVerifier calls needed by the
-// event processor. Extracted as interface for unit testing.
 type pdpContractCaller interface {
 	GetDataSetListener(opts *bind.CallOpts, setId *big.Int) (common.Address, error)
 	GetActivePieces(opts *bind.CallOpts, setId *big.Int, offset *big.Int, limit *big.Int) (activePiecesResult, error)
 }
 
-// pdpVerifierCaller wraps the generated contract binding.
 type pdpVerifierCaller struct {
 	contract *contracts.PDPVerifier
 }
@@ -47,16 +43,12 @@ func (c pdpVerifierCaller) GetActivePieces(opts *bind.CallOpts, setId *big.Int, 
 	return activePiecesResult{Pieces: result.Pieces, HasMore: result.HasMore}, nil
 }
 
-// ChainPDPClient provides the minimal RPC calls needed by the event processor:
-// getDataSetListener (client address hydration on DataSetCreated) and
-// getActivePieces (piece reconciliation on PiecesAdded/Removed).
 type ChainPDPClient struct {
 	ethClient *ethclient.Client
 	contract  pdpContractCaller
 	pageSize  uint64
 }
 
-// NewPDPClient creates a PDP RPC client for the given contract address.
 func NewPDPClient(ctx context.Context, rpcURL string, contractAddr common.Address) (*ChainPDPClient, error) {
 	if rpcURL == "" {
 		return nil, errors.New("rpc URL is required")
@@ -80,7 +72,6 @@ func NewPDPClient(ctx context.Context, rpcURL string, contractAddr common.Addres
 	}, nil
 }
 
-// Close releases the underlying RPC client.
 func (c *ChainPDPClient) Close() error {
 	if c.ethClient != nil {
 		c.ethClient.Close()
@@ -88,7 +79,6 @@ func (c *ChainPDPClient) Close() error {
 	return nil
 }
 
-// GetDataSetListener returns the listener (client) address for a proof set.
 func (c *ChainPDPClient) GetDataSetListener(ctx context.Context, setID uint64) (common.Address, error) {
 	addr, err := c.contract.GetDataSetListener(&bind.CallOpts{Context: ctx}, new(big.Int).SetUint64(setID))
 	if err != nil {
@@ -97,8 +87,7 @@ func (c *ChainPDPClient) GetDataSetListener(ctx context.Context, setID uint64) (
 	return addr, nil
 }
 
-// GetActivePieces returns all currently active piece CIDs in a proof set,
-// handling pagination internally.
+// paginates internally
 func (c *ChainPDPClient) GetActivePieces(ctx context.Context, setID uint64) ([]cid.Cid, error) {
 	setIDBig := new(big.Int).SetUint64(setID)
 	var (

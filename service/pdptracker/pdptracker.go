@@ -1,5 +1,3 @@
-// Package pdptracker tracks PDP (Proof of Data Possession) deals on Filecoin
-// using Shovel-based event indexing instead of linear chain state scanning.
 package pdptracker
 
 import (
@@ -24,9 +22,6 @@ const (
 
 var Logger = log.Logger("pdptracker")
 
-// PDPTracker reads events from Shovel integration tables and materializes
-// them into singularity's deal model. It replaces the previous approach of
-// linearly scanning all proof sets via RPC every cycle.
 type PDPTracker struct {
 	workerID    uuid.UUID
 	dbNoContext *gorm.DB
@@ -35,7 +30,6 @@ type PDPTracker struct {
 	once        bool
 }
 
-// NewPDPTracker creates a new event-driven PDP deal tracker.
 func NewPDPTracker(
 	db *gorm.DB,
 	config PDPConfig,
@@ -55,7 +49,6 @@ func (*PDPTracker) Name() string {
 	return "PDPTracker"
 }
 
-// Start begins the PDP tracker service.
 func (p *PDPTracker) Start(ctx context.Context, exitErr chan<- error) error {
 	Logger.Infow("PDP tracker starting", "pollInterval", p.config.PollingInterval)
 
@@ -164,7 +157,6 @@ func (p *PDPTracker) cleanup(ctx context.Context) error {
 	})
 }
 
-// runOnce drains the Shovel event inbox and materializes state changes.
 func (p *PDPTracker) runOnce(ctx context.Context) error {
 	db := p.dbNoContext.WithContext(ctx)
 	return processNewEvents(ctx, db, p.rpcClient)

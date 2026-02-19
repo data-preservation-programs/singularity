@@ -2,6 +2,7 @@ package pdptracker
 
 import (
 	"context"
+	"math"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -13,9 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// processNewEvents reads rows from Shovel integration tables (the inbox),
-// materializes state into singularity tables, and deletes processed rows.
-// All state changes are idempotent so re-processing after reorgs is safe.
+// idempotent — safe to re-process after reorgs
 func processNewEvents(ctx context.Context, db *gorm.DB, rpcClient *ChainPDPClient) error {
 	// process in dependency order
 	if err := processDataSetCreated(ctx, db, rpcClient); err != nil {
@@ -39,120 +38,132 @@ func processNewEvents(ctx context.Context, db *gorm.DB, rpcClient *ChainPDPClien
 	return nil
 }
 
-func processDataSetCreated(ctx context.Context, db *gorm.DB, rpcClient *ChainPDPClient) error {
-	type row struct {
-		SetID           uint64 `gorm:"column:set_id"`
-		StorageProvider []byte `gorm:"column:storage_provider"`
-		BlockNum        int64  `gorm:"column:block_num"`
-	}
+type inboxRow interface {
+	setID() uint64
+}
 
-	var rows []row
-	if err := db.Raw("SELECT set_id, storage_provider, block_num FROM pdp_dataset_created").Scan(&rows).Error; err != nil {
+// failed rows are retained for retry on next cycle
+func processInbox[R inboxRow](db *gorm.DB, query, table string, fn func(R) error) error {
+	var rows []R
+	if err := db.Raw(query).Scan(&rows).Error; err != nil {
 		return err
 	}
 	if len(rows) == 0 {
 		return nil
 	}
 
-	Logger.Infow("processing DataSetCreated events", "count", len(rows))
-
+	var failed []uint64
 	for _, r := range rows {
-		// get client address via RPC (not emitted in event)
-		listener, err := rpcClient.GetDataSetListener(ctx, r.SetID)
-		if err != nil {
-			Logger.Warnw("failed to get dataset listener", "setId", r.SetID, "error", err)
-			continue
+		if err := fn(r); err != nil {
+			Logger.Errorw("inbox processing failed", "table", table, "setId", r.setID(), "error", err)
+			failed = append(failed, r.setID())
 		}
-
-		clientAddr, err := commonToDelegatedAddress(listener)
-		if err != nil {
-			Logger.Warnw("failed to convert listener address", "setId", r.SetID, "error", err)
-			continue
-		}
-
-		providerAddr, err := commonToDelegatedAddress(common.BytesToAddress(r.StorageProvider))
-		if err != nil {
-			Logger.Warnw("failed to convert provider address", "setId", r.SetID, "error", err)
-			continue
-		}
-
-		ps := model.PDPProofSet{
-			SetID:         r.SetID,
-			ClientAddress: clientAddr.String(),
-			Provider:      providerAddr.String(),
-			CreatedBlock:  r.BlockNum,
-		}
-
-		err = database.DoRetry(ctx, func() error {
-			return db.Where("set_id = ?", r.SetID).Attrs(ps).FirstOrCreate(&model.PDPProofSet{}).Error
-		})
-		if err != nil {
-			Logger.Errorw("failed to upsert proof set", "setId", r.SetID, "error", err)
-			continue
-		}
-		Logger.Infow("proof set created", "setId", r.SetID, "client", clientAddr)
 	}
 
-	return db.Exec("DELETE FROM pdp_dataset_created").Error
+	return deleteProcessedRows(db, table, "set_id", failed)
 }
 
-// processPiecesChanged handles both PiecesAdded and PiecesRemoved events.
-// For each affected proof set, it fetches the current active pieces via RPC
-// and reconciles against the local deal records.
-func processPiecesChanged(ctx context.Context, db *gorm.DB, rpcClient *ChainPDPClient) error {
-	// collect distinct set_ids from both tables
-	setIDs := make(map[uint64]struct{})
+func deleteProcessedRows(db *gorm.DB, table, keyCol string, failed []uint64) error {
+	if len(failed) == 0 {
+		return db.Exec("DELETE FROM " + table).Error
+	}
+	return db.Exec("DELETE FROM "+table+" WHERE "+keyCol+" NOT IN (?)", failed).Error
+}
 
+type dataSetCreatedRow struct {
+	SetID_          uint64 `gorm:"column:set_id"`
+	StorageProvider []byte `gorm:"column:storage_provider"`
+	BlockNum        int64  `gorm:"column:block_num"`
+}
+
+func (r dataSetCreatedRow) setID() uint64 { return r.SetID_ }
+
+func processDataSetCreated(ctx context.Context, db *gorm.DB, rpcClient *ChainPDPClient) error {
+	return processInbox(db,
+		"SELECT set_id, storage_provider, block_num FROM pdp_dataset_created",
+		"pdp_dataset_created",
+		func(r dataSetCreatedRow) error {
+			listener, err := rpcClient.GetDataSetListener(ctx, r.SetID_)
+			if err != nil {
+				return errors.Wrapf(err, "getDataSetListener for set %d", r.SetID_)
+			}
+
+			clientAddr, err := commonToDelegatedAddress(listener)
+			if err != nil {
+				return errors.Wrap(err, "converting listener address")
+			}
+
+			providerAddr, err := commonToDelegatedAddress(common.BytesToAddress(r.StorageProvider))
+			if err != nil {
+				return errors.Wrap(err, "converting provider address")
+			}
+
+			ps := model.PDPProofSet{
+				SetID:         r.SetID_,
+				ClientAddress: clientAddr.String(),
+				Provider:      providerAddr.String(),
+				CreatedBlock:  r.BlockNum,
+			}
+
+			return database.DoRetry(ctx, func() error {
+				return db.Where("set_id = ?", r.SetID_).Attrs(ps).FirstOrCreate(&model.PDPProofSet{}).Error
+			})
+		},
+	)
+}
+
+func processPiecesChanged(ctx context.Context, db *gorm.DB, rpcClient *ChainPDPClient) error {
 	type row struct {
 		SetID uint64 `gorm:"column:set_id"`
 	}
 
-	var addedRows []row
-	if err := db.Raw("SELECT DISTINCT set_id FROM pdp_pieces_added").Scan(&addedRows).Error; err != nil {
-		return err
-	}
-	for _, r := range addedRows {
-		setIDs[r.SetID] = struct{}{}
-	}
-
-	var removedRows []row
-	if err := db.Raw("SELECT DISTINCT set_id FROM pdp_pieces_removed").Scan(&removedRows).Error; err != nil {
-		return err
-	}
-	for _, r := range removedRows {
-		setIDs[r.SetID] = struct{}{}
+	setIDs := make(map[uint64]struct{})
+	for _, q := range []string{
+		"SELECT DISTINCT set_id FROM pdp_pieces_added",
+		"SELECT DISTINCT set_id FROM pdp_pieces_removed",
+	} {
+		var rows []row
+		if err := db.Raw(q).Scan(&rows).Error; err != nil {
+			return err
+		}
+		for _, r := range rows {
+			setIDs[r.SetID] = struct{}{}
+		}
 	}
 
 	if len(setIDs) == 0 {
 		return nil
 	}
 
-	Logger.Infow("processing piece changes", "proofSets", len(setIDs))
-
-	for setID := range setIDs {
-		if err := reconcileProofSetPieces(ctx, db, rpcClient, setID); err != nil {
-			Logger.Errorw("failed to reconcile pieces", "setId", setID, "error", err)
+	var failed []uint64
+	for id := range setIDs {
+		if err := reconcileProofSetPieces(ctx, db, rpcClient, id); err != nil {
+			Logger.Errorw("failed to reconcile pieces", "setId", id, "error", err)
+			failed = append(failed, id)
 		}
 	}
 
-	// clean up both tables
-	if err := db.Exec("DELETE FROM pdp_pieces_added").Error; err != nil {
+	if err := deleteProcessedRows(db, "pdp_pieces_added", "set_id", failed); err != nil {
 		return err
 	}
-	return db.Exec("DELETE FROM pdp_pieces_removed").Error
+	return deleteProcessedRows(db, "pdp_pieces_removed", "set_id", failed)
 }
 
 func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainPDPClient, setID uint64) error {
 	var ps model.PDPProofSet
-	if err := db.Where("set_id = ? AND deleted = false", setID).First(&ps).Error; err != nil {
+	if err := db.Where("set_id = ?", setID).First(&ps).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			Logger.Debugw("pieces changed for unknown proof set", "setId", setID)
-			return nil
+			// proof set not yet materialized locally; DataSetCreated may
+			// still be pending retry — retain inbox rows for next cycle
+			return errors.Errorf("proof set %d not found, retaining piece events", setID)
 		}
 		return err
 	}
+	if ps.Deleted {
+		Logger.Debugw("ignoring piece events for deleted proof set", "setId", setID)
+		return nil
+	}
 
-	// check if this proof set's client is a tracked wallet
 	var wallet model.Wallet
 	if err := db.Where("address = ?", ps.ClientAddress).First(&wallet).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -162,24 +173,26 @@ func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainP
 		return err
 	}
 
-	// fetch current active pieces from chain
 	pieces, err := rpcClient.GetActivePieces(ctx, setID)
 	if err != nil {
 		return errors.Wrapf(err, "getActivePieces for set %d", setID)
 	}
 
-	// build set of active CIDs
 	activeCIDs := make(map[string]cid.Cid, len(pieces))
 	for _, c := range pieces {
-		if c == cid.Undef {
-			continue
+		if c != cid.Undef {
+			activeCIDs[c.String()] = c
 		}
-		activeCIDs[c.String()] = c
 	}
 
 	now := time.Now()
+	initialState := model.DealPublished
+	if ps.IsLive {
+		initialState = model.DealActive
+	}
 
-	// create deals for newly active pieces
+	var hadErrors bool
+
 	for _, pieceCID := range activeCIDs {
 		modelCID := model.CID(pieceCID)
 		err = database.DoRetry(ctx, func() error {
@@ -187,10 +200,9 @@ func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainP
 			result := db.Where("proof_set_id = ? AND piece_cid = ? AND deal_type = ?",
 				setID, modelCID, model.DealTypePDP).First(&existing)
 			if result.Error == nil {
-				// already tracked, ensure not expired
 				if existing.State == model.DealExpired {
 					return db.Model(&model.Deal{}).Where("id = ?", existing.ID).
-						Update("state", model.DealPublished).Error
+						Update("state", initialState).Error
 				}
 				return nil
 			}
@@ -199,7 +211,7 @@ func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainP
 			}
 			return db.Create(&model.Deal{
 				DealType:       model.DealTypePDP,
-				State:          model.DealPublished,
+				State:          initialState,
 				ClientID:       wallet.ID,
 				Provider:       ps.Provider,
 				PieceCID:       modelCID,
@@ -210,10 +222,10 @@ func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainP
 		})
 		if err != nil {
 			Logger.Errorw("failed to upsert deal", "setId", setID, "pieceCid", pieceCID, "error", err)
+			hadErrors = true
 		}
 	}
 
-	// expire deals for pieces no longer active
 	var existingDeals []model.Deal
 	if err := db.Where("proof_set_id = ? AND deal_type = ? AND state != ?",
 		setID, model.DealTypePDP, model.DealExpired).Find(&existingDeals).Error; err != nil {
@@ -228,176 +240,141 @@ func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainP
 			})
 			if err != nil {
 				Logger.Errorw("failed to expire removed deal", "dealId", deal.ID, "error", err)
+				hadErrors = true
 			}
 		}
 	}
 
+	if hadErrors {
+		return errors.Errorf("partial reconciliation failure for proof set %d", setID)
+	}
 	return nil
 }
 
-func processNextProvingPeriod(ctx context.Context, db *gorm.DB) error {
-	type row struct {
-		SetID          uint64 `gorm:"column:set_id"`
-		ChallengeEpoch int64  `gorm:"column:challenge_epoch"`
-	}
-
-	var rows []row
-	if err := db.Raw("SELECT set_id, challenge_epoch FROM pdp_next_proving_period").Scan(&rows).Error; err != nil {
-		return err
-	}
-	if len(rows) == 0 {
-		return nil
-	}
-
-	Logger.Infow("processing NextProvingPeriod events", "count", len(rows))
-
-	for _, r := range rows {
-		epoch32 := int32(r.ChallengeEpoch)
-
-		err := database.DoRetry(ctx, func() error {
-			return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID).
-				Update("challenge_epoch", r.ChallengeEpoch).Error
-		})
-		if err != nil {
-			Logger.Errorw("failed to update challenge epoch", "setId", r.SetID, "error", err)
-			continue
-		}
-
-		err = database.DoRetry(ctx, func() error {
-			return db.Model(&model.Deal{}).Where("proof_set_id = ? AND deal_type = ?",
-				r.SetID, model.DealTypePDP).
-				Update("next_challenge_epoch", epoch32).Error
-		})
-		if err != nil {
-			Logger.Errorw("failed to update deal challenge epochs", "setId", r.SetID, "error", err)
-		}
-	}
-
-	return db.Exec("DELETE FROM pdp_next_proving_period").Error
+type nextProvingPeriodRow struct {
+	SetID_         uint64 `gorm:"column:set_id"`
+	ChallengeEpoch int64  `gorm:"column:challenge_epoch"`
 }
+
+func (r nextProvingPeriodRow) setID() uint64 { return r.SetID_ }
+
+func processNextProvingPeriod(ctx context.Context, db *gorm.DB) error {
+	return processInbox(db,
+		"SELECT set_id, challenge_epoch FROM pdp_next_proving_period",
+		"pdp_next_proving_period",
+		func(r nextProvingPeriodRow) error {
+			if r.ChallengeEpoch > math.MaxInt32 || r.ChallengeEpoch < math.MinInt32 {
+				return errors.Errorf("challenge epoch %d overflows int32", r.ChallengeEpoch)
+			}
+			epoch32 := int32(r.ChallengeEpoch)
+
+			if err := database.DoRetry(ctx, func() error {
+				return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
+					Update("challenge_epoch", r.ChallengeEpoch).Error
+			}); err != nil {
+				return err
+			}
+
+			return database.DoRetry(ctx, func() error {
+				return db.Model(&model.Deal{}).Where("proof_set_id = ? AND deal_type = ?",
+					r.SetID_, model.DealTypePDP).
+					Update("next_challenge_epoch", epoch32).Error
+			})
+		},
+	)
+}
+
+type possessionProvenRow struct {
+	SetID_ uint64 `gorm:"column:set_id"`
+}
+
+func (r possessionProvenRow) setID() uint64 { return r.SetID_ }
 
 func processPossessionProven(ctx context.Context, db *gorm.DB) error {
-	type row struct {
-		SetID uint64 `gorm:"column:set_id"`
-	}
-
-	var rows []row
-	if err := db.Raw("SELECT DISTINCT set_id FROM pdp_possession_proven").Scan(&rows).Error; err != nil {
-		return err
-	}
-	if len(rows) == 0 {
-		return nil
-	}
-
-	Logger.Infow("processing PossessionProven events", "count", len(rows))
-
 	now := time.Now()
-	for _, r := range rows {
-		err := database.DoRetry(ctx, func() error {
-			return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID).
-				Update("is_live", true).Error
-		})
-		if err != nil {
-			Logger.Errorw("failed to update proof set liveness", "setId", r.SetID, "error", err)
-			continue
-		}
+	return processInbox(db,
+		"SELECT DISTINCT set_id FROM pdp_possession_proven",
+		"pdp_possession_proven",
+		func(r possessionProvenRow) error {
+			if err := database.DoRetry(ctx, func() error {
+				return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
+					Update("is_live", true).Error
+			}); err != nil {
+				return err
+			}
 
-		err = database.DoRetry(ctx, func() error {
-			return db.Model(&model.Deal{}).Where("proof_set_id = ? AND deal_type = ?",
-				r.SetID, model.DealTypePDP).
-				Updates(map[string]any{
-					"proof_set_live":   true,
-					"state":            model.DealActive,
-					"last_verified_at": now,
-				}).Error
-		})
-		if err != nil {
-			Logger.Errorw("failed to update deal liveness", "setId", r.SetID, "error", err)
-		}
-	}
-
-	return db.Exec("DELETE FROM pdp_possession_proven").Error
+			// only activate non-expired deals; expired deals (from piece removal
+			// or dataset deletion) must not be resurrected by a later proof
+			return database.DoRetry(ctx, func() error {
+				return db.Model(&model.Deal{}).
+					Where("proof_set_id = ? AND deal_type = ? AND state != ?",
+						r.SetID_, model.DealTypePDP, model.DealExpired).
+					Updates(map[string]any{
+						"proof_set_live":   true,
+						"state":            model.DealActive,
+						"last_verified_at": now,
+					}).Error
+			})
+		},
+	)
 }
+
+type dataSetDeletedRow struct {
+	SetID_ uint64 `gorm:"column:set_id"`
+}
+
+func (r dataSetDeletedRow) setID() uint64 { return r.SetID_ }
 
 func processDataSetDeleted(ctx context.Context, db *gorm.DB) error {
-	type row struct {
-		SetID uint64 `gorm:"column:set_id"`
-	}
+	return processInbox(db,
+		"SELECT set_id FROM pdp_dataset_deleted",
+		"pdp_dataset_deleted",
+		func(r dataSetDeletedRow) error {
+			if err := database.DoRetry(ctx, func() error {
+				return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
+					Update("deleted", true).Error
+			}); err != nil {
+				return err
+			}
 
-	var rows []row
-	if err := db.Raw("SELECT set_id FROM pdp_dataset_deleted").Scan(&rows).Error; err != nil {
-		return err
-	}
-	if len(rows) == 0 {
-		return nil
-	}
-
-	Logger.Infow("processing DataSetDeleted events", "count", len(rows))
-
-	for _, r := range rows {
-		err := database.DoRetry(ctx, func() error {
-			return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID).
-				Update("deleted", true).Error
-		})
-		if err != nil {
-			Logger.Errorw("failed to mark proof set deleted", "setId", r.SetID, "error", err)
-			continue
-		}
-
-		err = database.DoRetry(ctx, func() error {
-			return db.Model(&model.Deal{}).Where("proof_set_id = ? AND deal_type = ?",
-				r.SetID, model.DealTypePDP).
-				Update("state", model.DealExpired).Error
-		})
-		if err != nil {
-			Logger.Errorw("failed to expire deals for deleted set", "setId", r.SetID, "error", err)
-		}
-	}
-
-	return db.Exec("DELETE FROM pdp_dataset_deleted").Error
+			return database.DoRetry(ctx, func() error {
+				return db.Model(&model.Deal{}).Where("proof_set_id = ? AND deal_type = ?",
+					r.SetID_, model.DealTypePDP).
+					Update("state", model.DealExpired).Error
+			})
+		},
+	)
 }
 
+type spChangedRow struct {
+	SetID_ uint64 `gorm:"column:set_id"`
+	NewSP  []byte `gorm:"column:new_sp"`
+}
+
+func (r spChangedRow) setID() uint64 { return r.SetID_ }
+
 func processSPChanged(ctx context.Context, db *gorm.DB) error {
-	type row struct {
-		SetID uint64 `gorm:"column:set_id"`
-		NewSP []byte `gorm:"column:new_sp"`
-	}
+	return processInbox(db,
+		"SELECT set_id, new_sp FROM pdp_sp_changed",
+		"pdp_sp_changed",
+		func(r spChangedRow) error {
+			newAddr, err := commonToDelegatedAddress(common.BytesToAddress(r.NewSP))
+			if err != nil {
+				return errors.Wrap(err, "converting SP address")
+			}
 
-	var rows []row
-	if err := db.Raw("SELECT set_id, new_sp FROM pdp_sp_changed").Scan(&rows).Error; err != nil {
-		return err
-	}
-	if len(rows) == 0 {
-		return nil
-	}
+			if err := database.DoRetry(ctx, func() error {
+				return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
+					Update("provider", newAddr.String()).Error
+			}); err != nil {
+				return err
+			}
 
-	Logger.Infow("processing StorageProviderChanged events", "count", len(rows))
-
-	for _, r := range rows {
-		newAddr, err := commonToDelegatedAddress(common.BytesToAddress(r.NewSP))
-		if err != nil {
-			Logger.Warnw("failed to convert SP address", "setId", r.SetID, "error", err)
-			continue
-		}
-
-		err = database.DoRetry(ctx, func() error {
-			return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID).
-				Update("provider", newAddr.String()).Error
-		})
-		if err != nil {
-			Logger.Errorw("failed to update proof set provider", "setId", r.SetID, "error", err)
-			continue
-		}
-
-		err = database.DoRetry(ctx, func() error {
-			return db.Model(&model.Deal{}).Where("proof_set_id = ? AND deal_type = ?",
-				r.SetID, model.DealTypePDP).
-				Update("provider", newAddr.String()).Error
-		})
-		if err != nil {
-			Logger.Errorw("failed to update deal provider", "setId", r.SetID, "error", err)
-		}
-	}
-
-	return db.Exec("DELETE FROM pdp_sp_changed").Error
+			return database.DoRetry(ctx, func() error {
+				return db.Model(&model.Deal{}).Where("proof_set_id = ? AND deal_type = ?",
+					r.SetID_, model.DealTypePDP).
+					Update("provider", newAddr.String()).Error
+			})
+		},
+	)
 }

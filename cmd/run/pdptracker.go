@@ -18,14 +18,7 @@ import (
 
 var PDPTrackerCmd = &cli.Command{
 	Name:  "pdp-tracker",
-	Usage: "Start a PDP deal tracker that tracks f41 PDP deals using Shovel event indexing",
-	Description: `The PDP tracker uses an embedded Shovel instance to index PDPVerifier contract
-events into Postgres, then processes the events to maintain deal state.
-
-This replaces linear chain state scanning with cursor-based event indexing,
-eliminating the O(N) RPC overhead that scales with the number of proof sets.
-
-Requires PostgreSQL (Shovel is Postgres-only).`,
+	Usage: "Track PDP deals via Shovel event indexing (requires PostgreSQL)",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "eth-rpc",
@@ -46,7 +39,7 @@ Requires PostgreSQL (Shovel is Postgres-only).`,
 		}
 
 		connStr := c.String("database-connection-string")
-		if !strings.HasPrefix(connStr, "postgres:") {
+		if !strings.HasPrefix(connStr, "postgres:") && !strings.HasPrefix(connStr, "postgresql:") {
 			return errors.New("PDP tracking requires PostgreSQL (Shovel is Postgres-only)")
 		}
 
@@ -78,13 +71,11 @@ Requires PostgreSQL (Shovel is Postgres-only).`,
 			"contract", contractAddr.Hex(),
 		)
 
-		// start shovel indexer
 		indexer, err := pdptracker.NewPDPIndexer(c.Context, connStr, rpcURL, uint64(chainID), contractAddr)
 		if err != nil {
 			return errors.Wrap(err, "failed to create PDP indexer")
 		}
 
-		// create rpc client for remaining on-chain calls
 		rpcClient, err := pdptracker.NewPDPClient(c.Context, rpcURL, contractAddr)
 		if err != nil {
 			return errors.Wrap(err, "failed to create PDP RPC client")

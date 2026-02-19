@@ -13,15 +13,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// PDPIndexer runs an embedded Shovel instance that indexes PDPVerifier
-// contract events into Postgres tables for consumption by the event processor.
 type PDPIndexer struct {
 	pgp  *pgxpool.Pool
 	conf config.Root
 }
 
-// NewPDPIndexer builds the Shovel configuration and runs schema migrations.
-// Call Start to begin indexing.
 func NewPDPIndexer(ctx context.Context, pgURL string, rpcURL string, chainID uint64, contractAddr common.Address) (*PDPIndexer, error) {
 	conf := buildShovelConfig(pgURL, rpcURL, chainID, contractAddr)
 	if err := config.ValidateFix(&conf); err != nil {
@@ -58,7 +54,6 @@ func NewPDPIndexer(ctx context.Context, pgURL string, rpcURL string, chainID uin
 	return &PDPIndexer{pgp: pgp, conf: conf}, nil
 }
 
-// Start begins Shovel indexing in the background. Implements service.Server.
 func (idx *PDPIndexer) Start(ctx context.Context, exitErr chan<- error) error {
 	mgr := shovel.NewManager(ctx, idx.pgp, idx.conf)
 	ec := make(chan error, 1)
@@ -80,7 +75,6 @@ func (idx *PDPIndexer) Start(ctx context.Context, exitErr chan<- error) error {
 	return nil
 }
 
-// Name returns the service name. Implements service.Server.
 func (*PDPIndexer) Name() string { return "PDPIndexer" }
 
 const srcName = "fevm"
@@ -139,9 +133,7 @@ func dataSetCreatedIG(src config.Source, af dig.BlockData) config.Integration {
 	}
 }
 
-// piecesAddedIG captures only set_id from the indexed topic. The array fields
-// (pieceIds, pieceCids) are not decoded by Shovel; the event processor
-// reconciles via getActivePieces RPC instead.
+// only set_id captured; array fields reconciled via getActivePieces RPC
 func piecesAddedIG(src config.Source, af dig.BlockData) config.Integration {
 	return config.Integration{
 		Name:    "pdp_pieces_added",
@@ -218,8 +210,7 @@ func nextProvingPeriodIG(src config.Source, af dig.BlockData) config.Integration
 	}
 }
 
-// possessionProvenIG captures only set_id; the challenges tuple array is not
-// needed for deal tracking.
+// only set_id captured; challenges tuple not needed for deal tracking
 func possessionProvenIG(src config.Source, af dig.BlockData) config.Integration {
 	return config.Integration{
 		Name:    "pdp_possession_proven",
