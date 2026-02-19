@@ -87,29 +87,29 @@ func buildShovelConfig(pgURL, rpcURL string, chainID uint64, contract common.Add
 		URLs:    []string{rpcURL},
 	}
 
-	af := func() dig.BlockData {
-		return dig.BlockData{
-			Name:   "log_addr",
-			Filter: dig.Filter{Op: "contains", Arg: []string{addrHex}},
-		}
+	addrFilter := dig.BlockData{
+		Name:   "log_addr",
+		Column: "log_addr",
+		Filter: dig.Filter{Op: "contains", Arg: []string{addrHex}},
 	}
+	addrCol := wpg.Column{Name: "log_addr", Type: "bytea"}
 
 	return config.Root{
 		PGURL:   pgURL,
 		Sources: []config.Source{src},
 		Integrations: []config.Integration{
-			dataSetCreatedIG(src, af()),
-			piecesAddedIG(src, af()),
-			piecesRemovedIG(src, af()),
-			nextProvingPeriodIG(src, af()),
-			possessionProvenIG(src, af()),
-			dataSetDeletedIG(src, af()),
-			spChangedIG(src, af()),
+			dataSetCreatedIG(src, addrFilter, addrCol),
+			piecesAddedIG(src, addrFilter, addrCol),
+			piecesRemovedIG(src, addrFilter, addrCol),
+			nextProvingPeriodIG(src, addrFilter, addrCol),
+			possessionProvenIG(src, addrFilter, addrCol),
+			dataSetDeletedIG(src, addrFilter, addrCol),
+			spChangedIG(src, addrFilter, addrCol),
 		},
 	}
 }
 
-func dataSetCreatedIG(src config.Source, af dig.BlockData) config.Integration {
+func dataSetCreatedIG(src config.Source, af dig.BlockData, ac wpg.Column) config.Integration {
 	return config.Integration{
 		Name:    "pdp_dataset_created",
 		Enabled: true,
@@ -117,6 +117,7 @@ func dataSetCreatedIG(src config.Source, af dig.BlockData) config.Integration {
 		Table: wpg.Table{
 			Name: "pdp_dataset_created",
 			Columns: []wpg.Column{
+				ac,
 				{Name: "set_id", Type: "numeric"},
 				{Name: "storage_provider", Type: "bytea"},
 			},
@@ -134,7 +135,7 @@ func dataSetCreatedIG(src config.Source, af dig.BlockData) config.Integration {
 }
 
 // only set_id captured; array fields reconciled via getActivePieces RPC
-func piecesAddedIG(src config.Source, af dig.BlockData) config.Integration {
+func piecesAddedIG(src config.Source, af dig.BlockData, ac wpg.Column) config.Integration {
 	return config.Integration{
 		Name:    "pdp_pieces_added",
 		Enabled: true,
@@ -142,6 +143,7 @@ func piecesAddedIG(src config.Source, af dig.BlockData) config.Integration {
 		Table: wpg.Table{
 			Name: "pdp_pieces_added",
 			Columns: []wpg.Column{
+				ac,
 				{Name: "set_id", Type: "numeric"},
 			},
 		},
@@ -161,7 +163,7 @@ func piecesAddedIG(src config.Source, af dig.BlockData) config.Integration {
 	}
 }
 
-func piecesRemovedIG(src config.Source, af dig.BlockData) config.Integration {
+func piecesRemovedIG(src config.Source, af dig.BlockData, ac wpg.Column) config.Integration {
 	return config.Integration{
 		Name:    "pdp_pieces_removed",
 		Enabled: true,
@@ -169,6 +171,7 @@ func piecesRemovedIG(src config.Source, af dig.BlockData) config.Integration {
 		Table: wpg.Table{
 			Name: "pdp_pieces_removed",
 			Columns: []wpg.Column{
+				ac,
 				{Name: "set_id", Type: "numeric"},
 			},
 		},
@@ -184,7 +187,7 @@ func piecesRemovedIG(src config.Source, af dig.BlockData) config.Integration {
 	}
 }
 
-func nextProvingPeriodIG(src config.Source, af dig.BlockData) config.Integration {
+func nextProvingPeriodIG(src config.Source, af dig.BlockData, ac wpg.Column) config.Integration {
 	return config.Integration{
 		Name:    "pdp_next_proving_period",
 		Enabled: true,
@@ -192,6 +195,7 @@ func nextProvingPeriodIG(src config.Source, af dig.BlockData) config.Integration
 		Table: wpg.Table{
 			Name: "pdp_next_proving_period",
 			Columns: []wpg.Column{
+				ac,
 				{Name: "set_id", Type: "numeric"},
 				{Name: "challenge_epoch", Type: "numeric"},
 				{Name: "leaf_count", Type: "numeric"},
@@ -211,7 +215,7 @@ func nextProvingPeriodIG(src config.Source, af dig.BlockData) config.Integration
 }
 
 // only set_id captured; challenges tuple not needed for deal tracking
-func possessionProvenIG(src config.Source, af dig.BlockData) config.Integration {
+func possessionProvenIG(src config.Source, af dig.BlockData, ac wpg.Column) config.Integration {
 	return config.Integration{
 		Name:    "pdp_possession_proven",
 		Enabled: true,
@@ -219,6 +223,7 @@ func possessionProvenIG(src config.Source, af dig.BlockData) config.Integration 
 		Table: wpg.Table{
 			Name: "pdp_possession_proven",
 			Columns: []wpg.Column{
+				ac,
 				{Name: "set_id", Type: "numeric"},
 			},
 		},
@@ -237,7 +242,7 @@ func possessionProvenIG(src config.Source, af dig.BlockData) config.Integration 
 	}
 }
 
-func dataSetDeletedIG(src config.Source, af dig.BlockData) config.Integration {
+func dataSetDeletedIG(src config.Source, af dig.BlockData, ac wpg.Column) config.Integration {
 	return config.Integration{
 		Name:    "pdp_dataset_deleted",
 		Enabled: true,
@@ -245,6 +250,7 @@ func dataSetDeletedIG(src config.Source, af dig.BlockData) config.Integration {
 		Table: wpg.Table{
 			Name: "pdp_dataset_deleted",
 			Columns: []wpg.Column{
+				ac,
 				{Name: "set_id", Type: "numeric"},
 				{Name: "deleted_leaf_count", Type: "numeric"},
 			},
@@ -261,7 +267,7 @@ func dataSetDeletedIG(src config.Source, af dig.BlockData) config.Integration {
 	}
 }
 
-func spChangedIG(src config.Source, af dig.BlockData) config.Integration {
+func spChangedIG(src config.Source, af dig.BlockData, ac wpg.Column) config.Integration {
 	return config.Integration{
 		Name:    "pdp_sp_changed",
 		Enabled: true,
@@ -269,6 +275,7 @@ func spChangedIG(src config.Source, af dig.BlockData) config.Integration {
 		Table: wpg.Table{
 			Name: "pdp_sp_changed",
 			Columns: []wpg.Column{
+				ac,
 				{Name: "set_id", Type: "numeric"},
 				{Name: "old_sp", Type: "bytea"},
 				{Name: "new_sp", Type: "bytea"},
