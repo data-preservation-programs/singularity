@@ -1,6 +1,7 @@
 package pdptracker
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -32,7 +33,7 @@ func TestBuildShovelConfig(t *testing.T) {
 		require.NotEmpty(t, ig.Block)
 		require.Equal(t, "log_addr", ig.Block[0].Name)
 		require.Equal(t, "contains", ig.Block[0].Filter.Op)
-		require.Contains(t, ig.Block[0].Filter.Arg[0], "0xbadd0b92c1c71d02e7d520f64c0876538fa2557f")
+		require.Contains(t, ig.Block[0].Filter.Arg[0], strings.ToLower(contract.Hex()))
 	}
 
 	expectedNames := []string{
