@@ -88,7 +88,7 @@ jobs:
           command: >
             cd /workspaces/singularity &&
             mkdir -p artifacts &&
-            SINGULARITY_TEST_INTEGRATION=true make test GOTESTSUM_ARGS="--junitfile artifacts/integration-tests.xml -- -timeout 20m -run Integration ./cmd/..."
+            SINGULARITY_TEST_INTEGRATION=true make test GOTESTSUM_ARGS="--junitfile artifacts/integration-tests.xml -- -timeout 20m -run Integration ./cmd/... ./service/pdptracker/..."
           container-runtime: podman
 
       - name: Report test results

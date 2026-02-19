@@ -4,12 +4,14 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/indexsupply/shovel/shovel/config"
 	"github.com/stretchr/testify/require"
 )
 
 func TestBuildShovelConfig(t *testing.T) {
 	contract := common.HexToAddress("0xBADd0B92C1c71d02E7d520f64c0876538fa2557F")
 	conf := buildShovelConfig("postgres://localhost/test", "https://rpc.example.com", 314, contract)
+	require.NoError(t, config.ValidateFix(&conf))
 
 	require.Len(t, conf.Sources, 1)
 	require.Equal(t, "fevm", conf.Sources[0].Name)
