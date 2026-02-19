@@ -3,6 +3,7 @@ package pdptracker
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/ethereum/go-ethereum/common"
@@ -82,9 +83,10 @@ const srcName = "fevm"
 func buildShovelConfig(pgURL, rpcURL string, chainID uint64, contract common.Address) config.Root {
 	addrHex := strings.ToLower(contract.Hex())
 	src := config.Source{
-		Name:    srcName,
-		ChainID: chainID,
-		URLs:    []string{rpcURL},
+		Name:         srcName,
+		ChainID:      chainID,
+		URLs:         []string{rpcURL},
+		PollDuration: time.Second,
 	}
 
 	addrFilter := dig.BlockData{
