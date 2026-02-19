@@ -27,6 +27,7 @@ var Tables = []any{
 	&Deal{},
 	&Schedule{},
 	&Wallet{},
+	&PDPProofSet{},
 }
 
 var logger = logging.Logger("model")
