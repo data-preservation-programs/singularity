@@ -35,11 +35,11 @@ var waitPendingInterval = time.Minute
 
 // DealPusher represents a struct that encapsulates the data and functionality related to pushing deals in a replication process.
 type DealPusher struct {
-	dbNoContext              *gorm.DB                  // Pointer to a gorm.DB object representing a database connection.
-	walletChooser            replication.WalletChooser // Object responsible for choosing a wallet for replication.
-	dealMaker                replication.DealMaker     // Object responsible for making a deal in replication.
-	pdpProofSetManager       PDPProofSetManager        // Optional PDP proof set lifecycle manager.
-	pdpTxConfirmer           PDPTransactionConfirmer   // Optional PDP transaction confirmer.
+	dbNoContext        *gorm.DB                  // Pointer to a gorm.DB object representing a database connection.
+	walletChooser      replication.WalletChooser // Object responsible for choosing a wallet for replication.
+	dealMaker          replication.DealMaker     // Object responsible for making a deal in replication.
+	pdpProofSetManager PDPProofSetManager        // Optional PDP proof set lifecycle manager.
+	pdpTxConfirmer     PDPTransactionConfirmer   // Optional PDP transaction confirmer.
 	// Resolver is injected so tests and future wiring can switch deal type behavior without coupling DealPusher to config storage.
 	scheduleDealTypeResolver func(schedule *model.Schedule) model.DealType
 	workerID                 uuid.UUID                               // UUID identifying the associated worker.
@@ -433,6 +433,9 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 
 func (d *DealPusher) resolveScheduleDealType(schedule *model.Schedule) model.DealType {
 	if d.scheduleDealTypeResolver == nil {
+		if schedule != nil && schedule.DealType == model.DealTypePDP {
+			return model.DealTypePDP
+		}
 		return model.DealTypeMarket
 	}
 	return d.scheduleDealTypeResolver(schedule)

@@ -34,6 +34,7 @@ var updateRequest = UpdateRequest{
 	AllowedPieceCIDs:      []string{"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq"},
 	ScheduleCronPerpetual: ptr.Of(true),
 	Force:                 ptr.Of(true),
+	DealType:              ptr.Of(string(model.DealTypeMarket)),
 }
 
 func TestUpdateHandler_DatasetNotFound(t *testing.T) {
@@ -194,6 +195,20 @@ func TestUpdateHandler_InvalidAllowedPieceCID_NotCommp(t *testing.T) {
 	})
 }
 
+func TestUpdateHandler_InvalidDealType(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Schedule{
+			Preparation: &model.Preparation{},
+		}).Error
+		require.NoError(t, err)
+		badRequest := updateRequest
+		badRequest.DealType = ptr.Of("unknown")
+		_, err = Default.UpdateHandler(ctx, db, 1, badRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "invalid deal type")
+	})
+}
+
 func TestUpdateHandler_Success(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Schedule{
@@ -204,6 +219,7 @@ func TestUpdateHandler_Success(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, schedule)
 		require.True(t, schedule.Force)
+		require.Equal(t, model.DealTypeMarket, schedule.DealType)
 	})
 }
 

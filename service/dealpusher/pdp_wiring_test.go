@@ -31,6 +31,11 @@ func TestDealPusher_ResolveScheduleDealType_DefaultsToMarket(t *testing.T) {
 	require.Equal(t, model.DealTypeMarket, d.resolveScheduleDealType(&model.Schedule{}))
 }
 
+func TestDealPusher_ResolveScheduleDealType_UsesScheduleDealType(t *testing.T) {
+	d := &DealPusher{}
+	require.Equal(t, model.DealTypePDP, d.resolveScheduleDealType(&model.Schedule{DealType: model.DealTypePDP}))
+}
+
 func TestDealPusher_RunSchedule_PDPWithoutDependenciesReturnsConfiguredError(t *testing.T) {
 	d := &DealPusher{
 		scheduleDealTypeResolver: func(_ *model.Schedule) model.DealType {
