@@ -50,6 +50,7 @@ func TestIntegration_ShovelConfig(t *testing.T) {
 		calibnetRPC,
 		uint64(constants.ChainIDCalibration),
 		contractAddr,
+		0,
 	)
 
 	require.Len(t, conf.Integrations, 7)
@@ -71,7 +72,7 @@ func TestIntegration_ShovelIndexer(t *testing.T) {
 
 		contractAddr := constants.GetPDPVerifierAddress(constants.NetworkCalibration)
 
-		indexer, err := NewPDPIndexer(ctx, connStr, rpcURL, uint64(constants.ChainIDCalibration), contractAddr)
+		indexer, err := NewPDPIndexer(ctx, connStr, rpcURL, uint64(constants.ChainIDCalibration), contractAddr, false)
 		require.NoError(t, err)
 
 		indexCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
@@ -110,6 +111,71 @@ func TestIntegration_ShovelIndexer(t *testing.T) {
 		case err := <-exitErr:
 			require.NoError(t, err)
 		case <-time.After(5 * time.Second):
+		}
+	})
+}
+
+func TestIntegration_FullResync(t *testing.T) {
+	rpcURL := startCalibnetFork(t)
+
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		if db.Dialector.Name() != "postgres" {
+			t.Skip("Shovel requires Postgres")
+			return
+		}
+
+		connStr := os.Getenv("DATABASE_CONNECTION_STRING")
+		require.NotEmpty(t, connStr)
+
+		contractAddr := constants.GetPDPVerifierAddress(constants.NetworkCalibration)
+		chainID := uint64(constants.ChainIDCalibration)
+
+		// first run: let shovel index at least one block
+		indexer, err := NewPDPIndexer(ctx, connStr, rpcURL, chainID, contractAddr, false)
+		require.NoError(t, err)
+
+		indexCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
+		exitErr := make(chan error, 1)
+		require.NoError(t, indexer.Start(indexCtx, exitErr))
+		time.Sleep(10 * time.Second)
+		cancel()
+		select {
+		case <-exitErr:
+		case <-time.After(5 * time.Second):
+		}
+
+		// verify cursor and data rows exist
+		var cursorCount int64
+		err = db.Raw(
+			"SELECT count(*) FROM shovel.task_updates WHERE src_name = ?", srcName,
+		).Scan(&cursorCount).Error
+		require.NoError(t, err)
+		require.Greater(t, cursorCount, int64(0), "cursor rows should exist after first run")
+
+		var dataCount int64
+		err = db.Raw("SELECT count(*) FROM pdp_dataset_created").Scan(&dataCount).Error
+		require.NoError(t, err)
+		t.Logf("data rows before resync: task_updates=%d, dataset_created=%d", cursorCount, dataCount)
+
+		// full resync: cursor and data tables should be cleared
+		_, err = NewPDPIndexer(ctx, connStr, rpcURL, chainID, contractAddr, true)
+		require.NoError(t, err)
+
+		err = db.Raw(
+			"SELECT count(*) FROM shovel.task_updates WHERE src_name = ?", srcName,
+		).Scan(&cursorCount).Error
+		require.NoError(t, err)
+		require.Equal(t, int64(0), cursorCount, "cursor rows should be gone after full resync")
+
+		for _, table := range []string{
+			"pdp_dataset_created", "pdp_pieces_added", "pdp_pieces_removed",
+			"pdp_next_proving_period", "pdp_possession_proven",
+			"pdp_dataset_deleted", "pdp_sp_changed",
+		} {
+			var count int64
+			err = db.Raw("SELECT count(*) FROM " + table).Scan(&count).Error
+			require.NoError(t, err)
+			require.Equal(t, int64(0), count, "table %s should be empty after full resync", table)
 		}
 	})
 }

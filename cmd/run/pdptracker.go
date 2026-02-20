@@ -31,6 +31,10 @@ var PDPTrackerCmd = &cli.Command{
 			Usage: "How often to check for new events in Shovel tables",
 			Value: 30 * time.Second,
 		},
+		&cli.BoolFlag{
+			Name:  "full-sync",
+			Usage: "Re-index all events from contract deployment. Useful for importing deals created before the tracker was running. Involves one RPC call per historical proof set.",
+		},
 	},
 	Action: func(c *cli.Context) error {
 		rpcURL := c.String("eth-rpc")
@@ -71,7 +75,7 @@ var PDPTrackerCmd = &cli.Command{
 			"contract", contractAddr.Hex(),
 		)
 
-		indexer, err := pdptracker.NewPDPIndexer(c.Context, connStr, rpcURL, uint64(chainID), contractAddr)
+		indexer, err := pdptracker.NewPDPIndexer(c.Context, connStr, rpcURL, uint64(chainID), contractAddr, c.Bool("full-sync"))
 		if err != nil {
 			return errors.Wrap(err, "failed to create PDP indexer")
 		}

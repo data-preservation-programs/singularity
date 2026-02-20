@@ -19,8 +19,12 @@ type PDPIndexer struct {
 	conf config.Root
 }
 
-func NewPDPIndexer(ctx context.Context, pgURL string, rpcURL string, chainID uint64, contractAddr common.Address) (*PDPIndexer, error) {
-	conf := buildShovelConfig(pgURL, rpcURL, chainID, contractAddr)
+func NewPDPIndexer(ctx context.Context, pgURL string, rpcURL string, chainID uint64, contractAddr common.Address, fullResync bool) (*PDPIndexer, error) {
+	var startBlock uint64
+	if fullResync {
+		startBlock = pdpVerifierDeployBlock[chainID]
+	}
+	conf := buildShovelConfig(pgURL, rpcURL, chainID, contractAddr, startBlock)
 	if err := config.ValidateFix(&conf); err != nil {
 		return nil, errors.Wrap(err, "invalid shovel config")
 	}
@@ -46,6 +50,26 @@ func NewPDPIndexer(ctx context.Context, pgURL string, rpcURL string, chainID uin
 		tx.Rollback(ctx)
 		pgp.Close()
 		return nil, errors.Wrap(err, "failed to migrate integration tables")
+	}
+	if fullResync {
+		if _, err := tx.Exec(ctx,
+			"DELETE FROM shovel.task_updates WHERE src_name = $1", srcName); err != nil {
+			//nolint:errcheck
+			tx.Rollback(ctx)
+			pgp.Close()
+			return nil, errors.Wrap(err, "failed to reset indexer cursor")
+		}
+		for _, ig := range conf.Integrations {
+			if _, err := tx.Exec(ctx,
+				"TRUNCATE "+ig.Table.Name); err != nil {
+				//nolint:errcheck
+				tx.Rollback(ctx)
+				pgp.Close()
+				return nil, errors.Wrap(err, "failed to truncate "+ig.Table.Name)
+			}
+		}
+		Logger.Infow("full resync: cleared indexer state, restarting from deployment block",
+			"startBlock", conf.Sources[0].Start)
 	}
 	if err := tx.Commit(ctx); err != nil {
 		pgp.Close()
@@ -80,12 +104,19 @@ func (*PDPIndexer) Name() string { return "PDPIndexer" }
 
 const srcName = "fevm"
 
-func buildShovelConfig(pgURL, rpcURL string, chainID uint64, contract common.Address) config.Root {
+// block at which the PDPVerifier contract was deployed per chain
+var pdpVerifierDeployBlock = map[uint64]uint64{
+	314:    5441432, // mainnet
+	314159: 3140755, // calibration
+}
+
+func buildShovelConfig(pgURL, rpcURL string, chainID uint64, contract common.Address, startBlock uint64) config.Root {
 	addrHex := strings.ToLower(contract.Hex())
 	src := config.Source{
 		Name:         srcName,
 		ChainID:      chainID,
 		URLs:         []string{rpcURL},
+		Start:        startBlock,
 		PollDuration: time.Second,
 	}
 
@@ -115,7 +146,7 @@ func dataSetCreatedIG(src config.Source, af dig.BlockData, ac wpg.Column) config
 	return config.Integration{
 		Name:    "pdp_dataset_created",
 		Enabled: true,
-		Sources: []config.Source{{Name: src.Name}},
+		Sources: []config.Source{{Name: src.Name, Start: src.Start}},
 		Table: wpg.Table{
 			Name: "pdp_dataset_created",
 			Columns: []wpg.Column{
@@ -141,7 +172,7 @@ func piecesAddedIG(src config.Source, af dig.BlockData, ac wpg.Column) config.In
 	return config.Integration{
 		Name:    "pdp_pieces_added",
 		Enabled: true,
-		Sources: []config.Source{{Name: src.Name}},
+		Sources: []config.Source{{Name: src.Name, Start: src.Start}},
 		Table: wpg.Table{
 			Name: "pdp_pieces_added",
 			Columns: []wpg.Column{
@@ -169,7 +200,7 @@ func piecesRemovedIG(src config.Source, af dig.BlockData, ac wpg.Column) config.
 	return config.Integration{
 		Name:    "pdp_pieces_removed",
 		Enabled: true,
-		Sources: []config.Source{{Name: src.Name}},
+		Sources: []config.Source{{Name: src.Name, Start: src.Start}},
 		Table: wpg.Table{
 			Name: "pdp_pieces_removed",
 			Columns: []wpg.Column{
@@ -193,7 +224,7 @@ func nextProvingPeriodIG(src config.Source, af dig.BlockData, ac wpg.Column) con
 	return config.Integration{
 		Name:    "pdp_next_proving_period",
 		Enabled: true,
-		Sources: []config.Source{{Name: src.Name}},
+		Sources: []config.Source{{Name: src.Name, Start: src.Start}},
 		Table: wpg.Table{
 			Name: "pdp_next_proving_period",
 			Columns: []wpg.Column{
@@ -221,7 +252,7 @@ func possessionProvenIG(src config.Source, af dig.BlockData, ac wpg.Column) conf
 	return config.Integration{
 		Name:    "pdp_possession_proven",
 		Enabled: true,
-		Sources: []config.Source{{Name: src.Name}},
+		Sources: []config.Source{{Name: src.Name, Start: src.Start}},
 		Table: wpg.Table{
 			Name: "pdp_possession_proven",
 			Columns: []wpg.Column{
@@ -248,7 +279,7 @@ func dataSetDeletedIG(src config.Source, af dig.BlockData, ac wpg.Column) config
 	return config.Integration{
 		Name:    "pdp_dataset_deleted",
 		Enabled: true,
-		Sources: []config.Source{{Name: src.Name}},
+		Sources: []config.Source{{Name: src.Name, Start: src.Start}},
 		Table: wpg.Table{
 			Name: "pdp_dataset_deleted",
 			Columns: []wpg.Column{
@@ -273,7 +304,7 @@ func spChangedIG(src config.Source, af dig.BlockData, ac wpg.Column) config.Inte
 	return config.Integration{
 		Name:    "pdp_sp_changed",
 		Enabled: true,
-		Sources: []config.Source{{Name: src.Name}},
+		Sources: []config.Source{{Name: src.Name, Start: src.Start}},
 		Table: wpg.Table{
 			Name: "pdp_sp_changed",
 			Columns: []wpg.Column{

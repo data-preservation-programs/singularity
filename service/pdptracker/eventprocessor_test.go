@@ -8,6 +8,7 @@ import (
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/filecoin-project/go-address"
+	"github.com/indexsupply/shovel/shovel/config"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -15,36 +16,12 @@ import (
 
 func createShovelTables(t *testing.T, db *gorm.DB) {
 	t.Helper()
-	ddls := []string{
-		`CREATE TABLE IF NOT EXISTS pdp_dataset_created (
-			set_id numeric, storage_provider bytea, block_num numeric,
-			ig_name text DEFAULT '', src_name text DEFAULT '', tx_idx int DEFAULT 0)`,
-		`CREATE TABLE IF NOT EXISTS pdp_pieces_added (
-			set_id numeric, block_num numeric DEFAULT 0,
-			ig_name text DEFAULT '', src_name text DEFAULT '', tx_idx int DEFAULT 0,
-			log_idx int DEFAULT 0, abi_idx smallint DEFAULT 0)`,
-		`CREATE TABLE IF NOT EXISTS pdp_pieces_removed (
-			set_id numeric, block_num numeric DEFAULT 0,
-			ig_name text DEFAULT '', src_name text DEFAULT '', tx_idx int DEFAULT 0,
-			log_idx int DEFAULT 0, abi_idx smallint DEFAULT 0)`,
-		`CREATE TABLE IF NOT EXISTS pdp_next_proving_period (
-			set_id numeric, challenge_epoch numeric, leaf_count numeric,
-			block_num numeric DEFAULT 0, ig_name text DEFAULT '', src_name text DEFAULT '',
-			tx_idx int DEFAULT 0, log_idx int DEFAULT 0, abi_idx smallint DEFAULT 0)`,
-		`CREATE TABLE IF NOT EXISTS pdp_possession_proven (
-			set_id numeric, block_num numeric DEFAULT 0,
-			ig_name text DEFAULT '', src_name text DEFAULT '', tx_idx int DEFAULT 0,
-			log_idx int DEFAULT 0, abi_idx smallint DEFAULT 0)`,
-		`CREATE TABLE IF NOT EXISTS pdp_dataset_deleted (
-			set_id numeric, deleted_leaf_count numeric, block_num numeric DEFAULT 0,
-			ig_name text DEFAULT '', src_name text DEFAULT '', tx_idx int DEFAULT 0,
-			log_idx int DEFAULT 0, abi_idx smallint DEFAULT 0)`,
-		`CREATE TABLE IF NOT EXISTS pdp_sp_changed (
-			set_id numeric, old_sp bytea, new_sp bytea, block_num numeric DEFAULT 0,
-			ig_name text DEFAULT '', src_name text DEFAULT '', tx_idx int DEFAULT 0)`,
-	}
-	for _, ddl := range ddls {
-		require.NoError(t, db.Exec(ddl).Error)
+	conf := buildShovelConfig("postgres://unused", "https://unused", 314, common.Address{}, 0)
+	require.NoError(t, config.ValidateFix(&conf))
+	for _, ig := range conf.Integrations {
+		for _, stmt := range ig.Table.DDL() {
+			require.NoError(t, db.Exec(stmt).Error)
+		}
 	}
 }
 

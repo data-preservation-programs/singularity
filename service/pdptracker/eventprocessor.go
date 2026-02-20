@@ -63,6 +63,9 @@ func processInbox[R inboxRow](db *gorm.DB, query, table string, fn func(R) error
 	return deleteProcessedRows(db, table, "set_id", failed)
 }
 
+// table and keyCol are interpolated into sql. pass literals only.
+// this is internal to the package so if you're passing user input here
+// you've already made worse decisions than we can protect against.
 func deleteProcessedRows(db *gorm.DB, table, keyCol string, failed []uint64) error {
 	if len(failed) == 0 {
 		return db.Exec("DELETE FROM " + table).Error

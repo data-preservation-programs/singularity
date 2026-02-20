@@ -11,13 +11,14 @@ import (
 
 func TestBuildShovelConfig(t *testing.T) {
 	contract := common.HexToAddress("0xBADd0B92C1c71d02E7d520f64c0876538fa2557F")
-	conf := buildShovelConfig("postgres://localhost/test", "https://rpc.example.com", 314, contract)
+	conf := buildShovelConfig("postgres://localhost/test", "https://rpc.example.com", 314, contract, 0)
 	require.NoError(t, config.ValidateFix(&conf))
 
 	require.Len(t, conf.Sources, 1)
 	require.Equal(t, "fevm", conf.Sources[0].Name)
 	require.Equal(t, uint64(314), conf.Sources[0].ChainID)
 	require.Len(t, conf.Sources[0].URLs, 1)
+	require.Equal(t, uint64(0), conf.Sources[0].Start)
 
 	// 7 event integrations
 	require.Len(t, conf.Integrations, 7)
@@ -28,6 +29,7 @@ func TestBuildShovelConfig(t *testing.T) {
 		require.True(t, ig.Enabled)
 		require.Len(t, ig.Sources, 1)
 		require.Equal(t, "fevm", ig.Sources[0].Name)
+		require.Equal(t, conf.Sources[0].Start, ig.Sources[0].Start)
 
 		// each integration must have a contract address filter
 		require.NotEmpty(t, ig.Block)
@@ -50,9 +52,16 @@ func TestBuildShovelConfig(t *testing.T) {
 	}
 }
 
+func TestBuildShovelConfig_UnknownChain(t *testing.T) {
+	contract := common.HexToAddress("0xBADd0B92C1c71d02E7d520f64c0876538fa2557F")
+	conf := buildShovelConfig("postgres://localhost/test", "https://rpc.example.com", 999, contract, 0)
+	require.NoError(t, config.ValidateFix(&conf))
+	require.Equal(t, uint64(0), conf.Sources[0].Start)
+}
+
 func TestBuildShovelConfig_EventInputs(t *testing.T) {
 	contract := common.HexToAddress("0x85e366Cf9DD2c0aE37E963d9556F5f4718d6417C")
-	conf := buildShovelConfig("postgres://localhost/test", "https://rpc.example.com", 314159, contract)
+	conf := buildShovelConfig("postgres://localhost/test", "https://rpc.example.com", 314159, contract, 0)
 
 	// find DataSetCreated and verify inputs
 	for _, ig := range conf.Integrations {
