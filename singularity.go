@@ -34,7 +34,7 @@ func init() {
 // @securityDefinitions none
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
-// @contact.name   Singularity Team
+// @contact.name Singularity Team
 // @contact.url    https://github.com/data-preservation-programs/singularity/issues
 // @license.name MIT + Apache 2.0
 // @license.url https://github.com/data-preservation-programs/singularity/blob/main/LICENSE
