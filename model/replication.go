@@ -161,6 +161,7 @@ type Schedule struct {
 	ErrorMessage          string        `json:"errorMessage"                        table:"verbose"`
 	AllowedPieceCIDs      StringSlice   `gorm:"type:JSON;column:allowed_piece_cids" json:"allowedPieceCids"                    table:"verbose"`
 	Force                 bool          `json:"force"`
+	DealType              DealType      `gorm:"index;default:'market'"                json:"dealType"`
 
 	// Associations
 	PreparationID PreparationID `json:"preparationId"`

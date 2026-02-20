@@ -53,6 +53,7 @@ func getMockLotusClient() jsonrpc.RPCClient {
 var createRequest = CreateRequest{
 	Preparation:           "1",
 	Provider:              "f01000",
+	DealType:              string(model.DealTypeMarket),
 	HTTPHeaders:           []string{"a=b"},
 	URLTemplate:           "http://127.0.0.1",
 	PricePerGBEpoch:       0,
@@ -186,6 +187,20 @@ func TestCreateHandler_NoAssociatedWallet(t *testing.T) {
 	})
 }
 
+func TestCreateHandler_InvalidDealType(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{
+			Wallets: []model.Wallet{{ID: "f01"}},
+		}).Error
+		require.NoError(t, err)
+		badRequest := createRequest
+		badRequest.DealType = "unknown"
+		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), badRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "invalid deal type")
+	})
+}
+
 func TestCreateHandler_InvalidProvider(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
@@ -260,6 +275,7 @@ func TestCreateHandler_Success(t *testing.T) {
 				schedule, err := Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
 				require.NoError(t, err)
 				require.NotNil(t, schedule)
+				require.Equal(t, model.DealTypeMarket, schedule.DealType)
 				require.True(t, createRequest.Force)
 			})
 		})
