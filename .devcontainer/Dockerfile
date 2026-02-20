@@ -8,7 +8,11 @@ ARG MARIADB_MAJOR=12.0.2
 
 USER root
 
-# Add PostgreSQL and MariaDB official repositories (detect codename from /etc/os-release)
+# skip man pages and docs for all future installs
+RUN printf 'path-exclude=/usr/share/man/*\npath-exclude=/usr/share/doc/*\n' \
+    > /etc/dpkg/dpkg.cfg.d/excludes
+
+# add PostgreSQL and MariaDB official repositories
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
        wget ca-certificates gnupg curl \
@@ -23,6 +27,10 @@ RUN apt-get update \
        postgresql-${PG_MAJOR} postgresql-client-${PG_MAJOR} \
        mariadb-server mariadb-client \
     && rm -rf /var/lib/apt/lists/*
+
+# purge docs and man pages inherited from base image
+RUN rm -rf /usr/share/man/* /usr/share/doc/* /usr/share/info/* /usr/share/lintian/* \
+    && apt-get purge -y --auto-remove man-db manpages 2>/dev/null || true
 
 # Prepare user-owned data dirs for rootless startup
 RUN mkdir -p /home/vscode/.local/share/pg/pgdata \
