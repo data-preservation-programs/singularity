@@ -49,14 +49,14 @@ jobs:
           echo "changed files for codegen: ${CHANGED:-none}"
 
       - name: Setup Podman as Docker
-        uses: parkan/github-actions/setup-podman-docker@v2
+        uses: parkan/github-actions/setup-podman-docker@v3
         with:
           disable-docker: true
-          cache-storage: false
+          cache-storage: true
 
       - name: Build devcontainer
         id: build
-        uses: parkan/github-actions/devcontainer-build@v2
+        uses: parkan/github-actions/devcontainer-build@v3
         with:
           workspace-folder: .
           container-runtime: podman
@@ -64,42 +64,42 @@ jobs:
 
       - name: Generate swagger code
         if: steps.codegen.outputs.needed == 'true'
-        uses: parkan/github-actions/devcontainer-exec@v2
+        uses: parkan/github-actions/devcontainer-exec@v3
         with:
           container-id: ${{ steps.build.outputs.container-id }}
           command: 'cd /workspaces/singularity && go generate ./...'
           container-runtime: podman
 
       - name: Check formatting
-        uses: parkan/github-actions/devcontainer-exec@v2
+        uses: parkan/github-actions/devcontainer-exec@v3
         with:
           container-id: ${{ steps.build.outputs.container-id }}
           command: 'cd /workspaces/singularity && gofmt -l .'
           container-runtime: podman
 
       - name: Run go vet
-        uses: parkan/github-actions/devcontainer-exec@v2
+        uses: parkan/github-actions/devcontainer-exec@v3
         with:
           container-id: ${{ steps.build.outputs.container-id }}
           command: 'cd /workspaces/singularity && go vet ./...'
           container-runtime: podman
 
       - name: Run staticcheck
-        uses: parkan/github-actions/devcontainer-exec@v2
+        uses: parkan/github-actions/devcontainer-exec@v3
         with:
           container-id: ${{ steps.build.outputs.container-id }}
           command: 'cd /workspaces/singularity && staticcheck ./...'
           container-runtime: podman
 
       - name: Build binary
-        uses: parkan/github-actions/devcontainer-exec@v2
+        uses: parkan/github-actions/devcontainer-exec@v3
         with:
           container-id: ${{ steps.build.outputs.container-id }}
           command: 'cd /workspaces/singularity && go build -o singularity .'
           container-runtime: podman
 
       - name: Run tests
-        uses: parkan/github-actions/devcontainer-exec@v2
+        uses: parkan/github-actions/devcontainer-exec@v3
         with:
           container-id: ${{ steps.build.outputs.container-id }}
           command: >
@@ -107,7 +107,7 @@ jobs:
           container-runtime: podman
 
       - name: Run integration tests
-        uses: parkan/github-actions/devcontainer-exec@v2
+        uses: parkan/github-actions/devcontainer-exec@v3
         with:
           container-id: ${{ steps.build.outputs.container-id }}
           command: >
@@ -129,7 +129,7 @@ jobs:
 
       - name: Cleanup
         if: always()
-        uses: parkan/github-actions/devcontainer-cleanup@v2
+        uses: parkan/github-actions/devcontainer-cleanup@v3
         with:
           container-id: ${{ steps.build.outputs.container-id }}
           container-runtime: podman
