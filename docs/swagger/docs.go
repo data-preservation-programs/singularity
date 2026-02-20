@@ -6162,6 +6162,13 @@ const docTemplate = `{
         "deal.ListDealRequest": {
             "type": "object",
             "properties": {
+                "dealTypes": {
+                    "description": "deal type filter (market for f05, pdp for f41)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DealType"
+                    }
+                },
                 "preparations": {
                     "description": "preparation ID or name filter",
                     "type": "array",
@@ -6489,6 +6496,9 @@ const docTemplate = `{
                 "dealId": {
                     "type": "integer"
                 },
+                "dealType": {
+                    "$ref": "#/definitions/model.DealType"
+                },
                 "endEpoch": {
                     "type": "integer"
                 },
@@ -6505,6 +6515,10 @@ const docTemplate = `{
                     "description": "LastVerifiedAt is the last time the deal was verified as active by the tracker",
                     "type": "string"
                 },
+                "nextChallengeEpoch": {
+                    "description": "NextChallengeEpoch is the next epoch when a challenge proof is due",
+                    "type": "integer"
+                },
                 "pieceCid": {
                     "type": "string"
                 },
@@ -6513,6 +6527,14 @@ const docTemplate = `{
                 },
                 "price": {
                     "type": "string"
+                },
+                "proofSetId": {
+                    "description": "PDP-specific fields (only populated for DealTypePDP)",
+                    "type": "integer"
+                },
+                "proofSetLive": {
+                    "description": "ProofSetLive indicates if the proof set is live (actively being challenged)",
+                    "type": "boolean"
                 },
                 "proposalId": {
                     "type": "string"
@@ -6562,6 +6584,17 @@ const docTemplate = `{
                 "DealRejected",
                 "DealSlashed",
                 "DealErrored"
+            ]
+        },
+        "model.DealType": {
+            "type": "string",
+            "enum": [
+                "market",
+                "pdp"
+            ],
+            "x-enum-varnames": [
+                "DealTypeMarket",
+                "DealTypePDP"
             ]
         },
         "model.File": {
