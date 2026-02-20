@@ -22,12 +22,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if codegen inputs changed
+        id: codegen
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          elif [[ -n "${{ github.event.before }}" && "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]]; then
+            BASE="${{ github.event.before }}"
+          else
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+            echo "no base ref available, running codegen"
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only "$BASE" HEAD -- \
+            singularity.go docgen.sh 'api/' 'handler/' 'cmd/' \
+            'storagesystem/' 'docs/gen/' 'model/' || true)
+          if [[ -n "$CHANGED" ]]; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "changed files for codegen: ${CHANGED:-none}"
 
       - name: Setup Podman as Docker
         uses: parkan/github-actions/setup-podman-docker@v2
         with:
           disable-docker: true
-          cache-storage: false  # Disabled until cache issues resolved
+          cache-storage: false
 
       - name: Build devcontainer
         id: build
@@ -37,8 +62,8 @@ jobs:
           container-runtime: podman
           container-id-label: ci=podman
 
-      # Fast surface checks and codegen first
       - name: Generate swagger code
+        if: steps.codegen.outputs.needed == 'true'
         uses: parkan/github-actions/devcontainer-exec@v2
         with:
           container-id: ${{ steps.build.outputs.container-id }}
