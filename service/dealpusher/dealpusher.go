@@ -35,11 +35,12 @@ var waitPendingInterval = time.Minute
 
 // DealPusher represents a struct that encapsulates the data and functionality related to pushing deals in a replication process.
 type DealPusher struct {
-	dbNoContext              *gorm.DB                  // Pointer to a gorm.DB object representing a database connection.
-	walletChooser            replication.WalletChooser // Object responsible for choosing a wallet for replication.
-	dealMaker                replication.DealMaker     // Object responsible for making a deal in replication.
-	pdpProofSetManager       PDPProofSetManager        // Optional PDP proof set lifecycle manager.
-	pdpTxConfirmer           PDPTransactionConfirmer   // Optional PDP transaction confirmer.
+	dbNoContext         *gorm.DB                  // Pointer to a gorm.DB object representing a database connection.
+	walletChooser       replication.WalletChooser // Object responsible for choosing a wallet for replication.
+	dealMaker           replication.DealMaker     // Object responsible for making a deal in replication.
+	pdpProofSetManager  PDPProofSetManager        // Optional PDP proof set lifecycle manager.
+	pdpTxConfirmer      PDPTransactionConfirmer   // Optional PDP transaction confirmer.
+	pdpSchedulingConfig PDPSchedulingConfig       // PDP scheduling config used for root batching and tx confirmation behavior.
 	// Resolver is injected so tests and future wiring can switch deal type behavior without coupling DealPusher to config storage.
 	scheduleDealTypeResolver func(schedule *model.Schedule) model.DealType
 	workerID                 uuid.UUID                               // UUID identifying the associated worker.
@@ -433,20 +434,13 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 
 func (d *DealPusher) resolveScheduleDealType(schedule *model.Schedule) model.DealType {
 	if d.scheduleDealTypeResolver == nil {
-		return model.DealTypeMarket
+		return inferScheduleDealType(schedule)
 	}
 	return d.scheduleDealTypeResolver(schedule)
 }
 
-func (d *DealPusher) runPDPSchedule(_ context.Context, _ *model.Schedule) (model.ScheduleState, error) {
-	if d.pdpProofSetManager == nil || d.pdpTxConfirmer == nil {
-		return model.ScheduleError, errors.New("pdp scheduling dependencies are not configured")
-	}
-	return model.ScheduleError, errors.New("pdp scheduling path is not implemented")
-}
-
 func NewDealPusher(db *gorm.DB, lotusURL string,
-	lotusToken string, numAttempts uint, maxReplicas uint,
+	lotusToken string, numAttempts uint, maxReplicas uint, opts ...Option,
 ) (*DealPusher, error) {
 	if numAttempts <= 1 {
 		numAttempts = 1
@@ -460,20 +454,25 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to init deal maker")
 	}
-	return &DealPusher{
+	dealPusher := &DealPusher{
 		dbNoContext:              db,
 		activeScheduleCancelFunc: make(map[model.ScheduleID]context.CancelFunc),
 		activeSchedule:           make(map[model.ScheduleID]*model.Schedule),
 		cronEntries:              make(map[model.ScheduleID]cron.EntryID),
 		walletChooser:            &replication.RandomWalletChooser{},
 		dealMaker:                dealMaker,
+		pdpSchedulingConfig:      defaultPDPSchedulingConfig(),
 		workerID:                 uuid.New(),
 		cron: cron.New(cron.WithLogger(&cronLogger{}), cron.WithLocation(time.UTC),
 			cron.WithParser(cron.NewParser(cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor))),
 		sendDealAttempts: numAttempts,
 		host:             h,
 		maxReplicas:      maxReplicas,
-	}, nil
+	}
+	for _, opt := range opts {
+		opt(dealPusher)
+	}
+	return dealPusher, nil
 }
 
 // runOnce is a method of the DealPusher type that runs a single iteration of the deal pushing logic.
