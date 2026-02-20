@@ -21,10 +21,10 @@ var PDPTrackerCmd = &cli.Command{
 	Usage: "Track PDP deals via Shovel event indexing (requires PostgreSQL)",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:     "eth-rpc",
-			Usage:    "Ethereum RPC endpoint for FEVM (e.g., https://api.node.glif.io)",
-			EnvVars:  []string{"ETH_RPC_URL"},
-			Required: true,
+			Name:    "eth-rpc",
+			Usage:   "Ethereum RPC endpoint for FEVM",
+			Value:   "https://api.node.glif.io/rpc/v1",
+			EnvVars: []string{"ETH_RPC_URL"},
 		},
 		&cli.DurationFlag{
 			Name:  "pdp-poll-interval",
@@ -33,15 +33,11 @@ var PDPTrackerCmd = &cli.Command{
 		},
 		&cli.BoolFlag{
 			Name:  "full-sync",
-			Usage: "Re-index all events from contract deployment. Useful for importing deals created before the tracker was running. Involves one RPC call per historical proof set.",
+			Usage: "Re-index all events from contract deployment (mainnet: block 5441432, calibnet: block 3140755). Requires an archival RPC node. Involves one RPC call per historical proof set.",
 		},
 	},
 	Action: func(c *cli.Context) error {
 		rpcURL := c.String("eth-rpc")
-		if rpcURL == "" {
-			return fmt.Errorf("eth-rpc is required")
-		}
-
 		connStr := c.String("database-connection-string")
 		if !strings.HasPrefix(connStr, "postgres:") && !strings.HasPrefix(connStr, "postgresql:") {
 			return errors.New("PDP tracking requires PostgreSQL (Shovel is Postgres-only)")
