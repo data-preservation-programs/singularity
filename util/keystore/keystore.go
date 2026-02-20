@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/data-preservation-programs/go-synapse/signer"
 	"github.com/filecoin-project/go-address"
-	filwallet "github.com/jsign/go-filsigner/wallet"
 )
 
 type KeyStore interface {
@@ -34,9 +34,9 @@ func NewLocalKeyStore(dir string) (*LocalKeyStore, error) {
 	return &LocalKeyStore{dir: dir}, nil
 }
 
-// lotus/go-filsigner export format expected
+// lotus wallet export format expected (hex-encoded JSON with Type and PrivateKey)
 func (ks *LocalKeyStore) Put(privateKey string) (string, address.Address, error) {
-	addr, err := filwallet.PublicKey(privateKey)
+	addr, err := addressFromExport(privateKey)
 	if err != nil {
 		return "", address.Undef, fmt.Errorf("failed to derive address from private key: %w", err)
 	}
@@ -78,8 +78,7 @@ func (ks *LocalKeyStore) List() ([]KeyInfo, error) {
 			continue // skip unreadable
 		}
 
-		// verify valid key by deriving address
-		addr, err := filwallet.PublicKey(string(data))
+		addr, err := addressFromExport(string(data))
 		if err != nil {
 			continue // skip invalid
 		}
@@ -103,4 +102,13 @@ func (ks *LocalKeyStore) Delete(path string) error {
 func (ks *LocalKeyStore) Has(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+// derives filecoin address from a lotus wallet export string
+func addressFromExport(exported string) (address.Address, error) {
+	s, err := signer.FromLotusExport(exported)
+	if err != nil {
+		return address.Undef, err
+	}
+	return s.FilecoinAddress(), nil
 }
