@@ -7,21 +7,18 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/filecoin-project/go-state-types/crypto"
-	filwallet "github.com/jsign/go-filsigner/wallet"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
-// loads private key from keystore and signs message
-// new signing flow - loads keys from disk instead of database
+// loads private key from keystore and signs a filecoin message
 func SignWithWallet(ks keystore.KeyStore, wallet model.Wallet, msg []byte) (*crypto.Signature, error) {
-	privateKey, err := ks.Get(wallet.KeyPath)
+	s, err := keystore.Signer(ks, wallet)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to load private key from keystore")
+		return nil, errors.Wrap(err, "failed to load signer from keystore")
 	}
 
-	// filwallet.WalletSign automatically detects key type (secp256k1 or BLS)
-	signature, err := filwallet.WalletSign(privateKey, msg)
+	signature, err := s.Sign(msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to sign message")
 	}
