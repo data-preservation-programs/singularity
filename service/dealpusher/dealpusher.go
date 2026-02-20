@@ -40,6 +40,7 @@ type DealPusher struct {
 	dealMaker                replication.DealMaker     // Object responsible for making a deal in replication.
 	pdpProofSetManager       PDPProofSetManager        // Optional PDP proof set lifecycle manager.
 	pdpTxConfirmer           PDPTransactionConfirmer   // Optional PDP transaction confirmer.
+	// Resolver is injected so tests and future wiring can switch deal type behavior without coupling DealPusher to config storage.
 	scheduleDealTypeResolver func(schedule *model.Schedule) model.DealType
 	workerID                 uuid.UUID                               // UUID identifying the associated worker.
 	activeSchedule           map[model.ScheduleID]*model.Schedule    // Map storing active schedules with schedule IDs as keys and pointers to model.Schedule objects as values.

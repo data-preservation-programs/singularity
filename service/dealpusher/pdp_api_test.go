@@ -22,4 +22,15 @@ func TestPDPSchedulingConfigValidate(t *testing.T) {
 		cfg := PDPSchedulingConfig{}
 		require.Error(t, cfg.Validate())
 	})
+
+	t.Run("invalid gas limit", func(t *testing.T) {
+		cfg := PDPSchedulingConfig{
+			BatchSize:         100,
+			ConfirmationDepth: 5,
+			PollingInterval:   30 * time.Second,
+		}
+		err := cfg.Validate()
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "pdp gas limit must be greater than 0")
+	})
 }
