@@ -35,9 +35,13 @@ var waitPendingInterval = time.Minute
 
 // DealPusher represents a struct that encapsulates the data and functionality related to pushing deals in a replication process.
 type DealPusher struct {
-	dbNoContext              *gorm.DB                                // Pointer to a gorm.DB object representing a database connection.
-	walletChooser            replication.WalletChooser               // Object responsible for choosing a wallet for replication.
-	dealMaker                replication.DealMaker                   // Object responsible for making a deal in replication.
+	dbNoContext              *gorm.DB                  // Pointer to a gorm.DB object representing a database connection.
+	walletChooser            replication.WalletChooser // Object responsible for choosing a wallet for replication.
+	dealMaker                replication.DealMaker     // Object responsible for making a deal in replication.
+	pdpProofSetManager       PDPProofSetManager        // Optional PDP proof set lifecycle manager.
+	pdpTxConfirmer           PDPTransactionConfirmer   // Optional PDP transaction confirmer.
+	// Resolver is injected so tests and future wiring can switch deal type behavior without coupling DealPusher to config storage.
+	scheduleDealTypeResolver func(schedule *model.Schedule) model.DealType
 	workerID                 uuid.UUID                               // UUID identifying the associated worker.
 	activeSchedule           map[model.ScheduleID]*model.Schedule    // Map storing active schedules with schedule IDs as keys and pointers to model.Schedule objects as values.
 	activeScheduleCancelFunc map[model.ScheduleID]context.CancelFunc // Map storing cancel functions for active schedules with schedule IDs as keys and CancelFunc as values.
@@ -232,6 +236,10 @@ func (d *DealPusher) updateScheduleUnsafe(ctx context.Context, schedule model.Sc
 //     Possible values: ScheduleCompleted, ScheduleError, or an empty string.
 //  2. An error if any step of the process encounters an issue, otherwise nil.
 func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) (model.ScheduleState, error) {
+	if d.resolveScheduleDealType(schedule) == model.DealTypePDP {
+		return d.runPDPSchedule(ctx, schedule)
+	}
+
 	db := d.dbNoContext.WithContext(ctx)
 	overReplicatedCIDs := db.
 		Table("deals").
@@ -421,6 +429,20 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 		case <-timer.C:
 		}
 	}
+}
+
+func (d *DealPusher) resolveScheduleDealType(schedule *model.Schedule) model.DealType {
+	if d.scheduleDealTypeResolver == nil {
+		return model.DealTypeMarket
+	}
+	return d.scheduleDealTypeResolver(schedule)
+}
+
+func (d *DealPusher) runPDPSchedule(_ context.Context, _ *model.Schedule) (model.ScheduleState, error) {
+	if d.pdpProofSetManager == nil || d.pdpTxConfirmer == nil {
+		return model.ScheduleError, errors.New("pdp scheduling dependencies are not configured")
+	}
+	return model.ScheduleError, errors.New("pdp scheduling path is not implemented")
 }
 
 func NewDealPusher(db *gorm.DB, lotusURL string,
