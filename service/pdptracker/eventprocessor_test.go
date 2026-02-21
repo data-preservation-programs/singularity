@@ -117,8 +117,8 @@ func (e pgTestEnv) shovelCount(t *testing.T, table string) int64 {
 func TestProcessDataSetCreated(t *testing.T) {
 	pgTest(t, func(t *testing.T, e pgTestEnv) {
 		require.NoError(t, e.db.Exec(
-			"INSERT INTO pdp_dataset_created (set_id, storage_provider, block_num) VALUES (?, ?, ?)",
-			1, e.providerEth.Bytes(), 100,
+			"INSERT INTO pdp_dataset_created (set_id, storage_provider, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?, ?)",
+			1, e.providerEth.Bytes(), 100, 0, 0,
 		).Error)
 
 		require.NoError(t, processDataSetCreated(e.ctx, e.db, e.client))
@@ -134,10 +134,10 @@ func TestProcessDataSetCreated(t *testing.T) {
 
 func TestProcessDataSetCreated_Idempotent(t *testing.T) {
 	pgTest(t, func(t *testing.T, e pgTestEnv) {
-		for range 2 {
+		for i := range 2 {
 			require.NoError(t, e.db.Exec(
-				"INSERT INTO pdp_dataset_created (set_id, storage_provider, block_num) VALUES (?, ?, ?)",
-				1, e.providerEth.Bytes(), 100,
+				"INSERT INTO pdp_dataset_created (set_id, storage_provider, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?, ?)",
+				1, e.providerEth.Bytes(), int64(100+i), 0, 0,
 			).Error)
 			require.NoError(t, processDataSetCreated(e.ctx, e.db, e.client))
 		}
@@ -152,7 +152,10 @@ func TestProcessPiecesChanged_CreatesDeals(t *testing.T) {
 	pgTest(t, func(t *testing.T, e pgTestEnv) {
 		e.setupFixtures(t)
 
-		require.NoError(t, e.db.Exec("INSERT INTO pdp_pieces_added (set_id) VALUES (?)", 1).Error)
+		require.NoError(t, e.db.Exec(
+			"INSERT INTO pdp_pieces_added (set_id, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?)",
+			1, 200, 0, 0,
+		).Error)
 		require.NoError(t, processPiecesChanged(e.ctx, e.db, e.client))
 
 		var deals []model.Deal
@@ -172,7 +175,10 @@ func TestProcessPiecesChanged_LiveProofSetCreatesActiveDeals(t *testing.T) {
 		require.NoError(t, e.db.Model(&model.PDPProofSet{}).Where("set_id = ?", 1).
 			Update("is_live", true).Error)
 
-		require.NoError(t, e.db.Exec("INSERT INTO pdp_pieces_added (set_id) VALUES (?)", 1).Error)
+		require.NoError(t, e.db.Exec(
+			"INSERT INTO pdp_pieces_added (set_id, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?)",
+			1, 200, 0, 0,
+		).Error)
 		require.NoError(t, processPiecesChanged(e.ctx, e.db, e.client))
 
 		var deals []model.Deal
@@ -191,7 +197,10 @@ func TestProcessPiecesChanged_ExpiresRemovedPieces(t *testing.T) {
 			d.PieceCID = model.CID(testPieceCID)
 		})
 
-		require.NoError(t, e.db.Exec("INSERT INTO pdp_pieces_removed (set_id) VALUES (?)", 1).Error)
+		require.NoError(t, e.db.Exec(
+			"INSERT INTO pdp_pieces_removed (set_id, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?)",
+			1, 200, 0, 0,
+		).Error)
 
 		// contract returns empty active pieces
 		e.mock.pieces[1] = nil
@@ -209,8 +218,8 @@ func TestProcessNextProvingPeriod(t *testing.T) {
 		e.insertDeal(t, model.DealPublished)
 
 		require.NoError(t, e.db.Exec(
-			"INSERT INTO pdp_next_proving_period (set_id, challenge_epoch, leaf_count) VALUES (?, ?, ?)",
-			1, 500, 42,
+			"INSERT INTO pdp_next_proving_period (set_id, challenge_epoch, leaf_count, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?, ?, ?)",
+			1, 500, 42, 200, 0, 0,
 		).Error)
 
 		require.NoError(t, processNextProvingPeriod(e.ctx, e.db))
@@ -226,12 +235,38 @@ func TestProcessNextProvingPeriod(t *testing.T) {
 	})
 }
 
+func TestProcessNextProvingPeriod_RetainedWhenProofSetMissing(t *testing.T) {
+	pgTest(t, func(t *testing.T, e pgTestEnv) {
+		require.NoError(t, e.db.Exec(
+			"INSERT INTO pdp_next_proving_period (set_id, challenge_epoch, leaf_count, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?, ?, ?)",
+			1, 500, 42, 200, 0, 0,
+		).Error)
+
+		// process — proof set missing, row must be retained
+		require.NoError(t, processNextProvingPeriod(e.ctx, e.db))
+		require.EqualValues(t, 1, e.shovelCount(t, "pdp_next_proving_period"))
+
+		// create the proof set, retry
+		e.setupFixtures(t)
+		e.insertDeal(t, model.DealPublished)
+		require.NoError(t, processNextProvingPeriod(e.ctx, e.db))
+		require.EqualValues(t, 0, e.shovelCount(t, "pdp_next_proving_period"))
+
+		var ps model.PDPProofSet
+		require.NoError(t, e.db.Where("set_id = ?", 1).First(&ps).Error)
+		require.EqualValues(t, 500, *ps.ChallengeEpoch)
+	})
+}
+
 func TestProcessPossessionProven(t *testing.T) {
 	pgTest(t, func(t *testing.T, e pgTestEnv) {
 		e.setupFixtures(t)
 		e.insertDeal(t, model.DealPublished)
 
-		require.NoError(t, e.db.Exec("INSERT INTO pdp_possession_proven (set_id) VALUES (?)", 1).Error)
+		require.NoError(t, e.db.Exec(
+			"INSERT INTO pdp_possession_proven (set_id, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?)",
+			1, 200, 0, 0,
+		).Error)
 		require.NoError(t, processPossessionProven(e.ctx, e.db))
 
 		var ps model.PDPProofSet
@@ -247,13 +282,39 @@ func TestProcessPossessionProven(t *testing.T) {
 	})
 }
 
+func TestProcessPossessionProven_RetainedWhenProofSetMissing(t *testing.T) {
+	pgTest(t, func(t *testing.T, e pgTestEnv) {
+		require.NoError(t, e.db.Exec(
+			"INSERT INTO pdp_possession_proven (set_id, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?)",
+			1, 200, 0, 0,
+		).Error)
+
+		// process — proof set missing, row must be retained
+		require.NoError(t, processPossessionProven(e.ctx, e.db))
+		require.EqualValues(t, 1, e.shovelCount(t, "pdp_possession_proven"))
+
+		// create the proof set, retry
+		e.setupFixtures(t)
+		e.insertDeal(t, model.DealPublished)
+		require.NoError(t, processPossessionProven(e.ctx, e.db))
+		require.EqualValues(t, 0, e.shovelCount(t, "pdp_possession_proven"))
+
+		var ps model.PDPProofSet
+		require.NoError(t, e.db.Where("set_id = ?", 1).First(&ps).Error)
+		require.True(t, ps.IsLive)
+	})
+}
+
 func TestProcessPossessionProven_DoesNotResurrectExpired(t *testing.T) {
 	pgTest(t, func(t *testing.T, e pgTestEnv) {
 		e.setupFixtures(t)
 		e.insertDeal(t, model.DealPublished)
 		e.insertDeal(t, model.DealExpired)
 
-		require.NoError(t, e.db.Exec("INSERT INTO pdp_possession_proven (set_id) VALUES (?)", 1).Error)
+		require.NoError(t, e.db.Exec(
+			"INSERT INTO pdp_possession_proven (set_id, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?)",
+			1, 200, 0, 0,
+		).Error)
 		require.NoError(t, processPossessionProven(e.ctx, e.db))
 
 		var deals []model.Deal
@@ -270,7 +331,8 @@ func TestProcessDataSetDeleted(t *testing.T) {
 		e.insertDeal(t, model.DealActive)
 
 		require.NoError(t, e.db.Exec(
-			"INSERT INTO pdp_dataset_deleted (set_id, deleted_leaf_count) VALUES (?, ?)", 1, 10,
+			"INSERT INTO pdp_dataset_deleted (set_id, deleted_leaf_count, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?, ?)",
+			1, 10, 200, 0, 0,
 		).Error)
 
 		require.NoError(t, processDataSetDeleted(e.ctx, e.db))
@@ -295,8 +357,8 @@ func TestProcessSPChanged(t *testing.T) {
 
 		newSP := common.HexToAddress("0x3333333333333333333333333333333333333333")
 		require.NoError(t, e.db.Exec(
-			"INSERT INTO pdp_sp_changed (set_id, old_sp, new_sp) VALUES (?, ?, ?)",
-			1, e.providerEth.Bytes(), newSP.Bytes(),
+			"INSERT INTO pdp_sp_changed (set_id, old_sp, new_sp, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?, ?, ?)",
+			1, e.providerEth.Bytes(), newSP.Bytes(), 200, 0, 0,
 		).Error)
 
 		require.NoError(t, processSPChanged(e.ctx, e.db))
@@ -314,15 +376,13 @@ func TestProcessSPChanged(t *testing.T) {
 	})
 }
 
-func TestDeleteProcessedRows(t *testing.T) {
+func TestDeleteByKeys(t *testing.T) {
 	pgTest(t, func(t *testing.T, e pgTestEnv) {
-		insert := func(ids ...int) {
-			for _, id := range ids {
-				require.NoError(t, e.db.Exec(
-					"INSERT INTO pdp_dataset_created (set_id, storage_provider, block_num) VALUES (?, ?, ?)",
-					id, []byte{0x01}, 100,
-				).Error)
-			}
+		insert := func(setID int, blockNum int64, txIdx, logIdx int) {
+			require.NoError(t, e.db.Exec(
+				"INSERT INTO pdp_dataset_created (set_id, storage_provider, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?, ?)",
+				setID, []byte{0x01}, blockNum, txIdx, logIdx,
+			).Error)
 		}
 		remaining := func() []uint64 {
 			type r struct {
@@ -338,27 +398,30 @@ func TestDeleteProcessedRows(t *testing.T) {
 		}
 		clear := func() { require.NoError(t, e.db.Exec("DELETE FROM pdp_dataset_created").Error) }
 
-		// no failures → delete all
-		insert(1, 2, 3)
-		require.NoError(t, deleteProcessedRows(e.db, "pdp_dataset_created", "set_id", nil))
-		require.Empty(t, remaining())
-
-		// partial failures → retain only failed
-		insert(10, 20, 30)
-		require.NoError(t, deleteProcessedRows(e.db, "pdp_dataset_created", "set_id", []uint64{10, 30}))
-		require.Equal(t, []uint64{10, 30}, remaining())
-		clear()
-
-		// duplicate failed IDs → correct retention
-		insert(1, 2, 3)
-		require.NoError(t, deleteProcessedRows(e.db, "pdp_dataset_created", "set_id", []uint64{2, 2, 2}))
+		// delete specific keys, leave others
+		insert(1, 100, 0, 0)
+		insert(2, 100, 0, 1)
+		insert(3, 101, 0, 0)
+		require.NoError(t, deleteByKeys(e.db, "pdp_dataset_created", []eventKey{
+			{100, 0, 0}, {101, 0, 0},
+		}))
 		require.Equal(t, []uint64{2}, remaining())
 		clear()
 
-		// all failed → retain all
-		insert(5, 6, 7)
-		require.NoError(t, deleteProcessedRows(e.db, "pdp_dataset_created", "set_id", []uint64{5, 6, 7}))
-		require.Equal(t, []uint64{5, 6, 7}, remaining())
+		// empty keys → no-op
+		insert(1, 100, 0, 0)
+		require.NoError(t, deleteByKeys(e.db, "pdp_dataset_created", nil))
+		require.Equal(t, []uint64{1}, remaining())
+		clear()
+
+		// delete all claimed
+		insert(10, 200, 0, 0)
+		insert(20, 200, 1, 0)
+		insert(30, 201, 0, 0)
+		require.NoError(t, deleteByKeys(e.db, "pdp_dataset_created", []eventKey{
+			{200, 0, 0}, {200, 1, 0}, {201, 0, 0},
+		}))
+		require.Empty(t, remaining())
 	})
 }
 
@@ -370,7 +433,10 @@ func TestPiecesRetainedWhenProofSetMissing(t *testing.T) {
 		}).Error)
 
 		// PiecesAdded arrives before DataSetCreated is processed
-		require.NoError(t, e.db.Exec("INSERT INTO pdp_pieces_added (set_id) VALUES (?)", 1).Error)
+		require.NoError(t, e.db.Exec(
+			"INSERT INTO pdp_pieces_added (set_id, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?)",
+			1, 200, 0, 0,
+		).Error)
 
 		// process — proof set missing, rows must be retained
 		require.NoError(t, processPiecesChanged(e.ctx, e.db, e.client))
@@ -382,8 +448,8 @@ func TestPiecesRetainedWhenProofSetMissing(t *testing.T) {
 
 		// DataSetCreated succeeds
 		require.NoError(t, e.db.Exec(
-			"INSERT INTO pdp_dataset_created (set_id, storage_provider, block_num) VALUES (?, ?, ?)",
-			1, e.providerEth.Bytes(), 100,
+			"INSERT INTO pdp_dataset_created (set_id, storage_provider, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?, ?)",
+			1, e.providerEth.Bytes(), 100, 0, 0,
 		).Error)
 		require.NoError(t, processDataSetCreated(e.ctx, e.db, e.client))
 
@@ -410,8 +476,8 @@ func TestProcessNewEvents_FullLifecycle(t *testing.T) {
 
 		// step 1: DataSetCreated
 		require.NoError(t, e.db.Exec(
-			"INSERT INTO pdp_dataset_created (set_id, storage_provider, block_num) VALUES (?, ?, ?)",
-			1, e.providerEth.Bytes(), 100,
+			"INSERT INTO pdp_dataset_created (set_id, storage_provider, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?, ?)",
+			1, e.providerEth.Bytes(), 100, 0, 0,
 		).Error)
 		require.NoError(t, processNewEvents(e.ctx, e.db, e.client))
 
@@ -420,7 +486,10 @@ func TestProcessNewEvents_FullLifecycle(t *testing.T) {
 		require.EqualValues(t, 1, psCount)
 
 		// step 2: PiecesAdded
-		require.NoError(t, e.db.Exec("INSERT INTO pdp_pieces_added (set_id) VALUES (?)", 1).Error)
+		require.NoError(t, e.db.Exec(
+			"INSERT INTO pdp_pieces_added (set_id, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?)",
+			1, 200, 0, 0,
+		).Error)
 		require.NoError(t, processNewEvents(e.ctx, e.db, e.client))
 
 		var dealCount int64
@@ -428,7 +497,10 @@ func TestProcessNewEvents_FullLifecycle(t *testing.T) {
 		require.EqualValues(t, 1, dealCount)
 
 		// step 3: PossessionProven → active
-		require.NoError(t, e.db.Exec("INSERT INTO pdp_possession_proven (set_id) VALUES (?)", 1).Error)
+		require.NoError(t, e.db.Exec(
+			"INSERT INTO pdp_possession_proven (set_id, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?)",
+			1, 300, 0, 0,
+		).Error)
 		require.NoError(t, processNewEvents(e.ctx, e.db, e.client))
 
 		var deal model.Deal
@@ -438,7 +510,8 @@ func TestProcessNewEvents_FullLifecycle(t *testing.T) {
 
 		// step 4: DataSetDeleted → expired
 		require.NoError(t, e.db.Exec(
-			"INSERT INTO pdp_dataset_deleted (set_id, deleted_leaf_count) VALUES (?, ?)", 1, 1,
+			"INSERT INTO pdp_dataset_deleted (set_id, deleted_leaf_count, block_num, tx_idx, log_idx) VALUES (?, ?, ?, ?, ?)",
+			1, 1, 400, 0, 0,
 		).Error)
 		require.NoError(t, processNewEvents(e.ctx, e.db, e.client))
 

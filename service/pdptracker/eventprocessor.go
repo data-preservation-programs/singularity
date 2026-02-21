@@ -3,6 +3,7 @@ package pdptracker
 import (
 	"context"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -38,11 +39,21 @@ func processNewEvents(ctx context.Context, db *gorm.DB, rpcClient *ChainPDPClien
 	return nil
 }
 
-type inboxRow interface {
-	setID() uint64
+// eventKey uniquely identifies a shovel inbox row within a table
+type eventKey struct {
+	BlockNum int64 `gorm:"column:block_num"`
+	TxIdx    int   `gorm:"column:tx_idx"`
+	LogIdx   int   `gorm:"column:log_idx"`
 }
 
-// failed rows are retained for retry on next cycle
+type inboxRow interface {
+	setID() uint64
+	key() eventKey
+}
+
+// processInbox reads all pending rows in deterministic order, processes each
+// via fn, then deletes only the exact rows that succeeded (by event key).
+// failed rows are retained for retry on next cycle.
 func processInbox[R inboxRow](db *gorm.DB, query, table string, fn func(R) error) error {
 	var rows []R
 	if err := db.Raw(query).Scan(&rows).Error; err != nil {
@@ -52,38 +63,50 @@ func processInbox[R inboxRow](db *gorm.DB, query, table string, fn func(R) error
 		return nil
 	}
 
-	var failed []uint64
+	var successKeys []eventKey
 	for _, r := range rows {
 		if err := fn(r); err != nil {
 			Logger.Errorw("inbox processing failed", "table", table, "setId", r.setID(), "error", err)
-			failed = append(failed, r.setID())
+		} else {
+			successKeys = append(successKeys, r.key())
 		}
 	}
 
-	return deleteProcessedRows(db, table, "set_id", failed)
+	return deleteByKeys(db, table, successKeys)
 }
 
-// table and keyCol are interpolated into sql. pass literals only.
-// this is internal to the package so if you're passing user input here
-// you've already made worse decisions than we can protect against.
-func deleteProcessedRows(db *gorm.DB, table, keyCol string, failed []uint64) error {
-	if len(failed) == 0 {
-		return db.Exec("DELETE FROM " + table).Error
+// deleteByKeys removes exactly the rows identified by their event keys.
+// table is interpolated into sql — pass literals only.
+func deleteByKeys(db *gorm.DB, table string, keys []eventKey) error {
+	if len(keys) == 0 {
+		return nil
 	}
-	return db.Exec("DELETE FROM "+table+" WHERE "+keyCol+" NOT IN (?)", failed).Error
+	placeholders := make([]string, len(keys))
+	args := make([]interface{}, 0, len(keys)*3)
+	for i, k := range keys {
+		placeholders[i] = "(?, ?, ?)"
+		args = append(args, k.BlockNum, k.TxIdx, k.LogIdx)
+	}
+	return db.Exec(
+		"DELETE FROM "+table+" WHERE (block_num, tx_idx, log_idx) IN ("+strings.Join(placeholders, ", ")+")",
+		args...,
+	).Error
 }
 
 type dataSetCreatedRow struct {
+	BlockNum        int64  `gorm:"column:block_num"`
+	TxIdx           int    `gorm:"column:tx_idx"`
+	LogIdx          int    `gorm:"column:log_idx"`
 	SetID_          uint64 `gorm:"column:set_id"`
 	StorageProvider []byte `gorm:"column:storage_provider"`
-	BlockNum        int64  `gorm:"column:block_num"`
 }
 
 func (r dataSetCreatedRow) setID() uint64 { return r.SetID_ }
+func (r dataSetCreatedRow) key() eventKey { return eventKey{r.BlockNum, r.TxIdx, r.LogIdx} }
 
 func processDataSetCreated(ctx context.Context, db *gorm.DB, rpcClient *ChainPDPClient) error {
 	return processInbox(db,
-		"SELECT set_id, storage_provider, block_num FROM pdp_dataset_created",
+		"SELECT set_id, storage_provider, block_num, tx_idx, log_idx FROM pdp_dataset_created ORDER BY block_num, tx_idx, log_idx",
 		"pdp_dataset_created",
 		func(r dataSetCreatedRow) error {
 			listener, err := rpcClient.GetDataSetListener(ctx, r.SetID_)
@@ -117,39 +140,56 @@ func processDataSetCreated(ctx context.Context, db *gorm.DB, rpcClient *ChainPDP
 
 func processPiecesChanged(ctx context.Context, db *gorm.DB, rpcClient *ChainPDPClient) error {
 	type row struct {
-		SetID uint64 `gorm:"column:set_id"`
+		BlockNum int64  `gorm:"column:block_num"`
+		TxIdx    int    `gorm:"column:tx_idx"`
+		LogIdx   int    `gorm:"column:log_idx"`
+		SetID    uint64 `gorm:"column:set_id"`
+	}
+
+	var addedRows, removedRows []row
+	if err := db.Raw("SELECT set_id, block_num, tx_idx, log_idx FROM pdp_pieces_added ORDER BY block_num, tx_idx, log_idx").Scan(&addedRows).Error; err != nil {
+		return err
+	}
+	if err := db.Raw("SELECT set_id, block_num, tx_idx, log_idx FROM pdp_pieces_removed ORDER BY block_num, tx_idx, log_idx").Scan(&removedRows).Error; err != nil {
+		return err
 	}
 
 	setIDs := make(map[uint64]struct{})
-	for _, q := range []string{
-		"SELECT DISTINCT set_id FROM pdp_pieces_added",
-		"SELECT DISTINCT set_id FROM pdp_pieces_removed",
-	} {
-		var rows []row
-		if err := db.Raw(q).Scan(&rows).Error; err != nil {
-			return err
-		}
-		for _, r := range rows {
-			setIDs[r.SetID] = struct{}{}
-		}
+	for _, r := range addedRows {
+		setIDs[r.SetID] = struct{}{}
+	}
+	for _, r := range removedRows {
+		setIDs[r.SetID] = struct{}{}
 	}
 
 	if len(setIDs) == 0 {
 		return nil
 	}
 
-	var failed []uint64
+	failed := make(map[uint64]struct{})
 	for id := range setIDs {
 		if err := reconcileProofSetPieces(ctx, db, rpcClient, id); err != nil {
 			Logger.Errorw("failed to reconcile pieces", "setId", id, "error", err)
-			failed = append(failed, id)
+			failed[id] = struct{}{}
 		}
 	}
 
-	if err := deleteProcessedRows(db, "pdp_pieces_added", "set_id", failed); err != nil {
+	var addedKeys, removedKeys []eventKey
+	for _, r := range addedRows {
+		if _, ok := failed[r.SetID]; !ok {
+			addedKeys = append(addedKeys, eventKey{r.BlockNum, r.TxIdx, r.LogIdx})
+		}
+	}
+	for _, r := range removedRows {
+		if _, ok := failed[r.SetID]; !ok {
+			removedKeys = append(removedKeys, eventKey{r.BlockNum, r.TxIdx, r.LogIdx})
+		}
+	}
+
+	if err := deleteByKeys(db, "pdp_pieces_added", addedKeys); err != nil {
 		return err
 	}
-	return deleteProcessedRows(db, "pdp_pieces_removed", "set_id", failed)
+	return deleteByKeys(db, "pdp_pieces_removed", removedKeys)
 }
 
 func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainPDPClient, setID uint64) error {
@@ -255,15 +295,19 @@ func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainP
 }
 
 type nextProvingPeriodRow struct {
+	BlockNum       int64  `gorm:"column:block_num"`
+	TxIdx          int    `gorm:"column:tx_idx"`
+	LogIdx         int    `gorm:"column:log_idx"`
 	SetID_         uint64 `gorm:"column:set_id"`
 	ChallengeEpoch int64  `gorm:"column:challenge_epoch"`
 }
 
 func (r nextProvingPeriodRow) setID() uint64 { return r.SetID_ }
+func (r nextProvingPeriodRow) key() eventKey { return eventKey{r.BlockNum, r.TxIdx, r.LogIdx} }
 
 func processNextProvingPeriod(ctx context.Context, db *gorm.DB) error {
 	return processInbox(db,
-		"SELECT set_id, challenge_epoch FROM pdp_next_proving_period",
+		"SELECT set_id, challenge_epoch, block_num, tx_idx, log_idx FROM pdp_next_proving_period ORDER BY block_num, tx_idx, log_idx",
 		"pdp_next_proving_period",
 		func(r nextProvingPeriodRow) error {
 			if r.ChallengeEpoch > math.MaxInt32 || r.ChallengeEpoch < math.MinInt32 {
@@ -271,11 +315,17 @@ func processNextProvingPeriod(ctx context.Context, db *gorm.DB) error {
 			}
 			epoch32 := int32(r.ChallengeEpoch)
 
+			var rowsAffected int64
 			if err := database.DoRetry(ctx, func() error {
-				return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
-					Update("challenge_epoch", r.ChallengeEpoch).Error
+				result := db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
+					Update("challenge_epoch", r.ChallengeEpoch)
+				rowsAffected = result.RowsAffected
+				return result.Error
 			}); err != nil {
 				return err
+			}
+			if rowsAffected == 0 {
+				return errors.Errorf("proof set %d not found, retaining event", r.SetID_)
 			}
 
 			return database.DoRetry(ctx, func() error {
@@ -288,22 +338,32 @@ func processNextProvingPeriod(ctx context.Context, db *gorm.DB) error {
 }
 
 type possessionProvenRow struct {
-	SetID_ uint64 `gorm:"column:set_id"`
+	BlockNum int64  `gorm:"column:block_num"`
+	TxIdx    int    `gorm:"column:tx_idx"`
+	LogIdx   int    `gorm:"column:log_idx"`
+	SetID_   uint64 `gorm:"column:set_id"`
 }
 
 func (r possessionProvenRow) setID() uint64 { return r.SetID_ }
+func (r possessionProvenRow) key() eventKey { return eventKey{r.BlockNum, r.TxIdx, r.LogIdx} }
 
 func processPossessionProven(ctx context.Context, db *gorm.DB) error {
 	now := time.Now()
 	return processInbox(db,
-		"SELECT DISTINCT set_id FROM pdp_possession_proven",
+		"SELECT set_id, block_num, tx_idx, log_idx FROM pdp_possession_proven ORDER BY block_num, tx_idx, log_idx",
 		"pdp_possession_proven",
 		func(r possessionProvenRow) error {
+			var rowsAffected int64
 			if err := database.DoRetry(ctx, func() error {
-				return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
-					Update("is_live", true).Error
+				result := db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
+					Update("is_live", true)
+				rowsAffected = result.RowsAffected
+				return result.Error
 			}); err != nil {
 				return err
+			}
+			if rowsAffected == 0 {
+				return errors.Errorf("proof set %d not found, retaining event", r.SetID_)
 			}
 
 			// only activate non-expired deals; expired deals (from piece removal
@@ -323,21 +383,31 @@ func processPossessionProven(ctx context.Context, db *gorm.DB) error {
 }
 
 type dataSetDeletedRow struct {
-	SetID_ uint64 `gorm:"column:set_id"`
+	BlockNum int64  `gorm:"column:block_num"`
+	TxIdx    int    `gorm:"column:tx_idx"`
+	LogIdx   int    `gorm:"column:log_idx"`
+	SetID_   uint64 `gorm:"column:set_id"`
 }
 
 func (r dataSetDeletedRow) setID() uint64 { return r.SetID_ }
+func (r dataSetDeletedRow) key() eventKey { return eventKey{r.BlockNum, r.TxIdx, r.LogIdx} }
 
 func processDataSetDeleted(ctx context.Context, db *gorm.DB) error {
 	return processInbox(db,
-		"SELECT set_id FROM pdp_dataset_deleted",
+		"SELECT set_id, block_num, tx_idx, log_idx FROM pdp_dataset_deleted ORDER BY block_num, tx_idx, log_idx",
 		"pdp_dataset_deleted",
 		func(r dataSetDeletedRow) error {
+			var rowsAffected int64
 			if err := database.DoRetry(ctx, func() error {
-				return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
-					Update("deleted", true).Error
+				result := db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
+					Update("deleted", true)
+				rowsAffected = result.RowsAffected
+				return result.Error
 			}); err != nil {
 				return err
+			}
+			if rowsAffected == 0 {
+				return errors.Errorf("proof set %d not found, retaining event", r.SetID_)
 			}
 
 			return database.DoRetry(ctx, func() error {
@@ -350,15 +420,19 @@ func processDataSetDeleted(ctx context.Context, db *gorm.DB) error {
 }
 
 type spChangedRow struct {
-	SetID_ uint64 `gorm:"column:set_id"`
-	NewSP  []byte `gorm:"column:new_sp"`
+	BlockNum int64  `gorm:"column:block_num"`
+	TxIdx    int    `gorm:"column:tx_idx"`
+	LogIdx   int    `gorm:"column:log_idx"`
+	SetID_   uint64 `gorm:"column:set_id"`
+	NewSP    []byte `gorm:"column:new_sp"`
 }
 
 func (r spChangedRow) setID() uint64 { return r.SetID_ }
+func (r spChangedRow) key() eventKey { return eventKey{r.BlockNum, r.TxIdx, r.LogIdx} }
 
 func processSPChanged(ctx context.Context, db *gorm.DB) error {
 	return processInbox(db,
-		"SELECT set_id, new_sp FROM pdp_sp_changed",
+		"SELECT set_id, new_sp, block_num, tx_idx, log_idx FROM pdp_sp_changed ORDER BY block_num, tx_idx, log_idx",
 		"pdp_sp_changed",
 		func(r spChangedRow) error {
 			newAddr, err := commonToDelegatedAddress(common.BytesToAddress(r.NewSP))
@@ -366,11 +440,17 @@ func processSPChanged(ctx context.Context, db *gorm.DB) error {
 				return errors.Wrap(err, "converting SP address")
 			}
 
+			var rowsAffected int64
 			if err := database.DoRetry(ctx, func() error {
-				return db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
-					Update("provider", newAddr.String()).Error
+				result := db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
+					Update("provider", newAddr.String())
+				rowsAffected = result.RowsAffected
+				return result.Error
 			}); err != nil {
 				return err
+			}
+			if rowsAffected == 0 {
+				return errors.Errorf("proof set %d not found, retaining event", r.SetID_)
 			}
 
 			return database.DoRetry(ctx, func() error {
