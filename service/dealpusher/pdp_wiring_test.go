@@ -86,7 +86,7 @@ func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation
 		require.NoError(t, db.Create(&prep).Error)
 		require.NotZero(t, prep.ID)
 		wallet := model.Wallet{
-			ID:         clientAddr.String(),
+			ID:         "pdpclient01",
 			Address:    clientAddr.String(),
 			PrivateKey: testutil.TestPrivateKeyHex,
 		}
