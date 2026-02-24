@@ -12,7 +12,7 @@ import (
 
 type noopPDPProofSetManager struct{}
 
-func (noopPDPProofSetManager) EnsureProofSet(_ context.Context, _ model.Wallet, _ string) (uint64, error) {
+func (noopPDPProofSetManager) EnsureProofSet(_ context.Context, _ model.Actor, _ string) (uint64, error) {
 	return 1, nil
 }
 

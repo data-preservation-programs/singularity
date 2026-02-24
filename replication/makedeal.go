@@ -493,7 +493,7 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 //
 // Parameters:
 //   - ctx context.Context: The context to use for timeouts and cancellation.
-//   - actorObj model.Wallet: The client's wallet, containing the client's addresses and private key.
+//   - actorObj model.Actor: The on-chain actor identity for deal signing.
 //   - car model.Car: The car file that contains the data to be stored.
 //   - dealConfig DealConfig: The configuration for the deal, including price and duration.
 //

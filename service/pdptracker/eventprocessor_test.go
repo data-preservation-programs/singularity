@@ -82,7 +82,7 @@ func pgTest(t *testing.T, fn func(t *testing.T, e pgTestEnv)) {
 
 func (e pgTestEnv) setupFixtures(t *testing.T) {
 	t.Helper()
-	require.NoError(t, e.db.Create(&model.Wallet{
+	require.NoError(t, e.db.Create(&model.Actor{
 		ID: "f0100", Address: e.listenerFil.String(),
 	}).Error)
 	require.NoError(t, e.db.Create(&model.PDPProofSet{
@@ -427,8 +427,8 @@ func TestDeleteByKeys(t *testing.T) {
 
 func TestPiecesRetainedWhenProofSetMissing(t *testing.T) {
 	pgTest(t, func(t *testing.T, e pgTestEnv) {
-		// only create wallet, no proof set yet
-		require.NoError(t, e.db.Create(&model.Wallet{
+		// only create actor, no proof set yet
+		require.NoError(t, e.db.Create(&model.Actor{
 			ID: "f0100", Address: e.listenerFil.String(),
 		}).Error)
 
@@ -470,7 +470,7 @@ func TestProcessNewEvents_EmptyTables(t *testing.T) {
 
 func TestProcessNewEvents_FullLifecycle(t *testing.T) {
 	pgTest(t, func(t *testing.T, e pgTestEnv) {
-		require.NoError(t, e.db.Create(&model.Wallet{
+		require.NoError(t, e.db.Create(&model.Actor{
 			ID: "f0100", Address: e.listenerFil.String(),
 		}).Error)
 

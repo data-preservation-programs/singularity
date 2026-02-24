@@ -38,7 +38,7 @@ func (c PDPSchedulingConfig) Validate() error {
 // PDPProofSetManager defines proof set lifecycle operations needed by scheduling.
 type PDPProofSetManager interface {
 	// EnsureProofSet returns an existing proof set ID or creates one for this client/provider pair.
-	EnsureProofSet(ctx context.Context, wallet model.Wallet, provider string) (uint64, error)
+	EnsureProofSet(ctx context.Context, actor model.Actor, provider string) (uint64, error)
 	// QueueAddRoots submits root additions for a proof set and returns the queued tx reference.
 	QueueAddRoots(ctx context.Context, proofSetID uint64, pieceCIDs []cid.Cid, cfg PDPSchedulingConfig) (*PDPQueuedTx, error)
 }
