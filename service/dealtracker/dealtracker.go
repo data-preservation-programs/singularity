@@ -381,10 +381,10 @@ type KnownDeal struct {
 	State model.DealState
 }
 type UnknownDeal struct {
-	ID            model.DealID
-	ClientID string
-	Provider      string
-	PieceCID      model.CID
+	ID         model.DealID
+	ClientID   string
+	Provider   string
+	PieceCID   model.CID
 	StartEpoch int32
 	EndEpoch   int32
 }
@@ -467,10 +467,10 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		}
 		key := deal.Key()
 		unknownDeals[key] = append(unknownDeals[key], UnknownDeal{
-			ID:            deal.ID,
-			ClientID: deal.ClientID,
-			Provider:      deal.Provider,
-			PieceCID:      deal.PieceCID,
+			ID:         deal.ID,
+			ClientID:   deal.ClientID,
+			Provider:   deal.Provider,
+			PieceCID:   deal.PieceCID,
 			StartEpoch: deal.StartEpoch,
 			EndEpoch:   deal.EndEpoch,
 		})

@@ -5,10 +5,10 @@ package model
 type Wallet struct {
 	ID uint `gorm:"primaryKey" json:"id"`
 
-	KeyPath  string `gorm:"uniqueIndex;not null" json:"keyPath"` // absolute path to key file
+	KeyPath  string `gorm:"uniqueIndex;not null" json:"keyPath"`      // absolute path to key file
 	KeyStore string `gorm:"default:'local';not null" json:"keyStore"` // local, yubikey, aws-kms, etc
-	Address  string `gorm:"index;not null" json:"address"`       // filecoin address (f1.../f3...)
-	Name     string `json:"name,omitempty"`                      // optional label
+	Address  string `gorm:"index;not null" json:"address"`            // filecoin address (f1.../f3...)
+	Name     string `json:"name,omitempty"`                           // optional label
 
 	ActorID *string `gorm:"index;size:15" json:"actorId,omitempty"` // nullable, links to on-chain actor f0...
 

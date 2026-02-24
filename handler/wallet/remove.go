@@ -18,6 +18,7 @@ import (
 //   - Remove Actor record only (stop tracking deals)?
 //   - Remove both?
 //   - Delete the actual keystore file?
+//
 // Currently: Removes Actor record (temporary fix to match test expectations)
 //
 // RemoveHandler deletes an actor from the database based on its address or ID.
