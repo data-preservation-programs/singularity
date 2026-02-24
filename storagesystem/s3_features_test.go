@@ -5,24 +5,24 @@ import (
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/model"
+	_ "github.com/rclone/rclone/backend/s3" // Import S3 backend
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/config/configmap"
-	_ "github.com/rclone/rclone/backend/s3" // Import S3 backend
 )
 
 func TestS3Features(t *testing.T) {
 	// Create a test S3 configuration
 	testConfig := map[string]string{
-		"provider": "AWS",
-		"region":   "us-east-1",
-		"access_key_id": "test",
+		"provider":          "AWS",
+		"region":            "us-east-1",
+		"access_key_id":     "test",
 		"secret_access_key": "test",
-		"endpoint": "http://localhost:9000", // MinIO or localstack endpoint
-		"chunk_size": "5Mi", // Required for S3
-		"upload_cutoff": "5Mi",
-		"copy_cutoff": "5Mi",
-		"disable_checksum": "true",
-		"force_path_style": "true",
+		"endpoint":          "http://localhost:9000", // MinIO or localstack endpoint
+		"chunk_size":        "5Mi",                   // Required for S3
+		"upload_cutoff":     "5Mi",
+		"copy_cutoff":       "5Mi",
+		"disable_checksum":  "true",
+		"force_path_style":  "true",
 	}
 
 	registry, err := fs.Find("s3")
@@ -81,9 +81,9 @@ func TestS3MoveImplementation(t *testing.T) {
 		Type: "s3",
 		Path: "test-bucket",
 		Config: map[string]string{
-			"provider": "AWS",
-			"region": "us-east-1",
-			"access_key_id": "test",
+			"provider":          "AWS",
+			"region":            "us-east-1",
+			"access_key_id":     "test",
 			"secret_access_key": "test",
 		},
 	}

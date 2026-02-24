@@ -196,7 +196,7 @@ func TestExportDag_WithMinPieceSize_LocalStorage(t *testing.T) {
 							Path: tmp,
 						},
 					},
-					NoInline:    true,
+					NoInline:     true,
 					MinPieceSize: 512 * 1024, // 512 KiB - will force padding for small DAG
 				},
 				StorageID: 1,
