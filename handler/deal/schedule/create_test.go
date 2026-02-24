@@ -182,7 +182,7 @@ func TestCreateHandler_NoAssociatedWallet(t *testing.T) {
 		require.NoError(t, err)
 		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
 		require.ErrorIs(t, err, handlererror.ErrNotFound)
-		require.ErrorContains(t, err, "no wallet")
+		require.ErrorContains(t, err, "no actor")
 	})
 }
 

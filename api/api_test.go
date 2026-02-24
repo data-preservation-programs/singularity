@@ -35,6 +35,7 @@ import (
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-log/v2"
@@ -186,7 +187,7 @@ func setupMockWallet() wallet.Handler {
 		Return(&model.Preparation{}, nil)
 	m.On("DetachHandler", mock.Anything, mock.Anything, "id", "wallet").
 		Return(&model.Preparation{}, nil)
-	m.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	m.On("ImportKeystoreHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&model.Wallet{}, nil)
 	m.On("ListHandler", mock.Anything, mock.Anything).
 		Return([]model.Wallet{{}}, nil)
@@ -215,11 +216,14 @@ func TestAllAPIs(t *testing.T) {
 	require.NoError(t, err)
 
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		ks, err := keystore.NewLocalKeyStore(t.TempDir())
+		require.NoError(t, err)
 		s := Server{
 			db:              db,
 			listener:        listener,
 			lotusClient:     util.NewLotusClient("", ""),
 			dealMaker:       mockDealMaker,
+			keyStore:        ks,
 			closer:          io.NopCloser(nil),
 			host:            h,
 			adminHandler:    mockAdmin,
@@ -303,7 +307,7 @@ func TestAllAPIs(t *testing.T) {
 		t.Run("wallet", func(t *testing.T) {
 			t.Run("ImportWallet", func(t *testing.T) {
 				resp, err := client.Wallet.ImportWallet(&wallet2.ImportWalletParams{
-					Request: &models.WalletImportRequest{},
+					Request: &models.WalletImportKeystoreRequest{},
 					Context: ctx,
 				})
 				require.NoError(t, err)

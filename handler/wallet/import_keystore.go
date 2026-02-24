@@ -22,6 +22,18 @@ type ImportKeystoreRequest struct {
 	Name       string `json:"name"`       // optional human-readable name
 }
 
+// @ID ImportWallet
+// @Summary Import a private key
+// @Tags Wallet
+// @Accept json
+// @Produce json
+// @Param request body ImportKeystoreRequest true "Request body"
+// @Success 200 {object} model.Wallet
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /wallet [post]
+func _() {}
+
 // imports wallet by saving private key to keystore and creating wallet record
 // does not require actor to exist on-chain - wallet can be imported offline
 // uses external keystore instead of storing keys in database

@@ -67,7 +67,7 @@ type ImportWalletParams struct {
 
 	   Request body
 	*/
-	Request *models.WalletImportRequest
+	Request *models.WalletImportKeystoreRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *ImportWalletParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the import wallet params
-func (o *ImportWalletParams) WithRequest(request *models.WalletImportRequest) *ImportWalletParams {
+func (o *ImportWalletParams) WithRequest(request *models.WalletImportKeystoreRequest) *ImportWalletParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the import wallet params
-func (o *ImportWalletParams) SetRequest(request *models.WalletImportRequest) {
+func (o *ImportWalletParams) SetRequest(request *models.WalletImportKeystoreRequest) {
 	o.Request = request
 }
 

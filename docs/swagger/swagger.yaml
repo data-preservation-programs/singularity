@@ -278,6 +278,18 @@ definitions:
       storageId:
         type: integer
     type: object
+  model.Actor:
+    properties:
+      address:
+        description: filecoin address
+        type: string
+      id:
+        description: actor ID (f0...)
+        type: string
+      privateKey:
+        description: 'TODO: orphaned column, will be dropped by export-keys command'
+        type: string
+    type: object
   model.Car:
     properties:
       attachmentId:
@@ -712,14 +724,22 @@ definitions:
     type: object
   model.Wallet:
     properties:
+      actorId:
+        description: nullable, links to on-chain actor f0...
+        type: string
       address:
-        description: Address is the Filecoin full address of the wallet
+        description: filecoin address (f1.../f3...)
         type: string
       id:
-        description: ID is the short ID of the wallet
+        type: integer
+      keyPath:
+        description: absolute path to key file
         type: string
-      privateKey:
-        description: PrivateKey is the private key of the wallet
+      keyStore:
+        description: local, yubikey, aws-kms, etc
+        type: string
+      name:
+        description: optional label
         type: string
     type: object
   schedule.CreateRequest:
@@ -11103,10 +11123,13 @@ definitions:
     type: object
   store.PieceReader:
     type: object
-  wallet.ImportRequest:
+  wallet.ImportKeystoreRequest:
     properties:
+      name:
+        description: optional human-readable name
+        type: string
       privateKey:
-        description: This is the exported private key from lotus wallet export
+        description: lotus wallet export format
         type: string
     type: object
 externalDocs:
@@ -12042,7 +12065,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Wallet'
+              $ref: '#/definitions/model.Actor'
             type: array
         "400":
           description: Bad Request
@@ -14987,7 +15010,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/wallet.ImportRequest'
+          $ref: '#/definitions/wallet.ImportKeystoreRequest'
       produces:
       - application/json
       responses:
