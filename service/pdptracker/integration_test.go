@@ -158,10 +158,13 @@ func TestIntegration_FullResync(t *testing.T) {
 		require.NoError(t, err)
 		t.Logf("data rows before resync: task_updates=%d, dataset_created=%d", cursorCount, dataCount)
 
-		// seed derived PDP state that must survive full resync
-		require.NoError(t, db.Create(&model.PDPProofSet{
-			SetID: 99, ClientAddress: "f0100", Provider: "f0200", CreatedBlock: 1,
-		}).Error)
+			// seed derived PDP state that must survive full resync
+			require.NoError(t, db.Create(&model.Wallet{
+				ID: "f0100", Address: "f410faaaaaaaaaaaaaaaaaaaaaaaaaaaaaaakrfc62sy",
+			}).Error)
+			require.NoError(t, db.Create(&model.PDPProofSet{
+				SetID: 99, ClientAddress: "f0100", Provider: "f0200", CreatedBlock: 1,
+			}).Error)
 		setID := uint64(99)
 		require.NoError(t, db.Create(&model.Deal{
 			DealType: model.DealTypePDP, State: model.DealActive,
