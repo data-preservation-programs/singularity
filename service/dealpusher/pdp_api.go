@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/go-synapse/signer"
 	"github.com/ipfs/go-cid"
 )
 
@@ -36,11 +36,13 @@ func (c PDPSchedulingConfig) Validate() error {
 }
 
 // PDPProofSetManager defines proof set lifecycle operations needed by scheduling.
+// Both methods take an EVMSigner because they submit FEVM transactions.
 type PDPProofSetManager interface {
 	// EnsureProofSet returns an existing proof set ID or creates one for this client/provider pair.
-	EnsureProofSet(ctx context.Context, actor model.Actor, provider string) (uint64, error)
+	// The signer's EVMAddress identifies the client on-chain.
+	EnsureProofSet(ctx context.Context, evmSigner signer.EVMSigner, provider string) (uint64, error)
 	// QueueAddRoots submits root additions for a proof set and returns the queued tx reference.
-	QueueAddRoots(ctx context.Context, proofSetID uint64, pieceCIDs []cid.Cid, cfg PDPSchedulingConfig) (*PDPQueuedTx, error)
+	QueueAddRoots(ctx context.Context, evmSigner signer.EVMSigner, proofSetID uint64, pieceCIDs []cid.Cid, cfg PDPSchedulingConfig) (*PDPQueuedTx, error)
 }
 
 // PDPTransactionConfirmer defines confirmation checks for queued on-chain transactions.

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/data-preservation-programs/go-synapse/signer"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
@@ -12,11 +13,11 @@ import (
 
 type noopPDPProofSetManager struct{}
 
-func (noopPDPProofSetManager) EnsureProofSet(_ context.Context, _ model.Actor, _ string) (uint64, error) {
+func (noopPDPProofSetManager) EnsureProofSet(_ context.Context, _ signer.EVMSigner, _ string) (uint64, error) {
 	return 1, nil
 }
 
-func (noopPDPProofSetManager) QueueAddRoots(_ context.Context, _ uint64, _ []cid.Cid, _ PDPSchedulingConfig) (*PDPQueuedTx, error) {
+func (noopPDPProofSetManager) QueueAddRoots(_ context.Context, _ signer.EVMSigner, _ uint64, _ []cid.Cid, _ PDPSchedulingConfig) (*PDPQueuedTx, error) {
 	return &PDPQueuedTx{Hash: "0x1"}, nil
 }
 
