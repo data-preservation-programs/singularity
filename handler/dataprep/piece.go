@@ -7,10 +7,10 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/dustin/go-humanize"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/packutil"
+	"github.com/dustin/go-humanize"
 	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-car"

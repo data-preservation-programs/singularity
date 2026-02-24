@@ -74,7 +74,7 @@ jobs:
         uses: parkan/github-actions/devcontainer-exec@v3
         with:
           container-id: ${{ steps.build.outputs.container-id }}
-          command: 'cd /workspaces/singularity && gofmt -l .'
+          command: 'cd /workspaces/singularity && gofmt -w . && git diff --exit-code'
           container-runtime: podman
 
       - name: Run go vet
