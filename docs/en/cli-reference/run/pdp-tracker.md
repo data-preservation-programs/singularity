@@ -1,26 +1,17 @@
-# Start a PDP deal tracker that tracks f41 PDP deals for all relevant wallets
+# Track PDP deals via Shovel event indexing (requires PostgreSQL)
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity run pdp-tracker - Start a PDP deal tracker that tracks f41 PDP deals for all relevant wallets
+   singularity run pdp-tracker - Track PDP deals via Shovel event indexing (requires PostgreSQL)
 
 USAGE:
    singularity run pdp-tracker [command options]
 
-DESCRIPTION:
-   The PDP tracker monitors Proof of Data Possession (PDP) deals on the Filecoin network.
-   Unlike legacy f05 market deals, PDP deals use proof sets managed through the PDPVerifier contract
-   where data is verified through cryptographic challenges.
-
-   This tracker:
-   - Monitors proof sets for tracked wallets
-   - Updates deal status based on on-chain proof set state
-   - Tracks challenge epochs and live status
-
 OPTIONS:
-   --interval value  How often to check for PDP deal updates (default: 10m0s)
-   --eth-rpc value   Ethereum RPC endpoint for FEVM (e.g., https://api.node.glif.io) [$ETH_RPC_URL]
-   --help, -h        show help
+   --eth-rpc value            Ethereum RPC endpoint for FEVM (default: "https://api.node.glif.io/rpc/v1") [$ETH_RPC_URL]
+   --pdp-poll-interval value  How often to check for new events in Shovel tables (default: 30s)
+   --full-sync                Re-index events from contract deployment by resetting the Shovel cursor. Derived PDP state (proof sets, deals) is preserved and updated via upserts. Requires an archival RPC node. Involves one RPC call per historical proof set. (default: false)
+   --help, -h                 show help
 ```
 {% endcode %}
