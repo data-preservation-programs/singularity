@@ -29,10 +29,10 @@ COPY --from=ghcr.io/foundry-rs/foundry:latest /usr/local/bin/anvil /usr/local/bi
 # prepare user-owned data dirs for rootless startup
 RUN mkdir -p /home/vscode/.local/share/pg/pgdata \
     && mkdir -p /home/vscode/.local/share/mysql \
+    && mkdir -p /home/vscode/.local/share/tmp \
     && chown -R vscode:vscode /home/vscode/.local/share
 
 # Set environment variables based on build args
 ENV PG_BIN_DIR=/usr/lib/postgresql/${PG_MAJOR}/bin
 
 USER vscode
-

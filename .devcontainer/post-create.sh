@@ -10,7 +10,7 @@ chmod +x .devcontainer/*.sh || true
 echo "Setting up databases..."
 
 # Create data directories
-mkdir -p /home/vscode/.local/share/pg/pgdata /home/vscode/.local/share/pg /home/vscode/.local/share/mysql/data /home/vscode/.local/share/mysql/tmp /home/vscode/.local/share/mysql
+mkdir -p /home/vscode/.local/share/pg/pgdata /home/vscode/.local/share/pg /home/vscode/.local/share/mysql/data /home/vscode/.local/share/mysql/tmp /home/vscode/.local/share/mysql /home/vscode/.local/share/tmp
 
 # Initialize Postgres
 if [ ! -f "/home/vscode/.local/share/pg/pgdata/PG_VERSION" ]; then
@@ -56,4 +56,3 @@ FLUSH PRIVILEGES;
 SQL
 
 echo "Database setup completed successfully"
-
