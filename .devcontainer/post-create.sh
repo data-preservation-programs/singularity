@@ -10,7 +10,7 @@ chmod +x .devcontainer/*.sh || true
 echo "Setting up databases..."
 
 # Create data directories
-mkdir -p /home/vscode/.local/share/pg/pgdata /home/vscode/.local/share/pg /home/vscode/.local/share/mysql/data /home/vscode/.local/share/mysql
+mkdir -p /home/vscode/.local/share/pg/pgdata /home/vscode/.local/share/pg /home/vscode/.local/share/mysql/data /home/vscode/.local/share/mysql/tmp /home/vscode/.local/share/mysql
 
 # Initialize Postgres
 if [ ! -f "/home/vscode/.local/share/pg/pgdata/PG_VERSION" ]; then
@@ -27,7 +27,12 @@ fi
 # Initialize MariaDB
 if [ ! -d "/home/vscode/.local/share/mysql/data/mysql" ]; then
   echo "Initializing MariaDB..."
-  mariadb-install-db --datadir=/home/vscode/.local/share/mysql/data --auth-root-authentication-method=normal --skip-test-db >/dev/null
+  export TMPDIR=/home/vscode/.local/share/mysql/tmp
+  mariadb-install-db \
+    --datadir=/home/vscode/.local/share/mysql/data \
+    --tmpdir=/home/vscode/.local/share/mysql/tmp \
+    --auth-root-authentication-method=normal \
+    --skip-test-db >/dev/null
 fi
 
 # Start both servers
@@ -51,5 +56,4 @@ FLUSH PRIVILEGES;
 SQL
 
 echo "Database setup completed successfully"
-
 
