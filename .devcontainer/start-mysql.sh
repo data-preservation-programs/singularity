@@ -4,6 +4,7 @@ set -euo pipefail
 # MariaDB server configuration
 MYSQL_BASE="${HOME}/.local/share/mysql"
 DATA_DIR="${MYSQL_BASE}/data"
+TMP_DIR="${MYSQL_BASE}/tmp"
 SOCKET="${MYSQL_SOCKET:-${MYSQL_BASE}/mysql.sock}"
 PID_FILE="${MYSQL_BASE}/mysql.pid"
 PORT="${MYSQL_PORT:-3306}"
@@ -17,9 +18,11 @@ fi
 
 # Start MariaDB server
 echo "Starting MySQL server"
+mkdir -p "${TMP_DIR}"
 touch "${LOG_FILE}"
 nohup mariadbd \
   --datadir="${DATA_DIR}" \
+  --tmpdir="${TMP_DIR}" \
   --socket="${SOCKET}" \
   --pid-file="${PID_FILE}" \
   --bind-address=127.0.0.1 \
