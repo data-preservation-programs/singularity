@@ -172,3 +172,16 @@ type Wallet struct {
 	Address    string `gorm:"index"                json:"address"` // Address is the Filecoin full address of the wallet
 	PrivateKey string `json:"privateKey,omitempty" table:"-"`      // PrivateKey is the private key of the wallet
 }
+
+// PDPProofSet tracks on-chain PDP proof set state derived from contract events.
+// This is a materialized view built from Shovel-indexed events, replacing
+// the per-cycle RPC scans of GetProofSets/GetProofSetsForClient.
+type PDPProofSet struct {
+	SetID          uint64 `gorm:"primaryKey;autoIncrement:false" json:"setId"`
+	ClientAddress  string `gorm:"not null;index"                 json:"clientAddress"`
+	Provider       string `gorm:"not null"                       json:"provider"`
+	IsLive         bool   `gorm:"default:false"                  json:"isLive"`
+	ChallengeEpoch *int64 `                                      json:"challengeEpoch,omitempty"`
+	CreatedBlock   int64  `gorm:"not null"                       json:"createdBlock"`
+	Deleted        bool   `gorm:"default:false"                  json:"deleted"`
+}

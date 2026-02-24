@@ -24,7 +24,9 @@ RUN apt-get update \
        mariadb-server mariadb-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Prepare user-owned data dirs for rootless startup
+COPY --from=ghcr.io/foundry-rs/foundry:latest /usr/local/bin/anvil /usr/local/bin/anvil
+
+# prepare user-owned data dirs for rootless startup
 RUN mkdir -p /home/vscode/.local/share/pg/pgdata \
     && mkdir -p /home/vscode/.local/share/mysql \
     && chown -R vscode:vscode /home/vscode/.local/share
