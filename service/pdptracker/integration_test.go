@@ -8,6 +8,7 @@ import (
 
 	"github.com/data-preservation-programs/go-synapse"
 	"github.com/data-preservation-programs/go-synapse/constants"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -157,7 +158,17 @@ func TestIntegration_FullResync(t *testing.T) {
 		require.NoError(t, err)
 		t.Logf("data rows before resync: task_updates=%d, dataset_created=%d", cursorCount, dataCount)
 
-		// full resync: cursor and data tables should be cleared
+		// seed derived PDP state that must survive full resync
+		require.NoError(t, db.Create(&model.PDPProofSet{
+			SetID: 99, ClientAddress: "f0100", Provider: "f0200", CreatedBlock: 1,
+		}).Error)
+		setID := uint64(99)
+		require.NoError(t, db.Create(&model.Deal{
+			DealType: model.DealTypePDP, State: model.DealActive,
+			ClientID: "f0100", ProofSetID: &setID,
+		}).Error)
+
+		// full resync: cursor and event tables cleared, derived state preserved
 		_, err = NewPDPIndexer(ctx, connStr, rpcURL, chainID, contractAddr, true)
 		require.NoError(t, err)
 
@@ -177,6 +188,14 @@ func TestIntegration_FullResync(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, int64(0), count, "table %s should be empty after full resync", table)
 		}
+
+		// derived state must be intact
+		var ps model.PDPProofSet
+		require.NoError(t, db.Where("set_id = ?", 99).First(&ps).Error)
+		require.Equal(t, "f0100", ps.ClientAddress)
+		var dealCount int64
+		require.NoError(t, db.Model(&model.Deal{}).Where("proof_set_id = ?", 99).Count(&dealCount).Error)
+		require.EqualValues(t, 1, dealCount, "derived deals must survive full resync")
 	})
 }
 

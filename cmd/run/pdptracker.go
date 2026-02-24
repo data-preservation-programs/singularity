@@ -33,7 +33,7 @@ var PDPTrackerCmd = &cli.Command{
 		},
 		&cli.BoolFlag{
 			Name:  "full-sync",
-			Usage: "Re-index all events from contract deployment (mainnet: block 5441432, calibnet: block 3140755). Requires an archival RPC node. Involves one RPC call per historical proof set.",
+			Usage: "Re-index events from contract deployment by resetting the Shovel cursor. Derived PDP state (proof sets, deals) is preserved and updated via upserts. Requires an archival RPC node. Involves one RPC call per historical proof set.",
 		},
 	},
 	Action: func(c *cli.Context) error {
