@@ -35,6 +35,8 @@
         "MYSQL_USER": "singularity",
         "MYSQL_PASSWORD": "singularity",
         "MYSQL_SOCKET": "/home/vscode/.local/share/mysql/mysql.sock",
+        "TMPDIR": "/home/vscode/.local/share/tmp",
+        "GOTMPDIR": "/home/vscode/.local/share/tmp",
         "PGDATA": "/home/vscode/.local/share/pg/pgdata",
         "PGPORT": "55432",
         "PGSOCK_DIR": "/home/vscode/.local/share/pg"
@@ -42,4 +44,3 @@
     "runArgs": ["--userns=keep-id"],
     "containerUser": "vscode"
 }
-
