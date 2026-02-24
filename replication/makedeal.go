@@ -21,9 +21,8 @@ import (
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/big"
 	"github.com/filecoin-project/go-state-types/builtin/v9/market"
+	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/filecoin-shipyard/boostly"
-	"github.com/data-preservation-programs/singularity/handler/wallet"
-	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/jellydator/ttlcache/v3"
@@ -33,7 +32,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/ybbus/jsonrpc/v3"
-	"gorm.io/gorm"
 )
 
 const (
@@ -42,6 +40,11 @@ const (
 )
 
 var ErrNoSupportedProtocols = errors.New("no supported protocols")
+
+// ProposalSigner signs deal proposal bytes and returns a filecoin signature.
+// Callers construct this from a keystore + wallet before calling MakeDeal,
+// keeping the deal maker decoupled from database and key storage.
+type ProposalSigner func([]byte) (*crypto.Signature, error)
 
 //nolint:tagliatelle
 type MinerInfo struct {
@@ -57,7 +60,7 @@ type DealProviderCollateralBound struct {
 }
 
 type DealMaker interface {
-	MakeDeal(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, actorObj model.Actor, car model.Car, dealConfig DealConfig) (*model.Deal, error)
+	MakeDeal(ctx context.Context, actorObj model.Actor, car model.Car, dealConfig DealConfig, signer ProposalSigner) (*model.Deal, error)
 }
 
 // DealMakerImpl is an implementation of a deal-making component for a Filecoin-like network.
@@ -517,10 +520,9 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 //   - Deal proposal rejected by the provider.
 //
 //   - No supported protocol found between client and provider.
-func (d DealMakerImpl) MakeDeal(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, actorObj model.Actor,
-	car model.Car, dealConfig DealConfig,
+func (d DealMakerImpl) MakeDeal(ctx context.Context, actorObj model.Actor,
+	car model.Car, dealConfig DealConfig, signer ProposalSigner,
 ) (*model.Deal, error) {
-	db = db.WithContext(ctx)
 	logger.Infow("making deal", "client", actorObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
 	now := time.Now().UTC()
 	addr, err := address.NewFromString(actorObj.Address)
@@ -581,14 +583,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, db *gorm.DB, ks keystore.Ke
 		return nil, errors.Wrapf(err, "failed to serialize deal proposal %s", proposal)
 	}
 
-	// load wallet that controls this actor
-	walletRecord, err := wallet.LoadWalletByActorID(ctx, db, actorObj.ID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to load wallet for actor %s", actorObj.ID)
-	}
-
-	// sign using keystore-based signing
-	signature, err := wallet.SignWithWallet(ks, *walletRecord, proposalBytes)
+	signature, err := signer(proposalBytes)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to sign deal proposal")
 	}

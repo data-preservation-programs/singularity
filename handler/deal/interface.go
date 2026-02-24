@@ -13,13 +13,7 @@ import (
 
 type Handler interface {
 	ListHandler(ctx context.Context, db *gorm.DB, request ListDealRequest) ([]model.Deal, error)
-	SendManualHandler(
-		ctx context.Context,
-		db *gorm.DB,
-		ks keystore.KeyStore,
-		dealMaker replication.DealMaker,
-		request Proposal,
-	) (*model.Deal, error)
+	SendManualHandler(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, dealMaker replication.DealMaker, request Proposal) (*model.Deal, error)
 }
 
 type DefaultHandler struct{}

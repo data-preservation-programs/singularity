@@ -16,6 +16,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/keystore"
+	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
@@ -368,11 +369,18 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
 			}
 
+			// resolve wallet for signing before entering retry loop
+			walletRecord, err := wallet.LoadWalletByActorID(ctx, d.dbNoContext, actorObj.ID)
+			if err != nil {
+				return model.ScheduleError, errors.Wrapf(err, "failed to load wallet for actor %s", actorObj.ID)
+			}
+			proposalSigner := replication.ProposalSigner(func(msg []byte) (*crypto.Signature, error) {
+				return wallet.SignWithWallet(d.keyStore, *walletRecord, msg)
+			})
+
 			err = retry.Do(func() error {
 				dealModel, err = d.dealMaker.MakeDeal(
 					ctx,
-					d.dbNoContext,
-					d.keyStore,
 					actorObj,
 					car,
 					replication.DealConfig{
@@ -387,7 +395,8 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 						PricePerDeal:    schedule.PricePerDeal,
 						PricePerGB:      schedule.PricePerGB,
 						PricePerGBEpoch: schedule.PricePerGBEpoch,
-					})
+					},
+					proposalSigner)
 				if err != nil {
 					Logger.Errorw("failed to send deal", "error", err, "provider", schedule.Provider)
 					if strings.Contains(err.Error(), "deal proposal is identical") {

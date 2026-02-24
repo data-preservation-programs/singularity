@@ -13,7 +13,6 @@ import (
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
-	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	"github.com/google/uuid"
@@ -29,11 +28,21 @@ func init() {
 	analytics.Enabled = false
 }
 
+// creates a wallet record so that signer resolution in runSchedule succeeds.
+// must be called after the actor record exists (e.g. after schedule creation).
+func createTestWallet(t *testing.T, db *gorm.DB, actorID string) {
+	t.Helper()
+	require.NoError(t, db.Create(&model.Wallet{
+		KeyPath: "/tmp/fake-key", KeyStore: "local",
+		Address: "f0xx", ActorID: &actorID,
+	}).Error)
+}
+
 type MockDealMaker struct {
 	mock.Mock
 }
 
-func (m *MockDealMaker) MakeDeal(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, actorObj model.Actor, car model.Car, dealConfig replication.DealConfig) (*model.Deal, error) {
+func (m *MockDealMaker) MakeDeal(ctx context.Context, actorObj model.Actor, car model.Car, dealConfig replication.DealConfig, signer replication.ProposalSigner) (*model.Deal, error) {
 	args := m.Called(ctx, actorObj, car, dealConfig)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -124,6 +133,7 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		}
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
+		createTestWallet(t, db, client)
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("send deal error"))
 		pieceCIDs := []model.CID{
 			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
@@ -179,6 +189,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 		}
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
+		createTestWallet(t, db, client)
 
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			ScheduleID: &schedule.ID,
@@ -275,6 +286,7 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 		}
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
+		createTestWallet(t, db, client)
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			ScheduleID: &schedule.ID,
 		}, nil)
@@ -384,6 +396,7 @@ func TestDealmakerService_Force(t *testing.T) {
 		}
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
+		createTestWallet(t, db, client)
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			ScheduleID: &schedule.ID,
 		}, nil)
@@ -442,6 +455,7 @@ func TestDealMakerService_MaxReplica(t *testing.T) {
 		}
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
+		createTestWallet(t, db, client)
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			ScheduleID: &schedule.ID,
 		}, nil)
@@ -509,6 +523,7 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 		}
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
+		createTestWallet(t, db, client)
 
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			ScheduleID: &schedule.ID,

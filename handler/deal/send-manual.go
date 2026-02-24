@@ -9,10 +9,12 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/dustin/go-humanize"
+	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
 )
@@ -138,7 +140,16 @@ func (DefaultHandler) SendManualHandler(
 		Duration:       duration,
 	}
 
-	dealModel, err := dealMaker.MakeDeal(ctx, db, ks, actor, car, dealConfig)
+	// resolve wallet for signing
+	walletRecord, err := wallet.LoadWalletByActorID(ctx, db, actor.ID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to load wallet for actor %s", actor.ID)
+	}
+	signer := replication.ProposalSigner(func(msg []byte) (*crypto.Signature, error) {
+		return wallet.SignWithWallet(ks, *walletRecord, msg)
+	})
+
+	dealModel, err := dealMaker.MakeDeal(ctx, actor, car, dealConfig, signer)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
