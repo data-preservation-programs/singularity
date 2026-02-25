@@ -17,14 +17,23 @@ import (
 // swagger:model model.Wallet
 type ModelWallet struct {
 
-	// Address is the Filecoin full address of the wallet
+	// nullable, links to on-chain actor f0...
+	ActorID string `json:"actorId,omitempty"`
+
+	// filecoin address (f1.../f3...)
 	Address string `json:"address,omitempty"`
 
-	// ID is the short ID of the wallet
-	ID string `json:"id,omitempty"`
+	// id
+	ID int64 `json:"id,omitempty"`
 
-	// PrivateKey is the private key of the wallet
-	PrivateKey string `json:"privateKey,omitempty"`
+	// absolute path to key file
+	KeyPath string `json:"keyPath,omitempty"`
+
+	// local, yubikey, aws-kms, etc
+	KeyStore string `json:"keyStore,omitempty"`
+
+	// optional label
+	Name string `json:"name,omitempty"`
 }
 
 // Validate validates this model wallet

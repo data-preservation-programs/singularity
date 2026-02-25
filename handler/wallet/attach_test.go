@@ -14,14 +14,14 @@ import (
 func TestAttachHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Wallet{
-			ID: "test",
+			Address: "f0test", KeyPath: "/tmp/key", KeyStore: "local",
 		}).Error
 		require.NoError(t, err)
 		err = db.Create(&model.Preparation{}).Error
 		require.NoError(t, err)
 
 		t.Run("preparation not found", func(t *testing.T) {
-			_, err := Default.AttachHandler(ctx, db, "2", "test")
+			_, err := Default.AttachHandler(ctx, db, "2", "f0test")
 			require.ErrorIs(t, err, handlererror.ErrNotFound)
 		})
 
@@ -31,7 +31,7 @@ func TestAttachHandler(t *testing.T) {
 		})
 
 		t.Run("success", func(t *testing.T) {
-			preparation, err := Default.AttachHandler(ctx, db, "1", "test")
+			preparation, err := Default.AttachHandler(ctx, db, "1", "f0test")
 			require.NoError(t, err)
 			require.Len(t, preparation.Wallets, 1)
 		})

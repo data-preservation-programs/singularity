@@ -6,18 +6,15 @@ import (
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/stretchr/testify/mock"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
 type Handler interface {
 	ListHandler(ctx context.Context, db *gorm.DB, request ListDealRequest) ([]model.Deal, error)
-	SendManualHandler(
-		ctx context.Context,
-		db *gorm.DB,
-		dealMaker replication.DealMaker,
-		request Proposal,
-	) (*model.Deal, error)
+	SendManualHandler(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, lotusClient jsonrpc.RPCClient, dealMaker replication.DealMaker, request Proposal) (*model.Deal, error)
 }
 
 type DefaultHandler struct{}
@@ -35,7 +32,7 @@ func (m *MockDeal) ListHandler(ctx context.Context, db *gorm.DB, request ListDea
 	return args.Get(0).([]model.Deal), args.Error(1)
 }
 
-func (m *MockDeal) SendManualHandler(ctx context.Context, db *gorm.DB, dealMaker replication.DealMaker, request Proposal) (*model.Deal, error) {
-	args := m.Called(ctx, db, dealMaker, request)
+func (m *MockDeal) SendManualHandler(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, lotusClient jsonrpc.RPCClient, dealMaker replication.DealMaker, request Proposal) (*model.Deal, error) {
+	args := m.Called(ctx, db, ks, lotusClient, dealMaker, request)
 	return args.Get(0).(*model.Deal), args.Error(1)
 }

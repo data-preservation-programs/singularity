@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -10,37 +11,32 @@ import (
 	"gorm.io/gorm"
 )
 
-// AttachHandler associates a wallet with a specific preparation based on given preparationID and wallet address or ID.
-//
-// Parameters:
-//   - ctx: The context for database transactions and other operations.
-//   - db: A pointer to the gorm.DB instance representing the database connection.
-//   - preparationID: The ID or name of the preparation to which the wallet will be attached.
-//   - wallet: The address or ID of the wallet to be attached to the preparation.
-//
-// Returns:
-//   - A pointer to the updated Preparation instance.
-//   - An error, if any occurred during the association operation.
+// attaches wallet to preparation for deal-making
+// accepts wallet address or wallet ID
 func (DefaultHandler) AttachHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	preparationID string,
-	wallet string,
+	walletAddressOrID string,
 ) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
 	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Wallets")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", preparationID)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %s not found", preparationID)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	var w model.Wallet
-	err = db.Where("address = ? OR id = ?", wallet, wallet).First(&w).Error
+	q := db.Where("address = ?", walletAddressOrID)
+	if id, parseErr := strconv.ParseUint(walletAddressOrID, 10, 32); parseErr == nil {
+		q = db.Where("address = ? OR id = ?", walletAddressOrID, id)
+	}
+	err = q.First(&w).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not found", wallet)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not found", walletAddressOrID)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)

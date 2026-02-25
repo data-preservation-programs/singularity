@@ -35,6 +35,7 @@ import (
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-log/v2"
@@ -50,8 +51,8 @@ type MockDealMaker struct {
 	mock.Mock
 }
 
-func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig replication.DealConfig) (*model.Deal, error) {
-	args := m.Called(ctx, walletObj, car, dealConfig)
+func (m *MockDealMaker) MakeDeal(ctx context.Context, actorObj model.Actor, car model.Car, dealConfig replication.DealConfig, signer replication.ProposalSigner) (*model.Deal, error) {
+	args := m.Called(ctx, actorObj, car, dealConfig)
 	return args.Get(0).(*model.Deal), args.Error(1)
 }
 
@@ -97,7 +98,7 @@ func setupMockDeal() deal.Handler {
 	m := new(deal.MockDeal)
 	m.On("ListHandler", mock.Anything, mock.Anything, mock.Anything).
 		Return([]model.Deal{{}}, nil)
-	m.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	m.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&model.Deal{}, nil)
 	return m
 }
@@ -186,13 +187,13 @@ func setupMockWallet() wallet.Handler {
 		Return(&model.Preparation{}, nil)
 	m.On("DetachHandler", mock.Anything, mock.Anything, "id", "wallet").
 		Return(&model.Preparation{}, nil)
-	m.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	m.On("ImportKeystoreHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&model.Wallet{}, nil)
 	m.On("ListHandler", mock.Anything, mock.Anything).
 		Return([]model.Wallet{{}}, nil)
 	m.On("ListAttachedHandler", mock.Anything, mock.Anything, "id").
 		Return([]model.Wallet{{}}, nil)
-	m.On("RemoveHandler", mock.Anything, mock.Anything, "wallet").
+	m.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything, "wallet").
 		Return(nil)
 	return m
 }
@@ -215,11 +216,14 @@ func TestAllAPIs(t *testing.T) {
 	require.NoError(t, err)
 
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		ks, err := keystore.NewLocalKeyStore(t.TempDir())
+		require.NoError(t, err)
 		s := Server{
 			db:              db,
 			listener:        listener,
 			lotusClient:     util.NewLotusClient("", ""),
 			dealMaker:       mockDealMaker,
+			keyStore:        ks,
 			closer:          io.NopCloser(nil),
 			host:            h,
 			adminHandler:    mockAdmin,
@@ -303,7 +307,7 @@ func TestAllAPIs(t *testing.T) {
 		t.Run("wallet", func(t *testing.T) {
 			t.Run("ImportWallet", func(t *testing.T) {
 				resp, err := client.Wallet.ImportWallet(&wallet2.ImportWalletParams{
-					Request: &models.WalletImportRequest{},
+					Request: &models.WalletImportKeystoreRequest{},
 					Context: ctx,
 				})
 				require.NoError(t, err)

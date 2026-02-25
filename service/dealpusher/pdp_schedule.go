@@ -8,6 +8,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-cid"
 	"github.com/rjNemo/underscore"
@@ -137,7 +138,12 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 			return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
 		}
 
-		proofSetID, err := d.pdpProofSetManager.EnsureProofSet(ctx, walletObj, schedule.Provider)
+		evmSigner, err := keystore.EVMSigner(d.keyStore, walletObj)
+		if err != nil {
+			return model.ScheduleError, errors.Wrap(err, "failed to load EVM signer for wallet")
+		}
+
+		proofSetID, err := d.pdpProofSetManager.EnsureProofSet(ctx, evmSigner, schedule.Provider)
 		if err != nil {
 			return model.ScheduleError, errors.Wrap(err, "failed to ensure PDP proof set")
 		}
@@ -146,7 +152,7 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 		for _, car := range cars {
 			pieceCIDs = append(pieceCIDs, cid.Cid(car.PieceCID))
 		}
-		queuedTx, err := d.pdpProofSetManager.QueueAddRoots(ctx, proofSetID, pieceCIDs, d.pdpSchedulingConfig)
+		queuedTx, err := d.pdpProofSetManager.QueueAddRoots(ctx, evmSigner, proofSetID, pieceCIDs, d.pdpSchedulingConfig)
 		if err != nil {
 			return model.ScheduleError, errors.Wrap(err, "failed to queue PDP root addition transaction")
 		}
@@ -166,7 +172,7 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 				PieceSize:  car.PieceSize,
 				Verified:   schedule.Verified,
 				ScheduleID: &schedule.ID,
-				ClientID:   walletObj.ID,
+				ClientID:   walletObj.Address,
 				ProofSetID: &proofSetIDCopy,
 			}
 

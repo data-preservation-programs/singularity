@@ -5892,7 +5892,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/wallet.ImportRequest"
+                            "$ref": "#/definitions/wallet.ImportKeystoreRequest"
                         }
                     }
                 ],
@@ -6936,16 +6936,27 @@ const docTemplate = `{
         "model.Wallet": {
             "type": "object",
             "properties": {
+                "actorId": {
+                    "description": "nullable, links to on-chain actor f0...",
+                    "type": "string"
+                },
                 "address": {
-                    "description": "Address is the Filecoin full address of the wallet",
+                    "description": "filecoin address (f1.../f3...)",
                     "type": "string"
                 },
                 "id": {
-                    "description": "ID is the short ID of the wallet",
+                    "type": "integer"
+                },
+                "keyPath": {
+                    "description": "absolute path to key file",
                     "type": "string"
                 },
-                "privateKey": {
-                    "description": "PrivateKey is the private key of the wallet",
+                "keyStore": {
+                    "description": "local, yubikey, aws-kms, etc",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "optional label",
                     "type": "string"
                 }
             }
@@ -20328,11 +20339,15 @@ const docTemplate = `{
         "store.PieceReader": {
             "type": "object"
         },
-        "wallet.ImportRequest": {
+        "wallet.ImportKeystoreRequest": {
             "type": "object",
             "properties": {
+                "name": {
+                    "description": "optional human-readable name",
+                    "type": "string"
+                },
                 "privateKey": {
-                    "description": "This is the exported private key from lotus wallet export",
+                    "description": "lotus wallet export format",
                     "type": "string"
                 }
             }

@@ -66,7 +66,7 @@ func TestDeletePieceHandler_DealExistsWithoutForce(t *testing.T) {
 		require.NoError(t, db.Create(&car).Error)
 
 		// Create a wallet first to satisfy FK constraint
-		wallet := model.Wallet{ID: "f01234", Address: "f01234"}
+		wallet := model.Actor{ID: "f01234", Address: "f01234"}
 		require.NoError(t, db.Create(&wallet).Error)
 
 		deal := model.Deal{
@@ -96,7 +96,7 @@ func TestDeletePieceHandler_DealExistsWithForce(t *testing.T) {
 		require.NoError(t, db.Create(&car).Error)
 
 		// Create a wallet first to satisfy FK constraint
-		wallet := model.Wallet{ID: "f01234", Address: "f01234"}
+		wallet := model.Actor{ID: "f01234", Address: "f01234"}
 		require.NoError(t, db.Create(&wallet).Error)
 
 		deal := model.Deal{

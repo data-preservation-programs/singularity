@@ -74,10 +74,17 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 		Type: "local",
 		Path: urlToPath(gofakeit.URL()),
 	}
-	// Setup wallet
-	wallet := model.Wallet{
-		ID:      fmt.Sprintf("f0%d", r.Intn(10000)),
+	// Setup wallet (with optional actor for market deals)
+	actorID := fmt.Sprintf("f0%d", r.Intn(10000))
+	actor := model.Actor{
+		ID:      actorID,
 		Address: "f1" + randomLetterString(39),
+	}
+	w := model.Wallet{
+		Address:  "f1" + randomLetterString(39),
+		KeyPath:  "/tmp/fake-key",
+		KeyStore: "local",
+		ActorID:  &actorID,
 	}
 
 	// Setup preparation
@@ -85,11 +92,15 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 		Name:           gofakeit.AppName(),
 		MaxSize:        30 << 30,
 		PieceSize:      1 << 35,
-		Wallets:        []model.Wallet{wallet},
+		Wallets:        []model.Wallet{w},
 		SourceStorages: []model.Storage{source},
 	}
 
-	err := db.Create(&preparation).Error
+	err := db.Create(&actor).Error
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	err = db.Create(&preparation).Error
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -342,7 +353,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 				Price:      "0",
 				Verified:   true,
 				ScheduleID: ptr.Of(schedule.ID),
-				ClientID:   wallet.ID,
+				ClientID:   actor.ID,
 			}
 			if state == model.DealActive {
 				//nolint:gosec // G115: Safe conversion, max int32 epoch won't occur until year 4062

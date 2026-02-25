@@ -6,8 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/data-preservation-programs/go-synapse/signer"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/filecoin-project/go-address"
 	cborutil "github.com/filecoin-project/go-cbor-util"
 	"github.com/filecoin-project/go-fil-markets/storagemarket/network"
@@ -105,8 +107,6 @@ func setupBasicHost(t *testing.T, ctx context.Context, port string) host.Host {
 }
 
 func TestDealMaker_MakeDeal(t *testing.T) {
-	addr := "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa"
-	key := "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a226b35507976337148327349586343595a58594f5775453149326e32554539436861556b6c4e36695a5763453d227d"
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	server := setupBasicHost(t, ctx, "10001")
@@ -115,10 +115,17 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 	defer client.Close()
 	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
-	wallet := model.Wallet{
-		ID:         "f047684",
-		Address:    addr,
-		PrivateKey: key,
+
+	// build a real signer from the test key
+	s, err := signer.FromLotusExport(testutil.TestPrivateKeyHex)
+	require.NoError(t, err)
+	proposalSigner := ProposalSigner(func(msg []byte) (*crypto.Signature, error) {
+		return s.Sign(msg)
+	})
+
+	actor := model.Actor{
+		ID:      "f047684",
+		Address: testutil.TestWalletAddr,
 	}
 	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
 	require.NoError(t, err)
@@ -154,14 +161,14 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 		StorageProposalV120,
 	}, ttlcache.DefaultTTL)
 
-	_, err = maker.MakeDeal(ctx, wallet, car, dealConfig)
+	_, err = maker.MakeDeal(ctx, actor, car, dealConfig, proposalSigner)
 	require.NoError(t, err)
 
 	maker.protocolsCache.Set(server.ID(), []protocol.ID{
 		StorageProposalV111,
 	}, ttlcache.DefaultTTL)
 
-	_, err = maker.MakeDeal(ctx, wallet, car, dealConfig)
+	_, err = maker.MakeDeal(ctx, actor, car, dealConfig, proposalSigner)
 	require.NoError(t, err)
 }
 

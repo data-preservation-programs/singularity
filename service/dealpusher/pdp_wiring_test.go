@@ -5,7 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/data-preservation-programs/go-synapse/signer"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-cid"
@@ -26,11 +28,11 @@ type proofSetManagerMock struct {
 	pieceCIDs  []cid.Cid
 }
 
-func (m *proofSetManagerMock) EnsureProofSet(_ context.Context, _ model.Wallet, _ string) (uint64, error) {
+func (m *proofSetManagerMock) EnsureProofSet(_ context.Context, _ signer.EVMSigner, _ string) (uint64, error) {
 	return m.proofSetID, nil
 }
 
-func (m *proofSetManagerMock) QueueAddRoots(_ context.Context, _ uint64, pieceCIDs []cid.Cid, _ PDPSchedulingConfig) (*PDPQueuedTx, error) {
+func (m *proofSetManagerMock) QueueAddRoots(_ context.Context, _ signer.EVMSigner, _ uint64, pieceCIDs []cid.Cid, _ PDPSchedulingConfig) (*PDPQueuedTx, error) {
 	m.pieceCIDs = append([]cid.Cid(nil), pieceCIDs...)
 	return &PDPQueuedTx{Hash: "0xabc"}, nil
 }
@@ -49,7 +51,7 @@ func TestDealPusher_ResolveScheduleDealType_DefaultsToMarket(t *testing.T) {
 	require.Equal(t, model.DealTypeMarket, d.resolveScheduleDealType(&model.Schedule{}))
 }
 
-func TestDealPusher_ResolveScheduleDealType_DefaultsToPDPForDelegatedProvider(t *testing.T) {
+func TestDealPusher_ResolveScheduleDealType_DelegatedProviderInfersPDP(t *testing.T) {
 	subaddr := make([]byte, 20)
 	subaddr[19] = 1
 	providerAddr, err := address.NewDelegatedAddress(10, subaddr)
@@ -85,10 +87,19 @@ func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation
 		prep := model.Preparation{Name: "prep"}
 		require.NoError(t, db.Create(&prep).Error)
 		require.NotZero(t, prep.ID)
+
+		ks, err := keystore.NewLocalKeyStore(t.TempDir())
+		require.NoError(t, err)
+		keyPath, _, err := ks.Put(testutil.TestPrivateKeyHex)
+		require.NoError(t, err)
+
+		actorID := clientAddr.String()
+		require.NoError(t, db.Create(&model.Actor{ID: actorID, Address: clientAddr.String()}).Error)
 		wallet := model.Wallet{
-			ID:         "pdpclient01",
-			Address:    clientAddr.String(),
-			PrivateKey: testutil.TestPrivateKeyHex,
+			Address:  clientAddr.String(),
+			KeyPath:  keyPath,
+			KeyStore: "local",
+			ActorID:  &actorID,
 		}
 		require.NoError(t, db.Create(&wallet).Error)
 		require.NoError(t, db.Model(&prep).Association("Wallets").Append(&wallet))
@@ -122,6 +133,7 @@ func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation
 		conf := &txConfirmerMock{}
 		d := &DealPusher{
 			dbNoContext:              db,
+			keyStore:                 ks,
 			walletChooser:            fixedWalletChooser{wallet: wallet},
 			pdpProofSetManager:       psm,
 			pdpTxConfirmer:           conf,

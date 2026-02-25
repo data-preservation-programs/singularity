@@ -24,9 +24,7 @@ var testPreparation = model.Preparation{
 	MaxSize:           100,
 	PieceSize:         200,
 	Wallets: []model.Wallet{{
-		ID:         "client_id",
-		Address:    "client_address",
-		PrivateKey: "private_key",
+		Address: "client_address", KeyPath: "/tmp/key", KeyStore: "local",
 	}},
 	SourceStorages: []model.Storage{{
 		ID:        1,
