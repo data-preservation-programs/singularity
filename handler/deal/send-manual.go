@@ -16,6 +16,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/ipfs/go-cid"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
@@ -70,15 +71,16 @@ func (DefaultHandler) SendManualHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	ks keystore.KeyStore,
+	lotusClient jsonrpc.RPCClient,
 	dealMaker replication.DealMaker,
 	request Proposal,
 ) (*model.Deal, error) {
 	db = db.WithContext(ctx)
-	// get the actor object
-	actor := model.Actor{}
-	err := db.Where("id = ? OR address = ?", request.ClientAddress, request.ClientAddress).First(&actor).Error
+	// find wallet by address, then lazily resolve actor for the deal proposal
+	var walletObj model.Wallet
+	err := db.Where("address = ?", request.ClientAddress).First(&walletObj).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "client address %s not found", request.ClientAddress)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not found", request.ClientAddress)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -140,16 +142,17 @@ func (DefaultHandler) SendManualHandler(
 		Duration:       duration,
 	}
 
-	// resolve wallet for signing
-	walletRecord, err := wallet.LoadWalletByActorID(ctx, db, actor.ID)
+	// resolve actor lazily — only makes RPC call if ActorID not yet linked
+	actor, err := wallet.GetOrCreateActor(ctx, db, lotusClient, &walletObj)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to load wallet for actor %s", actor.ID)
+		return nil, errors.Wrapf(err, "failed to resolve actor for wallet %s", walletObj.Address)
 	}
+
 	signer := replication.ProposalSigner(func(msg []byte) (*crypto.Signature, error) {
-		return wallet.SignWithWallet(ks, *walletRecord, msg)
+		return wallet.SignWithWallet(ks, walletObj, msg)
 	})
 
-	dealModel, err := dealMaker.MakeDeal(ctx, actor, car, dealConfig, signer)
+	dealModel, err := dealMaker.MakeDeal(ctx, *actor, car, dealConfig, signer)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

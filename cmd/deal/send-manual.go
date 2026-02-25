@@ -184,13 +184,9 @@ Notes:
 			return errors.Wrap(err, "failed to init keystore")
 		}
 
-		dealMaker := replication.NewDealMaker(
-			util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token")),
-			h,
-			10*timeout,
-			timeout,
-		)
-		dealModel, err := deal.Default.SendManualHandler(ctx, db, ks, dealMaker, proposal)
+		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
+		dealMaker := replication.NewDealMaker(lotusClient, h, 10*timeout, timeout)
+		dealModel, err := deal.Default.SendManualHandler(ctx, db, ks, lotusClient, dealMaker, proposal)
 		if err != nil {
 			return errors.WithStack(err)
 		}

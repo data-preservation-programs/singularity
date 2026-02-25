@@ -24,6 +24,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/rjNemo/underscore"
 	"github.com/robfig/cron/v3"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
@@ -41,6 +42,7 @@ var waitPendingInterval = time.Minute
 type DealPusher struct {
 	dbNoContext         *gorm.DB                  // Pointer to a gorm.DB object representing a database connection.
 	keyStore            keystore.KeyStore         // Keystore for loading private keys
+	lotusClient         jsonrpc.RPCClient         // Lotus JSON-RPC client for chain queries
 	walletChooser       replication.WalletChooser // Object responsible for choosing a wallet for replication.
 	dealMaker           replication.DealMaker     // Object responsible for making a deal in replication.
 	pdpProofSetManager  PDPProofSetManager        // Optional PDP proof set lifecycle manager.
@@ -371,14 +373,11 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
 			}
 
-			// market deals need the on-chain actor for the deal proposal
-			if walletObj.ActorID == nil {
-				return model.ScheduleError, errors.Newf("wallet %s has no linked actor", walletObj.Address)
-			}
-			var actorObj model.Actor
-			err = db.Where("id = ?", *walletObj.ActorID).First(&actorObj).Error
+			// market deals need the on-chain actor for the deal proposal;
+			// lazily resolve if not yet linked (first use after offline import)
+			actorObj, err := wallet.GetOrCreateActor(ctx, db, d.lotusClient, &walletObj)
 			if err != nil {
-				return model.ScheduleError, errors.Wrapf(err, "failed to load actor %s for wallet %s", *walletObj.ActorID, walletObj.Address)
+				return model.ScheduleError, errors.Wrapf(err, "failed to resolve actor for wallet %s", walletObj.Address)
 			}
 
 			proposalSigner := replication.ProposalSigner(func(msg []byte) (*crypto.Signature, error) {
@@ -388,7 +387,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			err = retry.Do(func() error {
 				dealModel, err = d.dealMaker.MakeDeal(
 					ctx,
-					actorObj,
+					*actorObj,
 					car,
 					replication.DealConfig{
 						Provider:        schedule.Provider,
@@ -514,6 +513,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 	dp := &DealPusher{
 		dbNoContext:              db,
 		keyStore:                 ks,
+		lotusClient:              lotusClient,
 		activeScheduleCancelFunc: make(map[model.ScheduleID]context.CancelFunc),
 		activeSchedule:           make(map[model.ScheduleID]*model.Schedule),
 		cronEntries:              make(map[model.ScheduleID]cron.EntryID),

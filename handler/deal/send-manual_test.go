@@ -39,152 +39,111 @@ var proposal = Proposal{
 	FileSize:      1000,
 }
 
-func TestSendManualHandler_WalletNotFound(t *testing.T) {
-	actor := model.Actor{
-		ID:      "f09999",
-		Address: "f10000",
+// creates a wallet (and optionally an actor) that matches proposal.ClientAddress
+func createTestWalletAndActor(t *testing.T, db *gorm.DB, withActor bool) {
+	t.Helper()
+	actorID := "f01000"
+	if withActor {
+		require.NoError(t, db.Create(&model.Actor{ID: actorID, Address: "f01000"}).Error)
 	}
+	w := model.Wallet{
+		Address: "f01000", KeyPath: "/tmp/key-manual", KeyStore: "local",
+	}
+	if withActor {
+		w.ActorID = &actorID
+	}
+	require.NoError(t, db.Create(&w).Error)
+}
 
+func TestSendManualHandler_WalletNotFound(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&actor).Error
-		require.NoError(t, err)
-
 		mockDealMaker := new(MockDealMaker)
 		mockDealMaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
-		_, err = Default.SendManualHandler(ctx, db, nil, mockDealMaker, proposal)
+		_, err := Default.SendManualHandler(ctx, db, nil, nil, mockDealMaker, proposal)
 		require.ErrorIs(t, err, handlererror.ErrNotFound)
-		require.ErrorContains(t, err, "client address")
+		require.ErrorContains(t, err, "wallet")
 	})
 }
 
 func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
-	actor := model.Actor{
-		ID:      "f01000",
-		Address: "f10000",
-	}
-
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&actor).Error
-		require.NoError(t, err)
-
+		createTestWalletAndActor(t, db, false)
 		mockDealMaker := new(MockDealMaker)
 		badProposal := proposal
 		badProposal.PieceCID = "bad"
-		_, err = Default.SendManualHandler(ctx, db, nil, mockDealMaker, badProposal)
+		_, err := Default.SendManualHandler(ctx, db, nil, nil, mockDealMaker, badProposal)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid piece CID")
 	})
 }
 
 func TestSendManualHandler_InvalidPieceCID_NOTCOMMP(t *testing.T) {
-	actor := model.Actor{
-		ID:      "f01000",
-		Address: "f10000",
-	}
-
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&actor).Error
-		require.NoError(t, err)
-
+		createTestWalletAndActor(t, db, false)
 		mockDealMaker := new(MockDealMaker)
 		badProposal := proposal
 		badProposal.PieceCID = proposal.RootCID
-		_, err = Default.SendManualHandler(ctx, db, nil, mockDealMaker, badProposal)
+		_, err := Default.SendManualHandler(ctx, db, nil, nil, mockDealMaker, badProposal)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "must be commp")
 	})
 }
 
 func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
-	actor := model.Actor{
-		ID:      "f01000",
-		Address: "f10000",
-	}
-
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&actor).Error
-		require.NoError(t, err)
-
+		createTestWalletAndActor(t, db, false)
 		mockDealMaker := new(MockDealMaker)
 		badProposal := proposal
 		badProposal.PieceSize = "aaa"
-		_, err = Default.SendManualHandler(ctx, db, nil, mockDealMaker, badProposal)
+		_, err := Default.SendManualHandler(ctx, db, nil, nil, mockDealMaker, badProposal)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid piece size")
 	})
 }
 
 func TestSendManualHandler_InvalidPieceSize_NotPowerOfTwo(t *testing.T) {
-	actor := model.Actor{
-		ID:      "f01000",
-		Address: "f10000",
-	}
-
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&actor).Error
-		require.NoError(t, err)
-
+		createTestWalletAndActor(t, db, false)
 		mockDealMaker := new(MockDealMaker)
 		badProposal := proposal
 		badProposal.PieceSize = "31GiB"
-		_, err = Default.SendManualHandler(ctx, db, nil, mockDealMaker, badProposal)
+		_, err := Default.SendManualHandler(ctx, db, nil, nil, mockDealMaker, badProposal)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "must be a power of 2")
 	})
 }
 
 func TestSendManualHandler_InvalidRootCID(t *testing.T) {
-	actor := model.Actor{
-		ID:      "f01000",
-		Address: "f10000",
-	}
-
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&actor).Error
-		require.NoError(t, err)
-
+		createTestWalletAndActor(t, db, false)
 		mockDealMaker := new(MockDealMaker)
 		badProposal := proposal
 		badProposal.RootCID = "xxxx"
-		_, err = Default.SendManualHandler(ctx, db, nil, mockDealMaker, badProposal)
+		_, err := Default.SendManualHandler(ctx, db, nil, nil, mockDealMaker, badProposal)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid root CID")
 	})
 }
 
 func TestSendManualHandler_InvalidDuration(t *testing.T) {
-	actor := model.Actor{
-		ID:      "f01000",
-		Address: "f10000",
-	}
-
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&actor).Error
-		require.NoError(t, err)
-
+		createTestWalletAndActor(t, db, false)
 		mockDealMaker := new(MockDealMaker)
 		badProposal := proposal
 		badProposal.Duration = "xxxx"
-		_, err = Default.SendManualHandler(ctx, db, nil, mockDealMaker, badProposal)
+		_, err := Default.SendManualHandler(ctx, db, nil, nil, mockDealMaker, badProposal)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid duration")
 	})
 }
 
 func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
-	actor := model.Actor{
-		ID:      "f01000",
-		Address: "f10000",
-	}
-
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&actor).Error
-		require.NoError(t, err)
-
+		createTestWalletAndActor(t, db, false)
 		mockDealMaker := new(MockDealMaker)
 		badProposal := proposal
 		badProposal.StartDelay = "xxxx"
-		_, err = Default.SendManualHandler(ctx, db, nil, mockDealMaker, badProposal)
+		_, err := Default.SendManualHandler(ctx, db, nil, nil, mockDealMaker, badProposal)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid start delay")
 	})
@@ -194,19 +153,11 @@ func TestSendManualHandler(t *testing.T) {
 	actorID := "f01000"
 	actor := model.Actor{
 		ID:      actorID,
-		Address: "f10000",
+		Address: "f01000",
 	}
 
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&actor).Error
-		require.NoError(t, err)
-
-		// wallet record needed for signer resolution
-		err = db.Create(&model.Wallet{
-			KeyPath: "/tmp/fake-key", KeyStore: "local",
-			Address: "f10000", ActorID: &actorID,
-		}).Error
-		require.NoError(t, err)
+		createTestWalletAndActor(t, db, true)
 
 		mockDealMaker := new(MockDealMaker)
 		mockDealMaker.On("MakeDeal", mock.Anything, actor, mock.Anything, replication.DealConfig{
@@ -222,7 +173,8 @@ func TestSendManualHandler(t *testing.T) {
 			PricePerGB:      proposal.PricePerGB,
 			PricePerGBEpoch: proposal.PricePerGBEpoch,
 		}).Return(&model.Deal{}, nil)
-		resp, err := Default.SendManualHandler(ctx, db, nil, mockDealMaker, proposal)
+		// lotusClient is nil — GetOrCreateActor won't call lotus because ActorID is already set
+		resp, err := Default.SendManualHandler(ctx, db, nil, nil, mockDealMaker, proposal)
 		mockDealMaker.AssertExpectations(t)
 		require.NoError(t, err)
 		require.NotNil(t, resp)

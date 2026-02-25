@@ -41,6 +41,7 @@ type Handler interface {
 	RemoveHandler(
 		ctx context.Context,
 		db *gorm.DB,
+		ks keystore.KeyStore,
 		address string,
 	) error
 }
@@ -80,7 +81,7 @@ func (m *MockWallet) ListAttachedHandler(ctx context.Context, db *gorm.DB, prepa
 	return args.Get(0).([]model.Wallet), args.Error(1)
 }
 
-func (m *MockWallet) RemoveHandler(ctx context.Context, db *gorm.DB, address string) error {
-	args := m.Called(ctx, db, address)
+func (m *MockWallet) RemoveHandler(ctx context.Context, db *gorm.DB, ks keystore.KeyStore, address string) error {
+	args := m.Called(ctx, db, ks, address)
 	return args.Error(0)
 }

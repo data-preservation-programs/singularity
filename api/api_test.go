@@ -98,7 +98,7 @@ func setupMockDeal() deal.Handler {
 	m := new(deal.MockDeal)
 	m.On("ListHandler", mock.Anything, mock.Anything, mock.Anything).
 		Return([]model.Deal{{}}, nil)
-	m.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	m.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&model.Deal{}, nil)
 	return m
 }
@@ -193,7 +193,7 @@ func setupMockWallet() wallet.Handler {
 		Return([]model.Wallet{{}}, nil)
 	m.On("ListAttachedHandler", mock.Anything, mock.Anything, "id").
 		Return([]model.Wallet{{}}, nil)
-	m.On("RemoveHandler", mock.Anything, mock.Anything, "wallet").
+	m.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything, "wallet").
 		Return(nil)
 	return m
 }

@@ -221,6 +221,7 @@ var sequenceTables = []string{
 	"car_blocks",
 	"deals",
 	"schedules",
+	"wallets",
 }
 
 // fixPostgresSequences detects and fixes out-of-sync sequences.
