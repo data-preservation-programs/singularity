@@ -27,6 +27,7 @@ var Tables = []any{
 	&Deal{},
 	&Schedule{},
 	&Wallet{},
+	&PDPCursor{},
 }
 
 var logger = logging.Logger("model")
