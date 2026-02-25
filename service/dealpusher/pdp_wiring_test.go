@@ -93,7 +93,7 @@ func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation
 		keyPath, _, err := ks.Put(testutil.TestPrivateKeyHex)
 		require.NoError(t, err)
 
-		actorID := clientAddr.String()
+		actorID := "f01001"
 		require.NoError(t, db.Create(&model.Actor{ID: actorID, Address: clientAddr.String()}).Error)
 		wallet := model.Wallet{
 			Address:  clientAddr.String(),

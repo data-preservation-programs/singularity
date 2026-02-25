@@ -6,6 +6,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/keystore"
@@ -137,6 +138,10 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 		if err != nil {
 			return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
 		}
+		actorObj, err := wallet.GetOrCreateActor(ctx, db, d.lotusClient, &walletObj)
+		if err != nil {
+			return model.ScheduleError, errors.Wrapf(err, "failed to resolve actor for wallet %s", walletObj.Address)
+		}
 
 		evmSigner, err := keystore.EVMSigner(d.keyStore, walletObj)
 		if err != nil {
@@ -172,7 +177,7 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 				PieceSize:  car.PieceSize,
 				Verified:   schedule.Verified,
 				ScheduleID: &schedule.ID,
-				ClientID:   walletObj.Address,
+				ClientID:   actorObj.ID,
 				ProofSetID: &proofSetIDCopy,
 			}
 
