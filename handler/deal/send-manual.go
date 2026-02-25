@@ -140,6 +140,7 @@ func (DefaultHandler) SendManualHandler(
 		AnnounceToIPNI: request.IPNI,
 		StartDelay:     startDelay,
 		Duration:       duration,
+		WalletID:       &walletObj.ID,
 	}
 
 	// resolve actor lazily — only makes RPC call if ActorID not yet linked

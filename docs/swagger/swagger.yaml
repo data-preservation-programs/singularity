@@ -445,6 +445,8 @@ definitions:
         type: string
       verified:
         type: boolean
+      walletId:
+        type: integer
     type: object
   model.DealState:
     enum:

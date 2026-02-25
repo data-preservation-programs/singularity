@@ -6553,6 +6553,9 @@
                 },
                 "verified": {
                     "type": "boolean"
+                },
+                "walletId": {
+                    "type": "integer"
                 }
             }
         },

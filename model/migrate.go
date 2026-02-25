@@ -124,6 +124,16 @@ func AutoMigrate(db *gorm.DB) error {
 		return errors.Wrap(err, "failed to infer deal types")
 	}
 
+	// Drop legacy fk_deals_actor constraint (Deal.ClientID no longer FKs to Actor)
+	if err := dropDealActorFK(db); err != nil {
+		return errors.Wrap(err, "failed to drop deal-actor FK")
+	}
+
+	// Backfill wallet_id for deals that predate the column
+	if err := backfillDealWalletID(db); err != nil {
+		return errors.Wrap(err, "failed to backfill deal wallet IDs")
+	}
+
 	return nil
 }
 
@@ -341,6 +351,92 @@ func inferDealTypes(db *gorm.DB) error {
 	}
 
 	logger.Infow("set deal types", "updated", result.RowsAffected)
+	return nil
+}
+
+// dropDealActorFK removes the legacy fk_deals_actor constraint if it exists.
+// Deal.ClientID is now a plain string (no FK to actors table).
+func dropDealActorFK(db *gorm.DB) error {
+	dialect := db.Dialector.Name()
+	if dialect == "sqlite" {
+		return nil
+	}
+
+	constraint := "fk_deals_actor"
+	var exists bool
+
+	if dialect == "postgres" {
+		err := db.Raw(`
+			SELECT EXISTS (
+				SELECT 1 FROM information_schema.table_constraints
+				WHERE table_name = 'deals' AND constraint_name = ?
+			)`, constraint).Scan(&exists).Error
+		if err != nil {
+			return errors.Wrapf(err, "failed to check constraint %s", constraint)
+		}
+	} else if dialect == "mysql" {
+		err := db.Raw(`
+			SELECT COUNT(*) > 0 FROM information_schema.TABLE_CONSTRAINTS
+			WHERE TABLE_NAME = 'deals' AND CONSTRAINT_NAME = ?
+		`, constraint).Scan(&exists).Error
+		if err != nil {
+			return errors.Wrapf(err, "failed to check constraint %s", constraint)
+		}
+	}
+
+	if !exists {
+		return nil
+	}
+
+	logger.Infow("dropping legacy deal-actor FK constraint", "constraint", constraint)
+	if dialect == "postgres" {
+		return db.Exec(`ALTER TABLE deals DROP CONSTRAINT ` + constraint).Error
+	}
+	// mysql
+	return db.Exec(`ALTER TABLE deals DROP FOREIGN KEY ` + constraint).Error
+}
+
+// backfillDealWalletID sets wallet_id for existing deals that have a client_id
+// matching an actor linked to a wallet. idempotent — only touches NULL wallet_id rows.
+func backfillDealWalletID(db *gorm.DB) error {
+	var count int64
+	err := db.Raw(`SELECT COUNT(*) FROM deals WHERE wallet_id IS NULL AND client_id != ''`).Scan(&count).Error
+	if err != nil {
+		logger.Debugw("skipping wallet_id backfill", "error", err)
+		return nil
+	}
+	if count == 0 {
+		return nil
+	}
+
+	logger.Infow("backfilling deal wallet_id from client_id → actor → wallet", "count", count)
+
+	dialect := db.Dialector.Name()
+	var query string
+	if dialect == "sqlite" {
+		query = `
+			UPDATE deals SET wallet_id = (
+				SELECT w.id FROM wallets w
+				WHERE w.actor_id = deals.client_id
+				LIMIT 1
+			) WHERE wallet_id IS NULL AND client_id != ''
+			AND EXISTS (SELECT 1 FROM wallets w WHERE w.actor_id = deals.client_id)`
+	} else {
+		query = `
+			UPDATE deals d
+			SET wallet_id = (
+				SELECT w.id FROM wallets w
+				WHERE w.actor_id = d.client_id
+				LIMIT 1
+			) WHERE d.wallet_id IS NULL AND d.client_id != ''
+			AND EXISTS (SELECT 1 FROM wallets w WHERE w.actor_id = d.client_id)`
+	}
+
+	result := db.Exec(query)
+	if result.Error != nil {
+		return errors.Wrap(result.Error, "failed to backfill wallet_id")
+	}
+	logger.Infow("backfilled deal wallet_id", "updated", result.RowsAffected)
 	return nil
 }
 

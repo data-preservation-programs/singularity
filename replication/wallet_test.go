@@ -89,6 +89,7 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 
 		require.NoError(t, db.Create(&model.Deal{
 			ClientID:  "actorc",
+			WalletID:  &wallets[2].ID,
 			Verified:  true,
 			State:     model.DealProposed,
 			PieceSize: 500000,

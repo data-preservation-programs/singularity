@@ -77,13 +77,10 @@ func TestGetFileDealsHandler(t *testing.T) {
 
 		deals := []model.Deal{{
 			PieceCID: model.CID(testCid1),
-			Actor:    &model.Actor{},
 		}, {
 			PieceCID: model.CID(testCid2),
-			Actor:    &model.Actor{},
 		}, {
 			PieceCID: model.CID(testCid2),
-			Actor:    &model.Actor{},
 		}}
 		err = db.Create(deals).Error
 		require.NoError(t, err)

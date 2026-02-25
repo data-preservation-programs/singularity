@@ -6560,6 +6560,9 @@ const docTemplate = `{
                 },
                 "verified": {
                     "type": "boolean"
+                },
+                "walletId": {
+                    "type": "integer"
                 }
             }
         },
