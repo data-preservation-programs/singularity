@@ -1,6 +1,8 @@
 package run
 
 import (
+	"time"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/service"
@@ -25,6 +27,26 @@ var DealPusherCmd = &cli.Command{
 			Aliases:     []string{"M"},
 			DefaultText: "Unlimited",
 		},
+		&cli.IntFlag{
+			Name:  "pdp-batch-size",
+			Usage: "Number of roots to include in each PDP add-roots transaction",
+			Value: 128,
+		},
+		&cli.Uint64Flag{
+			Name:  "pdp-gas-limit",
+			Usage: "Gas limit for PDP on-chain transactions",
+			Value: 5000000,
+		},
+		&cli.Uint64Flag{
+			Name:  "pdp-confirmation-depth",
+			Usage: "Number of block confirmations required for PDP transactions",
+			Value: 5,
+		},
+		&cli.DurationFlag{
+			Name:  "pdp-poll-interval",
+			Usage: "Polling interval for PDP transaction confirmation checks",
+			Value: 30 * time.Second,
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -39,7 +61,24 @@ var DealPusherCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
-		dm, err := dealpusher.NewDealPusher(db, c.String("lotus-api"), c.String("lotus-token"), c.Uint("deal-attempts"), c.Uint("max-replication-factor"))
+		pdpCfg := dealpusher.PDPSchedulingConfig{
+			BatchSize:         c.Int("pdp-batch-size"),
+			GasLimit:          c.Uint64("pdp-gas-limit"),
+			ConfirmationDepth: c.Uint64("pdp-confirmation-depth"),
+			PollingInterval:   c.Duration("pdp-poll-interval"),
+		}
+		if err := pdpCfg.Validate(); err != nil {
+			return errors.WithStack(err)
+		}
+
+		dm, err := dealpusher.NewDealPusher(
+			db,
+			c.String("lotus-api"),
+			c.String("lotus-token"),
+			c.Uint("deal-attempts"),
+			c.Uint("max-replication-factor"),
+			dealpusher.WithPDPSchedulingConfig(pdpCfg),
+		)
 		if err != nil {
 			return errors.WithStack(err)
 		}

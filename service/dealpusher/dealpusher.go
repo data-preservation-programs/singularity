@@ -16,7 +16,6 @@ import (
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/keystore"
-	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
@@ -456,39 +455,6 @@ func (d *DealPusher) resolveScheduleDealType(schedule *model.Schedule) model.Dea
 		return inferScheduleDealType(schedule)
 	}
 	return d.scheduleDealTypeResolver(schedule)
-}
-
-func defaultPDPSchedulingConfig() PDPSchedulingConfig {
-	return PDPSchedulingConfig{
-		BatchSize:         128,
-		GasLimit:          5_000_000,
-		ConfirmationDepth: 5,
-		PollingInterval:   30 * time.Second,
-	}
-}
-
-// inferScheduleDealType uses the provider address protocol as the discriminator:
-// delegated (f4) addresses are FEVM contracts that speak PDP, everything else
-// is a traditional miner actor that speaks market deals.
-func inferScheduleDealType(schedule *model.Schedule) model.DealType {
-	if schedule == nil {
-		return model.DealTypeMarket
-	}
-	providerAddr, err := address.NewFromString(schedule.Provider)
-	if err != nil {
-		return model.DealTypeMarket
-	}
-	if providerAddr.Protocol() == address.Delegated {
-		return model.DealTypePDP
-	}
-	return model.DealTypeMarket
-}
-
-func (d *DealPusher) runPDPSchedule(_ context.Context, _ *model.Schedule) (model.ScheduleState, error) {
-	if d.pdpProofSetManager == nil || d.pdpTxConfirmer == nil {
-		return model.ScheduleError, errors.New("pdp scheduling dependencies are not configured")
-	}
-	return model.ScheduleError, errors.New("pdp scheduling path is not implemented")
 }
 
 func NewDealPusher(db *gorm.DB, lotusURL string,
