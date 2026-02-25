@@ -45,11 +45,17 @@ func (DefaultHandler) ImportKeystoreHandler(
 ) (*model.Wallet, error) {
 	db = db.WithContext(ctx)
 
-	// save to keystore (validates key and derives address)
-	keyPath, addr, err := ks.Put(request.PrivateKey)
+	// validate key before touching keystore: derive address to distinguish
+	// bad input (400) from keystore I/O failures (500)
+	addr, err := keystore.AddressFromExport(request.PrivateKey)
+	if err != nil {
+		return nil, errors.Wrap(handlererror.ErrInvalidParameter, err.Error())
+	}
+
+	keyPath, _, err := ks.Put(request.PrivateKey)
 	if err != nil {
 		logger.Errorw("failed to save key to keystore", "err", err)
-		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "invalid private key or keystore error")
+		return nil, errors.WithStack(err)
 	}
 
 	logger.Infow("saved key to keystore", "address", addr.String(), "path", keyPath)
@@ -67,12 +73,12 @@ func (DefaultHandler) ImportKeystoreHandler(
 	})
 
 	if util.IsDuplicateKeyError(err) {
-		ks.Delete(keyPath) // cleanup
+		// don't delete the key file — it belongs to the existing wallet record
 		return nil, errors.Wrap(handlererror.ErrDuplicateRecord, "wallet already imported")
 	}
 
 	if err != nil {
-		ks.Delete(keyPath) // cleanup on failure
+		ks.Delete(keyPath) // cleanup only for non-duplicate failures
 		return nil, errors.WithStack(err)
 	}
 

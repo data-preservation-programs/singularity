@@ -36,7 +36,7 @@ func NewLocalKeyStore(dir string) (*LocalKeyStore, error) {
 
 // lotus wallet export format expected (hex-encoded JSON with Type and PrivateKey)
 func (ks *LocalKeyStore) Put(privateKey string) (string, address.Address, error) {
-	addr, err := addressFromExport(privateKey)
+	addr, err := AddressFromExport(privateKey)
 	if err != nil {
 		return "", address.Undef, fmt.Errorf("failed to derive address from private key: %w", err)
 	}
@@ -78,7 +78,7 @@ func (ks *LocalKeyStore) List() ([]KeyInfo, error) {
 			continue // skip unreadable
 		}
 
-		addr, err := addressFromExport(string(data))
+		addr, err := AddressFromExport(string(data))
 		if err != nil {
 			continue // skip invalid
 		}
@@ -104,8 +104,8 @@ func (ks *LocalKeyStore) Has(path string) bool {
 	return err == nil
 }
 
-// derives filecoin address from a lotus wallet export string
-func addressFromExport(exported string) (address.Address, error) {
+// AddressFromExport derives filecoin address from a lotus wallet export string
+func AddressFromExport(exported string) (address.Address, error) {
 	s, err := signer.FromLotusExport(exported)
 	if err != nil {
 		return address.Undef, err
