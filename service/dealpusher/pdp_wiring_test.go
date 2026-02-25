@@ -7,6 +7,7 @@ import (
 
 	"github.com/data-preservation-programs/go-synapse/signer"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 )
@@ -30,6 +31,15 @@ func (noopPDPTransactionConfirmer) WaitForConfirmations(_ context.Context, txHas
 func TestDealPusher_ResolveScheduleDealType_DefaultsToMarket(t *testing.T) {
 	d := &DealPusher{}
 	require.Equal(t, model.DealTypeMarket, d.resolveScheduleDealType(&model.Schedule{}))
+}
+
+func TestDealPusher_ResolveScheduleDealType_DelegatedProviderInfersPDP(t *testing.T) {
+	subaddr := make([]byte, 20)
+	subaddr[19] = 1
+	providerAddr, err := address.NewDelegatedAddress(10, subaddr)
+	require.NoError(t, err)
+	d := &DealPusher{}
+	require.Equal(t, model.DealTypePDP, d.resolveScheduleDealType(&model.Schedule{Provider: providerAddr.String()}))
 }
 
 func TestDealPusher_RunSchedule_PDPWithoutDependenciesReturnsConfiguredError(t *testing.T) {
