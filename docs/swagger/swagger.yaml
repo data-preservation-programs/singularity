@@ -278,18 +278,6 @@ definitions:
       storageId:
         type: integer
     type: object
-  model.Actor:
-    properties:
-      address:
-        description: filecoin address
-        type: string
-      id:
-        description: actor ID (f0...)
-        type: string
-      privateKey:
-        description: 'TODO: orphaned column, will be dropped by export-keys command'
-        type: string
-    type: object
   model.Car:
     properties:
       attachmentId:
@@ -12065,7 +12053,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Actor'
+              $ref: '#/definitions/model.Wallet'
             type: array
         "400":
           description: Bad Request

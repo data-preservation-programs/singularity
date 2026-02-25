@@ -101,7 +101,7 @@ func (DefaultHandler) CreateHandler(
 		request.MaxPendingDealSize = "0"
 	}
 	var preparation model.Preparation
-	err := preparation.FindByIDOrName(db, request.Preparation, "Actors")
+	err := preparation.FindByIDOrName(db, request.Preparation, "Wallets")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", request.Preparation)
 	}
@@ -158,8 +158,8 @@ func (DefaultHandler) CreateHandler(
 		}
 	}
 
-	if len(preparation.Actors) == 0 {
-		return nil, errors.Wrap(handlererror.ErrNotFound, "no actor attached to preparation")
+	if len(preparation.Wallets) == 0 {
+		return nil, errors.Wrap(handlererror.ErrNotFound, "no wallet attached to preparation")
 	}
 
 	var providerActor string

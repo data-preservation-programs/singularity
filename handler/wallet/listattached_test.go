@@ -14,8 +14,8 @@ import (
 func TestListAttachedHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
-			Actors: []model.Actor{{
-				ID: "test",
+			Wallets: []model.Wallet{{
+				Address: "f0test", KeyPath: "/tmp/key", KeyStore: "local",
 			}},
 		}).Error
 		require.NoError(t, err)
@@ -26,9 +26,9 @@ func TestListAttachedHandler(t *testing.T) {
 		})
 
 		t.Run("success", func(t *testing.T) {
-			actors, err := Default.ListAttachedHandler(ctx, db, "1")
+			wallets, err := Default.ListAttachedHandler(ctx, db, "1")
 			require.NoError(t, err)
-			require.Len(t, actors, 1)
+			require.Len(t, wallets, 1)
 		})
 	})
 }

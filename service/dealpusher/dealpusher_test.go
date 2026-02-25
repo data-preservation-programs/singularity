@@ -28,14 +28,11 @@ func init() {
 	analytics.Enabled = false
 }
 
-// creates a wallet record so that signer resolution in runSchedule succeeds.
-// must be called after the actor record exists (e.g. after schedule creation).
-func createTestWallet(t *testing.T, db *gorm.DB, actorID string) {
+// creates actor record that wallets reference via ActorID FK.
+// must be called before schedule creation since wallet.ActorID references actor.
+func createTestActor(t *testing.T, db *gorm.DB, actorID string) {
 	t.Helper()
-	require.NoError(t, db.Create(&model.Wallet{
-		KeyPath: "/tmp/fake-key", KeyStore: "local",
-		Address: "f0xx", ActorID: &actorID,
-	}).Error)
+	require.NoError(t, db.Create(&model.Actor{ID: actorID, Address: "f0xx"}).Error)
 }
 
 type MockDealMaker struct {
@@ -120,9 +117,10 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				SourceStorages: []model.Storage{{}},
-				Actors: []model.Actor{
+				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+						ActorID: &client,
 					},
 				}},
 			State:                model.ScheduleActive,
@@ -131,9 +129,9 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 			MaxPendingDealSize:   2048,
 			TotalDealNumber:      4,
 		}
+		createTestActor(t, db, client)
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
-		createTestWallet(t, db, client)
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("send deal error"))
 		pieceCIDs := []model.CID{
 			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
@@ -177,9 +175,10 @@ func TestDealMakerService_Cron(t *testing.T) {
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				SourceStorages: []model.Storage{{}},
-				Actors: []model.Actor{
+				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+						ActorID: &client,
 					},
 				}},
 			State:            model.ScheduleActive,
@@ -187,9 +186,9 @@ func TestDealMakerService_Cron(t *testing.T) {
 			ScheduleDealSize: 1,
 			Provider:         provider,
 		}
+		createTestActor(t, db, client)
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
-		createTestWallet(t, db, client)
 
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			ScheduleID: &schedule.ID,
@@ -273,9 +272,10 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				SourceStorages: []model.Storage{{}},
-				Actors: []model.Actor{
+				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+						ActorID: &client,
 					},
 				}},
 			State:                model.ScheduleActive,
@@ -284,9 +284,9 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 			MaxPendingDealSize:   2048,
 			TotalDealNumber:      4,
 		}
+		createTestActor(t, db, client)
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
-		createTestWallet(t, db, client)
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			ScheduleID: &schedule.ID,
 		}, nil)
@@ -383,9 +383,10 @@ func TestDealmakerService_Force(t *testing.T) {
 		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
-				Actors: []model.Actor{
+				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+						ActorID: &client,
 					},
 				},
 				SourceStorages: []model.Storage{{}},
@@ -394,9 +395,9 @@ func TestDealmakerService_Force(t *testing.T) {
 			Provider: provider,
 			Force:    true,
 		}
+		createTestActor(t, db, client)
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
-		createTestWallet(t, db, client)
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			ScheduleID: &schedule.ID,
 		}, nil)
@@ -443,9 +444,10 @@ func TestDealMakerService_MaxReplica(t *testing.T) {
 		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
-				Actors: []model.Actor{
+				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+						ActorID: &client,
 					},
 				},
 				SourceStorages: []model.Storage{{}},
@@ -453,9 +455,9 @@ func TestDealMakerService_MaxReplica(t *testing.T) {
 			State:    model.ScheduleActive,
 			Provider: provider,
 		}
+		createTestActor(t, db, client)
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
-		createTestWallet(t, db, client)
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			ScheduleID: &schedule.ID,
 		}, nil)
@@ -510,9 +512,10 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
-				Actors: []model.Actor{
+				Wallets: []model.Wallet{
 					{
-						ID: client, Address: "f0xx",
+						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+						ActorID: &client,
 					},
 				},
 				SourceStorages: []model.Storage{{}},
@@ -521,9 +524,9 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 			Provider:         provider,
 			AllowedPieceCIDs: underscore.Map(pieceCIDs[:5], func(cid model.CID) string { return cid.String() }),
 		}
+		createTestActor(t, db, client)
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
-		createTestWallet(t, db, client)
 
 		mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			ScheduleID: &schedule.ID,

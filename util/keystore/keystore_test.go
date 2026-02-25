@@ -24,13 +24,6 @@ func getTestKey(modifier int) string {
 	return baseKey
 }
 
-// Alternative test keys (pre-generated, valid lotus format)
-var testKeys = []string{
-	testutil.TestPrivateKeyHex,
-	// We only have one test key in testutil, so for multi-key tests we'll use the same one
-	// This is fine for testing keystore functionality
-}
-
 func TestLocalKeyStore_PutAndGet(t *testing.T) {
 	tmpdir := t.TempDir()
 	ks, err := NewLocalKeyStore(tmpdir)

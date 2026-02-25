@@ -1404,7 +1404,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Actor"
+                                "$ref": "#/definitions/model.Wallet"
                             }
                         }
                     },
@@ -6333,23 +6333,6 @@ const docTemplate = `{
                 },
                 "storageId": {
                     "type": "integer"
-                }
-            }
-        },
-        "model.Actor": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "description": "filecoin address",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "actor ID (f0...)",
-                    "type": "string"
-                },
-                "privateKey": {
-                    "description": "TODO: orphaned column, will be dropped by export-keys command",
-                    "type": "string"
                 }
             }
         },

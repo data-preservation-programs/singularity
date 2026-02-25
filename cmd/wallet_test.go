@@ -32,7 +32,7 @@ func TestWalletImport(t *testing.T) {
 		defer runner.Save(t)
 		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
-		mockHandler.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
+		mockHandler.On("ImportKeystoreHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
 			ID:      1,
 			Address: "address",
 		}, nil)

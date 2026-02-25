@@ -182,15 +182,15 @@ func TestCreateHandler_NoAssociatedWallet(t *testing.T) {
 		require.NoError(t, err)
 		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
 		require.ErrorIs(t, err, handlererror.ErrNotFound)
-		require.ErrorContains(t, err, "no actor")
+		require.ErrorContains(t, err, "no wallet")
 	})
 }
 
 func TestCreateHandler_InvalidProvider(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
-			Actors: []model.Actor{{
-				ID: "f01",
+			Wallets: []model.Wallet{{
+				Address: "f01", KeyPath: "/tmp/key", KeyStore: "local",
 			}},
 		}).Error
 		require.NoError(t, err)
@@ -206,8 +206,8 @@ func TestCreateHandler_InvalidProvider(t *testing.T) {
 func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
-			Actors: []model.Actor{{
-				ID: "f01",
+			Wallets: []model.Wallet{{
+				Address: "f01", KeyPath: "/tmp/key", KeyStore: "local",
 			}},
 		}).Error
 		require.NoError(t, err)
@@ -226,8 +226,8 @@ func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
 func TestCreateHandler_ScheduleDealSizeSetForNonCron(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{
-			Actors: []model.Actor{{
-				ID: "f01",
+			Wallets: []model.Wallet{{
+				Address: "f01", KeyPath: "/tmp/key", KeyStore: "local",
 			}},
 		}).Error
 		require.NoError(t, err)
@@ -247,8 +247,8 @@ func TestCreateHandler_Success(t *testing.T) {
 			testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 				err := db.Create(&model.Preparation{
 					Name: "name",
-					Actors: []model.Actor{{
-						ID: "f01",
+					Wallets: []model.Wallet{{
+						Address: "f01", KeyPath: "/tmp/key", KeyStore: "local",
 					}},
 				}).Error
 				require.NoError(t, err)

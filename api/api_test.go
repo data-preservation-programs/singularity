@@ -192,7 +192,7 @@ func setupMockWallet() wallet.Handler {
 	m.On("ListHandler", mock.Anything, mock.Anything).
 		Return([]model.Wallet{{}}, nil)
 	m.On("ListAttachedHandler", mock.Anything, mock.Anything, "id").
-		Return([]model.Actor{{}}, nil)
+		Return([]model.Wallet{{}}, nil)
 	m.On("RemoveHandler", mock.Anything, mock.Anything, "wallet").
 		Return(nil)
 	return m

@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -11,17 +12,17 @@ import (
 	"gorm.io/gorm"
 )
 
-// detaches actor from preparation
-// accepts actor ID or address
+// detaches wallet from preparation
+// accepts wallet address or ID
 func (DefaultHandler) DetachHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	preparationID string,
-	actorIDOrAddress string,
+	walletAddressOrID string,
 ) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
-	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Actors")
+	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Wallets")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", preparationID)
 	}
@@ -29,15 +30,15 @@ func (DefaultHandler) DetachHandler(
 		return nil, errors.WithStack(err)
 	}
 
-	found, err := underscore.Find(preparation.Actors, func(a model.Actor) bool {
-		return a.ID == actorIDOrAddress || a.Address == actorIDOrAddress
+	found, err := underscore.Find(preparation.Wallets, func(w model.Wallet) bool {
+		return w.Address == walletAddressOrID || fmt.Sprint(w.ID) == walletAddressOrID
 	})
 	if err != nil {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "actor %s not attached to preparation %s", actorIDOrAddress, preparationID)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not attached to preparation %s", walletAddressOrID, preparationID)
 	}
 
 	err = database.DoRetry(ctx, func() error {
-		return db.Model(&preparation).Association("Actors").Delete(&found)
+		return db.Model(&preparation).Association("Wallets").Delete(&found)
 	})
 	if err != nil {
 		return nil, errors.WithStack(err)

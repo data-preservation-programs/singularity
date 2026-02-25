@@ -58,7 +58,7 @@ func (DefaultHandler) RemovePreparationHandler(ctx context.Context, db *gorm.DB,
 	// by the healthcheck worker every 5 minutes.
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
-			return db.Select("Actors", "SourceStorages", "OutputStorages").Delete(&preparation).Error
+			return db.Select("Wallets", "SourceStorages", "OutputStorages").Delete(&preparation).Error
 		})
 	})
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/ybbus/jsonrpc/v3"
@@ -46,31 +47,38 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		lotusClient := new(MockRPCClient)
 
-		// Set up the test data
-		wallets := []model.Actor{
-			{ID: "1", Address: "address1"},
-			{ID: "2", Address: "address2"},
-			{ID: "3", Address: "address3"},
-			{ID: "4", Address: "address4"},
+		ids := []string{"a", "b", "c", "d"}
+		actors := make([]model.Actor, len(ids))
+		for i, id := range ids {
+			actors[i] = model.Actor{ID: "actor" + id, Address: "address" + id}
+		}
+		require.NoError(t, db.Create(&actors).Error)
+
+		wallets := make([]model.Wallet, len(ids))
+		for i, id := range ids {
+			wallets[i] = model.Wallet{
+				Address: "address" + id, KeyPath: "/tmp/key-" + id,
+				KeyStore: "local", ActorID: ptr.String("actor" + id),
+			}
+			require.NoError(t, db.Create(&wallets[i]).Error)
 		}
 
-		// Set up expectations for the lotusClient mock
-		lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"address1", nil}).
+		lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"addressa", nil}).
 			Return(nil).Run(func(args mock.Arguments) {
 			resultPtr := args.Get(1).(*string)
 			*resultPtr = "1000000"
 		})
 
-		lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"address2", nil}).
+		lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"addressb", nil}).
 			Return(errors.New("failed to get datacap"))
 
-		lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"address3", nil}).
+		lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"addressc", nil}).
 			Return(nil).Run(func(args mock.Arguments) {
 			resultPtr := args.Get(1).(*string)
 			*resultPtr = "1000000"
 		})
 
-		lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"address4", nil}).
+		lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"addressd", nil}).
 			Return(nil).Run(func(args mock.Arguments) {
 			resultPtr := args.Get(1).(*string)
 			*resultPtr = "900000"
@@ -79,29 +87,26 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 		chooser := NewDatacapWalletChooser(db, time.Minute, "lotusAPI", "lotusToken", 900001)
 		chooser.lotusClient = lotusClient
 
-		err := db.Create(&wallets).Error
-		require.NoError(t, err)
-		err = db.Create(&model.Deal{
-			ClientID:  "3",
+		require.NoError(t, db.Create(&model.Deal{
+			ClientID:  "actorc",
 			Verified:  true,
 			State:     model.DealProposed,
 			PieceSize: 500000,
-		}).Error
-		require.NoError(t, err)
+		}).Error)
 
 		t.Run("Choose wallet with empty wallet", func(t *testing.T) {
-			_, err := chooser.Choose(context.Background(), []model.Actor{})
+			_, err := chooser.Choose(context.Background(), []model.Wallet{})
 			require.ErrorAs(t, err, &ErrNoWallet)
 		})
 
 		t.Run("Choose wallet with sufficient datacap", func(t *testing.T) {
-			chosenWallet, err := chooser.Choose(context.Background(), []model.Actor{wallets[0], wallets[1]})
+			chosenWallet, err := chooser.Choose(context.Background(), []model.Wallet{wallets[0], wallets[1]})
 			require.NoError(t, err)
-			require.Equal(t, "address1", chosenWallet.Address)
+			require.Equal(t, "addressa", chosenWallet.Address)
 		})
 
 		t.Run("Choose wallet with insufficient datacap", func(t *testing.T) {
-			_, err := chooser.Choose(context.Background(), []model.Actor{wallets[2], wallets[3]})
+			_, err := chooser.Choose(context.Background(), []model.Wallet{wallets[2], wallets[3]})
 			require.ErrorAs(t, err, &ErrNoDatacap)
 		})
 	})
@@ -110,9 +115,9 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 func TestRandomWalletChooser(t *testing.T) {
 	chooser := &RandomWalletChooser{}
 	ctx := context.Background()
-	wallet, err := chooser.Choose(ctx, []model.Actor{
-		{ID: "1", Address: "address1"},
-		{ID: "2", Address: "address2"},
+	wallet, err := chooser.Choose(ctx, []model.Wallet{
+		{Address: "address1"},
+		{Address: "address2"},
 	})
 	require.NoError(t, err)
 	require.Contains(t, wallet.Address, "address")

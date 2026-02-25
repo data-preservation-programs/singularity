@@ -296,7 +296,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			}
 			var car model.Car
 			var dealModel *model.Deal
-			var actorObj model.Actor
+			var walletObj model.Wallet
 			if schedule.MaxPendingDealNumber > 0 && pending.DealNumber >= schedule.MaxPendingDealNumber {
 				Logger.Infow("skipping this time since the max pending deal is reached", "schedule_id", schedule.ID)
 				goto waitForPending
@@ -366,18 +366,23 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return model.ScheduleError, errors.Wrap(err, "failed to find car")
 			}
 
-			actorObj, err = d.walletChooser.Choose(ctx, schedule.Preparation.Actors)
+			walletObj, err = d.walletChooser.Choose(ctx, schedule.Preparation.Wallets)
 			if err != nil {
 				return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
 			}
 
-			// resolve wallet for signing before entering retry loop
-			walletRecord, err := wallet.LoadWalletByActorID(ctx, d.dbNoContext, actorObj.ID)
-			if err != nil {
-				return model.ScheduleError, errors.Wrapf(err, "failed to load wallet for actor %s", actorObj.ID)
+			// market deals need the on-chain actor for the deal proposal
+			if walletObj.ActorID == nil {
+				return model.ScheduleError, errors.Newf("wallet %s has no linked actor", walletObj.Address)
 			}
+			var actorObj model.Actor
+			err = db.Where("id = ?", *walletObj.ActorID).First(&actorObj).Error
+			if err != nil {
+				return model.ScheduleError, errors.Wrapf(err, "failed to load actor %s for wallet %s", *walletObj.ActorID, walletObj.Address)
+			}
+
 			proposalSigner := replication.ProposalSigner(func(msg []byte) (*crypto.Signature, error) {
-				return wallet.SignWithWallet(d.keyStore, *walletRecord, msg)
+				return wallet.SignWithWallet(d.keyStore, walletObj, msg)
 			})
 
 			err = retry.Do(func() error {
@@ -551,7 +556,7 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 	scheduleMap := map[model.ScheduleID]model.Schedule{}
 	Logger.Debugw("getting schedules")
 	db := d.dbNoContext.WithContext(ctx)
-	err := db.Preload("Preparation.Actors").Where("state = ?",
+	err := db.Preload("Preparation.Wallets").Where("state = ?",
 		model.ScheduleActive).Find(&schedules).Error
 	if err != nil {
 		Logger.Errorw("failed to get schedules", "error", err)
