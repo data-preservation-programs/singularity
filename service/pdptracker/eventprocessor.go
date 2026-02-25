@@ -207,8 +207,8 @@ func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainP
 		return nil
 	}
 
-	var wallet model.Wallet
-	if err := db.Where("address = ?", ps.ClientAddress).First(&wallet).Error; err != nil {
+	var actor model.Actor
+	if err := db.Where("address = ?", ps.ClientAddress).First(&actor).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			Logger.Debugw("pieces changed for untracked client", "setId", setID, "client", ps.ClientAddress)
 			return nil
@@ -255,7 +255,7 @@ func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainP
 			return db.Create(&model.Deal{
 				DealType:       model.DealTypePDP,
 				State:          initialState,
-				ClientID:       wallet.ID,
+				ClientID:       actor.ID,
 				Provider:       ps.Provider,
 				PieceCID:       modelCID,
 				ProofSetID:     ptr.Of(setID),

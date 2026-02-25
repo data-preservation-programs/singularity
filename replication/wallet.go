@@ -28,27 +28,7 @@ var ErrNoWallet = errors.New("no wallets to choose from")
 
 var ErrNoDatacap = errors.New("no wallets have enough datacap")
 
-// Choose selects a random Wallet from the provided slice of Wallets.
-//
-// The Choose function of the RandomWalletChooser type randomly selects
-// a Wallet from a given slice of Wallets. If the slice is empty, the function
-// returns an error. It uses a cryptographically secure random number generator
-// to make the selection.
-//
-// Parameters:
-//   - ctx context.Context: The context to use for cancellation and deadlines,
-//     although it is not used in this implementation.
-//   - wallets []model.Wallet: A slice of Wallet objects from which a random Wallet
-//     will be chosen.
-//
-// Returns:
-//   - model.Wallet: The randomly chosen Wallet object from the provided slice.
-//   - error: An error that will be returned if any issues were encountered while trying
-//     to choose a Wallet. This includes the case when the input slice is empty,
-//     in which case ErrNoWallet will be returned, or if there is an issue generating
-//     a random number.
-func (w RandomWalletChooser) Choose(ctx context.Context, wallets []model.Wallet) (model.Wallet, error) {
-	// Check if the wallets slice is empty
+func (w RandomWalletChooser) Choose(_ context.Context, wallets []model.Wallet) (model.Wallet, error) {
 	if len(wallets) == 0 {
 		return model.Wallet{}, ErrNoWallet
 	}
@@ -57,10 +37,11 @@ func (w RandomWalletChooser) Choose(ctx context.Context, wallets []model.Wallet)
 	if err != nil {
 		return model.Wallet{}, errors.WithStack(err)
 	}
-	chosenWallet := wallets[randomPick.Int64()]
-	return chosenWallet, nil
+	return wallets[randomPick.Int64()], nil
 }
 
+// DatacapWalletChooser selects a wallet whose linked actor has sufficient datacap.
+// only meaningful for market deals where datacap matters.
 type DatacapWalletChooser struct {
 	db          *gorm.DB
 	cache       *ttlcache.Cache[string, int64]
@@ -69,7 +50,7 @@ type DatacapWalletChooser struct {
 }
 
 func NewDatacapWalletChooser(db *gorm.DB, cacheTTL time.Duration,
-	lotusAPI string, lotusToken string, min uint64, //nolint:predeclared // We're ok with using the same name as the predeclared identifier here
+	lotusAPI string, lotusToken string, min uint64, //nolint:predeclared
 ) DatacapWalletChooser {
 	cache := ttlcache.New[string, int64](
 		ttlcache.WithTTL[string, int64](cacheTTL),
@@ -85,6 +66,9 @@ func NewDatacapWalletChooser(db *gorm.DB, cacheTTL time.Duration,
 }
 
 func (w DatacapWalletChooser) getDatacap(ctx context.Context, wallet model.Wallet) (int64, error) {
+	if wallet.ActorID == nil {
+		return 0, errors.Newf("wallet %s has no linked actor", wallet.Address)
+	}
 	var result string
 	err := w.lotusClient.CallFor(ctx, &result, "Filecoin.StateMarketBalance", wallet.Address, nil)
 	if err != nil {
@@ -111,10 +95,13 @@ func (w DatacapWalletChooser) getDatacapCached(ctx context.Context, wallet model
 }
 
 func (w DatacapWalletChooser) getPendingDeals(ctx context.Context, wallet model.Wallet) (int64, error) {
+	if wallet.ActorID == nil {
+		return 0, nil
+	}
 	var totalPieceSize int64
 	err := w.db.WithContext(ctx).Model(&model.Deal{}).
 		Select("COALESCE(SUM(piece_size), 0)").
-		Where("client_id = ? AND verified AND state = ?", wallet.ID, model.DealProposed).
+		Where("client_id = ? AND verified AND state = ?", *wallet.ActorID, model.DealProposed).
 		Scan(&totalPieceSize).
 		Error
 	if err != nil {
@@ -124,59 +111,35 @@ func (w DatacapWalletChooser) getPendingDeals(ctx context.Context, wallet model.
 	return totalPieceSize, nil
 }
 
-// Choose selects a random Wallet from the provided slice of Wallets based on certain criteria.
-//
-// The Choose function of the DatacapWalletChooser type filters the given slice of Wallets
-// based on a specific criterion, which is whether the datacap for the wallet minus
-// the pending deals for the wallet is greater or equal to a minimum threshold (w.min).
-// From the filtered eligible Wallets, the function then randomly selects one Wallet.
-// It uses a cryptographically secure random number generator to make the selection.
-// If the initial slice of Wallets is empty, or if no Wallets meet the criteria,
-// the function returns an error.
-//
-// Parameters:
-//   - ctx context.Context: The context to use for cancellation and deadlines, used
-//     in the datacap and pending deals fetching operations.
-//   - wallets []model.Wallet: A slice of Wallet objects from which a random Wallet
-//     will be chosen based on the criteria.
-//
-// Returns:
-//   - model.Wallet: The randomly chosen Wallet object from the filtered eligible Wallets.
-//   - error: An error that will be returned if any issues were encountered while trying
-//     to choose a Wallet. This includes the case when the input slice is empty,
-//     in which case ErrNoWallet will be returned, when no Wallets meet the criteria,
-//     in which case ErrNoDatacap will be returned, or if there is an issue generating
-//     a random number.
 func (w DatacapWalletChooser) Choose(ctx context.Context, wallets []model.Wallet) (model.Wallet, error) {
 	if len(wallets) == 0 {
 		return model.Wallet{}, ErrNoWallet
 	}
 
-	var eligibleWallets []model.Wallet
+	var eligible []model.Wallet
 	for _, wallet := range wallets {
 		datacap, err := w.getDatacapCached(ctx, wallet)
 		if err != nil {
-			logger.Errorw("failed to get datacap for wallet", "wallet", wallet.Address, "error", err)
+			logger.Errorw("failed to get datacap for wallet", "address", wallet.Address, "error", err)
 			continue
 		}
 		pendingDeals, err := w.getPendingDeals(ctx, wallet)
 		if err != nil {
-			logger.Errorw("failed to get pending deals for wallet", "wallet", wallet.Address, "error", err)
+			logger.Errorw("failed to get pending deals for wallet", "address", wallet.Address, "error", err)
 			continue
 		}
 		if datacap-pendingDeals >= int64(w.min) {
-			eligibleWallets = append(eligibleWallets, wallet)
+			eligible = append(eligible, wallet)
 		}
 	}
 
-	if len(eligibleWallets) == 0 {
+	if len(eligible) == 0 {
 		return model.Wallet{}, ErrNoDatacap
 	}
 
-	randomPick, err := rand.Int(rand.Reader, big.NewInt(int64(len(eligibleWallets))))
+	randomPick, err := rand.Int(rand.Reader, big.NewInt(int64(len(eligible))))
 	if err != nil {
 		return model.Wallet{}, errors.WithStack(err)
 	}
-	chosenWallet := eligibleWallets[randomPick.Int64()]
-	return chosenWallet, nil
+	return eligible[randomPick.Int64()], nil
 }

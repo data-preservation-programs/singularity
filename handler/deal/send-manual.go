@@ -9,10 +9,14 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/dustin/go-humanize"
+	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/ipfs/go-cid"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
@@ -66,15 +70,17 @@ func argToDuration(s string) (time.Duration, error) {
 func (DefaultHandler) SendManualHandler(
 	ctx context.Context,
 	db *gorm.DB,
+	ks keystore.KeyStore,
+	lotusClient jsonrpc.RPCClient,
 	dealMaker replication.DealMaker,
 	request Proposal,
 ) (*model.Deal, error) {
 	db = db.WithContext(ctx)
-	// Get the wallet object
-	wallet := model.Wallet{}
-	err := db.Where("id = ? OR address = ?", request.ClientAddress, request.ClientAddress).First(&wallet).Error
+	// find wallet by address, then lazily resolve actor for the deal proposal
+	var walletObj model.Wallet
+	err := db.Where("address = ?", request.ClientAddress).First(&walletObj).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "client address %s not found", request.ClientAddress)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not found", request.ClientAddress)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -136,7 +142,17 @@ func (DefaultHandler) SendManualHandler(
 		Duration:       duration,
 	}
 
-	dealModel, err := dealMaker.MakeDeal(ctx, wallet, car, dealConfig)
+	// resolve actor lazily — only makes RPC call if ActorID not yet linked
+	actor, err := wallet.GetOrCreateActor(ctx, db, lotusClient, &walletObj)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to resolve actor for wallet %s", walletObj.Address)
+	}
+
+	signer := replication.ProposalSigner(func(msg []byte) (*crypto.Signature, error) {
+		return wallet.SignWithWallet(ks, walletObj, msg)
+	})
+
+	dealModel, err := dealMaker.MakeDeal(ctx, *actor, car, dealConfig, signer)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

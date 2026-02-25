@@ -9,13 +9,13 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
-	"github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/urfave/cli/v2"
 )
 
 var ImportCmd = &cli.Command{
 	Name:      "import",
-	Usage:     "Import a wallet from exported private key",
+	Usage:     "Import a wallet from a private key file into the keystore",
 	ArgsUsage: "[path, or stdin if omitted]",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -41,12 +41,16 @@ var ImportCmd = &cli.Command{
 			}
 		}
 
-		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
-		w, err := wallet.Default.ImportHandler(
+		ks, err := keystore.NewLocalKeyStore(wallet.GetKeystoreDir())
+		if err != nil {
+			return errors.Wrap(err, "failed to init keystore")
+		}
+
+		w, err := wallet.Default.ImportKeystoreHandler(
 			c.Context,
 			db,
-			lotusClient,
-			wallet.ImportRequest{
+			ks,
+			wallet.ImportKeystoreRequest{
 				PrivateKey: privateKey,
 			})
 		if err != nil {

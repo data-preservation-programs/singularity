@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -11,22 +12,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// DetachHandler removes the association of a wallet from a specific preparation based on the given preparationID and wallet address or ID.
-//
-// Parameters:
-//   - ctx: The context for database transactions and other operations.
-//   - db: A pointer to the gorm.DB instance representing the database connection.
-//   - preparationID: The ID or name of the preparation from which the wallet will be removed.
-//   - wallet: The address or ID of the wallet to be removed from the preparation.
-//
-// Returns:
-//   - A pointer to the updated Preparation instance.
-//   - An error, if any occurred during the removal operation.
+// detaches wallet from preparation
+// accepts wallet address or ID
 func (DefaultHandler) DetachHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	preparationID string,
-	wallet string,
+	walletAddressOrID string,
 ) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
@@ -39,10 +31,10 @@ func (DefaultHandler) DetachHandler(
 	}
 
 	found, err := underscore.Find(preparation.Wallets, func(w model.Wallet) bool {
-		return w.ID == wallet || w.Address == wallet
+		return w.Address == walletAddressOrID || fmt.Sprint(w.ID) == walletAddressOrID
 	})
 	if err != nil {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not attached to preparation %d", wallet, preparationID)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not attached to preparation %s", walletAddressOrID, preparationID)
 	}
 
 	err = database.DoRetry(ctx, func() error {

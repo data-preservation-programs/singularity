@@ -10,16 +10,21 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util/keystore"
+	"github.com/filecoin-project/go-address"
+	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/rjNemo/underscore"
 	"github.com/robfig/cron/v3"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
@@ -35,11 +40,14 @@ var waitPendingInterval = time.Minute
 
 // DealPusher represents a struct that encapsulates the data and functionality related to pushing deals in a replication process.
 type DealPusher struct {
-	dbNoContext        *gorm.DB                  // Pointer to a gorm.DB object representing a database connection.
-	walletChooser      replication.WalletChooser // Object responsible for choosing a wallet for replication.
-	dealMaker          replication.DealMaker     // Object responsible for making a deal in replication.
-	pdpProofSetManager PDPProofSetManager        // Optional PDP proof set lifecycle manager.
-	pdpTxConfirmer     PDPTransactionConfirmer   // Optional PDP transaction confirmer.
+	dbNoContext         *gorm.DB                  // Pointer to a gorm.DB object representing a database connection.
+	keyStore            keystore.KeyStore         // Keystore for loading private keys
+	lotusClient         jsonrpc.RPCClient         // Lotus JSON-RPC client for chain queries
+	walletChooser       replication.WalletChooser // Object responsible for choosing a wallet for replication.
+	dealMaker           replication.DealMaker     // Object responsible for making a deal in replication.
+	pdpProofSetManager  PDPProofSetManager        // Optional PDP proof set lifecycle manager.
+	pdpTxConfirmer      PDPTransactionConfirmer   // Optional PDP transaction confirmer.
+	pdpSchedulingConfig PDPSchedulingConfig       // PDP scheduling config for root batching and tx confirmation.
 	// Resolver is injected so tests and future wiring can switch deal type behavior without coupling DealPusher to config storage.
 	scheduleDealTypeResolver func(schedule *model.Schedule) model.DealType
 	workerID                 uuid.UUID                               // UUID identifying the associated worker.
@@ -365,10 +373,21 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
 			}
 
+			// market deals need the on-chain actor for the deal proposal;
+			// lazily resolve if not yet linked (first use after offline import)
+			actorObj, err := wallet.GetOrCreateActor(ctx, db, d.lotusClient, &walletObj)
+			if err != nil {
+				return model.ScheduleError, errors.Wrapf(err, "failed to resolve actor for wallet %s", walletObj.Address)
+			}
+
+			proposalSigner := replication.ProposalSigner(func(msg []byte) (*crypto.Signature, error) {
+				return wallet.SignWithWallet(d.keyStore, walletObj, msg)
+			})
+
 			err = retry.Do(func() error {
 				dealModel, err = d.dealMaker.MakeDeal(
 					ctx,
-					walletObj,
+					*actorObj,
 					car,
 					replication.DealConfig{
 						Provider:        schedule.Provider,
@@ -382,7 +401,8 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 						PricePerDeal:    schedule.PricePerDeal,
 						PricePerGB:      schedule.PricePerGB,
 						PricePerGBEpoch: schedule.PricePerGBEpoch,
-					})
+					},
+					proposalSigner)
 				if err != nil {
 					Logger.Errorw("failed to send deal", "error", err, "provider", schedule.Provider)
 					if strings.Contains(err.Error(), "deal proposal is identical") {
@@ -433,9 +453,35 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 
 func (d *DealPusher) resolveScheduleDealType(schedule *model.Schedule) model.DealType {
 	if d.scheduleDealTypeResolver == nil {
-		return model.DealTypeMarket
+		return inferScheduleDealType(schedule)
 	}
 	return d.scheduleDealTypeResolver(schedule)
+}
+
+func defaultPDPSchedulingConfig() PDPSchedulingConfig {
+	return PDPSchedulingConfig{
+		BatchSize:         128,
+		GasLimit:          5_000_000,
+		ConfirmationDepth: 5,
+		PollingInterval:   30 * time.Second,
+	}
+}
+
+// inferScheduleDealType uses the provider address protocol as the discriminator:
+// delegated (f4) addresses are FEVM contracts that speak PDP, everything else
+// is a traditional miner actor that speaks market deals.
+func inferScheduleDealType(schedule *model.Schedule) model.DealType {
+	if schedule == nil {
+		return model.DealTypeMarket
+	}
+	providerAddr, err := address.NewFromString(schedule.Provider)
+	if err != nil {
+		return model.DealTypeMarket
+	}
+	if providerAddr.Protocol() == address.Delegated {
+		return model.DealTypePDP
+	}
+	return model.DealTypeMarket
 }
 
 func (d *DealPusher) runPDPSchedule(_ context.Context, _ *model.Schedule) (model.ScheduleState, error) {
@@ -446,7 +492,7 @@ func (d *DealPusher) runPDPSchedule(_ context.Context, _ *model.Schedule) (model
 }
 
 func NewDealPusher(db *gorm.DB, lotusURL string,
-	lotusToken string, numAttempts uint, maxReplicas uint,
+	lotusToken string, numAttempts uint, maxReplicas uint, opts ...Option,
 ) (*DealPusher, error) {
 	if numAttempts <= 1 {
 		numAttempts = 1
@@ -455,25 +501,36 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to init host")
 	}
+
+	ks, err := keystore.NewLocalKeyStore(wallet.GetKeystoreDir())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to init keystore")
+	}
+
 	lotusClient := util.NewLotusClient(lotusURL, lotusToken)
 	dealMaker := replication.NewDealMaker(lotusClient, h, time.Hour, time.Minute)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to init deal maker")
-	}
-	return &DealPusher{
+
+	dp := &DealPusher{
 		dbNoContext:              db,
+		keyStore:                 ks,
+		lotusClient:              lotusClient,
 		activeScheduleCancelFunc: make(map[model.ScheduleID]context.CancelFunc),
 		activeSchedule:           make(map[model.ScheduleID]*model.Schedule),
 		cronEntries:              make(map[model.ScheduleID]cron.EntryID),
 		walletChooser:            &replication.RandomWalletChooser{},
 		dealMaker:                dealMaker,
+		pdpSchedulingConfig:      defaultPDPSchedulingConfig(),
 		workerID:                 uuid.New(),
 		cron: cron.New(cron.WithLogger(&cronLogger{}), cron.WithLocation(time.UTC),
 			cron.WithParser(cron.NewParser(cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor))),
 		sendDealAttempts: numAttempts,
 		host:             h,
 		maxReplicas:      maxReplicas,
-	}, nil
+	}
+	for _, opt := range opts {
+		opt(dp)
+	}
+	return dp, nil
 }
 
 // runOnce is a method of the DealPusher type that runs a single iteration of the deal pushing logic.

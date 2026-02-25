@@ -21,11 +21,11 @@ import (
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/big"
 	"github.com/filecoin-project/go-state-types/builtin/v9/market"
+	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/filecoin-shipyard/boostly"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/jellydator/ttlcache/v3"
-	"github.com/jsign/go-filsigner/wallet"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/peerstore"
@@ -41,6 +41,11 @@ const (
 
 var ErrNoSupportedProtocols = errors.New("no supported protocols")
 
+// ProposalSigner signs deal proposal bytes and returns a filecoin signature.
+// Callers construct this from a keystore + wallet before calling MakeDeal,
+// keeping the deal maker decoupled from database and key storage.
+type ProposalSigner func([]byte) (*crypto.Signature, error)
+
 //nolint:tagliatelle
 type MinerInfo struct {
 	PeerIDEncoded           string `json:"PeerID"`
@@ -55,7 +60,7 @@ type DealProviderCollateralBound struct {
 }
 
 type DealMaker interface {
-	MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig DealConfig) (*model.Deal, error)
+	MakeDeal(ctx context.Context, actorObj model.Actor, car model.Car, dealConfig DealConfig, signer ProposalSigner) (*model.Deal, error)
 }
 
 // DealMakerImpl is an implementation of a deal-making component for a Filecoin-like network.
@@ -491,7 +496,7 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 //
 // Parameters:
 //   - ctx context.Context: The context to use for timeouts and cancellation.
-//   - walletObj model.Wallet: The client's wallet, containing the client's addresses and private key.
+//   - actorObj model.Actor: The on-chain actor identity for deal signing.
 //   - car model.Car: The car file that contains the data to be stored.
 //   - dealConfig DealConfig: The configuration for the deal, including price and duration.
 //
@@ -515,14 +520,14 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 //   - Deal proposal rejected by the provider.
 //
 //   - No supported protocol found between client and provider.
-func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
-	car model.Car, dealConfig DealConfig,
+func (d DealMakerImpl) MakeDeal(ctx context.Context, actorObj model.Actor,
+	car model.Car, dealConfig DealConfig, signer ProposalSigner,
 ) (*model.Deal, error) {
-	logger.Infow("making deal", "client", walletObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
+	logger.Infow("making deal", "client", actorObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
 	now := time.Now().UTC()
-	addr, err := address.NewFromString(walletObj.Address)
+	addr, err := address.NewFromString(actorObj.Address)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse wallet address %s", walletObj.Address)
+		return nil, errors.Wrapf(err, "failed to parse wallet address %s", actorObj.Address)
 	}
 
 	pvd, err := address.NewFromString(dealConfig.Provider)
@@ -578,7 +583,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 		return nil, errors.Wrapf(err, "failed to serialize deal proposal %s", proposal)
 	}
 
-	signature, err := wallet.WalletSign(walletObj.PrivateKey, proposalBytes)
+	signature, err := signer(proposalBytes)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to sign deal proposal")
 	}
@@ -590,7 +595,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 
 	dealModel := &model.Deal{
 		State:     model.DealProposed,
-		ClientID:  walletObj.ID,
+		ClientID:  actorObj.ID,
 		Provider:  dealConfig.Provider,
 		Label:     cid.Cid(car.RootCID).String(),
 		PieceCID:  car.PieceCID,

@@ -32,10 +32,9 @@ func TestWalletImport(t *testing.T) {
 		defer runner.Save(t)
 		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
-		mockHandler.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
-			ID:         "id",
-			Address:    "address",
-			PrivateKey: "private",
+		mockHandler.On("ImportKeystoreHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
+			ID:      1,
+			Address: "address",
 		}, nil)
 		_, _, err = runner.Run(ctx, "singularity wallet import "+testutil.EscapePath(filepath.Join(tmp, "private")))
 		require.NoError(t, err)
@@ -51,13 +50,11 @@ func TestWalletList(t *testing.T) {
 		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 		mockHandler.On("ListHandler", mock.Anything, mock.Anything).Return([]model.Wallet{{
-			ID:         "id1",
-			Address:    "address1",
-			PrivateKey: "private1",
+			ID:      1,
+			Address: "address1",
 		}, {
-			ID:         "id2",
-			Address:    "address2",
-			PrivateKey: "private2",
+			ID:      2,
+			Address: "address2",
 		}}, nil)
 		_, _, err := runner.Run(ctx, "singularity wallet list")
 		require.NoError(t, err)
@@ -72,7 +69,7 @@ func TestWalletRemove(t *testing.T) {
 		defer runner.Save(t)
 		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
-		mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		_, _, err := runner.Run(ctx, "singularity wallet remove --really-do-it xxx")
 		require.NoError(t, err)
 	})
@@ -84,7 +81,7 @@ func TestWalletRemove_NoReallyDoIt(t *testing.T) {
 		defer runner.Save(t)
 		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
-		mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		_, _, err := runner.Run(ctx, "singularity wallet remove xxx")
 		require.ErrorIs(t, err, cliutil.ErrReallyDoIt)
 	})
