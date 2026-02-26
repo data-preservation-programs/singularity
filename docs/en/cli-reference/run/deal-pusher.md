@@ -15,6 +15,7 @@ OPTIONS:
    --pdp-gas-limit value                     Gas limit for PDP on-chain transactions (default: 5000000)
    --pdp-confirmation-depth value            Number of block confirmations required for PDP transactions (default: 5)
    --pdp-poll-interval value                 Polling interval for PDP transaction confirmation checks (default: 30s)
+   --eth-rpc value                           Ethereum RPC endpoint for FEVM (required to execute PDP schedules on-chain) [$ETH_RPC_URL]
    --help, -h                                show help
 ```
 {% endcode %}

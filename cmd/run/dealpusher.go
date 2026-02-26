@@ -47,6 +47,11 @@ var DealPusherCmd = &cli.Command{
 			Usage: "Polling interval for PDP transaction confirmation checks",
 			Value: 30 * time.Second,
 		},
+		&cli.StringFlag{
+			Name:    "eth-rpc",
+			Usage:   "Ethereum RPC endpoint for FEVM (required to execute PDP schedules on-chain)",
+			EnvVars: []string{"ETH_RPC_URL"},
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -71,13 +76,29 @@ var DealPusherCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
+		opts := []dealpusher.Option{
+			dealpusher.WithPDPSchedulingConfig(pdpCfg),
+		}
+		if rpcURL := c.String("eth-rpc"); rpcURL != "" {
+			pdpAdapter, err := dealpusher.NewOnChainPDP(c.Context, db, rpcURL)
+			if err != nil {
+				return errors.Wrap(err, "failed to initialize PDP on-chain adapter")
+			}
+			defer pdpAdapter.Close()
+
+			opts = append(opts,
+				dealpusher.WithPDPProofSetManager(pdpAdapter),
+				dealpusher.WithPDPTransactionConfirmer(pdpAdapter),
+			)
+		}
+
 		dm, err := dealpusher.NewDealPusher(
 			db,
 			c.String("lotus-api"),
 			c.String("lotus-token"),
 			c.Uint("deal-attempts"),
 			c.Uint("max-replication-factor"),
-			dealpusher.WithPDPSchedulingConfig(pdpCfg),
+			opts...,
 		)
 		if err != nil {
 			return errors.WithStack(err)
