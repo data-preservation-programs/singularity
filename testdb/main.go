@@ -92,7 +92,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 		Name:           gofakeit.AppName(),
 		MaxSize:        30 << 30,
 		PieceSize:      1 << 35,
-		Wallets:        []model.Wallet{w},
+		Wallet:         &w,
 		SourceStorages: []model.Storage{source},
 	}
 

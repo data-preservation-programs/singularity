@@ -11,11 +11,8 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/keystore"
-	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
-
-var logger = log.Logger("singularity/handler/wallet")
 
 type ImportKeystoreRequest struct {
 	PrivateKey string `json:"privateKey"` // lotus wallet export format

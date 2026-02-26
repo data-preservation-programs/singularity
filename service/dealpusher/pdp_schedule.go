@@ -133,10 +133,10 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 			return model.ScheduleCompleted, nil
 		}
 
-		walletObj, err := d.walletChooser.Choose(ctx, schedule.Preparation.Wallets)
-		if err != nil {
-			return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
+		if schedule.Preparation == nil || schedule.Preparation.Wallet == nil {
+			return model.ScheduleError, errors.New("schedule has no wallet configured")
 		}
+		walletObj := *schedule.Preparation.Wallet
 
 		evmSigner, err := keystore.EVMSigner(d.keyStore, walletObj)
 		if err != nil {

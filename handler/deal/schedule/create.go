@@ -103,7 +103,7 @@ func (DefaultHandler) CreateHandler(
 		request.MaxPendingDealSize = "0"
 	}
 	var preparation model.Preparation
-	err := preparation.FindByIDOrName(db, request.Preparation, "Wallets")
+	err := preparation.FindByIDOrName(db, request.Preparation, "Wallet")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", request.Preparation)
 	}
@@ -160,7 +160,7 @@ func (DefaultHandler) CreateHandler(
 		}
 	}
 
-	if len(preparation.Wallets) == 0 {
+	if preparation.WalletID == nil {
 		return nil, errors.Wrap(handlererror.ErrNotFound, "no wallet attached to preparation")
 	}
 

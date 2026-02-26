@@ -6772,6 +6772,10 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "walletId": {
+                    "description": "Associations",
+                    "type": "integer"
                 }
             }
         },

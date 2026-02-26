@@ -134,6 +134,11 @@ func AutoMigrate(db *gorm.DB) error {
 		return errors.Wrap(err, "failed to backfill deal wallet IDs")
 	}
 
+	// Migrate wallet_assignments many2many to preparation.wallet_id 1:1
+	if err := migrateWalletAssignments(db); err != nil {
+		return errors.Wrap(err, "failed to migrate wallet assignments")
+	}
+
 	return nil
 }
 
@@ -437,6 +442,48 @@ func backfillDealWalletID(db *gorm.DB) error {
 		return errors.Wrap(result.Error, "failed to backfill wallet_id")
 	}
 	logger.Infow("backfilled deal wallet_id", "updated", result.RowsAffected)
+	return nil
+}
+
+// migrateWalletAssignments moves from many2many wallet_assignments to
+// preparation.wallet_id 1:1. idempotent — skips if table doesn't exist.
+func migrateWalletAssignments(db *gorm.DB) error {
+	if !db.Migrator().HasTable("wallet_assignments") {
+		return nil
+	}
+
+	type row struct {
+		PreparationID uint
+		WalletID      uint
+	}
+	var rows []row
+	err := db.Raw(`SELECT preparation_id, wallet_id FROM wallet_assignments ORDER BY preparation_id, wallet_id`).Scan(&rows).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to read wallet_assignments")
+	}
+
+	// group by preparation
+	byPrep := make(map[uint][]uint)
+	for _, r := range rows {
+		byPrep[r.PreparationID] = append(byPrep[r.PreparationID], r.WalletID)
+	}
+
+	for prepID, walletIDs := range byPrep {
+		if len(walletIDs) > 1 {
+			logger.Warnw("preparation has multiple wallets, picking lowest ID",
+				"preparation_id", prepID, "wallet_ids", walletIDs)
+		}
+		// walletIDs are ordered by wallet_id (from ORDER BY in query above)
+		err := db.Exec(`UPDATE preparations SET wallet_id = ? WHERE id = ? AND wallet_id IS NULL`, walletIDs[0], prepID).Error
+		if err != nil {
+			return errors.Wrapf(err, "failed to set wallet_id for preparation %d", prepID)
+		}
+	}
+
+	if err := db.Migrator().DropTable("wallet_assignments"); err != nil {
+		return errors.Wrap(err, "failed to drop wallet_assignments")
+	}
+	logger.Infow("migrated wallet_assignments to preparation.wallet_id", "preparations", len(byPrep))
 	return nil
 }
 
