@@ -28,6 +28,9 @@ type ModelSchedule struct {
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
 
+	// deal type
+	DealType ModelDealType `json:"dealType,omitempty"`
+
 	// duration
 	Duration int64 `json:"duration,omitempty"`
 
@@ -108,6 +111,10 @@ type ModelSchedule struct {
 func (m *ModelSchedule) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDealType(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateHTTPHeaders(formats); err != nil {
 		res = append(res, err)
 	}
@@ -119,6 +126,27 @@ func (m *ModelSchedule) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelSchedule) validateDealType(formats strfmt.Registry) error {
+	if swag.IsZero(m.DealType) { // not required
+		return nil
+	}
+
+	if err := m.DealType.Validate(formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("dealType")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("dealType")
+		}
+
+		return err
+	}
+
 	return nil
 }
 
@@ -170,6 +198,10 @@ func (m *ModelSchedule) validateState(formats strfmt.Registry) error {
 func (m *ModelSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDealType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateHTTPHeaders(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -181,6 +213,28 @@ func (m *ModelSchedule) ContextValidate(ctx context.Context, formats strfmt.Regi
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelSchedule) contextValidateDealType(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.DealType) { // not required
+		return nil
+	}
+
+	if err := m.DealType.ContextValidate(ctx, formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("dealType")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("dealType")
+		}
+
+		return err
+	}
+
 	return nil
 }
 

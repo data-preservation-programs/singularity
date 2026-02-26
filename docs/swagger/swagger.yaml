@@ -614,6 +614,8 @@ definitions:
         type: boolean
       createdAt:
         type: string
+      dealType:
+        $ref: '#/definitions/model.DealType'
       duration:
         type: integer
       errorMessage:
@@ -739,6 +741,9 @@ definitions:
         items:
           type: string
         type: array
+      dealType:
+        description: 'Deal type: market (f05) or pdp (f41)'
+        type: string
       duration:
         default: 12840h
         description: Duration in epoch or in duration format, i.e. 1500000, 2400h
@@ -825,6 +830,9 @@ definitions:
         items:
           type: string
         type: array
+      dealType:
+        description: 'Deal type: market (f05) or pdp (f41)'
+        type: string
       duration:
         default: 12840h
         description: Duration in epoch or in duration format, i.e. 1500000, 2400h
