@@ -6790,6 +6790,9 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "dealType": {
+                    "$ref": "#/definitions/model.DealType"
+                },
                 "duration": {
                     "type": "integer"
                 },
@@ -6974,6 +6977,10 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "dealType": {
+                    "description": "Deal type: market (f05) or pdp (f41)",
+                    "type": "string"
+                },
                 "duration": {
                     "description": "Duration in epoch or in duration format, i.e. 1500000, 2400h",
                     "type": "string",
@@ -7084,6 +7091,10 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "dealType": {
+                    "description": "Deal type: market (f05) or pdp (f41)",
+                    "type": "string"
                 },
                 "duration": {
                     "description": "Duration in epoch or in duration format, i.e. 1500000, 2400h",

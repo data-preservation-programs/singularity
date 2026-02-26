@@ -50,6 +50,7 @@ OPTIONS:
 
    Deal Proposal
 
+   --deal-type value              Deal type: market (legacy f05) or pdp (f41)
    --duration value, -d value     Duration in epoch or in duration format, i.e. 1500000, 2400h
    --keep-unsealed                Whether to keep unsealed copy (default: true)
    --price-per-deal value         Price in FIL per deal (default: 0)

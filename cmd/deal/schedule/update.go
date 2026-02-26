@@ -83,6 +83,11 @@ var UpdateCmd = &cli.Command{
 			Usage:    "Whether to propose deals as verified",
 			Value:    true,
 		},
+		&cli.StringFlag{
+			Name:     "deal-type",
+			Category: "Deal Proposal",
+			Usage:    "Deal type: market (legacy f05) or pdp (f41)",
+		},
 		&cli.BoolFlag{
 			Name:     "ipni",
 			Category: "Boost Only",
@@ -207,6 +212,9 @@ var UpdateCmd = &cli.Command{
 		}
 		if c.IsSet("verified") {
 			request.Verified = ptr.Of(c.Bool("verified"))
+		}
+		if c.IsSet("deal-type") {
+			request.DealType = ptr.Of(c.String("deal-type"))
 		}
 		if c.IsSet("ipni") {
 			request.IPNI = ptr.Of(c.Bool("ipni"))
