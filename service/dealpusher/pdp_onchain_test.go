@@ -6,10 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 type fakeConfirmationClient struct {
@@ -93,4 +96,48 @@ func TestOnChainPDP_WaitForConfirmationsInvalidHash(t *testing.T) {
 	adapter := &OnChainPDP{}
 	_, err := adapter.WaitForConfirmations(context.Background(), "not-a-hash", 1, time.Millisecond)
 	require.Error(t, err)
+}
+
+func TestOnChainPDP_FindProofSetWithRoom_NoProofSets(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		adapter := &OnChainPDP{dbNoContext: db}
+		setID, found, err := adapter.findProofSetWithRoom(ctx, "f410foo", "f410provider", 2)
+		require.NoError(t, err)
+		require.False(t, found)
+		require.Zero(t, setID)
+	})
+}
+
+func TestOnChainPDP_FindProofSetWithRoom_PicksFirstWithCapacity(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		client := "f410foo"
+		provider := "f410provider"
+		require.NoError(t, db.Create(&model.PDPProofSet{
+			SetID:         1,
+			ClientAddress: client,
+			Provider:      provider,
+			IsLive:        true,
+		}).Error)
+		require.NoError(t, db.Create(&model.PDPProofSet{
+			SetID:         2,
+			ClientAddress: client,
+			Provider:      provider,
+			IsLive:        true,
+		}).Error)
+
+		set1 := uint64(1)
+		require.NoError(t, db.Create(&model.Deal{
+			State:      model.DealProposed,
+			DealType:   model.DealTypePDP,
+			Provider:   provider,
+			PieceSize:  1024,
+			ProofSetID: &set1,
+		}).Error)
+
+		adapter := &OnChainPDP{dbNoContext: db}
+		setID, found, err := adapter.findProofSetWithRoom(ctx, client, provider, 1)
+		require.NoError(t, err)
+		require.True(t, found)
+		require.EqualValues(t, 2, setID)
+	})
 }

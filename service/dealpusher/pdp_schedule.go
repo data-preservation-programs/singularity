@@ -143,7 +143,7 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 			return model.ScheduleError, errors.Wrap(err, "failed to load EVM signer for wallet")
 		}
 
-		proofSetID, err := d.pdpProofSetManager.EnsureProofSet(ctx, evmSigner, schedule.Provider)
+		proofSetID, err := d.pdpProofSetManager.EnsureProofSet(ctx, evmSigner, schedule.Provider, d.pdpSchedulingConfig)
 		if err != nil {
 			return model.ScheduleError, errors.Wrap(err, "failed to ensure PDP proof set")
 		}

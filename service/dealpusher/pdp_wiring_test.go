@@ -20,7 +20,7 @@ type proofSetManagerMock struct {
 	pieceCIDs  []cid.Cid
 }
 
-func (m *proofSetManagerMock) EnsureProofSet(_ context.Context, _ signer.EVMSigner, _ string) (uint64, error) {
+func (m *proofSetManagerMock) EnsureProofSet(_ context.Context, _ signer.EVMSigner, _ string, _ PDPSchedulingConfig) (uint64, error) {
 	return m.proofSetID, nil
 }
 

@@ -101,22 +101,68 @@ func (o *OnChainPDP) newManager(ctx context.Context, evmSigner signer.EVMSigner)
 	return mgr, nil
 }
 
-func (o *OnChainPDP) EnsureProofSet(ctx context.Context, evmSigner signer.EVMSigner, provider string) (uint64, error) {
+func (o *OnChainPDP) findProofSetWithRoom(ctx context.Context, clientAddress string, provider string, maxPieces int) (uint64, bool, error) {
+	if maxPieces <= 0 {
+		return 0, false, errors.New("max pieces per proof set must be greater than 0")
+	}
+
+	var proofSets []model.PDPProofSet
+	if err := o.dbNoContext.WithContext(ctx).
+		Where("client_address = ? AND provider = ? AND deleted = FALSE", clientAddress, provider).
+		Order("set_id").
+		Find(&proofSets).Error; err != nil {
+		return 0, false, errors.Wrap(err, "failed to query existing PDP proof sets")
+	}
+	if len(proofSets) == 0 {
+		return 0, false, nil
+	}
+
+	proofSetIDs := make([]uint64, 0, len(proofSets))
+	for _, ps := range proofSets {
+		proofSetIDs = append(proofSetIDs, ps.SetID)
+	}
+
+	type countRow struct {
+		ProofSetID uint64
+		Count      int
+	}
+	var counts []countRow
+	if err := o.dbNoContext.WithContext(ctx).
+		Model(&model.Deal{}).
+		Select("proof_set_id, COUNT(*) AS count").
+		Where("deal_type = ? AND proof_set_id IN ?", model.DealTypePDP, proofSetIDs).
+		Where("state IN ?", []model.DealState{
+			model.DealProposed, model.DealPublished, model.DealActive,
+		}).
+		Group("proof_set_id").
+		Scan(&counts).Error; err != nil {
+		return 0, false, errors.Wrap(err, "failed to count PDP deals per proof set")
+	}
+
+	usedBySetID := make(map[uint64]int, len(counts))
+	for _, row := range counts {
+		usedBySetID[row.ProofSetID] = row.Count
+	}
+
+	for _, ps := range proofSets {
+		if usedBySetID[ps.SetID] < maxPieces {
+			return ps.SetID, true, nil
+		}
+	}
+	return 0, false, nil
+}
+
+func (o *OnChainPDP) EnsureProofSet(ctx context.Context, evmSigner signer.EVMSigner, provider string, cfg PDPSchedulingConfig) (uint64, error) {
 	clientAddr, err := commonToDelegatedAddress(evmSigner.EVMAddress())
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to derive delegated client address from signer")
 	}
-
-	var existing model.PDPProofSet
-	err = o.dbNoContext.WithContext(ctx).
-		Where("client_address = ? AND provider = ? AND deleted = FALSE", clientAddr.String(), provider).
-		Order("set_id").
-		First(&existing).Error
-	if err == nil {
-		return existing.SetID, nil
+	existingSetID, found, err := o.findProofSetWithRoom(ctx, clientAddr.String(), provider, cfg.BatchSize)
+	if err != nil {
+		return 0, err
 	}
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return 0, errors.Wrap(err, "failed to query existing PDP proof set")
+	if found {
+		return existingSetID, nil
 	}
 
 	manager, err := o.newManager(ctx, evmSigner)

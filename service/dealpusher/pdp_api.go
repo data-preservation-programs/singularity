@@ -40,7 +40,7 @@ func (c PDPSchedulingConfig) Validate() error {
 type PDPProofSetManager interface {
 	// EnsureProofSet returns an existing proof set ID or creates one for this client/provider pair.
 	// The signer's EVMAddress identifies the client on-chain.
-	EnsureProofSet(ctx context.Context, evmSigner signer.EVMSigner, provider string) (uint64, error)
+	EnsureProofSet(ctx context.Context, evmSigner signer.EVMSigner, provider string, cfg PDPSchedulingConfig) (uint64, error)
 	// QueueAddRoots submits root additions for a proof set and returns the queued tx reference.
 	QueueAddRoots(ctx context.Context, evmSigner signer.EVMSigner, proofSetID uint64, pieceCIDs []cid.Cid, cfg PDPSchedulingConfig) (*PDPQueuedTx, error)
 }
