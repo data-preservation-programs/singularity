@@ -87,6 +87,9 @@ type ModelDeal struct {
 
 	// verified
 	Verified bool `json:"verified,omitempty"`
+
+	// wallet Id
+	WalletID int64 `json:"walletId,omitempty"`
 }
 
 // Validate validates this model deal

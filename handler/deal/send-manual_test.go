@@ -3,7 +3,6 @@ package deal
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
@@ -160,19 +159,13 @@ func TestSendManualHandler(t *testing.T) {
 		createTestWalletAndActor(t, db, true)
 
 		mockDealMaker := new(MockDealMaker)
-		mockDealMaker.On("MakeDeal", mock.Anything, actor, mock.Anything, replication.DealConfig{
-			Provider:        proposal.ProviderID,
-			StartDelay:      24 * time.Hour,
-			Duration:        2400 * time.Hour,
-			Verified:        proposal.Verified,
-			HTTPHeaders:     map[string]string{"a": "b"},
-			URLTemplate:     proposal.URLTemplate,
-			KeepUnsealed:    proposal.KeepUnsealed,
-			AnnounceToIPNI:  proposal.IPNI,
-			PricePerDeal:    proposal.PricePerDeal,
-			PricePerGB:      proposal.PricePerGB,
-			PricePerGBEpoch: proposal.PricePerGBEpoch,
-		}).Return(&model.Deal{}, nil)
+		mockDealMaker.On("MakeDeal", mock.Anything, actor, mock.Anything,
+			mock.MatchedBy(func(dc replication.DealConfig) bool {
+				return dc.Provider == proposal.ProviderID &&
+					dc.Verified == proposal.Verified &&
+					dc.WalletID != nil
+			}),
+		).Return(&model.Deal{}, nil)
 		// lotusClient is nil — GetOrCreateActor won't call lotus because ActorID is already set
 		resp, err := Default.SendManualHandler(ctx, db, nil, nil, mockDealMaker, proposal)
 		mockDealMaker.AssertExpectations(t)

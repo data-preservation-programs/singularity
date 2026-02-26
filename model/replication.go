@@ -123,7 +123,8 @@ type Deal struct {
 	ScheduleID *ScheduleID `json:"scheduleId"                                         table:"verbose"`
 	Schedule   *Schedule   `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL" json:"schedule,omitempty" swaggerignore:"true" table:"expand"`
 	ClientID   string      `gorm:"index:idx_pending"                                  json:"clientId"`
-	Actor      *Actor      `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"actor,omitempty"   swaggerignore:"true" table:"expand"`
+	WalletID   *uint       `gorm:"index:idx_deal_wallet"                              json:"walletId,omitempty"  table:"verbose"`
+	Wallet     *Wallet     `gorm:"foreignKey:WalletID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"    swaggerignore:"true" table:"expand"`
 }
 
 // Key returns a mostly unique key to match deal from locally proposed deals and deals from the chain.
