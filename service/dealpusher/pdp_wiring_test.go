@@ -15,14 +15,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type fixedWalletChooser struct {
-	wallet model.Wallet
-}
-
-func (c fixedWalletChooser) Choose(_ context.Context, _ []model.Wallet) (model.Wallet, error) {
-	return c.wallet, nil
-}
-
 type proofSetManagerMock struct {
 	proofSetID uint64
 	pieceCIDs  []cid.Cid
@@ -107,7 +99,7 @@ func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation
 			ActorID:  &actorID,
 		}
 		require.NoError(t, db.Create(&wallet).Error)
-		require.NoError(t, db.Model(&prep).Association("Wallets").Append(&wallet))
+		require.NoError(t, db.Model(&prep).Update("wallet_id", wallet.ID).Error)
 		storage := model.Storage{Name: "src-storage"}
 		require.NoError(t, db.Create(&storage).Error)
 		require.NotZero(t, storage.ID)
@@ -132,14 +124,13 @@ func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation
 			TotalDealNumber: 1,
 		}
 		require.NoError(t, db.Create(&schedule).Error)
-		schedule.Preparation = &model.Preparation{Wallets: []model.Wallet{wallet}}
+		schedule.Preparation = &model.Preparation{Wallet: &wallet}
 
 		psm := &proofSetManagerMock{proofSetID: 42}
 		conf := &txConfirmerMock{}
 		d := &DealPusher{
 			dbNoContext:              db,
 			keyStore:                 ks,
-			walletChooser:            fixedWalletChooser{wallet: wallet},
 			pdpProofSetManager:       psm,
 			pdpTxConfirmer:           conf,
 			pdpSchedulingConfig:      defaultPDPSchedulingConfig(),

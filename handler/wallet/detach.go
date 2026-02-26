@@ -8,7 +8,6 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +21,7 @@ func (DefaultHandler) DetachHandler(
 ) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
-	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Wallets")
+	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Wallet")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", preparationID)
 	}
@@ -30,15 +29,19 @@ func (DefaultHandler) DetachHandler(
 		return nil, errors.WithStack(err)
 	}
 
-	found, err := underscore.Find(preparation.Wallets, func(w model.Wallet) bool {
-		return w.Address == walletAddressOrID || fmt.Sprint(w.ID) == walletAddressOrID
-	})
-	if err != nil {
+	if preparation.WalletID == nil || preparation.Wallet == nil {
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "no wallet attached to preparation %s", preparationID)
+	}
+
+	w := preparation.Wallet
+	if w.Address != walletAddressOrID && fmt.Sprint(w.ID) != walletAddressOrID {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "wallet %s not attached to preparation %s", walletAddressOrID, preparationID)
 	}
 
+	preparation.WalletID = nil
+	preparation.Wallet = nil
 	err = database.DoRetry(ctx, func() error {
-		return db.Model(&preparation).Association("Wallets").Delete(&found)
+		return db.Model(&preparation).Update("wallet_id", nil).Error
 	})
 	if err != nil {
 		return nil, errors.WithStack(err)

@@ -117,11 +117,9 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				SourceStorages: []model.Storage{{}},
-				Wallets: []model.Wallet{
-					{
-						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
-						ActorID: &client,
-					},
+				Wallet: &model.Wallet{
+					Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+					ActorID: &client,
 				}},
 			State:                model.ScheduleActive,
 			Provider:             provider,
@@ -175,11 +173,9 @@ func TestDealMakerService_Cron(t *testing.T) {
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				SourceStorages: []model.Storage{{}},
-				Wallets: []model.Wallet{
-					{
-						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
-						ActorID: &client,
-					},
+				Wallet: &model.Wallet{
+					Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+					ActorID: &client,
 				}},
 			State:            model.ScheduleActive,
 			ScheduleCron:     "0 0 1 1 1",
@@ -272,11 +268,9 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
 				SourceStorages: []model.Storage{{}},
-				Wallets: []model.Wallet{
-					{
-						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
-						ActorID: &client,
-					},
+				Wallet: &model.Wallet{
+					Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+					ActorID: &client,
 				}},
 			State:                model.ScheduleActive,
 			Provider:             provider,
@@ -383,11 +377,9 @@ func TestDealmakerService_Force(t *testing.T) {
 		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
-				Wallets: []model.Wallet{
-					{
-						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
-						ActorID: &client,
-					},
+				Wallet: &model.Wallet{
+					Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+					ActorID: &client,
 				},
 				SourceStorages: []model.Storage{{}},
 			},
@@ -444,11 +436,9 @@ func TestDealMakerService_MaxReplica(t *testing.T) {
 		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
-				Wallets: []model.Wallet{
-					{
-						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
-						ActorID: &client,
-					},
+				Wallet: &model.Wallet{
+					Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+					ActorID: &client,
 				},
 				SourceStorages: []model.Storage{{}},
 			},
@@ -512,11 +502,9 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 		client := "f0client"
 		schedule := model.Schedule{
 			Preparation: &model.Preparation{
-				Wallets: []model.Wallet{
-					{
-						Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
-						ActorID: &client,
-					},
+				Wallet: &model.Wallet{
+					Address: "f0xx", KeyPath: "/tmp/fake-key", KeyStore: "local",
+					ActorID: &client,
 				},
 				SourceStorages: []model.Storage{{}},
 			},

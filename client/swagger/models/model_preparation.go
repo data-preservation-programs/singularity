@@ -55,6 +55,9 @@ type ModelPreparation struct {
 
 	// updated at
 	UpdatedAt string `json:"updatedAt,omitempty"`
+
+	// Associations
+	WalletID int64 `json:"walletId,omitempty"`
 }
 
 // Validate validates this model preparation

@@ -27,7 +27,32 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"github.com/ybbus/jsonrpc/v3"
 )
+
+type MockRPCClient struct {
+	mock.Mock
+}
+
+func (m *MockRPCClient) Call(ctx context.Context, method string, params ...any) (*jsonrpc.RPCResponse, error) {
+	panic("implement me")
+}
+
+func (m *MockRPCClient) CallRaw(ctx context.Context, request *jsonrpc.RPCRequest) (*jsonrpc.RPCResponse, error) {
+	panic("implement me")
+}
+
+func (m *MockRPCClient) CallFor(ctx context.Context, out any, method string, params ...any) error {
+	return m.Called(ctx, out, method, params).Error(0)
+}
+
+func (m *MockRPCClient) CallBatch(ctx context.Context, requests jsonrpc.RPCRequests) (jsonrpc.RPCResponses, error) {
+	panic("implement me")
+}
+
+func (m *MockRPCClient) CallBatchRaw(ctx context.Context, requests jsonrpc.RPCRequests) (jsonrpc.RPCResponses, error) {
+	panic("implement me")
+}
 
 func testProposal(t *testing.T) market.ClientDealProposal {
 	pieceCID, err := cid.Decode("baga6ea4seaqdyupo27fj2fk2mtefzlxvrbf6kdi4twdpccdzbyqrbpsvfsh5ula")

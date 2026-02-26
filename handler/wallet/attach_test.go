@@ -33,7 +33,8 @@ func TestAttachHandler(t *testing.T) {
 		t.Run("success", func(t *testing.T) {
 			preparation, err := Default.AttachHandler(ctx, db, "1", "f0test")
 			require.NoError(t, err)
-			require.Len(t, preparation.Wallets, 1)
+			require.NotNil(t, preparation.Wallet)
+			require.Equal(t, "f0test", preparation.Wallet.Address)
 		})
 	})
 }

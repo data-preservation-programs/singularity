@@ -19,12 +19,10 @@ type MockRPCClient struct {
 }
 
 func (m *MockRPCClient) Call(ctx context.Context, method string, params ...any) (*jsonrpc.RPCResponse, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (m *MockRPCClient) CallRaw(ctx context.Context, request *jsonrpc.RPCRequest) (*jsonrpc.RPCResponse, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
@@ -33,21 +31,26 @@ func (m *MockRPCClient) CallFor(ctx context.Context, out any, method string, par
 }
 
 func (m *MockRPCClient) CallBatch(ctx context.Context, requests jsonrpc.RPCRequests) (jsonrpc.RPCResponses, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (m *MockRPCClient) CallBatchRaw(ctx context.Context, requests jsonrpc.RPCRequests) (jsonrpc.RPCResponses, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func getMockLotusClient() jsonrpc.RPCClient {
 	lotusClient := new(MockRPCClient)
-	// Set up expectations for the lotusClient mock
 	lotusClient.On("CallFor", mock.Anything, mock.Anything, "Filecoin.StateLookupID", mock.Anything).
 		Return(nil)
 	return lotusClient
+}
+
+// helper: create a wallet and a preparation with that wallet attached
+func createPrepWithWallet(t *testing.T, db *gorm.DB, name string) {
+	t.Helper()
+	w := model.Wallet{Address: "f01", KeyPath: "/tmp/key", KeyStore: "local"}
+	require.NoError(t, db.Create(&w).Error)
+	require.NoError(t, db.Create(&model.Preparation{Name: name, WalletID: &w.ID}).Error)
 }
 
 var createRequest = CreateRequest{
@@ -189,15 +192,10 @@ func TestCreateHandler_NoAssociatedWallet(t *testing.T) {
 
 func TestCreateHandler_InvalidDealType(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Preparation{
-			Wallets: []model.Wallet{{
-				Address: "f01", KeyPath: "/tmp/key", KeyStore: "local",
-			}},
-		}).Error
-		require.NoError(t, err)
+		createPrepWithWallet(t, db, "1")
 		badRequest := createRequest
 		badRequest.DealType = "unknown"
-		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), badRequest)
+		_, err := Default.CreateHandler(ctx, db, getMockLotusClient(), badRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid deal type")
 	})
@@ -205,16 +203,11 @@ func TestCreateHandler_InvalidDealType(t *testing.T) {
 
 func TestCreateHandler_InvalidProvider(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Preparation{
-			Wallets: []model.Wallet{{
-				Address: "f01", KeyPath: "/tmp/key", KeyStore: "local",
-			}},
-		}).Error
-		require.NoError(t, err)
+		createPrepWithWallet(t, db, "")
 		lotusClient := new(MockRPCClient)
 		lotusClient.On("CallFor", mock.Anything, mock.Anything, "Filecoin.StateLookupID", mock.Anything).
 			Return(errors.New("Some provider error"))
-		_, err = Default.CreateHandler(ctx, db, lotusClient, createRequest)
+		_, err := Default.CreateHandler(ctx, db, lotusClient, createRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "Some provider error")
 	})
@@ -222,19 +215,14 @@ func TestCreateHandler_InvalidProvider(t *testing.T) {
 
 func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Preparation{
-			Wallets: []model.Wallet{{
-				Address: "f01", KeyPath: "/tmp/key", KeyStore: "local",
-			}},
-		}).Error
-		require.NoError(t, err)
+		createPrepWithWallet(t, db, "")
 		createRequest := createRequest
 		createRequest.ScheduleCron = "@daily"
 		createRequest.ScheduleDealNumber = 0
 		createRequest.ScheduleDealSize = ""
 		createRequest.MaxPendingDealSize = ""
 		createRequest.TotalDealSize = ""
-		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
+		_, err := Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "schedule deal number or size must be set")
 	})
@@ -242,17 +230,12 @@ func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
 
 func TestCreateHandler_ScheduleDealSizeSetForNonCron(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Preparation{
-			Wallets: []model.Wallet{{
-				Address: "f01", KeyPath: "/tmp/key", KeyStore: "local",
-			}},
-		}).Error
-		require.NoError(t, err)
+		createPrepWithWallet(t, db, "")
 		createRequest := createRequest
 		createRequest.ScheduleCron = ""
 		createRequest.ScheduleDealNumber = 10
 		createRequest.ScheduleDealSize = "100"
-		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
+		_, err := Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "schedule cron must be set")
 	})
@@ -262,13 +245,7 @@ func TestCreateHandler_Success(t *testing.T) {
 	for _, name := range []string{"1", "name"} {
 		t.Run(name, func(t *testing.T) {
 			testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-				err := db.Create(&model.Preparation{
-					Name: "name",
-					Wallets: []model.Wallet{{
-						Address: "f01", KeyPath: "/tmp/key", KeyStore: "local",
-					}},
-				}).Error
-				require.NoError(t, err)
+				createPrepWithWallet(t, db, "name")
 				createRequest := createRequest
 				createRequest.ScheduleCron = "@daily"
 				createRequest.Preparation = name

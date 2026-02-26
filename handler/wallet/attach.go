@@ -8,8 +8,11 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
+	logging "github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
+
+var logger = logging.Logger("wallet-handler")
 
 // attaches wallet to preparation for deal-making
 // accepts wallet address or wallet ID
@@ -21,7 +24,7 @@ func (DefaultHandler) AttachHandler(
 ) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
-	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Wallets")
+	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Wallet")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %s not found", preparationID)
 	}
@@ -42,8 +45,18 @@ func (DefaultHandler) AttachHandler(
 		return nil, errors.WithStack(err)
 	}
 
+	if preparation.WalletID != nil && *preparation.WalletID != w.ID {
+		old := "unknown"
+		if preparation.Wallet != nil {
+			old = preparation.Wallet.Address
+		}
+		logger.Warnw("replacing wallet on preparation", "preparation", preparationID, "old", old, "new", w.Address)
+	}
+
+	preparation.WalletID = &w.ID
+	preparation.Wallet = &w
 	err = database.DoRetry(ctx, func() error {
-		return db.Model(&preparation).Association("Wallets").Append(&w)
+		return db.Model(&preparation).Update("wallet_id", w.ID).Error
 	})
 	if err != nil {
 		return nil, errors.WithStack(err)

@@ -603,6 +603,9 @@ definitions:
         type: array
       updatedAt:
         type: string
+      walletId:
+        description: Associations
+        type: integer
     type: object
   model.Schedule:
     properties:

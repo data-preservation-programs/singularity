@@ -14,10 +14,10 @@ func TestListHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Actor{ID: "f01", Address: "f01"}).Error
 		require.NoError(t, err)
+		w := model.Wallet{Address: "f01", KeyPath: "/tmp/key", KeyStore: "local"}
+		require.NoError(t, db.Create(&w).Error)
 		err = db.Create(&model.Preparation{
-			Wallets: []model.Wallet{{
-				Address: "f01", KeyPath: "/tmp/key", KeyStore: "local",
-			}},
+			WalletID: &w.ID,
 			SourceStorages: []model.Storage{{
 				Name: "storage",
 			}},

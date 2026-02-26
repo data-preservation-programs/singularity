@@ -39,14 +39,13 @@ var waitPendingInterval = time.Minute
 
 // DealPusher represents a struct that encapsulates the data and functionality related to pushing deals in a replication process.
 type DealPusher struct {
-	dbNoContext         *gorm.DB                  // Pointer to a gorm.DB object representing a database connection.
-	keyStore            keystore.KeyStore         // Keystore for loading private keys
-	lotusClient         jsonrpc.RPCClient         // Lotus JSON-RPC client for chain queries
-	walletChooser       replication.WalletChooser // Object responsible for choosing a wallet for replication.
-	dealMaker           replication.DealMaker     // Object responsible for making a deal in replication.
-	pdpProofSetManager  PDPProofSetManager        // Optional PDP proof set lifecycle manager.
-	pdpTxConfirmer      PDPTransactionConfirmer   // Optional PDP transaction confirmer.
-	pdpSchedulingConfig PDPSchedulingConfig       // PDP scheduling config for root batching and tx confirmation.
+	dbNoContext         *gorm.DB                // Pointer to a gorm.DB object representing a database connection.
+	keyStore            keystore.KeyStore       // Keystore for loading private keys
+	lotusClient         jsonrpc.RPCClient       // Lotus JSON-RPC client for chain queries
+	dealMaker           replication.DealMaker   // Object responsible for making a deal in replication.
+	pdpProofSetManager  PDPProofSetManager      // Optional PDP proof set lifecycle manager.
+	pdpTxConfirmer      PDPTransactionConfirmer // Optional PDP transaction confirmer.
+	pdpSchedulingConfig PDPSchedulingConfig     // PDP scheduling config for root batching and tx confirmation.
 	// Resolver is injected so tests and future wiring can switch deal type behavior without coupling DealPusher to config storage.
 	scheduleDealTypeResolver func(schedule *model.Schedule) model.DealType
 	workerID                 uuid.UUID                               // UUID identifying the associated worker.
@@ -367,10 +366,10 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return model.ScheduleError, errors.Wrap(err, "failed to find car")
 			}
 
-			walletObj, err = d.walletChooser.Choose(ctx, schedule.Preparation.Wallets)
-			if err != nil {
-				return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
+			if schedule.Preparation == nil || schedule.Preparation.Wallet == nil {
+				return model.ScheduleError, errors.New("schedule has no wallet configured")
 			}
+			walletObj = *schedule.Preparation.Wallet
 
 			// market deals need the on-chain actor for the deal proposal;
 			// lazily resolve if not yet linked (first use after offline import)
@@ -490,7 +489,6 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 		activeScheduleCancelFunc: make(map[model.ScheduleID]context.CancelFunc),
 		activeSchedule:           make(map[model.ScheduleID]*model.Schedule),
 		cronEntries:              make(map[model.ScheduleID]cron.EntryID),
-		walletChooser:            &replication.RandomWalletChooser{},
 		dealMaker:                dealMaker,
 		pdpSchedulingConfig:      defaultPDPSchedulingConfig(),
 		workerID:                 uuid.New(),
@@ -529,7 +527,7 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 	scheduleMap := map[model.ScheduleID]model.Schedule{}
 	Logger.Debugw("getting schedules")
 	db := d.dbNoContext.WithContext(ctx)
-	err := db.Preload("Preparation.Wallets").Where("state = ?",
+	err := db.Preload("Preparation.Wallet").Where("state = ?",
 		model.ScheduleActive).Find(&schedules).Error
 	if err != nil {
 		Logger.Errorw("failed to get schedules", "error", err)

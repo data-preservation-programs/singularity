@@ -25,6 +25,7 @@ import (
 	"github.com/filecoin-shipyard/boostly"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
+	logging "github.com/ipfs/go-log/v2"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -33,6 +34,8 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	"github.com/ybbus/jsonrpc/v3"
 )
+
+var logger = logging.Logger("replication")
 
 const (
 	StorageProposalV120 = "/fil/storage/mk/1.2.0"
