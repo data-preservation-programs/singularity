@@ -216,6 +216,16 @@ func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainP
 		return err
 	}
 
+	var walletID *uint
+	var wallet model.Wallet
+	if err := db.Where("actor_id = ?", actor.ID).First(&wallet).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.Wrapf(err, "failed to look up wallet for actor %s", actor.ID)
+		}
+	} else {
+		walletID = &wallet.ID
+	}
+
 	pieces, err := rpcClient.GetActivePieces(ctx, setID)
 	if err != nil {
 		return errors.Wrapf(err, "getActivePieces for set %d", setID)
@@ -256,6 +266,7 @@ func reconcileProofSetPieces(ctx context.Context, db *gorm.DB, rpcClient *ChainP
 				DealType:       model.DealTypePDP,
 				State:          initialState,
 				ClientID:       actor.ID,
+				WalletID:       walletID,
 				Provider:       ps.Provider,
 				PieceCID:       modelCID,
 				ProofSetID:     ptr.Of(setID),

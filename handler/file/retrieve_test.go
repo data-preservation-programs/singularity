@@ -144,7 +144,6 @@ func TestRetrieveFileHandler(t *testing.T) {
 						State:    model.DealActive,
 						PieceCID: model.CID(testCid),
 						Provider: "apples" + strconv.Itoa(i),
-						Actor:    &model.Actor{},
 					}
 					err = db.Create(&deal).Error
 					require.NoError(t, err)
@@ -158,7 +157,6 @@ func TestRetrieveFileHandler(t *testing.T) {
 						State:    state,
 						PieceCID: model.CID(testCid),
 						Provider: "oranges" + strconv.Itoa(i),
-						Actor:    &model.Actor{},
 					}
 					err = db.Create(&deal).Error
 					require.NoError(t, err)
@@ -489,7 +487,6 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 			State:    model.DealActive,
 			PieceCID: model.CID(testCid),
 			Provider: "apples" + strconv.Itoa(i),
-			Actor:    &model.Actor{},
 		}
 		err = db.Create(&deal).Error
 		require.NoError(b, err)
@@ -502,7 +499,6 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 			State:    state,
 			PieceCID: model.CID(testCid),
 			Provider: "oranges" + strconv.Itoa(i),
-			Actor:    &model.Actor{},
 		}
 		err = db.Create(&deal).Error
 		require.NoError(b, err)

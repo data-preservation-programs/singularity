@@ -436,6 +436,18 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		actorIDs[actor.ID] = struct{}{}
 	}
 
+	// build actor → wallet mapping for setting wallet_id on discovered deals
+	var wallets []model.Wallet
+	if err := db.Where("actor_id IS NOT NULL").Find(&wallets).Error; err != nil {
+		return errors.Wrap(err, "failed to get wallets from database")
+	}
+	actorWalletIDs := make(map[string]uint, len(wallets))
+	for _, w := range wallets {
+		if w.ActorID != nil {
+			actorWalletIDs[*w.ActorID] = w.ID
+		}
+	}
+
 	knownDeals := make(map[uint64]model.DealState)
 	rows, err := db.Model(&model.Deal{}).Where("deal_id IS NOT NULL").
 		Select("deal_id", "state").Rows()
@@ -552,12 +564,17 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to parse piece CID %s", deal.Proposal.PieceCID.Root)
 		}
+		var walletID *uint
+		if wid, ok := actorWalletIDs[deal.Proposal.Client]; ok {
+			walletID = &wid
+		}
 		err = database.DoRetry(ctx, func() error {
 			return db.Create(&model.Deal{
 				DealID:           &dealID,
 				State:            newState,
 				DealType:         model.DealTypeMarket,
 				ClientID:         deal.Proposal.Client,
+				WalletID:         walletID,
 				Provider:         deal.Proposal.Provider,
 				Label:            deal.Proposal.Label,
 				PieceCID:         model.CID(root),

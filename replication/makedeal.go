@@ -459,6 +459,7 @@ type DealConfig struct {
 	PricePerDeal    float64
 	PricePerGB      float64
 	PricePerGBEpoch float64
+	WalletID        *uint
 }
 
 // GetPrice calculates the price of a deal based on the size of the piece being stored,
@@ -596,6 +597,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, actorObj model.Actor,
 	dealModel := &model.Deal{
 		State:     model.DealProposed,
 		ClientID:  actorObj.ID,
+		WalletID:  dealConfig.WalletID,
 		Provider:  dealConfig.Provider,
 		Label:     cid.Cid(car.RootCID).String(),
 		PieceCID:  car.PieceCID,

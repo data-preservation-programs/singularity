@@ -167,5 +167,7 @@ func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation
 		require.Equal(t, model.DealProposed, deals[0].State)
 		require.NotNil(t, deals[0].ProofSetID)
 		require.Equal(t, uint64(42), *deals[0].ProofSetID)
+		require.NotNil(t, deals[0].WalletID)
+		require.Equal(t, wallet.ID, *deals[0].WalletID)
 	})
 }

@@ -400,6 +400,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 						PricePerDeal:    schedule.PricePerDeal,
 						PricePerGB:      schedule.PricePerGB,
 						PricePerGBEpoch: schedule.PricePerGBEpoch,
+						WalletID:        &walletObj.ID,
 					},
 					proposalSigner)
 				if err != nil {
