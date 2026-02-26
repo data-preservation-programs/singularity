@@ -453,6 +453,12 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 
 func (d *DealPusher) resolveScheduleDealType(schedule *model.Schedule) model.DealType {
 	if d.scheduleDealTypeResolver == nil {
+		if schedule != nil {
+			switch schedule.DealType {
+			case model.DealTypeMarket, model.DealTypePDP:
+				return schedule.DealType
+			}
+		}
 		return inferScheduleDealType(schedule)
 	}
 	return d.scheduleDealTypeResolver(schedule)

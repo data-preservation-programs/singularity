@@ -3,6 +3,7 @@ package schedule
 import (
 	"context"
 	"net/url"
+	"slices"
 	"strings"
 
 	"github.com/cockroachdb/errors"
@@ -39,6 +40,7 @@ type UpdateRequest struct {
 	//nolint:tagliatelle
 	AllowedPieceCIDs []string `json:"allowedPieceCids"` // Allowed piece CIDs in this schedule
 	Force            *bool    `json:"force"`            // Force to send out deals regardless of replication restriction
+	DealType         *string  `json:"dealType"`         // Deal type: market (f05) or pdp (f41)
 }
 
 // UpdateHandler modifies an existing schedule record based on the provided update request.
@@ -234,6 +236,13 @@ func (DefaultHandler) UpdateHandler(
 
 	if request.Force != nil {
 		updates["force"] = *request.Force
+	}
+	if request.DealType != nil {
+		dealType := model.DealType(*request.DealType)
+		if !slices.Contains(model.DealTypes, dealType) {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid deal type %q", *request.DealType)
+		}
+		updates["deal_type"] = dealType
 	}
 
 	err = db.Model(&schedule).Updates(updates).Error

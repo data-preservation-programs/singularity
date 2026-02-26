@@ -3,6 +3,7 @@ package schedule
 import (
 	"context"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -23,6 +24,7 @@ import (
 type CreateRequest struct {
 	Preparation           string   `json:"preparation"           validation:"required"`  // Preparation ID or name
 	Provider              string   `json:"provider"              validation:"required"`  // Provider
+	DealType              string   `json:"dealType"`                                     // Deal type: market (f05) or pdp (f41)
 	HTTPHeaders           []string `json:"httpHeaders"`                                  // http headers to be passed with the request (i.e. key=value)
 	URLTemplate           string   `json:"urlTemplate"`                                  // URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
 	PricePerGBEpoch       float64  `default:"0"                  json:"pricePerGbEpoch"` // Price in FIL per GiB per epoch
@@ -167,6 +169,13 @@ func (DefaultHandler) CreateHandler(
 	if err != nil {
 		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "provider %s cannot be resolved", request.Provider))
 	}
+	dealType := model.DealType(request.DealType)
+	if dealType == "" {
+		dealType = model.DealTypeMarket
+	}
+	if !slices.Contains(model.DealTypes, dealType) {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid deal type %q", request.DealType)
+	}
 
 	headers := make(map[string]string)
 	for _, header := range request.HTTPHeaders {
@@ -205,6 +214,7 @@ func (DefaultHandler) CreateHandler(
 		PricePerDeal:          request.PricePerDeal,
 		ScheduleCronPerpetual: request.ScheduleCronPerpetual,
 		Force:                 request.Force,
+		DealType:              dealType,
 	}
 
 	if err := database.DoRetry(ctx, func() error {

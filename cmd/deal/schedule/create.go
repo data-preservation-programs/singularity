@@ -9,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/urfave/cli/v2"
 )
@@ -57,6 +58,12 @@ var CreateCmd = &cli.Command{
 			Name:     "provider",
 			Usage:    "Storage Provider ID to send deals to",
 			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "deal-type",
+			Category: "Deal Proposal",
+			Usage:    "Deal type: market (legacy f05) or pdp (f41)",
+			Value:    string(model.DealTypeMarket),
 		},
 		&cli.StringSliceFlag{
 			Name:     "http-header",
@@ -219,6 +226,7 @@ var CreateCmd = &cli.Command{
 		request := schedule.CreateRequest{
 			Preparation:          c.String("preparation"),
 			Provider:             c.String("provider"),
+			DealType:             c.String("deal-type"),
 			HTTPHeaders:          c.StringSlice("http-header"),
 			URLTemplate:          c.String("url-template"),
 			PricePerGBEpoch:      c.Float64("price-per-gb-epoch"),
