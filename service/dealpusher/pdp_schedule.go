@@ -149,10 +149,12 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 		}
 
 		pieceCIDs := make([]cid.Cid, 0, len(cars))
+		pieceSizes := make([]int64, 0, len(cars))
 		for _, car := range cars {
 			pieceCIDs = append(pieceCIDs, cid.Cid(car.PieceCID))
+			pieceSizes = append(pieceSizes, car.PieceSize)
 		}
-		queuedTx, err := d.pdpProofSetManager.QueueAddRoots(ctx, evmSigner, proofSetID, pieceCIDs, d.pdpSchedulingConfig)
+		queuedTx, err := d.pdpProofSetManager.QueueAddRoots(ctx, evmSigner, proofSetID, pieceCIDs, pieceSizes, d.pdpSchedulingConfig)
 		if err != nil {
 			return model.ScheduleError, errors.Wrap(err, "failed to queue PDP root addition transaction")
 		}

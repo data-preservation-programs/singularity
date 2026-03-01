@@ -42,7 +42,8 @@ type PDPProofSetManager interface {
 	// The signer's EVMAddress identifies the client on-chain.
 	EnsureProofSet(ctx context.Context, evmSigner signer.EVMSigner, provider string) (uint64, error)
 	// QueueAddRoots submits root additions for a proof set and returns the queued tx reference.
-	QueueAddRoots(ctx context.Context, evmSigner signer.EVMSigner, proofSetID uint64, pieceCIDs []cid.Cid, cfg PDPSchedulingConfig) (*PDPQueuedTx, error)
+	// pieceSizes are the padded piece sizes corresponding to each CID, needed for CommPv2 conversion.
+	QueueAddRoots(ctx context.Context, evmSigner signer.EVMSigner, proofSetID uint64, pieceCIDs []cid.Cid, pieceSizes []int64, cfg PDPSchedulingConfig) (*PDPQueuedTx, error)
 }
 
 // PDPTransactionConfirmer defines confirmation checks for queued on-chain transactions.

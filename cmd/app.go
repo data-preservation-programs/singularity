@@ -142,6 +142,7 @@ Upgrading:
 					},
 				},
 				deal.SendManualCmd,
+				deal.SendManualPDPCmd,
 				deal.ListCmd,
 			},
 		},

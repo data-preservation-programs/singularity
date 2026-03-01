@@ -16,6 +16,7 @@ OPTIONS:
    --pdp-confirmation-depth value            Number of block confirmations required for PDP transactions (default: 5)
    --pdp-poll-interval value                 Polling interval for PDP transaction confirmation checks (default: 30s)
    --eth-rpc value                           Ethereum RPC endpoint for FEVM (required to execute PDP schedules on-chain) [$ETH_RPC_URL]
+   --pdp-contract-address value              Override PDPVerifier contract address (for devnet/testing) [$PDP_CONTRACT_ADDRESS]
    --help, -h                                show help
 ```
 {% endcode %}

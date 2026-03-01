@@ -24,7 +24,7 @@ func (m *proofSetManagerMock) EnsureProofSet(_ context.Context, _ signer.EVMSign
 	return m.proofSetID, nil
 }
 
-func (m *proofSetManagerMock) QueueAddRoots(_ context.Context, _ signer.EVMSigner, _ uint64, pieceCIDs []cid.Cid, _ PDPSchedulingConfig) (*PDPQueuedTx, error) {
+func (m *proofSetManagerMock) QueueAddRoots(_ context.Context, _ signer.EVMSigner, _ uint64, pieceCIDs []cid.Cid, _ []int64, _ PDPSchedulingConfig) (*PDPQueuedTx, error) {
 	m.pieceCIDs = append([]cid.Cid(nil), pieceCIDs...)
 	return &PDPQueuedTx{Hash: "0xabc"}, nil
 }
