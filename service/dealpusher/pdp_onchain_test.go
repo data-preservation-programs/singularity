@@ -94,3 +94,10 @@ func TestOnChainPDP_WaitForConfirmationsInvalidHash(t *testing.T) {
 	_, err := adapter.WaitForConfirmations(context.Background(), "not-a-hash", 1, time.Millisecond)
 	require.Error(t, err)
 }
+
+func TestCreateProofSetOptions(t *testing.T) {
+	opts := createProofSetOptions()
+	require.Equal(t, common.Address{}, opts.Listener)
+	require.NotNil(t, opts.Value)
+	require.Equal(t, "1000000000000000000", opts.Value.String())
+}

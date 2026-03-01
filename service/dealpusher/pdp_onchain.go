@@ -28,6 +28,8 @@ type confirmationClient interface {
 	BlockNumber(ctx context.Context) (uint64, error)
 }
 
+const defaultPDPCreateDataSetValueAttoFIL uint64 = 1_000_000_000_000_000_000
+
 // OnChainPDP implements PDP scheduling interfaces using FEVM RPC + go-synapse contracts.
 type OnChainPDP struct {
 	dbNoContext   *gorm.DB
@@ -124,9 +126,7 @@ func (o *OnChainPDP) EnsureProofSet(ctx context.Context, evmSigner signer.EVMSig
 		return 0, err
 	}
 
-	result, err := manager.CreateProofSet(ctx, pdp.CreateProofSetOptions{
-		Listener: evmSigner.EVMAddress(),
-	})
+	result, err := manager.CreateProofSet(ctx, createProofSetOptions())
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create PDP proof set")
 	}
@@ -149,6 +149,15 @@ func (o *OnChainPDP) EnsureProofSet(ctx context.Context, evmSigner signer.EVMSig
 		return 0, errors.Wrap(err, "failed to persist created PDP proof set")
 	}
 	return setID, nil
+}
+
+func createProofSetOptions() pdp.CreateProofSetOptions {
+	return pdp.CreateProofSetOptions{
+		// createDataSet rejects EOA listeners on calibnet/devnet today.
+		Listener: common.Address{},
+		// createDataSet is payable and currently requires sybil-fee value.
+		Value: new(big.Int).SetUint64(defaultPDPCreateDataSetValueAttoFIL),
+	}
 }
 
 func (o *OnChainPDP) QueueAddRoots(
