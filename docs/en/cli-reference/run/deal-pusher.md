@@ -19,3 +19,10 @@ OPTIONS:
    --help, -h                                show help
 ```
 {% endcode %}
+
+## PDP Notes
+
+- `--eth-rpc` is required to execute `--deal-type pdp` schedules on-chain.
+- PDP `createDataSet` is payable on calibnet/mainnet and currently requires a sybil-fee value.
+- PDP `createDataSet` listener semantics are network-sensitive; Singularity uses a zero-address listener for compatibility on calibnet/devnet.
+- For PDP onboarding, use accepted piece CIDs (legacy CommP or CommPv2 as supported by current validators/contract path).

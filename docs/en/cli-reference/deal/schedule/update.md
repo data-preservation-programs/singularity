@@ -81,3 +81,8 @@ OPTIONS:
 
 ```
 {% endcode %}
+
+## PDP Notes
+
+- For PDP schedules, `--allowed-piece-cid` accepts legacy CommP and CommPv2 piece CIDs.
+- PDP proofset piece size is currently capped at **1 GiB minus FR32 overhead** (`1,065,353,216` bytes).
