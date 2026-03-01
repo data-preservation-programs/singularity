@@ -2,6 +2,7 @@ package dealpusher
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -38,12 +39,51 @@ func inferScheduleDealType(schedule *model.Schedule) model.DealType {
 	return model.DealTypeMarket
 }
 
+func validatePDPProofSetPieceSize(pieceSize int64) error {
+	if pieceSize <= 0 {
+		return fmt.Errorf("piece size must be greater than 0, got %d", pieceSize)
+	}
+	if !util.IsPowerOfTwo(uint64(pieceSize)) {
+		return fmt.Errorf("piece size must be a power of two, got %d", pieceSize)
+	}
+	if pieceSize > model.PDPProofSetMaxPieceSize {
+		return fmt.Errorf("piece size %d exceeds max allowed %d (1 GiB minus FR32 overhead)", pieceSize, model.PDPProofSetMaxPieceSize)
+	}
+	return nil
+}
+
+func (d *DealPusher) validatePDPPreparationPieceSizes(ctx context.Context, schedule *model.Schedule) error {
+	db := d.dbNoContext.WithContext(ctx)
+
+	var oversized model.Car
+	err := db.Model(&model.Car{}).
+		Select("piece_cid", "piece_size").
+		Where("preparation_id = ? AND piece_size > ?", schedule.PreparationID, model.PDPProofSetMaxPieceSize).
+		Order("piece_size DESC").
+		First(&oversized).Error
+	if err == nil {
+		return fmt.Errorf(
+			"current PDP proofset piece limit is 1 GiB minus FR32 overhead; preparation %d has oversized piece %s (%d bytes)",
+			schedule.PreparationID,
+			oversized.PieceCID.String(),
+			oversized.PieceSize,
+		)
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil
+	}
+	return errors.Wrap(err, "failed to validate preparation piece sizes for PDP")
+}
+
 func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedule) (model.ScheduleState, error) {
 	if d.pdpProofSetManager == nil || d.pdpTxConfirmer == nil {
 		return model.ScheduleError, errors.New("pdp scheduling dependencies are not configured")
 	}
 	if err := d.pdpSchedulingConfig.Validate(); err != nil {
 		return model.ScheduleError, errors.Wrap(err, "invalid PDP scheduling configuration")
+	}
+	if err := d.validatePDPPreparationPieceSizes(ctx, schedule); err != nil {
+		return model.ScheduleError, err
 	}
 
 	db := d.dbNoContext.WithContext(ctx)
@@ -131,6 +171,11 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 				return "", nil
 			}
 			return model.ScheduleCompleted, nil
+		}
+		for _, car := range cars {
+			if err := validatePDPProofSetPieceSize(car.PieceSize); err != nil {
+				return model.ScheduleError, errors.Wrapf(err, "invalid piece size for piece %s", car.PieceCID.String())
+			}
 		}
 
 		if schedule.Preparation == nil || schedule.Preparation.Wallet == nil {

@@ -9,6 +9,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-cid"
 	"github.com/rjNemo/underscore"
@@ -194,8 +195,8 @@ func (DefaultHandler) UpdateHandler(
 			if err != nil {
 				return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid allowed piece CID %s", pieceCID)
 			}
-			if parsed.Type() != cid.FilCommitmentUnsealed {
-				return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "allowed piece CID %s is not commp", pieceCID)
+			if !util.IsAcceptedPieceCID(parsed) {
+				return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "allowed piece CID %s is not commp or commpv2", pieceCID)
 			}
 		}
 		updates["allowed_piece_cids"] = model.StringSlice(underscore.Unique(append(schedule.AllowedPieceCIDs, request.AllowedPieceCIDs...)))

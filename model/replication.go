@@ -31,6 +31,12 @@ const (
 	DealTypePDP DealType = "pdp"
 )
 
+const (
+	// PDPProofSetMaxPieceSize is Singularity's current PDP max piece size policy:
+	// 1 GiB minus FR32 expansion overhead.
+	PDPProofSetMaxPieceSize int64 = (1 << 30) * 127 / 128 // 1,065,353,216 bytes
+)
+
 var DealStateStrings = []string{
 	string(DealProposed),
 	string(DealPublished),

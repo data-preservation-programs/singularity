@@ -2,12 +2,14 @@ package schedule
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/ybbus/jsonrpc/v3"
@@ -51,6 +53,15 @@ func createPrepWithWallet(t *testing.T, db *gorm.DB, name string) {
 	w := model.Wallet{Address: "f01", KeyPath: "/tmp/key", KeyStore: "local"}
 	require.NoError(t, db.Create(&w).Error)
 	require.NoError(t, db.Create(&model.Preparation{Name: name, WalletID: &w.ID}).Error)
+}
+
+func createPrepWithWalletModel(t *testing.T, db *gorm.DB, name string) model.Preparation {
+	t.Helper()
+	w := model.Wallet{Address: "f01", KeyPath: "/tmp/key", KeyStore: "local"}
+	require.NoError(t, db.Create(&w).Error)
+	prep := model.Preparation{Name: name, WalletID: &w.ID}
+	require.NoError(t, db.Create(&prep).Error)
+	return prep
 }
 
 var createRequest = CreateRequest{
@@ -210,6 +221,27 @@ func TestCreateHandler_InvalidProvider(t *testing.T) {
 		_, err := Default.CreateHandler(ctx, db, lotusClient, createRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "Some provider error")
+	})
+}
+
+func TestCreateHandler_PDPRejectsPreparationWithOversizedPiece(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		prep := createPrepWithWalletModel(t, db, "")
+		pieceCID, err := cid.Parse(createRequest.AllowedPieceCIDs[0])
+		require.NoError(t, err)
+		require.NoError(t, db.Create(&model.Car{
+			PreparationID: &prep.ID,
+			PieceCID:      model.CID(pieceCID),
+			PieceSize:     model.PDPProofSetMaxPieceSize + 1,
+		}).Error)
+
+		req := createRequest
+		req.Preparation = fmt.Sprintf("%d", prep.ID)
+		req.DealType = string(model.DealTypePDP)
+
+		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), req)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "piece limit is 1 GiB minus FR32 overhead")
 	})
 }
 
