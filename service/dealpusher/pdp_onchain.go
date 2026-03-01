@@ -169,32 +169,17 @@ func (o *OnChainPDP) QueueAddRoots(
 	if err != nil {
 		return nil, err
 	}
-	setIDBig := new(big.Int).SetUint64(proofSetID)
-	proofSet, err := manager.GetProofSet(ctx, setIDBig)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to load PDP proof set %d", proofSetID)
-	}
-
-	pieces := make([]contracts.CidsCid, len(pieceCIDs))
+	roots := make([]pdp.Root, len(pieceCIDs))
 	for i, pieceCID := range pieceCIDs {
-		pieces[i] = contracts.CidsCid{Data: pieceCID.Bytes()}
+		roots[i] = pdp.Root{PieceCID: pieceCID}
 	}
 
-	auth, err := evmSigner.Transactor(o.chainID)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create FEVM transactor")
-	}
-	auth.Context = ctx
-	if cfg.GasLimit > 0 {
-		auth.GasLimit = cfg.GasLimit
-	}
-
-	tx, err := o.contract.AddPieces(auth, setIDBig, proofSet.Listener, pieces, []byte{})
+	result, err := manager.AddRoots(ctx, new(big.Int).SetUint64(proofSetID), roots)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit PDP add-roots transaction")
 	}
 
-	return &PDPQueuedTx{Hash: tx.Hash().Hex()}, nil
+	return &PDPQueuedTx{Hash: result.TransactionHash.Hex()}, nil
 }
 
 func (o *OnChainPDP) WaitForConfirmations(
