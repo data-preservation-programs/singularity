@@ -104,16 +104,7 @@ func (c cronLogger) Error(err error, msg string, keysAndValues ...any) {
 func (d *DealPusher) runScheduleAndUpdateState(ctx context.Context, schedule *model.Schedule) {
 	db := d.dbNoContext.WithContext(ctx)
 	state, err := d.runSchedule(ctx, schedule)
-	updates := make(map[string]any)
-	if err != nil {
-		updates["error_message"] = err.Error()
-		if schedule.ScheduleCron == "" {
-			state = model.ScheduleError
-		}
-	}
-	if state != "" {
-		updates["state"] = state
-	}
+	state, updates := buildScheduleUpdates(schedule, state, err)
 	if len(updates) > 0 {
 		Logger.Debugw("updating schedule", "schedule", schedule.ID, "updates", updates)
 		err = db.Model(schedule).Updates(updates).Error
@@ -129,6 +120,23 @@ func (d *DealPusher) runScheduleAndUpdateState(ctx context.Context, schedule *mo
 		Logger.Errorw("schedule error", "schedule", schedule.ID, "error", err)
 		d.removeSchedule(*schedule)
 	}
+}
+
+func buildScheduleUpdates(schedule *model.Schedule, state model.ScheduleState, runErr error) (model.ScheduleState, map[string]any) {
+	updates := make(map[string]any)
+	if runErr != nil {
+		updates["error_message"] = runErr.Error()
+		if schedule.ScheduleCron == "" {
+			state = model.ScheduleError
+		}
+	}
+	if state != "" {
+		updates["state"] = state
+	}
+	if runErr == nil && state == model.ScheduleCompleted {
+		updates["error_message"] = ""
+	}
+	return state, updates
 }
 
 func (d *DealPusher) addScheduleUnsafe(ctx context.Context, schedule model.Schedule) error {

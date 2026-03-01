@@ -28,6 +28,61 @@ func init() {
 	analytics.Enabled = false
 }
 
+func TestBuildScheduleUpdates(t *testing.T) {
+	tests := []struct {
+		name              string
+		schedule          model.Schedule
+		state             model.ScheduleState
+		runErr            error
+		wantState         model.ScheduleState
+		wantErrorMessage  any
+		wantHasStateField bool
+	}{
+		{
+			name:              "non cron error becomes schedule error",
+			schedule:          model.Schedule{},
+			state:             "",
+			runErr:            errors.New("boom"),
+			wantState:         model.ScheduleError,
+			wantErrorMessage:  "boom",
+			wantHasStateField: true,
+		},
+		{
+			name:              "cron error keeps schedule active but stores message",
+			schedule:          model.Schedule{ScheduleCron: "* * * * *"},
+			state:             "",
+			runErr:            errors.New("retry later"),
+			wantState:         "",
+			wantErrorMessage:  "retry later",
+			wantHasStateField: false,
+		},
+		{
+			name:              "completion clears stale error message",
+			schedule:          model.Schedule{ScheduleCron: "* * * * *"},
+			state:             model.ScheduleCompleted,
+			runErr:            nil,
+			wantState:         model.ScheduleCompleted,
+			wantErrorMessage:  "",
+			wantHasStateField: true,
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			gotState, updates := buildScheduleUpdates(&tc.schedule, tc.state, tc.runErr)
+			require.Equal(t, tc.wantState, gotState)
+
+			gotErrVal, ok := updates["error_message"]
+			require.True(t, ok)
+			require.Equal(t, tc.wantErrorMessage, gotErrVal)
+
+			_, hasStateField := updates["state"]
+			require.Equal(t, tc.wantHasStateField, hasStateField)
+		})
+	}
+}
+
 // creates actor record that wallets reference via ActorID FK.
 // must be called before schedule creation since wallet.ActorID references actor.
 func createTestActor(t *testing.T, db *gorm.DB, actorID string) {
