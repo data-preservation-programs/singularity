@@ -356,3 +356,66 @@ func TestRunOnce(t *testing.T) {
 		require.NotNil(t, allDeals[6].LastVerifiedAt)
 	})
 }
+
+func TestRunOnce_DoesNotEpochExpirePDPDeals(t *testing.T) {
+	testutil.SkipIfNotExternalAPI(t)
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		cidMarket := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("market"))))
+		cidPDPActive := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("pdp-active"))))
+		cidPDPProposed := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("pdp-proposed"))))
+
+		require.NoError(t, db.Create([]model.Deal{
+			{
+				State:      model.DealActive,
+				DealType:   model.DealTypeMarket,
+				ClientID:   "t0100",
+				Provider:   "sp1",
+				ProposalID: "market-active",
+				PieceCID:   cidMarket,
+				PieceSize:  100,
+				StartEpoch: 100,
+				EndEpoch:   200,
+			},
+			{
+				State:      model.DealActive,
+				DealType:   model.DealTypePDP,
+				ClientID:   "t0100",
+				Provider:   "sp1",
+				ProposalID: "pdp-active",
+				PieceCID:   cidPDPActive,
+				PieceSize:  100,
+				StartEpoch: 100,
+				EndEpoch:   200,
+			},
+			{
+				State:      model.DealProposed,
+				DealType:   model.DealTypePDP,
+				ClientID:   "t0100",
+				Provider:   "sp1",
+				ProposalID: "pdp-proposed",
+				PieceCID:   cidPDPProposed,
+				PieceSize:  100,
+				StartEpoch: 100,
+				EndEpoch:   200,
+			},
+		}).Error)
+
+		url, server := setupTestServerWithBody(t, `{}`)
+		defer server.Close()
+
+		tracker := NewDealTracker(db, time.Minute, url, testutil.TestLotusAPI, "", true)
+		require.NoError(t, tracker.runOnce(ctx))
+
+		var marketDeal model.Deal
+		require.NoError(t, db.Where("proposal_id = ?", "market-active").First(&marketDeal).Error)
+		require.Equal(t, model.DealExpired, marketDeal.State)
+
+		var pdpActive model.Deal
+		require.NoError(t, db.Where("proposal_id = ?", "pdp-active").First(&pdpActive).Error)
+		require.Equal(t, model.DealActive, pdpActive.State)
+
+		var pdpProposed model.Deal
+		require.NoError(t, db.Where("proposal_id = ?", "pdp-proposed").First(&pdpProposed).Error)
+		require.Equal(t, model.DealProposed, pdpProposed.State)
+	})
+}
