@@ -599,7 +599,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 
 	// Mark all expired active deals as expired
 	result := db.Model(&model.Deal{}).
-		Where("end_epoch < ? AND state = 'active'", lastEpoch).
+		Where("deal_type = ? AND end_epoch < ? AND state = 'active'", model.DealTypeMarket, lastEpoch).
 		Update("state", model.DealExpired)
 	if result.Error != nil {
 		return errors.WithStack(err)
@@ -608,7 +608,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 
 	// Mark all expired deal proposals
 	result = db.Model(&model.Deal{}).
-		Where("state in ('proposed', 'published') AND start_epoch < ?", lastEpoch).
+		Where("deal_type = ? AND state in ('proposed', 'published') AND start_epoch < ?", model.DealTypeMarket, lastEpoch).
 		Update("state", model.DealProposalExpired)
 	if result.Error != nil {
 		return errors.WithStack(err)
