@@ -10,6 +10,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/packutil"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-cid"
@@ -159,8 +160,8 @@ func (DefaultHandler) AddPieceHandler(
 	if err != nil {
 		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "invalid piece CID %s", request.PieceCID))
 	}
-	if pieceCID.Type() != cid.FilCommitmentUnsealed {
-		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "piece CID must be commp")
+	if !util.IsAcceptedPieceCID(pieceCID) {
+		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "piece CID must be commp or commpv2")
 	}
 
 	// try to find existing piece by CID

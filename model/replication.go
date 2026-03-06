@@ -31,6 +31,12 @@ const (
 	DealTypePDP DealType = "pdp"
 )
 
+const (
+	// PDPProofSetMaxPieceSize is Singularity's current PDP max piece size policy:
+	// 1 GiB minus FR32 expansion overhead.
+	PDPProofSetMaxPieceSize int64 = (1 << 30) * 127 / 128 // 1,065,353,216 bytes
+)
+
 var DealStateStrings = []string{
 	string(DealProposed),
 	string(DealPublished),
@@ -183,15 +189,26 @@ func (Actor) TableName() string {
 	return "actors"
 }
 
+type ProofSetHandoffState string
+
+const (
+	ProofSetAssembling  ProofSetHandoffState = "assembling"
+	ProofSetProposed    ProofSetHandoffState = "proposed"
+	ProofSetTransferred ProofSetHandoffState = "transferred"
+)
+
 // PDPProofSet tracks on-chain PDP proof set state derived from contract events.
 // This is a materialized view built from Shovel-indexed events, replacing
 // the per-cycle RPC scans of GetProofSets/GetProofSetsForClient.
 type PDPProofSet struct {
-	SetID          uint64 `gorm:"primaryKey;autoIncrement:false" json:"setId"`
-	ClientAddress  string `gorm:"not null;index"                 json:"clientAddress"`
-	Provider       string `gorm:"not null"                       json:"provider"`
-	IsLive         bool   `gorm:"default:false"                  json:"isLive"`
-	ChallengeEpoch *int64 `                                      json:"challengeEpoch,omitempty"`
-	CreatedBlock   int64  `gorm:"not null"                       json:"createdBlock"`
-	Deleted        bool   `gorm:"default:false"                  json:"deleted"`
+	SetID               uint64               `gorm:"primaryKey;autoIncrement:false" json:"setId"`
+	ClientAddress       string               `gorm:"not null;index"                 json:"clientAddress"`
+	Provider            string               `gorm:"not null"                       json:"provider"`
+	IsLive              bool                 `gorm:"default:false"                  json:"isLive"`
+	ChallengeEpoch      *int64               `                                      json:"challengeEpoch,omitempty"`
+	CreatedBlock        int64                `gorm:"not null"                       json:"createdBlock"`
+	Deleted             bool                 `gorm:"default:false"                  json:"deleted"`
+	HandoffState        ProofSetHandoffState `gorm:"default:'assembling'"           json:"handoffState"`
+	ProposedProviderEVM string               `                                      json:"proposedProviderEVM,omitempty"`
+	PieceCount          int                  `gorm:"default:0"                      json:"pieceCount"`
 }
