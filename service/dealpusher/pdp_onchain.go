@@ -24,10 +24,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// sybilFee is the fee required by the PDPVerifier contract for createDataSet.
-// hardcoded at 0.1 FIL in Fees.sol.
-var sybilFee = new(big.Int).Div(big.NewInt(1e18), big.NewInt(10))
-
 // defaultGasLimit is a fixed gas limit for FEVM transactions.
 // FEVM gas estimation (NoSend=true) is unreliable, so we use a fixed value.
 // EVM traces show ~200K gas but FEVM execution needs ~17M due to actor overhead.
@@ -138,7 +134,7 @@ func (o *OnChainPDP) EnsureProofSet(ctx context.Context, evmSigner signer.EVMSig
 	}
 
 	result, err := manager.CreateProofSet(ctx, pdp.CreateProofSetOptions{
-		Value: sybilFee,
+		Value: pdp.SybilFee,
 	})
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create PDP proof set")

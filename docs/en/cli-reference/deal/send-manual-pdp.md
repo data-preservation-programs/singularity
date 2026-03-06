@@ -17,7 +17,7 @@ OPTIONS:
    --provider value              Storage provider f4/t4 address
    --piece-cid value             Piece CID (commp)
    --piece-size value            Piece size in bytes (default: 0)
-   --eth-rpc value               FEVM JSON-RPC endpoint [$ETH_RPC]
+   --eth-rpc value               FEVM JSON-RPC endpoint [$ETH_RPC_URL]
    --pdp-contract-address value  Override PDPVerifier contract address (for devnet/testing) [$PDP_CONTRACT_ADDRESS]
    --confirmation-depth value    Blocks to wait for tx confirmation (default: 5)
    --help, -h                    show help

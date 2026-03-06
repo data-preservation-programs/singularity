@@ -2,6 +2,7 @@ package deal
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
@@ -45,7 +46,7 @@ var SendManualPDPCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:     "eth-rpc",
 			Usage:    "FEVM JSON-RPC endpoint",
-			EnvVars:  []string{"ETH_RPC"},
+			EnvVars:  []string{"ETH_RPC_URL"},
 			Required: true,
 		},
 		&cli.StringFlag{
@@ -116,9 +117,8 @@ var SendManualPDPCmd = &cli.Command{
 		fmt.Println("submitting add-roots tx...")
 		cfg := dealpusher.PDPSchedulingConfig{
 			BatchSize:         1,
-			GasLimit:          30_000_000,
 			ConfirmationDepth: c.Uint64("confirmation-depth"),
-			PollingInterval:   5 * 1e9, // 5s
+			PollingInterval:   5 * time.Second,
 		}
 		pieceSize := c.Int64("piece-size")
 		queuedTx, err := pdp.QueueAddRoots(c.Context, evmSigner, proofSetID, []cid.Cid{pieceCID}, []int64{pieceSize}, cfg)

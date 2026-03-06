@@ -34,11 +34,6 @@ var DealPusherCmd = &cli.Command{
 			Value: 128,
 		},
 		&cli.Uint64Flag{
-			Name:  "pdp-gas-limit",
-			Usage: "Gas limit for PDP on-chain transactions",
-			Value: 5000000,
-		},
-		&cli.Uint64Flag{
 			Name:  "pdp-confirmation-depth",
 			Usage: "Number of block confirmations required for PDP transactions",
 			Value: 5,
@@ -74,7 +69,6 @@ var DealPusherCmd = &cli.Command{
 
 		pdpCfg := dealpusher.PDPSchedulingConfig{
 			BatchSize:         c.Int("pdp-batch-size"),
-			GasLimit:          c.Uint64("pdp-gas-limit"),
 			ConfirmationDepth: c.Uint64("pdp-confirmation-depth"),
 			PollingInterval:   c.Duration("pdp-poll-interval"),
 		}

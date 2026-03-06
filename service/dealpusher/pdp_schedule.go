@@ -18,7 +18,6 @@ import (
 func defaultPDPSchedulingConfig() PDPSchedulingConfig {
 	return PDPSchedulingConfig{
 		BatchSize:         128,
-		GasLimit:          5_000_000,
 		ConfirmationDepth: 5,
 		PollingInterval:   30 * time.Second,
 	}

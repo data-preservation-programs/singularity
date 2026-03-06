@@ -13,7 +13,6 @@ import (
 // PDPSchedulingConfig holds PDP-specific scheduling knobs for on-chain operations.
 type PDPSchedulingConfig struct {
 	BatchSize         int
-	GasLimit          uint64
 	ConfirmationDepth uint64
 	PollingInterval   time.Duration
 }
@@ -22,9 +21,6 @@ type PDPSchedulingConfig struct {
 func (c PDPSchedulingConfig) Validate() error {
 	if c.BatchSize <= 0 {
 		return errors.New("pdp batch size must be greater than 0")
-	}
-	if c.GasLimit == 0 {
-		return errors.New("pdp gas limit must be greater than 0")
 	}
 	if c.ConfirmationDepth == 0 {
 		return errors.New("pdp confirmation depth must be greater than 0")
