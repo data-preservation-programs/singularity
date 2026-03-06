@@ -33,6 +33,11 @@ var DealPusherCmd = &cli.Command{
 			Usage: "Number of roots to include in each PDP add-roots transaction",
 			Value: 128,
 		},
+		&cli.IntFlag{
+			Name:  "pdp-max-pieces-per-proofset",
+			Usage: "Maximum pieces per proof set before handing off to the storage provider",
+			Value: 1024,
+		},
 		&cli.Uint64Flag{
 			Name:  "pdp-confirmation-depth",
 			Usage: "Number of block confirmations required for PDP transactions",
@@ -68,9 +73,10 @@ var DealPusherCmd = &cli.Command{
 		}
 
 		pdpCfg := dealpusher.PDPSchedulingConfig{
-			BatchSize:         c.Int("pdp-batch-size"),
-			ConfirmationDepth: c.Uint64("pdp-confirmation-depth"),
-			PollingInterval:   c.Duration("pdp-poll-interval"),
+			BatchSize:            c.Int("pdp-batch-size"),
+			MaxPiecesPerProofSet: c.Int("pdp-max-pieces-per-proofset"),
+			ConfirmationDepth:    c.Uint64("pdp-confirmation-depth"),
+			PollingInterval:      c.Duration("pdp-poll-interval"),
 		}
 		if err := pdpCfg.Validate(); err != nil {
 			return errors.WithStack(err)

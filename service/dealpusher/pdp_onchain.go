@@ -9,6 +9,7 @@ import (
 	"github.com/cockroachdb/errors"
 	synapse "github.com/data-preservation-programs/go-synapse"
 	"github.com/data-preservation-programs/go-synapse/constants"
+	"github.com/data-preservation-programs/go-synapse/contracts"
 	"github.com/data-preservation-programs/go-synapse/pdp"
 	"github.com/data-preservation-programs/go-synapse/signer"
 	commcid "github.com/filecoin-project/go-fil-commcid"
@@ -42,6 +43,7 @@ type OnChainPDP struct {
 	network       constants.Network
 	chainID       *big.Int
 	contractAddr  common.Address
+	contract      *contracts.PDPVerifier
 }
 
 func NewOnChainPDP(ctx context.Context, db *gorm.DB, rpcURL string) (*OnChainPDP, error) {
@@ -76,6 +78,12 @@ func NewOnChainPDPWithAddress(ctx context.Context, db *gorm.DB, rpcURL string, a
 		return nil, fmt.Errorf("no PDPVerifier contract for network %s", network)
 	}
 
+	contract, err := contracts.NewPDPVerifier(contractAddr, ethClient)
+	if err != nil {
+		ethClient.Close()
+		return nil, errors.Wrap(err, "failed to bind PDPVerifier contract")
+	}
+
 	Logger.Infow("initialized PDP on-chain adapter",
 		"network", network,
 		"chainId", chainIDInt64,
@@ -89,6 +97,7 @@ func NewOnChainPDPWithAddress(ctx context.Context, db *gorm.DB, rpcURL string, a
 		network:       network,
 		chainID:       big.NewInt(chainIDInt64),
 		contractAddr:  contractAddr,
+		contract:      contract,
 	}, nil
 }
 
@@ -110,22 +119,40 @@ func (o *OnChainPDP) newManager(ctx context.Context, evmSigner signer.EVMSigner)
 	return mgr, nil
 }
 
-func (o *OnChainPDP) EnsureProofSet(ctx context.Context, evmSigner signer.EVMSigner, provider string) (uint64, error) {
+// findProofSetWithRoom finds an assembling proof set with room for more pieces.
+// uses the durable PieceCount field rather than inferring occupancy from deal states.
+func (o *OnChainPDP) findProofSetWithRoom(ctx context.Context, clientAddress string, provider string, maxPieces int) (uint64, bool, error) {
+	if maxPieces <= 0 {
+		return 0, false, errors.New("max pieces per proof set must be greater than 0")
+	}
+
+	var ps model.PDPProofSet
+	err := o.dbNoContext.WithContext(ctx).
+		Where("client_address = ? AND provider = ? AND deleted = FALSE AND handoff_state = ?",
+			clientAddress, provider, model.ProofSetAssembling).
+		Where("piece_count < ?", maxPieces).
+		Order("set_id").
+		First(&ps).Error
+	if err == nil {
+		return ps.SetID, true, nil
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return 0, false, nil
+	}
+	return 0, false, errors.Wrap(err, "failed to query assembling PDP proof sets")
+}
+
+func (o *OnChainPDP) EnsureProofSet(ctx context.Context, evmSigner signer.EVMSigner, provider string, cfg PDPSchedulingConfig) (uint64, error) {
 	clientAddr, err := commonToDelegatedAddress(evmSigner.EVMAddress())
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to derive delegated client address from signer")
 	}
-
-	var existing model.PDPProofSet
-	err = o.dbNoContext.WithContext(ctx).
-		Where("client_address = ? AND provider = ? AND deleted = FALSE", clientAddr.String(), provider).
-		Order("set_id").
-		First(&existing).Error
-	if err == nil {
-		return existing.SetID, nil
+	existingSetID, found, err := o.findProofSetWithRoom(ctx, clientAddr.String(), provider, cfg.MaxPiecesPerProofSet)
+	if err != nil {
+		return 0, err
 	}
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return 0, errors.Wrap(err, "failed to query existing PDP proof set")
+	if found {
+		return existingSetID, nil
 	}
 
 	manager, err := o.newManager(ctx, evmSigner)
@@ -145,7 +172,7 @@ func (o *OnChainPDP) EnsureProofSet(ctx context.Context, evmSigner signer.EVMSig
 		SetID:         setID,
 		ClientAddress: clientAddr.String(),
 		Provider:      provider,
-		IsLive:        true,
+		HandoffState:  model.ProofSetAssembling,
 	}
 	if result.Receipt != nil && result.Receipt.BlockNumber != nil {
 		row.CreatedBlock = int64(result.Receipt.BlockNumber.Uint64())
@@ -155,6 +182,41 @@ func (o *OnChainPDP) EnsureProofSet(ctx context.Context, evmSigner signer.EVMSig
 		return 0, errors.Wrap(err, "failed to persist created PDP proof set")
 	}
 	return setID, nil
+}
+
+func (o *OnChainPDP) ProposeTransfer(ctx context.Context, evmSigner signer.EVMSigner, proofSetID uint64, spEVMAddress common.Address) error {
+	txOpts, err := evmSigner.Transactor(o.chainID)
+	if err != nil {
+		return errors.Wrap(err, "failed to create transactor for propose transfer")
+	}
+	txOpts.GasLimit = defaultGasLimit
+
+	tx, err := o.contract.ProposeDataSetStorageProvider(txOpts, new(big.Int).SetUint64(proofSetID), spEVMAddress)
+	if err != nil {
+		return errors.Wrap(err, "failed to submit propose-transfer transaction")
+	}
+
+	Logger.Infow("proposed proof set transfer",
+		"proofSetID", proofSetID,
+		"spEVMAddress", spEVMAddress.Hex(),
+		"txHash", tx.Hash().Hex(),
+	)
+
+	// update local state -- the SP claim is tracked via StorageProviderChanged event
+	return o.dbNoContext.WithContext(ctx).
+		Model(&model.PDPProofSet{}).
+		Where("set_id = ?", proofSetID).
+		Updates(map[string]any{
+			"handoff_state":         model.ProofSetProposed,
+			"proposed_provider_evm": spEVMAddress.Hex(),
+		}).Error
+}
+
+func (o *OnChainPDP) IncrementPieceCount(ctx context.Context, proofSetID uint64, count int) error {
+	return o.dbNoContext.WithContext(ctx).
+		Model(&model.PDPProofSet{}).
+		Where("set_id = ?", proofSetID).
+		Update("piece_count", gorm.Expr("piece_count + ?", count)).Error
 }
 
 func (o *OnChainPDP) QueueAddRoots(

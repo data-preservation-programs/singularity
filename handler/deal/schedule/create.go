@@ -12,6 +12,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-cid"
 	"github.com/rjNemo/underscore"
@@ -59,6 +60,28 @@ func argToDuration(s string) (time.Duration, error) {
 		return 0, errors.WithStack(err)
 	}
 	return time.Duration(epochs) * 30 * time.Second, nil
+}
+
+func validatePDPPreparationPieceSizes(db *gorm.DB, preparationID model.PreparationID) error {
+	var oversized model.Car
+	err := db.Model(&model.Car{}).
+		Select("piece_cid", "piece_size").
+		Where("preparation_id = ? AND piece_size > ?", preparationID, model.PDPProofSetMaxPieceSize).
+		Order("piece_size DESC").
+		First(&oversized).Error
+	if err == nil {
+		return errors.Wrapf(
+			handlererror.ErrInvalidParameter,
+			"current PDP proofset piece limit is 1 GiB minus FR32 overhead; preparation %d has oversized piece %s (%d bytes)",
+			preparationID,
+			oversized.PieceCID.String(),
+			oversized.PieceSize,
+		)
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil
+	}
+	return errors.WithStack(err)
 }
 
 // CreateHandler creates a new schedule based on the provided CreateRequest.
@@ -155,8 +178,8 @@ func (DefaultHandler) CreateHandler(
 		if err != nil {
 			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid allowed piece CID %s", pieceCID)
 		}
-		if parsed.Type() != cid.FilCommitmentUnsealed {
-			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "allowed piece CID %s is not commp", pieceCID)
+		if !util.IsAcceptedPieceCID(parsed) {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "allowed piece CID %s is not commp or commpv2", pieceCID)
 		}
 	}
 
@@ -175,6 +198,11 @@ func (DefaultHandler) CreateHandler(
 	}
 	if !slices.Contains(model.DealTypes, dealType) {
 		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid deal type %q", request.DealType)
+	}
+	if dealType == model.DealTypePDP {
+		if err := validatePDPPreparationPieceSizes(db, preparation.ID); err != nil {
+			return nil, err
+		}
 	}
 
 	headers := make(map[string]string)

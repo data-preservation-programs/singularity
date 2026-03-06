@@ -454,7 +454,10 @@ func processSPChanged(ctx context.Context, db *gorm.DB) error {
 			var rowsAffected int64
 			if err := database.DoRetry(ctx, func() error {
 				result := db.Model(&model.PDPProofSet{}).Where("set_id = ?", r.SetID_).
-					Update("provider", newAddr.String())
+					Updates(map[string]any{
+						"provider":      newAddr.String(),
+						"handoff_state": model.ProofSetTransferred,
+					})
 				rowsAffected = result.RowsAffected
 				return result.Error
 			}); err != nil {

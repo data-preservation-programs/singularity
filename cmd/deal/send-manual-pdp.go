@@ -99,9 +99,16 @@ var SendManualPDPCmd = &cli.Command{
 
 		provider := c.String("provider")
 
+		cfg := dealpusher.PDPSchedulingConfig{
+			BatchSize:            1,
+			MaxPiecesPerProofSet: 1024,
+			ConfirmationDepth:    c.Uint64("confirmation-depth"),
+			PollingInterval:      5 * time.Second,
+		}
+
 		// ensure proof set exists (or create one)
 		fmt.Println("ensuring proof set...")
-		proofSetID, err := pdp.EnsureProofSet(c.Context, evmSigner, provider)
+		proofSetID, err := pdp.EnsureProofSet(c.Context, evmSigner, provider, cfg)
 		if err != nil {
 			return errors.Wrap(err, "failed to ensure proof set")
 		}
@@ -115,11 +122,6 @@ var SendManualPDPCmd = &cli.Command{
 
 		// add piece to proof set
 		fmt.Println("submitting add-roots tx...")
-		cfg := dealpusher.PDPSchedulingConfig{
-			BatchSize:         1,
-			ConfirmationDepth: c.Uint64("confirmation-depth"),
-			PollingInterval:   5 * time.Second,
-		}
 		pieceSize := c.Int64("piece-size")
 		queuedTx, err := pdp.QueueAddRoots(c.Context, evmSigner, proofSetID, []cid.Cid{pieceCID}, []int64{pieceSize}, cfg)
 		if err != nil {
