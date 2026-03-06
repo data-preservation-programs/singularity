@@ -30,6 +30,7 @@
 
 * [Inline Preparation](topics/inline-preparation.md)
 * [Benchmark](topics/benchmark.md)
+* [PDP Calibnet E2E Runbook](topics/pdp-calibnet-e2e.md)
 
 ## 💻 CLI Reference <a href="#cli-reference" id="cli-reference"></a>
 <!-- cli begin -->
