@@ -8,14 +8,14 @@ require (
 	github.com/bcicen/jstream v1.0.1
 	github.com/brianvoe/gofakeit/v6 v6.23.2
 	github.com/cockroachdb/errors v1.11.3
-	github.com/data-preservation-programs/go-synapse v0.0.0-20260220134035-b27d67ac9095
+	github.com/data-preservation-programs/go-synapse v0.0.0-20260301205628-1f4a6d7f521c
 	github.com/data-preservation-programs/table v0.0.3
 	github.com/dustin/go-humanize v1.0.1
 	github.com/ethereum/go-ethereum v1.14.12
 	github.com/fatih/color v1.18.0
 	github.com/filecoin-project/go-address v1.2.0
 	github.com/filecoin-project/go-cbor-util v0.0.2
-	github.com/filecoin-project/go-fil-commcid v0.2.0
+	github.com/filecoin-project/go-fil-commcid v0.3.1
 	github.com/filecoin-project/go-fil-commp-hashhash v0.2.1-0.20230811065821-2e9c683db589
 	github.com/filecoin-project/go-fil-markets v1.28.3
 	github.com/filecoin-project/go-state-types v0.17.0

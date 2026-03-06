@@ -13,7 +13,6 @@ import (
 // PDPSchedulingConfig holds PDP-specific scheduling knobs for on-chain operations.
 type PDPSchedulingConfig struct {
 	BatchSize         int
-	GasLimit          uint64
 	ConfirmationDepth uint64
 	PollingInterval   time.Duration
 }
@@ -22,9 +21,6 @@ type PDPSchedulingConfig struct {
 func (c PDPSchedulingConfig) Validate() error {
 	if c.BatchSize <= 0 {
 		return errors.New("pdp batch size must be greater than 0")
-	}
-	if c.GasLimit == 0 {
-		return errors.New("pdp gas limit must be greater than 0")
 	}
 	if c.ConfirmationDepth == 0 {
 		return errors.New("pdp confirmation depth must be greater than 0")
@@ -42,7 +38,8 @@ type PDPProofSetManager interface {
 	// The signer's EVMAddress identifies the client on-chain.
 	EnsureProofSet(ctx context.Context, evmSigner signer.EVMSigner, provider string) (uint64, error)
 	// QueueAddRoots submits root additions for a proof set and returns the queued tx reference.
-	QueueAddRoots(ctx context.Context, evmSigner signer.EVMSigner, proofSetID uint64, pieceCIDs []cid.Cid, cfg PDPSchedulingConfig) (*PDPQueuedTx, error)
+	// pieceSizes are the padded piece sizes corresponding to each CID, needed for CommPv2 conversion.
+	QueueAddRoots(ctx context.Context, evmSigner signer.EVMSigner, proofSetID uint64, pieceCIDs []cid.Cid, pieceSizes []int64, cfg PDPSchedulingConfig) (*PDPQueuedTx, error)
 }
 
 // PDPTransactionConfirmer defines confirmation checks for queued on-chain transactions.

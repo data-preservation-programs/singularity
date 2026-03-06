@@ -51,6 +51,7 @@
     * [Resume](cli-reference/deal/schedule/resume.md)
     * [Remove](cli-reference/deal/schedule/remove.md)
   * [Send Manual](cli-reference/deal/send-manual.md)
+  * [Send Manual Pdp](cli-reference/deal/send-manual-pdp.md)
   * [List](cli-reference/deal/list.md)
 * [Run](cli-reference/run/README.md)
   * [Api](cli-reference/run/api.md)

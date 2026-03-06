@@ -8,6 +8,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/dealpusher"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/urfave/cli/v2"
 )
 
@@ -33,11 +34,6 @@ var DealPusherCmd = &cli.Command{
 			Value: 128,
 		},
 		&cli.Uint64Flag{
-			Name:  "pdp-gas-limit",
-			Usage: "Gas limit for PDP on-chain transactions",
-			Value: 5000000,
-		},
-		&cli.Uint64Flag{
 			Name:  "pdp-confirmation-depth",
 			Usage: "Number of block confirmations required for PDP transactions",
 			Value: 5,
@@ -51,6 +47,11 @@ var DealPusherCmd = &cli.Command{
 			Name:    "eth-rpc",
 			Usage:   "Ethereum RPC endpoint for FEVM (required to execute PDP schedules on-chain)",
 			EnvVars: []string{"ETH_RPC_URL"},
+		},
+		&cli.StringFlag{
+			Name:    "pdp-contract-address",
+			Usage:   "Override PDPVerifier contract address (for devnet/testing)",
+			EnvVars: []string{"PDP_CONTRACT_ADDRESS"},
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -68,7 +69,6 @@ var DealPusherCmd = &cli.Command{
 
 		pdpCfg := dealpusher.PDPSchedulingConfig{
 			BatchSize:         c.Int("pdp-batch-size"),
-			GasLimit:          c.Uint64("pdp-gas-limit"),
 			ConfirmationDepth: c.Uint64("pdp-confirmation-depth"),
 			PollingInterval:   c.Duration("pdp-poll-interval"),
 		}
@@ -80,7 +80,11 @@ var DealPusherCmd = &cli.Command{
 			dealpusher.WithPDPSchedulingConfig(pdpCfg),
 		}
 		if rpcURL := c.String("eth-rpc"); rpcURL != "" {
-			pdpAdapter, err := dealpusher.NewOnChainPDP(c.Context, db, rpcURL)
+			var contractAddr common.Address
+			if s := c.String("pdp-contract-address"); s != "" {
+				contractAddr = common.HexToAddress(s)
+			}
+			pdpAdapter, err := dealpusher.NewOnChainPDPWithAddress(c.Context, db, rpcURL, contractAddr)
 			if err != nil {
 				return errors.Wrap(err, "failed to initialize PDP on-chain adapter")
 			}

@@ -9,9 +9,10 @@ import (
 	"github.com/cockroachdb/errors"
 	synapse "github.com/data-preservation-programs/go-synapse"
 	"github.com/data-preservation-programs/go-synapse/constants"
-	"github.com/data-preservation-programs/go-synapse/contracts"
 	"github.com/data-preservation-programs/go-synapse/pdp"
 	"github.com/data-preservation-programs/go-synapse/signer"
+	commcid "github.com/filecoin-project/go-fil-commcid"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,6 +23,11 @@ import (
 	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
 )
+
+// defaultGasLimit is a fixed gas limit for FEVM transactions.
+// FEVM gas estimation (NoSend=true) is unreliable, so we use a fixed value.
+// EVM traces show ~200K gas but FEVM execution needs ~17M due to actor overhead.
+const defaultGasLimit = 30_000_000
 
 type confirmationClient interface {
 	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
@@ -36,10 +42,16 @@ type OnChainPDP struct {
 	network       constants.Network
 	chainID       *big.Int
 	contractAddr  common.Address
-	contract      *contracts.PDPVerifier
 }
 
 func NewOnChainPDP(ctx context.Context, db *gorm.DB, rpcURL string) (*OnChainPDP, error) {
+	return NewOnChainPDPWithAddress(ctx, db, rpcURL, common.Address{})
+}
+
+// NewOnChainPDPWithAddress is like NewOnChainPDP but accepts an optional
+// contract address override. When addr is non-zero it is used instead of
+// the default for the detected network (e.g. for devnet testing).
+func NewOnChainPDPWithAddress(ctx context.Context, db *gorm.DB, rpcURL string, addr common.Address) (*OnChainPDP, error) {
 	if rpcURL == "" {
 		return nil, errors.New("eth rpc URL is required")
 	}
@@ -55,16 +67,13 @@ func NewOnChainPDP(ctx context.Context, db *gorm.DB, rpcURL string) (*OnChainPDP
 		return nil, errors.Wrap(err, "failed to detect FEVM network")
 	}
 
-	contractAddr := constants.GetPDPVerifierAddress(network)
+	contractAddr := addr
+	if contractAddr == (common.Address{}) {
+		contractAddr = constants.GetPDPVerifierAddress(network)
+	}
 	if contractAddr == (common.Address{}) {
 		ethClient.Close()
 		return nil, fmt.Errorf("no PDPVerifier contract for network %s", network)
-	}
-
-	contract, err := contracts.NewPDPVerifier(contractAddr, ethClient)
-	if err != nil {
-		ethClient.Close()
-		return nil, errors.Wrap(err, "failed to initialize PDPVerifier contract")
 	}
 
 	Logger.Infow("initialized PDP on-chain adapter",
@@ -80,7 +89,6 @@ func NewOnChainPDP(ctx context.Context, db *gorm.DB, rpcURL string) (*OnChainPDP
 		network:       network,
 		chainID:       big.NewInt(chainIDInt64),
 		contractAddr:  contractAddr,
-		contract:      contract,
 	}, nil
 }
 
@@ -94,6 +102,7 @@ func (o *OnChainPDP) Close() error {
 func (o *OnChainPDP) newManager(ctx context.Context, evmSigner signer.EVMSigner) (*pdp.Manager, error) {
 	cfg := pdp.DefaultManagerConfig()
 	cfg.ContractAddress = o.contractAddr
+	cfg.DefaultGasLimit = defaultGasLimit
 	mgr, err := pdp.NewManagerWithConfig(ctx, o.ethClient, evmSigner, o.network, &cfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to initialize PDP proof set manager")
@@ -125,13 +134,10 @@ func (o *OnChainPDP) EnsureProofSet(ctx context.Context, evmSigner signer.EVMSig
 	}
 
 	result, err := manager.CreateProofSet(ctx, pdp.CreateProofSetOptions{
-		Listener: evmSigner.EVMAddress(),
+		Value: pdp.SybilFee,
 	})
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create PDP proof set")
-	}
-	if result == nil || result.ProofSetID == nil {
-		return 0, errors.New("create PDP proof set returned empty proof set ID")
 	}
 
 	setID := result.ProofSetID.Uint64()
@@ -156,45 +162,42 @@ func (o *OnChainPDP) QueueAddRoots(
 	evmSigner signer.EVMSigner,
 	proofSetID uint64,
 	pieceCIDs []cid.Cid,
+	pieceSizes []int64,
 	cfg PDPSchedulingConfig,
 ) (*PDPQueuedTx, error) {
 	if len(pieceCIDs) == 0 {
 		return nil, errors.New("no piece CIDs provided")
 	}
+	if len(pieceCIDs) != len(pieceSizes) {
+		return nil, fmt.Errorf("pieceCIDs length %d != pieceSizes length %d", len(pieceCIDs), len(pieceSizes))
+	}
 	if cfg.BatchSize > 0 && len(pieceCIDs) > cfg.BatchSize {
 		return nil, fmt.Errorf("piece CID count %d exceeds configured PDP batch size %d", len(pieceCIDs), cfg.BatchSize)
+	}
+
+	// convert commP v1 CIDs to CommPv2 format expected by PDPVerifier contract
+	roots := make([]pdp.Root, len(pieceCIDs))
+	for i, pieceCID := range pieceCIDs {
+		payloadSize := uint64(pieceSizes[i]) * 127 / 128
+		v2CID, err := commcid.PieceCidV2FromV1(pieceCID, payloadSize)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to convert piece CID %s to CommPv2", pieceCID)
+		}
+		roots[i] = pdp.Root{PieceCID: v2CID}
 	}
 
 	manager, err := o.newManager(ctx, evmSigner)
 	if err != nil {
 		return nil, err
 	}
+
 	setIDBig := new(big.Int).SetUint64(proofSetID)
-	proofSet, err := manager.GetProofSet(ctx, setIDBig)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to load PDP proof set %d", proofSetID)
-	}
-
-	pieces := make([]contracts.CidsCid, len(pieceCIDs))
-	for i, pieceCID := range pieceCIDs {
-		pieces[i] = contracts.CidsCid{Data: pieceCID.Bytes()}
-	}
-
-	auth, err := evmSigner.Transactor(o.chainID)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create FEVM transactor")
-	}
-	auth.Context = ctx
-	if cfg.GasLimit > 0 {
-		auth.GasLimit = cfg.GasLimit
-	}
-
-	tx, err := o.contract.AddPieces(auth, setIDBig, proofSet.Listener, pieces, []byte{})
+	result, err := manager.AddRoots(ctx, setIDBig, roots)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to submit PDP add-roots transaction")
 	}
 
-	return &PDPQueuedTx{Hash: tx.Hash().Hex()}, nil
+	return &PDPQueuedTx{Hash: result.TransactionHash.Hex()}, nil
 }
 
 func (o *OnChainPDP) WaitForConfirmations(
