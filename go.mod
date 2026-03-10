@@ -8,7 +8,7 @@ require (
 	github.com/bcicen/jstream v1.0.1
 	github.com/brianvoe/gofakeit/v6 v6.23.2
 	github.com/cockroachdb/errors v1.11.3
-	github.com/data-preservation-programs/go-synapse v0.0.0-20260301205628-1f4a6d7f521c
+	github.com/data-preservation-programs/go-synapse v0.0.0-20260310124115-0faeb6924d36
 	github.com/data-preservation-programs/table v0.0.3
 	github.com/dustin/go-humanize v1.0.1
 	github.com/ethereum/go-ethereum v1.14.12

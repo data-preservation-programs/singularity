@@ -11,7 +11,6 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/dealpusher"
 	"github.com/data-preservation-programs/singularity/util/keystore"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ipfs/go-cid"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
@@ -49,11 +48,6 @@ var SendManualPDPCmd = &cli.Command{
 			EnvVars:  []string{"ETH_RPC_URL"},
 			Required: true,
 		},
-		&cli.StringFlag{
-			Name:    "pdp-contract-address",
-			Usage:   "Override PDPVerifier contract address (for devnet/testing)",
-			EnvVars: []string{"PDP_CONTRACT_ADDRESS"},
-		},
 		&cli.Uint64Flag{
 			Name:  "confirmation-depth",
 			Usage: "Blocks to wait for tx confirmation",
@@ -67,12 +61,7 @@ var SendManualPDPCmd = &cli.Command{
 		}
 		defer closer.Close()
 
-		var contractAddr common.Address
-		if s := c.String("pdp-contract-address"); s != "" {
-			contractAddr = common.HexToAddress(s)
-		}
-
-		pdp, err := dealpusher.NewOnChainPDPWithAddress(c.Context, db, c.String("eth-rpc"), contractAddr)
+		pdp, err := dealpusher.NewOnChainPDP(c.Context, db, c.String("eth-rpc"))
 		if err != nil {
 			return errors.WithStack(err)
 		}

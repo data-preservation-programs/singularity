@@ -8,7 +8,6 @@ import (
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/dealpusher"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/urfave/cli/v2"
 )
 
@@ -53,11 +52,6 @@ var DealPusherCmd = &cli.Command{
 			Usage:   "Ethereum RPC endpoint for FEVM (required to execute PDP schedules on-chain)",
 			EnvVars: []string{"ETH_RPC_URL"},
 		},
-		&cli.StringFlag{
-			Name:    "pdp-contract-address",
-			Usage:   "Override PDPVerifier contract address (for devnet/testing)",
-			EnvVars: []string{"PDP_CONTRACT_ADDRESS"},
-		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -86,11 +80,7 @@ var DealPusherCmd = &cli.Command{
 			dealpusher.WithPDPSchedulingConfig(pdpCfg),
 		}
 		if rpcURL := c.String("eth-rpc"); rpcURL != "" {
-			var contractAddr common.Address
-			if s := c.String("pdp-contract-address"); s != "" {
-				contractAddr = common.HexToAddress(s)
-			}
-			pdpAdapter, err := dealpusher.NewOnChainPDPWithAddress(c.Context, db, rpcURL, contractAddr)
+			pdpAdapter, err := dealpusher.NewOnChainPDP(c.Context, db, rpcURL)
 			if err != nil {
 				return errors.Wrap(err, "failed to initialize PDP on-chain adapter")
 			}
