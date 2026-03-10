@@ -35,11 +35,6 @@ var PDPTrackerCmd = &cli.Command{
 			Name:  "full-sync",
 			Usage: "Re-index events from contract deployment by resetting the Shovel cursor. Derived PDP state (proof sets, deals) is preserved and updated via upserts. Requires an archival RPC node. Involves one RPC call per historical proof set.",
 		},
-		&cli.StringFlag{
-			Name:    "pdp-contract-address",
-			Usage:   "Override PDPVerifier contract address (for devnet/testing)",
-			EnvVars: []string{"PDP_CONTRACT_ADDRESS"},
-		},
 	},
 	Action: func(c *cli.Context) error {
 		rpcURL := c.String("eth-rpc")
@@ -66,9 +61,6 @@ var PDPTrackerCmd = &cli.Command{
 		}
 
 		contractAddr := constants.GetPDPVerifierAddress(network)
-		if s := c.String("pdp-contract-address"); s != "" {
-			contractAddr = common.HexToAddress(s)
-		}
 		if contractAddr == (common.Address{}) {
 			return fmt.Errorf("no PDPVerifier contract for network %s", network)
 		}

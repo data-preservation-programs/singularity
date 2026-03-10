@@ -47,13 +47,6 @@ type OnChainPDP struct {
 }
 
 func NewOnChainPDP(ctx context.Context, db *gorm.DB, rpcURL string) (*OnChainPDP, error) {
-	return NewOnChainPDPWithAddress(ctx, db, rpcURL, common.Address{})
-}
-
-// NewOnChainPDPWithAddress is like NewOnChainPDP but accepts an optional
-// contract address override. When addr is non-zero it is used instead of
-// the default for the detected network (e.g. for devnet testing).
-func NewOnChainPDPWithAddress(ctx context.Context, db *gorm.DB, rpcURL string, addr common.Address) (*OnChainPDP, error) {
 	if rpcURL == "" {
 		return nil, errors.New("eth rpc URL is required")
 	}
@@ -69,10 +62,7 @@ func NewOnChainPDPWithAddress(ctx context.Context, db *gorm.DB, rpcURL string, a
 		return nil, errors.Wrap(err, "failed to detect FEVM network")
 	}
 
-	contractAddr := addr
-	if contractAddr == (common.Address{}) {
-		contractAddr = constants.GetPDPVerifierAddress(network)
-	}
+	contractAddr := constants.GetPDPVerifierAddress(network)
 	if contractAddr == (common.Address{}) {
 		ethClient.Close()
 		return nil, fmt.Errorf("no PDPVerifier contract for network %s", network)
