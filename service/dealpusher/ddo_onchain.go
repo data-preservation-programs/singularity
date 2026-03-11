@@ -44,9 +44,6 @@ func NewOnChainDDO(
 	rpcURL string,
 	ddoAddr, paymentsAddr, payToken, privateKey string,
 ) (*OnChainDDO, error) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
 	if rpcURL == "" {
 		return nil, errors.New("eth rpc URL is required")
 	}
