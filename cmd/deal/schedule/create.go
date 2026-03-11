@@ -62,7 +62,7 @@ var CreateCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:     "deal-type",
 			Category: "Deal Proposal",
-			Usage:    "Deal type: market (legacy f05) or pdp (f41)",
+			Usage:    "Deal type: market (legacy f05), pdp (f41), or ddo (DDO allocations)",
 			Value:    string(model.DealTypeMarket),
 		},
 		&cli.StringSliceFlag{

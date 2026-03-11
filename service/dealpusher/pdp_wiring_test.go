@@ -54,23 +54,22 @@ func (m *txConfirmerMock) WaitForConfirmations(_ context.Context, txHash string,
 	return &PDPTransactionReceipt{Hash: txHash}, nil
 }
 
-func TestDealPusher_ResolveScheduleDealType_DefaultsToMarket(t *testing.T) {
+func TestDealPusher_ResolveScheduleDealType_EmptyReturnsEmpty(t *testing.T) {
 	d := &DealPusher{}
-	require.Equal(t, model.DealTypeMarket, d.resolveScheduleDealType(&model.Schedule{}))
-}
-
-func TestDealPusher_ResolveScheduleDealType_DelegatedProviderInfersPDP(t *testing.T) {
-	subaddr := make([]byte, 20)
-	subaddr[19] = 1
-	providerAddr, err := address.NewDelegatedAddress(10, subaddr)
-	require.NoError(t, err)
-	d := &DealPusher{}
-	require.Equal(t, model.DealTypePDP, d.resolveScheduleDealType(&model.Schedule{Provider: providerAddr.String()}))
+	require.Equal(t, model.DealType(""), d.resolveScheduleDealType(&model.Schedule{}))
 }
 
 func TestDealPusher_ResolveScheduleDealType_UsesScheduleDealType(t *testing.T) {
 	d := &DealPusher{}
 	require.Equal(t, model.DealTypePDP, d.resolveScheduleDealType(&model.Schedule{DealType: model.DealTypePDP}))
+}
+
+func TestDealPusher_RunSchedule_UnknownDealTypeErrors(t *testing.T) {
+	d := &DealPusher{}
+	state, err := d.runSchedule(context.Background(), &model.Schedule{DealType: "bogus"})
+	require.Error(t, err)
+	require.Equal(t, model.ScheduleError, state)
+	require.Contains(t, err.Error(), "unknown deal type")
 }
 
 func TestDealPusher_RunSchedule_PDPWithoutDependenciesReturnsConfiguredError(t *testing.T) {

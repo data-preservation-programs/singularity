@@ -29,20 +29,6 @@ func defaultPDPSchedulingConfig() PDPSchedulingConfig {
 	}
 }
 
-func inferScheduleDealType(schedule *model.Schedule) model.DealType {
-	if schedule == nil {
-		return model.DealTypeMarket
-	}
-	providerAddr, err := address.NewFromString(schedule.Provider)
-	if err != nil {
-		return model.DealTypeMarket
-	}
-	if providerAddr.Protocol() == address.Delegated {
-		return model.DealTypePDP
-	}
-	return model.DealTypeMarket
-}
-
 func validatePDPProofSetPieceSize(pieceSize int64) error {
 	if pieceSize <= 0 {
 		return fmt.Errorf("piece size must be greater than 0, got %d", pieceSize)

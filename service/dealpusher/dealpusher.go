@@ -2,6 +2,7 @@ package dealpusher
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -46,6 +47,9 @@ type DealPusher struct {
 	pdpProofSetManager  PDPProofSetManager      // Optional PDP proof set lifecycle manager.
 	pdpTxConfirmer      PDPTransactionConfirmer // Optional PDP transaction confirmer.
 	pdpSchedulingConfig PDPSchedulingConfig     // PDP scheduling config for root batching and tx confirmation.
+	ddoDealManager      DDODealManager          // Optional DDO deal lifecycle manager.
+	ddoAllocTracker     DDOAllocationTracker    // Optional DDO allocation tracker for deal activation polling.
+	ddoSchedulingConfig DDOSchedulingConfig     // DDO scheduling config for allocation batching and tx confirmation.
 	// Resolver is injected so tests and future wiring can switch deal type behavior without coupling DealPusher to config storage.
 	scheduleDealTypeResolver func(schedule *model.Schedule) model.DealType
 	workerID                 uuid.UUID                               // UUID identifying the associated worker.
@@ -250,8 +254,17 @@ func (d *DealPusher) updateScheduleUnsafe(ctx context.Context, schedule model.Sc
 //     Possible values: ScheduleCompleted, ScheduleError, or an empty string.
 //  2. An error if any step of the process encounters an issue, otherwise nil.
 func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) (model.ScheduleState, error) {
-	if d.resolveScheduleDealType(schedule) == model.DealTypePDP {
+	switch d.resolveScheduleDealType(schedule) {
+	case model.DealTypePDP:
 		return d.runPDPSchedule(ctx, schedule)
+	case model.DealTypeDDO:
+		return d.runDDOSchedule(ctx, schedule)
+	case model.DealTypeMarket:
+		// fall through to market deal flow below
+	default:
+		return model.ScheduleError, fmt.Errorf(
+			"unknown deal type %q for schedule %d; run `singularity admin init` to backfill deal types",
+			schedule.DealType, schedule.ID)
 	}
 
 	db := d.dbNoContext.WithContext(ctx)
@@ -459,16 +472,13 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 }
 
 func (d *DealPusher) resolveScheduleDealType(schedule *model.Schedule) model.DealType {
-	if d.scheduleDealTypeResolver == nil {
-		if schedule != nil {
-			switch schedule.DealType {
-			case model.DealTypeMarket, model.DealTypePDP:
-				return schedule.DealType
-			}
-		}
-		return inferScheduleDealType(schedule)
+	if d.scheduleDealTypeResolver != nil {
+		return d.scheduleDealTypeResolver(schedule)
 	}
-	return d.scheduleDealTypeResolver(schedule)
+	if schedule != nil {
+		return schedule.DealType
+	}
+	return ""
 }
 
 func NewDealPusher(db *gorm.DB, lotusURL string,
@@ -499,6 +509,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 		cronEntries:              make(map[model.ScheduleID]cron.EntryID),
 		dealMaker:                dealMaker,
 		pdpSchedulingConfig:      defaultPDPSchedulingConfig(),
+		ddoSchedulingConfig:      defaultDDOSchedulingConfig(),
 		workerID:                 uuid.New(),
 		cron: cron.New(cron.WithLogger(&cronLogger{}), cron.WithLocation(time.UTC),
 			cron.WithParser(cron.NewParser(cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor))),
