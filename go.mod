@@ -96,6 +96,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.5.0 // indirect
+	github.com/Eastore-project/ddo-client v0.0.0-20260310144650-71b11a08d096
 	github.com/Files-com/files-sdk-go/v3 v3.2.258 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Max-Sum/base32768 v0.0.0-20230304063302-18e6ce5945fd // indirect
