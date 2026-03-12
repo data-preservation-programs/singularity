@@ -35,12 +35,6 @@ func WithDDODealManager(manager DDODealManager) Option {
 	}
 }
 
-func WithDDOAllocationTracker(tracker DDOAllocationTracker) Option {
-	return func(d *DealPusher) {
-		d.ddoAllocTracker = tracker
-	}
-}
-
 func WithDDOSchedulingConfig(cfg DDOSchedulingConfig) Option {
 	return func(d *DealPusher) {
 		d.ddoSchedulingConfig = cfg

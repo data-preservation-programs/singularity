@@ -146,18 +146,27 @@ var DealPusherCmd = &cli.Command{
 				TermMax:           c.Int64("ddo-term-max"),
 				ExpirationOffset:  c.Int64("ddo-expiration-offset"),
 			}
+			if err := ddoCfg.Validate(); err != nil {
+				return errors.WithStack(err)
+			}
 			opts = append(opts, dealpusher.WithDDOSchedulingConfig(ddoCfg))
-			// Path B merge point: instantiate OnChainDDO here and pass via:
-			// ddoAdapter, err := dealpusher.NewOnChainDDO(c.Context, db, rpcURL,
-			//     ddoContract,
-			//     c.String("ddo-payments-contract"),
-			//     c.String("ddo-payment-token"),
-			//     privateKey,
-			// )
-			// opts = append(opts,
-			//     dealpusher.WithDDODealManager(ddoAdapter),
-			//     dealpusher.WithDDOAllocationTracker(ddoAdapter),
-			// )
+
+			rpcURL := c.String("eth-rpc")
+			if rpcURL == "" {
+				return errors.New("--eth-rpc is required when --ddo-contract is set")
+			}
+			ddoAdapter, err := dealpusher.NewOnChainDDO(c.Context,
+				rpcURL,
+				ddoContract,
+				c.String("ddo-payments-contract"),
+				c.String("ddo-payment-token"),
+			)
+			if err != nil {
+				return errors.Wrap(err, "failed to initialize DDO on-chain adapter")
+			}
+			defer ddoAdapter.Close()
+
+			opts = append(opts, dealpusher.WithDDODealManager(ddoAdapter))
 		}
 
 		dm, err := dealpusher.NewDealPusher(

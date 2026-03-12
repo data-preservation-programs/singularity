@@ -33,6 +33,11 @@ const (
 	DealTypeDDO DealType = "ddo"
 )
 
+type DDOAllocationStatus struct {
+	Activated    bool
+	SectorNumber uint64
+}
+
 const (
 	// PDPProofSetMaxPieceSize is Singularity's current PDP max piece size policy:
 	// 1 GiB minus FR32 expansion overhead.

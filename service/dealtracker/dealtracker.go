@@ -94,12 +94,7 @@ var Logger = log.Logger("dealtracker")
 // DDOAllocationTracker polls DDO allocation activation status.
 // Injected optionally; when nil, DDO deal tracking is skipped.
 type DDOAllocationTracker interface {
-	GetAllocationInfo(ctx context.Context, allocationID uint64) (*DDOAllocationStatus, error)
-}
-
-type DDOAllocationStatus struct {
-	Activated    bool
-	SectorNumber uint64
+	GetAllocationInfo(ctx context.Context, allocationID uint64) (*model.DDOAllocationStatus, error)
 }
 
 type DealTracker struct {

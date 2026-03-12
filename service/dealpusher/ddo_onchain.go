@@ -12,6 +12,7 @@ import (
 	ddoutils "github.com/Eastore-project/ddo-client/pkg/utils"
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/go-synapse/signer"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -247,12 +248,12 @@ func (o *OnChainDDO) ParseAllocationIDs(ctx context.Context, txHash string) ([]u
 	return allocationIDs, nil
 }
 
-func (o *OnChainDDO) GetAllocationInfo(ctx context.Context, allocationID uint64) (*DDOAllocationStatus, error) {
+func (o *OnChainDDO) GetAllocationInfo(ctx context.Context, allocationID uint64) (*model.DDOAllocationStatus, error) {
 	info, err := o.ddoClient.GetAllocationInfo(allocationID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to fetch DDO allocation %d", allocationID)
 	}
-	return &DDOAllocationStatus{
+	return &model.DDOAllocationStatus{
 		Activated:    info.Activated,
 		SectorNumber: info.SectorNumber,
 	}, nil
@@ -372,4 +373,3 @@ func supportsPaymentToken(tokens []ddotypes.TokenConfig, token common.Address) b
 }
 
 var _ DDODealManager = (*OnChainDDO)(nil)
-var _ DDOAllocationTracker = (*OnChainDDO)(nil)

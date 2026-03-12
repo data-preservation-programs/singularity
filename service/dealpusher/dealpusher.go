@@ -48,7 +48,6 @@ type DealPusher struct {
 	pdpTxConfirmer      PDPTransactionConfirmer // Optional PDP transaction confirmer.
 	pdpSchedulingConfig PDPSchedulingConfig     // PDP scheduling config for root batching and tx confirmation.
 	ddoDealManager      DDODealManager          // Optional DDO deal lifecycle manager.
-	ddoAllocTracker     DDOAllocationTracker    // Optional DDO allocation tracker for deal activation polling.
 	ddoSchedulingConfig DDOSchedulingConfig     // DDO scheduling config for allocation batching and tx confirmation.
 	// Resolver is injected so tests and future wiring can switch deal type behavior without coupling DealPusher to config storage.
 	scheduleDealTypeResolver func(schedule *model.Schedule) model.DealType

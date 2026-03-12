@@ -70,12 +70,6 @@ type DDODealManager interface {
 	ParseAllocationIDs(ctx context.Context, txHash string) ([]uint64, error)
 }
 
-// DDOAllocationTracker polls allocation activation status for deal tracking.
-// Path B implements this; we define a local struct to avoid importing ddo-client types.
-type DDOAllocationTracker interface {
-	GetAllocationInfo(ctx context.Context, allocationID uint64) (*DDOAllocationStatus, error)
-}
-
 type DDOSPConfig struct {
 	IsActive     bool
 	MinPieceSize uint64
@@ -100,9 +94,4 @@ type DDOTransactionReceipt struct {
 	BlockNumber uint64
 	GasUsed     uint64
 	Status      uint64
-}
-
-type DDOAllocationStatus struct {
-	Activated    bool
-	SectorNumber uint64
 }
