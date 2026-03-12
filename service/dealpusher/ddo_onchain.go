@@ -3,6 +3,7 @@ package dealpusher
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"time"
 
 	ddocontract "github.com/Eastore-project/ddo-client/pkg/contract/ddo"
@@ -12,10 +13,10 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/go-synapse/signer"
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 )
 
 type ddoConfirmationClient interface {
@@ -24,25 +25,21 @@ type ddoConfirmationClient interface {
 }
 
 // OnChainDDO implements the DDO scheduling interfaces using ddo-client.
-//
-// The current upstream SDK still requires a raw private key for write clients.
-// Until it accepts a signer/transactor directly, this adapter must be bound to
-// a specific EVM key and rejects mismatched signers at call time.
+// It keeps a read-only DDO client for queries and confirmation polling, and
+// derives write-capable DDO/payments clients from the caller's EVMSigner.
 type OnChainDDO struct {
-	ddoClient       *ddocontract.Client
-	paymentsClient  *paymentscontract.Client
-	confirmClient   ddoConfirmationClient
-	rpcURL          string
-	privateKey      string
-	ddoContractAddr common.Address
-	paymentToken    common.Address
-	signerAddr      common.Address
+	ddoClient            *ddocontract.Client
+	confirmClient        ddoConfirmationClient
+	chainID              *big.Int
+	ddoContractAddr      common.Address
+	paymentsContractAddr common.Address
+	paymentToken         common.Address
 }
 
 func NewOnChainDDO(
 	ctx context.Context,
 	rpcURL string,
-	ddoAddr, paymentsAddr, payToken, privateKey string,
+	ddoAddr, paymentsAddr, payToken string,
 ) (*OnChainDDO, error) {
 	if rpcURL == "" {
 		return nil, errors.New("eth rpc URL is required")
@@ -56,36 +53,25 @@ func NewOnChainDDO(
 	if payToken == "" {
 		return nil, errors.New("ddo payment token address is required")
 	}
-	if privateKey == "" {
-		return nil, errors.New("ddo private key is required")
-	}
 
-	ecdsaKey, err := ethcrypto.HexToECDSA(trimHexPrefix(privateKey))
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse DDO private key")
-	}
-	signerAddr := ethcrypto.PubkeyToAddress(ecdsaKey.PublicKey)
-
-	ddoClient, err := ddocontract.NewClientWithParams(rpcURL, ddoAddr, privateKey)
+	ddoClient, err := ddocontract.NewReadOnlyClientWithParams(rpcURL, ddoAddr)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to initialize DDO contract client")
 	}
 
-	paymentsClient, err := paymentscontract.NewClientWithParams(rpcURL, paymentsAddr, privateKey)
+	chainID, err := ddoClient.GetEthClient().ChainID(ctx)
 	if err != nil {
 		ddoClient.Close()
-		return nil, errors.Wrap(err, "failed to initialize DDO payments client")
+		return nil, errors.Wrap(err, "failed to detect EVM chain ID")
 	}
 
 	return &OnChainDDO{
-		ddoClient:       ddoClient,
-		paymentsClient:  paymentsClient,
-		confirmClient:   ddoClient.GetEthClient(),
-		rpcURL:          rpcURL,
-		privateKey:      privateKey,
-		ddoContractAddr: common.HexToAddress(ddoAddr),
-		paymentToken:    common.HexToAddress(payToken),
-		signerAddr:      signerAddr,
+		ddoClient:            ddoClient,
+		confirmClient:        ddoClient.GetEthClient(),
+		chainID:              chainID,
+		ddoContractAddr:      common.HexToAddress(ddoAddr),
+		paymentsContractAddr: common.HexToAddress(paymentsAddr),
+		paymentToken:         common.HexToAddress(payToken),
 	}, nil
 }
 
@@ -93,16 +79,9 @@ func (o *OnChainDDO) Close() {
 	if o.ddoClient != nil {
 		o.ddoClient.Close()
 	}
-	if o.paymentsClient != nil {
-		o.paymentsClient.Close()
-	}
 }
 
 func (o *OnChainDDO) ValidateSP(ctx context.Context, providerActorID uint64) (*DDOSPConfig, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-
 	cfg, err := o.ddoClient.GetSPConfig(providerActorID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to fetch DDO SP config for provider %d", providerActorID)
@@ -129,10 +108,8 @@ func (o *OnChainDDO) EnsurePayments(
 	pieces []DDOPieceSubmission,
 	cfg DDOSchedulingConfig,
 ) error {
-	if err := ctx.Err(); err != nil {
-		return err
-	}
-	if err := o.validateSigner(evmSigner); err != nil {
+	auth, err := o.newTransactor(ctx, evmSigner)
+	if err != nil {
 		return err
 	}
 
@@ -141,15 +118,23 @@ func (o *OnChainDDO) EnsurePayments(
 		return err
 	}
 
+	ddoWriteClient, err := o.newDDOWriteClient(auth)
+	if err != nil {
+		return err
+	}
+	paymentsWriteClient, err := o.newPaymentsWriteClient(auth)
+	if err != nil {
+		return err
+	}
+
 	if err := ddoutils.CheckAndSetupPayments(
 		o.ddoClient.GetEthClient(),
-		o.ddoClient,
-		o.paymentsClient,
+		ddoWriteClient,
+		paymentsWriteClient,
 		pieceInfos,
 		evmSigner.EVMAddress(),
 		o.ddoContractAddr,
-		o.rpcURL,
-		o.privateKey,
+		auth,
 	); err != nil {
 		return errors.Wrap(err, "failed to ensure DDO payments")
 	}
@@ -162,10 +147,8 @@ func (o *OnChainDDO) CreateAllocations(
 	pieces []DDOPieceSubmission,
 	cfg DDOSchedulingConfig,
 ) (*DDOQueuedTx, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-	if err := o.validateSigner(evmSigner); err != nil {
+	auth, err := o.newTransactor(ctx, evmSigner)
+	if err != nil {
 		return nil, err
 	}
 
@@ -174,7 +157,12 @@ func (o *OnChainDDO) CreateAllocations(
 		return nil, err
 	}
 
-	txHash, err := o.ddoClient.CreateAllocationRequests(pieceInfos)
+	ddoWriteClient, err := o.newDDOWriteClient(auth)
+	if err != nil {
+		return nil, err
+	}
+
+	txHash, err := ddoWriteClient.CreateAllocationRequests(pieceInfos)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create DDO allocation requests")
 	}
@@ -198,25 +186,29 @@ func (o *OnChainDDO) WaitForConfirmations(
 	ticker := time.NewTicker(pollInterval)
 	defer ticker.Stop()
 
+	var receipt *ethtypes.Receipt
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil, errors.Wrap(ctx.Err(), "context canceled while waiting for DDO transaction confirmation")
 		case <-ticker.C:
-			receipt, err := o.confirmClient.TransactionReceipt(ctx, hash)
-			if err != nil {
-				if errors.Is(err, ethereum.NotFound) {
-					continue
+			if receipt == nil {
+				receipt, err = o.confirmClient.TransactionReceipt(ctx, hash)
+				if err != nil {
+					if errors.Is(err, ethereum.NotFound) {
+						continue
+					}
+					return nil, errors.Wrap(err, "failed to fetch DDO transaction receipt")
 				}
-				return nil, errors.Wrap(err, "failed to fetch DDO transaction receipt")
-			}
 
-			out := toDDOReceipt(txHash, receipt)
-			if receipt.Status != ethtypes.ReceiptStatusSuccessful {
-				return out, fmt.Errorf("transaction %s failed with status %d", txHash, receipt.Status)
-			}
-			if depth == 0 {
-				return out, nil
+				out := toDDOReceipt(txHash, receipt)
+				if receipt.Status != ethtypes.ReceiptStatusSuccessful {
+					return out, fmt.Errorf("transaction %s failed with status %d", txHash, receipt.Status)
+				}
+				if depth == 0 {
+					return out, nil
+				}
 			}
 
 			currentBlock, err := o.confirmClient.BlockNumber(ctx)
@@ -224,17 +216,13 @@ func (o *OnChainDDO) WaitForConfirmations(
 				return nil, errors.Wrap(err, "failed to fetch latest block number")
 			}
 			if receipt.BlockNumber != nil && receipt.BlockNumber.Uint64()+depth <= currentBlock {
-				return out, nil
+				return toDDOReceipt(txHash, receipt), nil
 			}
 		}
 	}
 }
 
 func (o *OnChainDDO) ParseAllocationIDs(ctx context.Context, txHash string) ([]uint64, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-
 	hash, err := parseTxHash(txHash)
 	if err != nil {
 		return nil, err
@@ -253,10 +241,6 @@ func (o *OnChainDDO) ParseAllocationIDs(ctx context.Context, txHash string) ([]u
 }
 
 func (o *OnChainDDO) GetAllocationInfo(ctx context.Context, allocationID uint64) (*DDOAllocationStatus, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-
 	info, err := o.ddoClient.GetAllocationInfo(allocationID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to fetch DDO allocation %d", allocationID)
@@ -267,18 +251,42 @@ func (o *OnChainDDO) GetAllocationInfo(ctx context.Context, allocationID uint64)
 	}, nil
 }
 
-func (o *OnChainDDO) validateSigner(evmSigner signer.EVMSigner) error {
+func (o *OnChainDDO) newTransactor(ctx context.Context, evmSigner signer.EVMSigner) (*bind.TransactOpts, error) {
 	if evmSigner == nil {
-		return errors.New("evm signer is required")
+		return nil, errors.New("evm signer is required")
 	}
-	if evmSigner.EVMAddress() != o.signerAddr {
-		return fmt.Errorf(
-			"configured DDO adapter signer %s does not match requested signer %s",
-			o.signerAddr.Hex(),
-			evmSigner.EVMAddress().Hex(),
-		)
+	if o.chainID == nil {
+		return nil, errors.New("ddo adapter chain ID is not initialized")
 	}
-	return nil
+
+	auth, err := evmSigner.Transactor(o.chainID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create DDO transactor from signer")
+	}
+	auth.Context = ctx
+	return auth, nil
+}
+
+func (o *OnChainDDO) newDDOWriteClient(auth *bind.TransactOpts) (*ddocontract.Client, error) {
+	if o.ddoClient == nil || o.ddoClient.GetEthClient() == nil {
+		return nil, errors.New("ddo eth client is not initialized")
+	}
+	client, err := ddocontract.NewClientWithTransactor(o.ddoClient.GetEthClient(), o.ddoContractAddr.Hex(), auth)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to initialize write-capable DDO client")
+	}
+	return client, nil
+}
+
+func (o *OnChainDDO) newPaymentsWriteClient(auth *bind.TransactOpts) (*paymentscontract.Client, error) {
+	if o.ddoClient == nil || o.ddoClient.GetEthClient() == nil {
+		return nil, errors.New("ddo eth client is not initialized")
+	}
+	client, err := paymentscontract.NewClientWithTransactor(o.ddoClient.GetEthClient(), o.paymentsContractAddr.Hex(), auth)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to initialize write-capable DDO payments client")
+	}
+	return client, nil
 }
 
 func (o *OnChainDDO) buildPieceInfos(pieces []DDOPieceSubmission, cfg DDOSchedulingConfig) ([]ddotypes.PieceInfo, error) {
@@ -345,13 +353,6 @@ func supportsPaymentToken(tokens []ddotypes.TokenConfig, token common.Address) b
 		}
 	}
 	return false
-}
-
-func trimHexPrefix(value string) string {
-	if len(value) >= 2 && value[:2] == "0x" {
-		return value[2:]
-	}
-	return value
 }
 
 var _ DDODealManager = (*OnChainDDO)(nil)

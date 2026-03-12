@@ -22,6 +22,8 @@ type ddoConfirmClientStub struct {
 	receiptCalls int
 	receipts     []*ethtypes.Receipt
 	receiptErrs  []error
+	blockCalls   int
+	blockNumbers []uint64
 	blockNumber  uint64
 	blockErr     error
 }
@@ -44,6 +46,14 @@ func (s *ddoConfirmClientStub) TransactionReceipt(_ context.Context, _ common.Ha
 func (s *ddoConfirmClientStub) BlockNumber(context.Context) (uint64, error) {
 	if s.blockErr != nil {
 		return 0, s.blockErr
+	}
+	idx := s.blockCalls
+	s.blockCalls++
+	if idx < len(s.blockNumbers) {
+		return s.blockNumbers[idx], nil
+	}
+	if len(s.blockNumbers) > 0 {
+		return s.blockNumbers[len(s.blockNumbers)-1], nil
 	}
 	return s.blockNumber, nil
 }
@@ -97,18 +107,19 @@ func TestOnChainDDOBuildPieceInfos(t *testing.T) {
 	require.Equal(t, adapter.paymentToken, pieceInfos[0].PaymentTokenAddress)
 }
 
-func TestOnChainDDOValidateSignerMismatch(t *testing.T) {
+func TestOnChainDDONewTransactor(t *testing.T) {
 	baseSigner, err := signer.FromLotusExport(testutil.TestPrivateKeyHex)
 	require.NoError(t, err)
 	evmSigner, ok := signer.AsEVM(baseSigner)
 	require.True(t, ok)
 
-	otherSigner, err := signer.NewSecp256k1Signer([]byte{2})
-	require.NoError(t, err)
+	ctx := context.WithValue(context.Background(), "requestID", "ddo-test")
+	adapter := &OnChainDDO{chainID: big.NewInt(314159)}
 
-	adapter := &OnChainDDO{signerAddr: otherSigner.EVMAddress()}
-	err = adapter.validateSigner(evmSigner)
-	require.ErrorContains(t, err, "does not match requested signer")
+	auth, err := adapter.newTransactor(ctx, evmSigner)
+	require.NoError(t, err)
+	require.Equal(t, evmSigner.EVMAddress(), auth.From)
+	require.Equal(t, ctx, auth.Context)
 }
 
 func TestOnChainDDOWaitForConfirmations(t *testing.T) {
@@ -120,7 +131,7 @@ func TestOnChainDDOWaitForConfirmations(t *testing.T) {
 				GasUsed:     12345,
 				BlockNumber: big.NewInt(100),
 			}},
-			blockNumber: 106,
+			blockNumbers: []uint64{103, 104, 105},
 		},
 	}
 
@@ -129,6 +140,7 @@ func TestOnChainDDOWaitForConfirmations(t *testing.T) {
 	require.EqualValues(t, 100, receipt.BlockNumber)
 	require.EqualValues(t, 12345, receipt.GasUsed)
 	require.EqualValues(t, ethtypes.ReceiptStatusSuccessful, receipt.Status)
+	require.Equal(t, 2, adapter.confirmClient.(*ddoConfirmClientStub).receiptCalls)
 }
 
 func TestOnChainDDOParseAllocationIDs(t *testing.T) {
