@@ -27,6 +27,10 @@ type ddoConfirmationClient interface {
 // OnChainDDO implements the DDO scheduling interfaces using ddo-client.
 // It keeps a read-only DDO client for queries and confirmation polling, and
 // derives write-capable DDO/payments clients from the caller's EVMSigner.
+//
+// caveat: ddo-client (pinned at 2fff1a5b168a) overwrites auth.Context with
+// context.Background() in its write methods, so ctx cancellation does not
+// propagate to in-flight EnsurePayments/CreateAllocations calls.
 type OnChainDDO struct {
 	ddoClient            *ddocontract.Client
 	confirmClient        ddoConfirmationClient
@@ -44,14 +48,17 @@ func NewOnChainDDO(
 	if rpcURL == "" {
 		return nil, errors.New("eth rpc URL is required")
 	}
-	if ddoAddr == "" {
-		return nil, errors.New("ddo contract address is required")
+	ddoAddress, err := parseHexAddress(ddoAddr)
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid ddo contract address")
 	}
-	if paymentsAddr == "" {
-		return nil, errors.New("ddo payments contract address is required")
+	paymentsAddress, err := parseHexAddress(paymentsAddr)
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid ddo payments contract address")
 	}
-	if payToken == "" {
-		return nil, errors.New("ddo payment token address is required")
+	tokenAddress, err := parseHexAddress(payToken)
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid ddo payment token address")
 	}
 
 	ddoClient, err := ddocontract.NewReadOnlyClientWithParams(rpcURL, ddoAddr)
@@ -69,9 +76,9 @@ func NewOnChainDDO(
 		ddoClient:            ddoClient,
 		confirmClient:        ddoClient.GetEthClient(),
 		chainID:              chainID,
-		ddoContractAddr:      common.HexToAddress(ddoAddr),
-		paymentsContractAddr: common.HexToAddress(paymentsAddr),
-		paymentToken:         common.HexToAddress(payToken),
+		ddoContractAddr:      ddoAddress,
+		paymentsContractAddr: paymentsAddress,
+		paymentToken:         tokenAddress,
 	}, nil
 }
 
@@ -320,6 +327,15 @@ func (o *OnChainDDO) buildPieceInfos(pieces []DDOPieceSubmission, cfg DDOSchedul
 		}
 	}
 	return pieceInfos, nil
+}
+
+// parseHexAddress validates and converts a hex string to common.Address.
+// common.HexToAddress silently maps malformed input to 0x0; this fails fast.
+func parseHexAddress(s string) (common.Address, error) {
+	if !common.IsHexAddress(s) {
+		return common.Address{}, fmt.Errorf("invalid hex address %q", s)
+	}
+	return common.HexToAddress(s), nil
 }
 
 func parseTxHash(txHash string) (common.Hash, error) {
