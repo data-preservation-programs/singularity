@@ -18,6 +18,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type ddoTestContextKey string
+
 type ddoConfirmClientStub struct {
 	receiptCalls int
 	receipts     []*ethtypes.Receipt
@@ -113,7 +115,7 @@ func TestOnChainDDONewTransactor(t *testing.T) {
 	evmSigner, ok := signer.AsEVM(baseSigner)
 	require.True(t, ok)
 
-	ctx := context.WithValue(context.Background(), "requestID", "ddo-test")
+	ctx := context.WithValue(context.Background(), ddoTestContextKey("requestID"), "ddo-test")
 	adapter := &OnChainDDO{chainID: big.NewInt(314159)}
 
 	auth, err := adapter.newTransactor(ctx, evmSigner)
