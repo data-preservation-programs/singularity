@@ -41,6 +41,7 @@ func StartAnvil(t *testing.T, upstreamRPC string) *AnvilInstance {
 	cmd := exec.Command("anvil",
 		"--fork-url", upstreamRPC,
 		"--port", fmt.Sprintf("%d", port),
+		"--block-time", "1",
 		"--silent",
 	)
 	cmd.Stdout = os.Stderr
