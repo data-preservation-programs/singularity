@@ -227,7 +227,7 @@ func (DefaultHandler) CreateHandler(
 		PreparationID:         preparation.ID,
 		URLTemplate:           request.URLTemplate,
 		HTTPHeaders:           headers,
-		Provider:              request.Provider,
+		Provider:              providerActor,
 		TotalDealNumber:       request.TotalDealNumber,
 		TotalDealSize:         int64(totalDealSize),
 		Verified:              request.Verified,
