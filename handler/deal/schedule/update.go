@@ -246,6 +246,21 @@ func (DefaultHandler) UpdateHandler(
 		updates["deal_type"] = dealType
 	}
 
+	// check DDO invariant: url_template must be non-empty for DDO schedules.
+	// need to consider the effective state after applying updates.
+	effectiveDealType := schedule.DealType
+	if dt, ok := updates["deal_type"]; ok {
+		effectiveDealType = dt.(model.DealType)
+	}
+	effectiveURLTemplate := schedule.URLTemplate
+	if ut, ok := updates["url_template"]; ok {
+		effectiveURLTemplate = ut.(string)
+	}
+	if effectiveDealType == model.DealTypeDDO && effectiveURLTemplate == "" {
+		return nil, errors.Wrap(handlererror.ErrInvalidParameter,
+			"DDO schedules require a non-empty URL template for piece download")
+	}
+
 	err = db.Model(&schedule).Updates(updates).Error
 	if err != nil {
 		return nil, errors.WithStack(err)

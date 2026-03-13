@@ -271,6 +271,34 @@ func TestUpdateHandler_ClearSingleHeader(t *testing.T) {
 	})
 }
 
+func TestUpdateHandler_DDORequiresURLTemplate(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Schedule{
+			Preparation: &model.Preparation{},
+		}).Error
+		require.NoError(t, err)
+		req := UpdateRequest{DealType: ptr.Of(string(model.DealTypeDDO))}
+		_, err = Default.UpdateHandler(ctx, db, 1, req)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "URL template")
+	})
+}
+
+func TestUpdateHandler_DDOClearURLTemplateRejected(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Schedule{
+			Preparation: &model.Preparation{},
+			DealType:    model.DealTypeDDO,
+			URLTemplate: "https://example.com/{PIECE_CID}",
+		}).Error
+		require.NoError(t, err)
+		req := UpdateRequest{URLTemplate: ptr.Of("")}
+		_, err = Default.UpdateHandler(ctx, db, 1, req)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "URL template")
+	})
+}
+
 func TestUpdateHandler_InvalidHeader(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Schedule{
