@@ -207,9 +207,10 @@ func (d *DealPusher) runDDOSchedule(ctx context.Context, schedule *model.Schedul
 			return model.ScheduleError, fmt.Errorf("allocation count mismatch: got %d allocations for %d pieces", len(allocationIDs), len(cars))
 		}
 
+		deals := make([]model.Deal, len(cars))
 		for i, car := range cars {
 			allocID := allocationIDs[i]
-			dealModel := &model.Deal{
+			deals[i] = model.Deal{
 				State:           model.DealProposed,
 				DealType:        model.DealTypeDDO,
 				Provider:        schedule.Provider,
@@ -221,9 +222,11 @@ func (d *DealPusher) runDDOSchedule(ctx context.Context, schedule *model.Schedul
 				WalletID:        &walletObj.ID,
 				DDOAllocationID: &allocID,
 			}
-			if err := database.DoRetry(ctx, func() error { return db.Create(dealModel).Error }); err != nil {
-				return model.ScheduleError, errors.Wrap(err, "failed to create DDO deal")
-			}
+		}
+		if err := database.DoRetry(ctx, func() error { return db.Create(&deals).Error }); err != nil {
+			return model.ScheduleError, errors.Wrap(err, "failed to create DDO deals")
+		}
+		for _, car := range cars {
 			current.DealNumber++
 			current.DealSize += car.PieceSize
 		}
