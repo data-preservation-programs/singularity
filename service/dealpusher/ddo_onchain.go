@@ -12,7 +12,6 @@ import (
 	ddoutils "github.com/Eastore-project/ddo-client/pkg/utils"
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/go-synapse/signer"
-	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -246,17 +245,6 @@ func (o *OnChainDDO) ParseAllocationIDs(ctx context.Context, txHash string) ([]u
 		return nil, errors.Wrap(err, "failed to parse DDO allocation IDs from receipt")
 	}
 	return allocationIDs, nil
-}
-
-func (o *OnChainDDO) GetAllocationInfo(ctx context.Context, allocationID uint64) (*model.DDOAllocationStatus, error) {
-	info, err := o.ddoClient.GetAllocationInfo(allocationID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to fetch DDO allocation %d", allocationID)
-	}
-	return &model.DDOAllocationStatus{
-		Activated:    info.Activated,
-		SectorNumber: info.SectorNumber,
-	}, nil
 }
 
 func (o *OnChainDDO) newTransactor(ctx context.Context, evmSigner signer.EVMSigner) (*bind.TransactOpts, error) {
