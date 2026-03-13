@@ -25,7 +25,7 @@ import (
 type CreateRequest struct {
 	Preparation           string   `json:"preparation"           validation:"required"`  // Preparation ID or name
 	Provider              string   `json:"provider"              validation:"required"`  // Provider
-	DealType              string   `json:"dealType"`                                     // Deal type: market (f05) or pdp (f41)
+	DealType              string   `json:"dealType"`                                     // Deal type: market (f05), pdp (f41), or ddo
 	HTTPHeaders           []string `json:"httpHeaders"`                                  // http headers to be passed with the request (i.e. key=value)
 	URLTemplate           string   `json:"urlTemplate"`                                  // URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
 	PricePerGBEpoch       float64  `default:"0"                  json:"pricePerGbEpoch"` // Price in FIL per GiB per epoch
@@ -204,6 +204,12 @@ func (DefaultHandler) CreateHandler(
 			return nil, err
 		}
 	}
+	if dealType == model.DealTypeDDO {
+		if request.URLTemplate == "" {
+			return nil, errors.Wrap(handlererror.ErrInvalidParameter,
+				"DDO schedules require a URL template for piece download")
+		}
+	}
 
 	headers := make(map[string]string)
 	for _, header := range request.HTTPHeaders {
@@ -221,7 +227,7 @@ func (DefaultHandler) CreateHandler(
 		PreparationID:         preparation.ID,
 		URLTemplate:           request.URLTemplate,
 		HTTPHeaders:           headers,
-		Provider:              request.Provider,
+		Provider:              providerActor,
 		TotalDealNumber:       request.TotalDealNumber,
 		TotalDealSize:         int64(totalDealSize),
 		Verified:              request.Verified,

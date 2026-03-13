@@ -28,3 +28,15 @@ func WithScheduleDealTypeResolver(resolver func(schedule *model.Schedule) model.
 		d.scheduleDealTypeResolver = resolver
 	}
 }
+
+func WithDDODealManager(manager DDODealManager) Option {
+	return func(d *DealPusher) {
+		d.ddoDealManager = manager
+	}
+}
+
+func WithDDOSchedulingConfig(cfg DDOSchedulingConfig) Option {
+	return func(d *DealPusher) {
+		d.ddoSchedulingConfig = cfg
+	}
+}

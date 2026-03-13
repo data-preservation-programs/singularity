@@ -124,6 +124,11 @@ func AutoMigrate(db *gorm.DB) error {
 		return errors.Wrap(err, "failed to infer deal types")
 	}
 
+	// Set deal_type for existing schedules that predate the column
+	if err := inferScheduleDealTypes(db); err != nil {
+		return errors.Wrap(err, "failed to infer schedule deal types")
+	}
+
 	// Drop legacy fk_deals_actor constraint (Deal.ClientID no longer FKs to Actor)
 	if err := dropDealActorFK(db); err != nil {
 		return errors.Wrap(err, "failed to drop deal-actor FK")
@@ -356,6 +361,28 @@ func inferDealTypes(db *gorm.DB) error {
 	}
 
 	logger.Infow("set deal types", "updated", result.RowsAffected)
+	return nil
+}
+
+// inferScheduleDealTypes sets deal_type for schedules that predate the column.
+// same logic as inferDealTypes -- all pre-existing schedules are market.
+func inferScheduleDealTypes(db *gorm.DB) error {
+	var count int64
+	err := db.Raw(`SELECT COUNT(*) FROM schedules WHERE deal_type IS NULL OR deal_type = ''`).Scan(&count).Error
+	if err != nil {
+		logger.Debugw("skipping schedule deal type inference", "error", err)
+		return nil
+	}
+	if count == 0 {
+		return nil
+	}
+
+	logger.Infow("setting deal type for legacy schedules", "count", count)
+	result := db.Exec(`UPDATE schedules SET deal_type = 'market' WHERE deal_type IS NULL OR deal_type = ''`)
+	if result.Error != nil {
+		return errors.Wrap(result.Error, "failed to set schedule deal types")
+	}
+	logger.Infow("set schedule deal types", "updated", result.RowsAffected)
 	return nil
 }
 

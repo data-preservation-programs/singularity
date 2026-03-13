@@ -33,6 +33,16 @@ var DealTrackerCmd = &cli.Command{
 			Usage: "Run once and exit",
 			Value: false,
 		},
+		&cli.StringFlag{
+			Name:    "eth-rpc",
+			Usage:   "Ethereum RPC endpoint for FEVM (required for DDO allocation tracking)",
+			EnvVars: []string{"ETH_RPC_URL"},
+		},
+		&cli.StringFlag{
+			Name:    "ddo-contract",
+			Usage:   "DDO Diamond proxy contract address",
+			EnvVars: []string{"DDO_CONTRACT_ADDRESS"},
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -48,12 +58,27 @@ var DealTrackerCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
+		var opts []dealtracker.DealTrackerOption
+		if ddoContract := c.String("ddo-contract"); ddoContract != "" {
+			rpcURL := c.String("eth-rpc")
+			if rpcURL == "" {
+				return errors.New("--eth-rpc is required when --ddo-contract is set")
+			}
+			ddoClient, err := dealtracker.NewDDOTrackingClient(rpcURL, ddoContract)
+			if err != nil {
+				return errors.Wrap(err, "failed to initialize DDO tracking client")
+			}
+			defer ddoClient.Close()
+			opts = append(opts, dealtracker.WithDDOAllocationTracker(ddoClient))
+		}
+
 		tracker := dealtracker.NewDealTracker(db,
 			c.Duration("interval"),
 			c.String("market-deal-url"),
 			c.String("lotus-api"),
 			c.String("lotus-token"),
 			c.Bool("once"),
+			opts...,
 		)
 
 		return service.StartServers(c.Context, dealtracker.Logger, &tracker)

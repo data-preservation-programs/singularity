@@ -29,7 +29,14 @@ const (
 	DealTypeMarket DealType = "market"
 	// DealTypePDP represents f41 PDP (Proof of Data Possession) deals
 	DealTypePDP DealType = "pdp"
+	// DealTypeDDO represents DDO (Decentralized Data Onboarding) allocation deals
+	DealTypeDDO DealType = "ddo"
 )
+
+type DDOAllocationStatus struct {
+	Activated    bool
+	SectorNumber uint64
+}
 
 const (
 	// PDPProofSetMaxPieceSize is Singularity's current PDP max piece size policy:
@@ -62,11 +69,13 @@ var DealStates = []DealState{
 var DealTypeStrings = []string{
 	string(DealTypeMarket),
 	string(DealTypePDP),
+	string(DealTypeDDO),
 }
 
 var DealTypes = []DealType{
 	DealTypeMarket,
 	DealTypePDP,
+	DealTypeDDO,
 }
 
 const (
@@ -124,6 +133,11 @@ type Deal struct {
 	ProofSetID         *uint64 `json:"proofSetId,omitempty"         table:"verbose"` // ProofSetID is the on-chain proof set ID for PDP deals
 	ProofSetLive       *bool   `json:"proofSetLive,omitempty"       table:"verbose"` // ProofSetLive indicates if the proof set is live (actively being challenged)
 	NextChallengeEpoch *int32  `json:"nextChallengeEpoch,omitempty" table:"verbose"` // NextChallengeEpoch is the next epoch when a challenge proof is due
+
+	// DDO-specific fields (only populated for DealTypeDDO)
+	DDOAllocationID *uint64 `json:"ddoAllocationId,omitempty" table:"verbose"`
+	DDORailID       *uint64 `json:"ddoRailId,omitempty"       table:"verbose"`
+	DDOPaymentToken *string `json:"ddoPaymentToken,omitempty" table:"verbose"`
 
 	// Associations
 	ScheduleID *ScheduleID `json:"scheduleId"                                         table:"verbose"`

@@ -12,6 +12,8 @@ OPTIONS:
    --market-deal-url value, -m value  The URL for ZST compressed state market deals json. Set to empty to use Lotus API. (default: "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst") [$MARKET_DEAL_URL]
    --interval value, -i value         How often to check for new deals (default: 1h0m0s)
    --once                             Run once and exit (default: false)
+   --eth-rpc value                    Ethereum RPC endpoint for FEVM (required for DDO allocation tracking) [$ETH_RPC_URL]
+   --ddo-contract value               DDO Diamond proxy contract address [$DDO_CONTRACT_ADDRESS]
    --help, -h                         show help
 ```
 {% endcode %}

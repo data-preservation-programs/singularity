@@ -35,6 +35,9 @@ const (
 
 	// ModelDealTypePdp captures enum value "pdp"
 	ModelDealTypePdp ModelDealType = "pdp"
+
+	// ModelDealTypeDdo captures enum value "ddo"
+	ModelDealTypeDdo ModelDealType = "ddo"
 )
 
 // for schema
@@ -42,7 +45,7 @@ var modelDealTypeEnum []any
 
 func init() {
 	var res []ModelDealType
-	if err := json.Unmarshal([]byte(`["market","pdp"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["market","pdp","ddo"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
