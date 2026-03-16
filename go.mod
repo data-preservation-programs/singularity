@@ -98,6 +98,7 @@ require (
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.5.0 // indirect
 	github.com/Eastore-project/ddo-client v0.0.0-20260311152933-2fff1a5b168a
 	github.com/Files-com/files-sdk-go/v3 v3.2.258 // indirect
+	github.com/Jorropo/jsync v1.0.1 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Max-Sum/base32768 v0.0.0-20230304063302-18e6ce5945fd // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
@@ -184,6 +185,7 @@ require (
 	github.com/flynn/noise v1.1.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
 	github.com/gammazero/chanqueue v1.1.1 // indirect
 	github.com/gammazero/deque v1.1.0 // indirect
 	github.com/geoffgarside/ber v1.2.0 // indirect
@@ -207,6 +209,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
+	github.com/google/gopacket v1.1.19 // indirect
 	github.com/google/pprof v0.0.0-20250607225305-033d6d78b36a // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
@@ -231,6 +234,7 @@ require (
 	github.com/ipfs/go-ipfs-ds-help v1.1.1 // indirect
 	github.com/ipfs/go-ipfs-exchange-interface v0.2.1 // indirect
 	github.com/ipfs/go-ipfs-pq v0.0.3 // indirect
+	github.com/ipfs/go-ipfs-redirects-file v0.1.2 // indirect
 	github.com/ipfs/go-ipfs-util v0.0.3 // indirect
 	github.com/ipfs/go-log v1.0.5 // indirect
 	github.com/ipfs/go-merkledag v0.11.0 // indirect
@@ -266,8 +270,14 @@ require (
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
+	github.com/libp2p/go-cidranger v1.1.0 // indirect
+	github.com/libp2p/go-doh-resolver v0.5.0 // indirect
 	github.com/libp2p/go-flow-metrics v0.3.0 // indirect
 	github.com/libp2p/go-libp2p-asn-util v0.4.1 // indirect
+	github.com/libp2p/go-libp2p-kad-dht v0.34.0 // indirect
+	github.com/libp2p/go-libp2p-kbucket v0.7.0 // indirect
+	github.com/libp2p/go-libp2p-record v0.3.1 // indirect
+	github.com/libp2p/go-libp2p-routing-helpers v0.7.5 // indirect
 	github.com/libp2p/go-msgio v0.3.0 // indirect
 	github.com/libp2p/go-netroute v0.3.0 // indirect
 	github.com/libp2p/go-reuseport v0.4.0 // indirect
@@ -361,11 +371,14 @@ require (
 	github.com/t3rm1n4l/go-mega v0.0.0-20250926104142-ccb8d3498e6c // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect
+	github.com/ucarion/urlpath v0.0.0-20200424170820-7ccc79b76bbb // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
+	github.com/whyrusleeping/base32 v0.0.0-20170828182744-c30ac30633cc // indirect
 	github.com/whyrusleeping/cbor v0.0.0-20171005072247-63513f603b11 // indirect
 	github.com/whyrusleeping/cbor-gen v0.3.2-0.20250409092040-76796969edea // indirect
 	github.com/whyrusleeping/chunker v0.0.0-20181014151217-fe64bd25879f // indirect
+	github.com/whyrusleeping/go-keyspace v0.0.0-20160322163242-5b898ac5add1 // indirect
 	github.com/wlynxg/anet v0.0.5 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
@@ -401,6 +414,7 @@ require (
 	golang.org/x/time v0.14.0 // indirect
 	golang.org/x/tools v0.38.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
+	gonum.org/v1/gonum v0.16.0 // indirect
 	google.golang.org/api v0.253.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251022142026-3a174f9686a8 // indirect
 	google.golang.org/grpc v1.76.0 // indirect

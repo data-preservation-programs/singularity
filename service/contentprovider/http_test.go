@@ -11,8 +11,12 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/store"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/gotidy/ptr"
+	"github.com/ipfs/boxo/blockservice"
+	"github.com/ipfs/boxo/exchange/offline"
+	"github.com/ipfs/boxo/gateway"
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
@@ -228,5 +232,156 @@ func TestHTTPServerHandler(t *testing.T) {
 		err = os.WriteFile(filepath.Join(tmp, "test.car"), testutil.GenerateRandomBytes(48), 0644)
 		require.NoError(t, err)
 		t.Run("car file exists", testfunc)
+	})
+}
+
+func makeGatewayHandler(db *gorm.DB) http.Handler {
+	bs := &store.StorageBlockStore{DBNoContext: db}
+	wrapped := &errorMappingBlockStore{inner: bs}
+	exch := offline.Exchange(wrapped)
+	bsvc := blockservice.New(wrapped, exch)
+	backend, _ := gateway.NewBlocksBackend(bsvc)
+	return gateway.NewHandler(gateway.Config{
+		DeserializedResponses: false,
+		NoDNSLink:             true,
+	}, backend)
+}
+
+func TestIPFSGateway(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		rootCid := testutil.TestCid
+		err := db.Create(&model.Car{
+			PieceCID:      model.CID(cid.NewCidV1(cid.FilCommitmentUnsealed, util.Hash([]byte("ipfs_test")))),
+			PieceSize:     128,
+			FileSize:      59 + 1 + 36 + 5,
+			PreparationID: ptr.Of(model.PreparationID(1)),
+			PieceType:     model.DataPiece,
+			Attachment: &model.SourceAttachment{
+				Preparation: &model.Preparation{},
+				Storage: &model.Storage{
+					Type: "local",
+				},
+			},
+			RootCID: model.CID(rootCid),
+		}).Error
+		require.NoError(t, err)
+		err = db.Create(&model.CarBlock{
+			CarID:          ptr.Of(model.CarID(1)),
+			CID:            model.CID(rootCid),
+			CarOffset:      59,
+			CarBlockLength: 1 + 36 + 5,
+			Varint:         varint.ToUvarint(36 + 5),
+			RawBlock:       []byte("hello"),
+		}).Error
+		require.NoError(t, err)
+
+		gw := makeGatewayHandler(db)
+
+		t.Run("success", func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/ipfs/"+rootCid.String()+"?format=car", nil)
+			rec := httptest.NewRecorder()
+			gw.ServeHTTP(rec, req)
+			require.Equal(t, http.StatusOK, rec.Code)
+			require.Contains(t, rec.Header().Get("Content-Type"), "application/vnd.ipld.car")
+			require.Greater(t, rec.Body.Len(), 0)
+		})
+
+		t.Run("not found", func(t *testing.T) {
+			unknownCid := cid.NewCidV1(cid.Raw, util.Hash([]byte("unknown")))
+			req := httptest.NewRequest(http.MethodGet, "/ipfs/"+unknownCid.String()+"?format=raw", nil)
+			rec := httptest.NewRecorder()
+			gw.ServeHTTP(rec, req)
+			// boxo gateway returns 404 for unknown blocks in raw format
+			require.Equal(t, http.StatusNotFound, rec.Code)
+		})
+
+		t.Run("raw format", func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/ipfs/"+rootCid.String()+"?format=raw", nil)
+			rec := httptest.NewRecorder()
+			gw.ServeHTTP(rec, req)
+			require.Equal(t, http.StatusOK, rec.Code)
+			require.Contains(t, rec.Header().Get("Content-Type"), "application/vnd.ipld.raw")
+			require.Equal(t, []byte("hello"), rec.Body.Bytes())
+		})
+
+		t.Run("accept header", func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/ipfs/"+rootCid.String(), nil)
+			req.Header.Set("Accept", "application/vnd.ipld.car")
+			rec := httptest.NewRecorder()
+			gw.ServeHTTP(rec, req)
+			require.Equal(t, http.StatusOK, rec.Code)
+		})
+	})
+}
+
+func TestIPFSGateway_FileChanged(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		tmp := t.TempDir()
+		fileContent := []byte("12345678901234567890")
+		fileCid := cid.NewCidV1(cid.Raw, util.Hash(fileContent))
+		err := os.WriteFile(filepath.Join(tmp, "data.txt"), fileContent, 0644)
+		require.NoError(t, err)
+
+		changedRootCid := cid.NewCidV1(cid.Raw, util.Hash([]byte("changed_root")))
+
+		prep := &model.Preparation{}
+		require.NoError(t, db.Create(prep).Error)
+
+		storage := &model.Storage{Type: "local", Path: tmp}
+		require.NoError(t, db.Create(storage).Error)
+
+		attachment := &model.SourceAttachment{
+			PreparationID: prep.ID,
+			StorageID:     storage.ID,
+		}
+		require.NoError(t, db.Create(attachment).Error)
+
+		dir := &model.Directory{AttachmentID: &attachment.ID}
+		require.NoError(t, db.Create(dir).Error)
+
+		file := &model.File{
+			Path:             "data.txt",
+			Size:             int64(len(fileContent)),
+			LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "data.txt")),
+			AttachmentID:     &attachment.ID,
+			DirectoryID:      &dir.ID,
+		}
+		require.NoError(t, db.Create(file).Error)
+
+		blockLen := int32(len(varint.ToUvarint(uint64(fileCid.ByteLen())+uint64(len(fileContent)))) + fileCid.ByteLen() + len(fileContent))
+		car := &model.Car{
+			PieceCID:      model.CID(cid.NewCidV1(cid.FilCommitmentUnsealed, util.Hash([]byte("changed_piece")))),
+			PieceSize:     256,
+			FileSize:      59 + int64(blockLen),
+			RootCID:       model.CID(changedRootCid),
+			PreparationID: &prep.ID,
+			AttachmentID:  &attachment.ID,
+			PieceType:     model.DataPiece,
+		}
+		require.NoError(t, db.Create(car).Error)
+
+		v := varint.ToUvarint(uint64(fileCid.ByteLen()) + uint64(len(fileContent)))
+		carBlock := &model.CarBlock{
+			CarID:          &car.ID,
+			CID:            model.CID(fileCid),
+			CarOffset:      59,
+			CarBlockLength: blockLen,
+			Varint:         v,
+			FileID:         &file.ID,
+			FileOffset:     0,
+		}
+		require.NoError(t, db.Create(carBlock).Error)
+
+		// modify source file
+		err = os.WriteFile(filepath.Join(tmp, "data.txt"), []byte("changed"), 0644)
+		require.NoError(t, err)
+
+		gw := makeGatewayHandler(db)
+		// request the block CID directly -- the gateway will call Get() on the
+		// blockstore, which opens the source file and detects the change
+		req := httptest.NewRequest(http.MethodGet, "/ipfs/"+fileCid.String()+"?format=raw", nil)
+		rec := httptest.NewRecorder()
+		gw.ServeHTTP(rec, req)
+		require.Equal(t, http.StatusConflict, rec.Code)
 	})
 }
