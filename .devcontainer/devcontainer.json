@@ -3,7 +3,7 @@
     "build": {
         "dockerfile": "Dockerfile",
         "args": {
-            "GO_VERSION": "1.24",
+            "GO_VERSION": "1.25",
             "DEBIAN_CODENAME": "trixie",
             "PG_MAJOR": "16",
             "MARIADB_MAJOR": "12.0.2"
