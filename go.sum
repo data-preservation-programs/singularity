@@ -1083,8 +1083,8 @@ github.com/panjf2000/ants/v2 v2.11.3 h1:AfI0ngBoXJmYOpDh9m516vjqoUu2sLrIVgppI9TZ
 github.com/panjf2000/ants/v2 v2.11.3/go.mod h1:8u92CYMUc6gyvTIw8Ru7Mt7+/ESnJahz5EVtqfrilek=
 github.com/parkan/lassie v0.0.0-20251028120409-065e9fd563ad h1:q56OIYelfaF5vvhyjMR9CSIK3xPoi/RefZTuILbAEcI=
 github.com/parkan/lassie v0.0.0-20251028120409-065e9fd563ad/go.mod h1:P+HSZ4olI9imIXijFMLATQxfxu6erhWTtihKarK5tbs=
-github.com/parkan/rclone v0.0.0-20260317112454-559ff56c63b2 h1:y+eEioi6PJ3sm8ZInRv/cg6X1YqHgkjd7D9dtgWKIRE=
-github.com/parkan/rclone v0.0.0-20260317112454-559ff56c63b2/go.mod h1:0yvNwdX/c+ZOHm275UV7IpknJiWe/E/5U0uChfkXMGs=
+github.com/parkan/rclone v0.0.0-20260317152005-3777b647816d h1:/PsMYjkePqFFCS8itIvzEMzC2MhTSssz9x+X8LJd6rc=
+github.com/parkan/rclone v0.0.0-20260317152005-3777b647816d/go.mod h1:0yvNwdX/c+ZOHm275UV7IpknJiWe/E/5U0uChfkXMGs=
 github.com/parnurzeal/gorequest v0.2.16 h1:T/5x+/4BT+nj+3eSknXmCTnEVGSzFzPGdpqmUVVZXHQ=
 github.com/parnurzeal/gorequest v0.2.16/go.mod h1:3Kh2QUMJoqw3icWAecsyzkpY7UzRfDhbRdTjtNwNiUE=
 github.com/patrickmn/go-cache v2.1.0+incompatible h1:HRMgzkcYKYpi3C8ajMPV8OFXaaRUnok+kx1WdO15EQc=
