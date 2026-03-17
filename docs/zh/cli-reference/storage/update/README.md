@@ -46,7 +46,6 @@ NAME:
    storj            Storj 分散式云存储
    sugarsync        Sugarsync
    swift            OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
-   uptobox          Uptobox
    webdav           WebDAV
    yandex           Yandex Disk
    zoho             Zoho

@@ -23,7 +23,7 @@ type StorageOosUserPrincipalAuthConfig struct {
 	// Chunk size to use for uploading.
 	ChunkSize *string `json:"chunkSize,omitempty"`
 
-	// Object storage compartment OCID
+	// Specify compartment OCID, if you need to list buckets.
 	Compartment string `json:"compartment,omitempty"`
 
 	// Path to OCI config file

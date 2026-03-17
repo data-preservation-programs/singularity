@@ -213,10 +213,6 @@ NAME:
    --sugarsync-private-access-key value  Sugarsync私有访问密钥。 [$SUGARSYNC_PRIVATE_ACCESS_KEY]
    --sugarsync-refresh-token value       Sugarsync刷新令牌。 [$SUGARSYNC_REFRESH_TOKEN]
 
-   Uptobox
-
-   --uptobox-access-token value 你的访问令牌。 [$UPTOBOX_ACCESS_TOKEN]
-
    WebDAV
 
    --webdav-bearer-token value          用户/密码代替带有基本令牌的令牌（如Macaroon）。 [$WEBDAV_BEARER_TOKEN]

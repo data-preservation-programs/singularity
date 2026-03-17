@@ -20,6 +20,9 @@ type StorageSftpConfig struct {
 	// Allow asking for SFTP password when needed.
 	AskPassword *bool `json:"askPassword,omitempty"`
 
+	// The command used to read BLAKE3 hashes.
+	Blake3sumCommand string `json:"blake3sumCommand,omitempty"`
+
 	// Upload and download chunk size.
 	ChunkSize *string `json:"chunkSize,omitempty"`
 
@@ -35,6 +38,9 @@ type StorageSftpConfig struct {
 	// Set to enable server side copies using hardlinks.
 	CopyIsHardlink *bool `json:"copyIsHardlink,omitempty"`
 
+	// The command used to read CRC-32 hashes.
+	Crc32sumCommand string `json:"crc32sumCommand,omitempty"`
+
 	// Description of the remote.
 	Description string `json:"description,omitempty"`
 
@@ -47,11 +53,17 @@ type StorageSftpConfig struct {
 	// Disable the execution of SSH commands to determine if remote file hashing is available.
 	DisableHashcheck *bool `json:"disableHashcheck,omitempty"`
 
+	// Comma separated list of supported checksum types.
+	Hashes string `json:"hashes,omitempty"`
+
 	// SSH host to connect to.
 	Host string `json:"host,omitempty"`
 
 	// Space separated list of host key algorithms, ordered by preference.
 	HostKeyAlgorithms string `json:"hostKeyAlgorithms,omitempty"`
+
+	// URL for HTTP CONNECT proxy
+	HTTPProxy string `json:"httpProxy,omitempty"`
 
 	// Max time before closing idle connections.
 	IdleTimeout *string `json:"idleTimeout,omitempty"`
@@ -78,7 +90,7 @@ type StorageSftpConfig struct {
 	// Space separated list of MACs (message authentication code) algorithms, ordered by preference.
 	Macs string `json:"macs,omitempty"`
 
-	// The command used to read md5 hashes.
+	// The command used to read MD5 hashes.
 	Md5sumCommand string `json:"md5sumCommand,omitempty"`
 
 	// SSH password, leave blank to use ssh-agent.
@@ -89,6 +101,9 @@ type StorageSftpConfig struct {
 
 	// SSH port number.
 	Port *int64 `json:"port,omitempty"`
+
+	// SSH public certificate for public certificate based authentication.
+	Pubkey string `json:"pubkey,omitempty"`
 
 	// Optional path to public key file.
 	PubkeyFile string `json:"pubkeyFile,omitempty"`
@@ -102,8 +117,11 @@ type StorageSftpConfig struct {
 	// Set the modified time on the remote if set.
 	SetModtime *bool `json:"setModtime,omitempty"`
 
-	// The command used to read sha1 hashes.
+	// The command used to read SHA-1 hashes.
 	Sha1sumCommand string `json:"sha1sumCommand,omitempty"`
+
+	// The command used to read SHA-256 hashes.
+	Sha256sumCommand string `json:"sha256sumCommand,omitempty"`
 
 	// The type of SSH shell on remote server, if any.
 	// Example: none
@@ -130,6 +148,12 @@ type StorageSftpConfig struct {
 
 	// SSH username.
 	User *string `json:"user,omitempty"`
+
+	// The command used to read XXH128 hashes.
+	Xxh128sumCommand string `json:"xxh128sumCommand,omitempty"`
+
+	// The command used to read XXH3 hashes.
+	Xxh3sumCommand string `json:"xxh3sumCommand,omitempty"`
 }
 
 // Validate validates this storage sftp config

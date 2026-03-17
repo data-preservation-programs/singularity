@@ -32,6 +32,13 @@ DESCRIPTION:
       
       Leave blank to use the provider defaults.
 
+   --client-credentials
+      Use client credentials OAuth flow.
+      
+      This will use the OAUTH2 client Credentials Flow as described in RFC 6749.
+      
+      Note that this option is NOT supported by all backends.
+
    --md5-memory-limit
       Files bigger than this will be cached on disk to calculate the MD5 if required.
 
@@ -66,6 +73,7 @@ OPTIONS:
    Advanced
 
    --auth-url value             Auth server URL. [$AUTH_URL]
+   --client-credentials         Use client credentials OAuth flow. (default: false) [$CLIENT_CREDENTIALS]
    --description value          Description of the remote. [$DESCRIPTION]
    --encoding value             The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --hard-delete                Delete files permanently rather than putting them into the trash. (default: false) [$HARD_DELETE]

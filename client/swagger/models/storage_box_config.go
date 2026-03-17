@@ -30,6 +30,9 @@ type StorageBoxConfig struct {
 	// Example: user
 	BoxSubType *string `json:"boxSubType,omitempty"`
 
+	// Use client credentials OAuth flow.
+	ClientCredentials *bool `json:"clientCredentials,omitempty"`
+
 	// OAuth Client Id.
 	ClientID string `json:"clientId,omitempty"`
 
@@ -38,6 +41,9 @@ type StorageBoxConfig struct {
 
 	// Max number of times to try committing a multipart file.
 	CommitRetries *int64 `json:"commitRetries,omitempty"`
+
+	// Box App config.json contents.
+	ConfigCredentials string `json:"configCredentials,omitempty"`
 
 	// Description of the remote.
 	Description string `json:"description,omitempty"`

@@ -32,6 +32,13 @@ DESCRIPTION:
       
       Leave blank to use the provider defaults.
 
+   --client-credentials
+      Use client credentials OAuth flow.
+      
+      This will use the OAUTH2 client Credentials Flow as described in RFC 6749.
+      
+      Note that this option is NOT supported by all backends.
+
    --upload-cutoff
       Cutoff for switching to multipart upload.
 
@@ -84,6 +91,7 @@ OPTIONS:
 
    --auth-url value       Auth server URL. [$AUTH_URL]
    --chunk-size value     Upload chunk size. (default: "64Mi") [$CHUNK_SIZE]
+   --client-credentials   Use client credentials OAuth flow. (default: false) [$CLIENT_CREDENTIALS]
    --description value    Description of the remote. [$DESCRIPTION]
    --encoding value       The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot") [$ENCODING]
    --endpoint value       Endpoint for API calls. [$ENDPOINT]

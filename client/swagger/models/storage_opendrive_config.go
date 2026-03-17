@@ -17,6 +17,10 @@ import (
 // swagger:model storage.opendriveConfig
 type StorageOpendriveConfig struct {
 
+	// Files and folders will be uploaded with this access permission (default private)
+	// Example: private
+	Access *string `json:"access,omitempty"`
+
 	// Files will be uploaded in chunks this size.
 	ChunkSize *string `json:"chunkSize,omitempty"`
 

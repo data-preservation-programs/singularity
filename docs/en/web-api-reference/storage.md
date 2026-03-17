@@ -152,6 +152,10 @@
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/bizflycloud" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/ceph" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
@@ -164,6 +168,10 @@
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/cubbit" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/digitalocean" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
@@ -172,7 +180,23 @@
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/exaba" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/filelu" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/flashblade" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/gcs" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/hetzner" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
@@ -185,6 +209,10 @@
 {% endswagger %}
 
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/idrive" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/intercolo" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
@@ -212,6 +240,10 @@
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/mega" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/minio" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
@@ -224,11 +256,23 @@
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/outscale" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/ovhcloud" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/petabox" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/qiniu" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/rabata" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
@@ -245,6 +289,18 @@
 {% endswagger %}
 
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/seaweedfs" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/selectel" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/servercore" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/spectralogic" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
@@ -265,6 +321,10 @@
 {% endswagger %}
 
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/wasabi" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/s3/zata" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
@@ -305,10 +365,6 @@
 {% endswagger %}
 
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/union" method="post" %}
-[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
-{% endswagger %}
-
-{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/uptobox" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 

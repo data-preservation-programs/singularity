@@ -38,6 +38,9 @@ type StorageSmbConfig struct {
 	// Max time before closing idle connections.
 	IdleTimeout *string `json:"idleTimeout,omitempty"`
 
+	// Path to the Kerberos credential cache (krb5cc).
+	KerberosCcache string `json:"kerberosCcache,omitempty"`
+
 	// SMB password.
 	Pass string `json:"pass,omitempty"`
 
@@ -46,6 +49,9 @@ type StorageSmbConfig struct {
 
 	// Service principal name.
 	Spn string `json:"spn,omitempty"`
+
+	// Use Kerberos authentication.
+	UseKerberos *bool `json:"useKerberos,omitempty"`
 
 	// SMB username.
 	User *string `json:"user,omitempty"`

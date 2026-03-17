@@ -130,17 +130,29 @@ type ClientService interface {
 
 	CreateS3ArvanCloudStorage(params *CreateS3ArvanCloudStorageParams, opts ...ClientOption) (*CreateS3ArvanCloudStorageOK, error)
 
+	CreateS3BizflyCloudStorage(params *CreateS3BizflyCloudStorageParams, opts ...ClientOption) (*CreateS3BizflyCloudStorageOK, error)
+
 	CreateS3CephStorage(params *CreateS3CephStorageParams, opts ...ClientOption) (*CreateS3CephStorageOK, error)
 
 	CreateS3ChinaMobileStorage(params *CreateS3ChinaMobileStorageParams, opts ...ClientOption) (*CreateS3ChinaMobileStorageOK, error)
 
 	CreateS3CloudflareStorage(params *CreateS3CloudflareStorageParams, opts ...ClientOption) (*CreateS3CloudflareStorageOK, error)
 
+	CreateS3CubbitStorage(params *CreateS3CubbitStorageParams, opts ...ClientOption) (*CreateS3CubbitStorageOK, error)
+
 	CreateS3DigitalOceanStorage(params *CreateS3DigitalOceanStorageParams, opts ...ClientOption) (*CreateS3DigitalOceanStorageOK, error)
 
 	CreateS3DreamhostStorage(params *CreateS3DreamhostStorageParams, opts ...ClientOption) (*CreateS3DreamhostStorageOK, error)
 
+	CreateS3ExabaStorage(params *CreateS3ExabaStorageParams, opts ...ClientOption) (*CreateS3ExabaStorageOK, error)
+
+	CreateS3FileLuStorage(params *CreateS3FileLuStorageParams, opts ...ClientOption) (*CreateS3FileLuStorageOK, error)
+
+	CreateS3FlashBladeStorage(params *CreateS3FlashBladeStorageParams, opts ...ClientOption) (*CreateS3FlashBladeStorageOK, error)
+
 	CreateS3GCSStorage(params *CreateS3GCSStorageParams, opts ...ClientOption) (*CreateS3GCSStorageOK, error)
+
+	CreateS3HetznerStorage(params *CreateS3HetznerStorageParams, opts ...ClientOption) (*CreateS3HetznerStorageOK, error)
 
 	CreateS3HuaweiOBSStorage(params *CreateS3HuaweiOBSStorageParams, opts ...ClientOption) (*CreateS3HuaweiOBSStorageOK, error)
 
@@ -149,6 +161,8 @@ type ClientService interface {
 	CreateS3IDriveStorage(params *CreateS3IDriveStorageParams, opts ...ClientOption) (*CreateS3IDriveStorageOK, error)
 
 	CreateS3IONOSStorage(params *CreateS3IONOSStorageParams, opts ...ClientOption) (*CreateS3IONOSStorageOK, error)
+
+	CreateS3IntercoloStorage(params *CreateS3IntercoloStorageParams, opts ...ClientOption) (*CreateS3IntercoloStorageOK, error)
 
 	CreateS3LeviiaStorage(params *CreateS3LeviiaStorageParams, opts ...ClientOption) (*CreateS3LeviiaStorageOK, error)
 
@@ -160,15 +174,23 @@ type ClientService interface {
 
 	CreateS3MagaluStorage(params *CreateS3MagaluStorageParams, opts ...ClientOption) (*CreateS3MagaluStorageOK, error)
 
+	CreateS3MegaStorage(params *CreateS3MegaStorageParams, opts ...ClientOption) (*CreateS3MegaStorageOK, error)
+
 	CreateS3MinioStorage(params *CreateS3MinioStorageParams, opts ...ClientOption) (*CreateS3MinioStorageOK, error)
 
 	CreateS3NeteaseStorage(params *CreateS3NeteaseStorageParams, opts ...ClientOption) (*CreateS3NeteaseStorageOK, error)
 
+	CreateS3OVHcloudStorage(params *CreateS3OVHcloudStorageParams, opts ...ClientOption) (*CreateS3OVHcloudStorageOK, error)
+
 	CreateS3OtherStorage(params *CreateS3OtherStorageParams, opts ...ClientOption) (*CreateS3OtherStorageOK, error)
+
+	CreateS3OutscaleStorage(params *CreateS3OutscaleStorageParams, opts ...ClientOption) (*CreateS3OutscaleStorageOK, error)
 
 	CreateS3PetaboxStorage(params *CreateS3PetaboxStorageParams, opts ...ClientOption) (*CreateS3PetaboxStorageOK, error)
 
 	CreateS3QiniuStorage(params *CreateS3QiniuStorageParams, opts ...ClientOption) (*CreateS3QiniuStorageOK, error)
+
+	CreateS3RabataStorage(params *CreateS3RabataStorageParams, opts ...ClientOption) (*CreateS3RabataStorageOK, error)
 
 	CreateS3RackCorpStorage(params *CreateS3RackCorpStorageParams, opts ...ClientOption) (*CreateS3RackCorpStorageOK, error)
 
@@ -177,6 +199,12 @@ type ClientService interface {
 	CreateS3ScalewayStorage(params *CreateS3ScalewayStorageParams, opts ...ClientOption) (*CreateS3ScalewayStorageOK, error)
 
 	CreateS3SeaweedFSStorage(params *CreateS3SeaweedFSStorageParams, opts ...ClientOption) (*CreateS3SeaweedFSStorageOK, error)
+
+	CreateS3SelectelStorage(params *CreateS3SelectelStorageParams, opts ...ClientOption) (*CreateS3SelectelStorageOK, error)
+
+	CreateS3ServercoreStorage(params *CreateS3ServercoreStorageParams, opts ...ClientOption) (*CreateS3ServercoreStorageOK, error)
+
+	CreateS3SpectraLogicStorage(params *CreateS3SpectraLogicStorageParams, opts ...ClientOption) (*CreateS3SpectraLogicStorageOK, error)
 
 	CreateS3StackPathStorage(params *CreateS3StackPathStorageParams, opts ...ClientOption) (*CreateS3StackPathStorageOK, error)
 
@@ -187,6 +215,8 @@ type ClientService interface {
 	CreateS3TencentCOSStorage(params *CreateS3TencentCOSStorageParams, opts ...ClientOption) (*CreateS3TencentCOSStorageOK, error)
 
 	CreateS3WasabiStorage(params *CreateS3WasabiStorageParams, opts ...ClientOption) (*CreateS3WasabiStorageOK, error)
+
+	CreateS3ZataStorage(params *CreateS3ZataStorageParams, opts ...ClientOption) (*CreateS3ZataStorageOK, error)
 
 	CreateSeafileStorage(params *CreateSeafileStorageParams, opts ...ClientOption) (*CreateSeafileStorageOK, error)
 
@@ -207,8 +237,6 @@ type ClientService interface {
 	CreateSwiftStorage(params *CreateSwiftStorageParams, opts ...ClientOption) (*CreateSwiftStorageOK, error)
 
 	CreateUnionStorage(params *CreateUnionStorageParams, opts ...ClientOption) (*CreateUnionStorageOK, error)
-
-	CreateUptoboxStorage(params *CreateUptoboxStorageParams, opts ...ClientOption) (*CreateUptoboxStorageOK, error)
 
 	CreateWebdavStorage(params *CreateWebdavStorageParams, opts ...ClientOption) (*CreateWebdavStorageOK, error)
 
@@ -1821,6 +1849,49 @@ func (a *Client) CreateS3ArvanCloudStorage(params *CreateS3ArvanCloudStoragePara
 }
 
 /*
+CreateS3BizflyCloudStorage creates s3 storage with bizfly cloud bizfly cloud simple storage
+*/
+func (a *Client) CreateS3BizflyCloudStorage(params *CreateS3BizflyCloudStorageParams, opts ...ClientOption) (*CreateS3BizflyCloudStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3BizflyCloudStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3BizflyCloudStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/bizflycloud",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3BizflyCloudStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3BizflyCloudStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3BizflyCloudStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 CreateS3CephStorage creates s3 storage with ceph ceph object storage
 */
 func (a *Client) CreateS3CephStorage(params *CreateS3CephStorageParams, opts ...ClientOption) (*CreateS3CephStorageOK, error) {
@@ -1950,6 +2021,49 @@ func (a *Client) CreateS3CloudflareStorage(params *CreateS3CloudflareStoragePara
 }
 
 /*
+CreateS3CubbitStorage creates s3 storage with cubbit cubbit d s3 object storage
+*/
+func (a *Client) CreateS3CubbitStorage(params *CreateS3CubbitStorageParams, opts ...ClientOption) (*CreateS3CubbitStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3CubbitStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3CubbitStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/cubbit",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3CubbitStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3CubbitStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3CubbitStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 CreateS3DigitalOceanStorage creates s3 storage with digital ocean digital ocean spaces
 */
 func (a *Client) CreateS3DigitalOceanStorage(params *CreateS3DigitalOceanStorageParams, opts ...ClientOption) (*CreateS3DigitalOceanStorageOK, error) {
@@ -2036,6 +2150,135 @@ func (a *Client) CreateS3DreamhostStorage(params *CreateS3DreamhostStorageParams
 }
 
 /*
+CreateS3ExabaStorage creates s3 storage with exaba exaba object storage
+*/
+func (a *Client) CreateS3ExabaStorage(params *CreateS3ExabaStorageParams, opts ...ClientOption) (*CreateS3ExabaStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3ExabaStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3ExabaStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/exaba",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3ExabaStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3ExabaStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3ExabaStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3FileLuStorage creates s3 storage with file lu file lu s5 s3 compatible object storage
+*/
+func (a *Client) CreateS3FileLuStorage(params *CreateS3FileLuStorageParams, opts ...ClientOption) (*CreateS3FileLuStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3FileLuStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3FileLuStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/filelu",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3FileLuStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3FileLuStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3FileLuStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3FlashBladeStorage creates s3 storage with flash blade pure storage flash blade object storage
+*/
+func (a *Client) CreateS3FlashBladeStorage(params *CreateS3FlashBladeStorageParams, opts ...ClientOption) (*CreateS3FlashBladeStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3FlashBladeStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3FlashBladeStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/flashblade",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3FlashBladeStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3FlashBladeStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3FlashBladeStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 CreateS3GCSStorage creates s3 storage with g c s google cloud storage
 */
 func (a *Client) CreateS3GCSStorage(params *CreateS3GCSStorageParams, opts ...ClientOption) (*CreateS3GCSStorageOK, error) {
@@ -2075,6 +2318,49 @@ func (a *Client) CreateS3GCSStorage(params *CreateS3GCSStorageParams, opts ...Cl
 	//
 	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3GCSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3HetznerStorage creates s3 storage with hetzner hetzner object storage
+*/
+func (a *Client) CreateS3HetznerStorage(params *CreateS3HetznerStorageParams, opts ...ClientOption) (*CreateS3HetznerStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3HetznerStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3HetznerStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/hetzner",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3HetznerStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3HetznerStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3HetznerStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -2247,6 +2533,49 @@ func (a *Client) CreateS3IONOSStorage(params *CreateS3IONOSStorageParams, opts .
 	//
 	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3IONOSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3IntercoloStorage creates s3 storage with intercolo intercolo object storage
+*/
+func (a *Client) CreateS3IntercoloStorage(params *CreateS3IntercoloStorageParams, opts ...ClientOption) (*CreateS3IntercoloStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3IntercoloStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3IntercoloStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/intercolo",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3IntercoloStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3IntercoloStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3IntercoloStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -2466,6 +2795,49 @@ func (a *Client) CreateS3MagaluStorage(params *CreateS3MagaluStorageParams, opts
 }
 
 /*
+CreateS3MegaStorage creates s3 storage with mega m e g a s4 object storage
+*/
+func (a *Client) CreateS3MegaStorage(params *CreateS3MegaStorageParams, opts ...ClientOption) (*CreateS3MegaStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3MegaStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3MegaStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/mega",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3MegaStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3MegaStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3MegaStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 CreateS3MinioStorage creates s3 storage with minio minio object storage
 */
 func (a *Client) CreateS3MinioStorage(params *CreateS3MinioStorageParams, opts ...ClientOption) (*CreateS3MinioStorageOK, error) {
@@ -2552,6 +2924,49 @@ func (a *Client) CreateS3NeteaseStorage(params *CreateS3NeteaseStorageParams, op
 }
 
 /*
+CreateS3OVHcloudStorage creates s3 storage with o v hcloud o v hcloud object storage
+*/
+func (a *Client) CreateS3OVHcloudStorage(params *CreateS3OVHcloudStorageParams, opts ...ClientOption) (*CreateS3OVHcloudStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3OVHcloudStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3OVHcloudStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/ovhcloud",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3OVHcloudStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3OVHcloudStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3OVHcloudStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 CreateS3OtherStorage creates s3 storage with other any other s3 compatible provider
 */
 func (a *Client) CreateS3OtherStorage(params *CreateS3OtherStorageParams, opts ...ClientOption) (*CreateS3OtherStorageOK, error) {
@@ -2591,6 +3006,49 @@ func (a *Client) CreateS3OtherStorage(params *CreateS3OtherStorageParams, opts .
 	//
 	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3OtherStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3OutscaleStorage creates s3 storage with outscale o u t s c a l e object storage o o s
+*/
+func (a *Client) CreateS3OutscaleStorage(params *CreateS3OutscaleStorageParams, opts ...ClientOption) (*CreateS3OutscaleStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3OutscaleStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3OutscaleStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/outscale",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3OutscaleStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3OutscaleStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3OutscaleStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -2677,6 +3135,49 @@ func (a *Client) CreateS3QiniuStorage(params *CreateS3QiniuStorageParams, opts .
 	//
 	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3QiniuStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3RabataStorage creates s3 storage with rabata rabata cloud storage
+*/
+func (a *Client) CreateS3RabataStorage(params *CreateS3RabataStorageParams, opts ...ClientOption) (*CreateS3RabataStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3RabataStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3RabataStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/rabata",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3RabataStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3RabataStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3RabataStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -2849,6 +3350,135 @@ func (a *Client) CreateS3SeaweedFSStorage(params *CreateS3SeaweedFSStorageParams
 	//
 	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3SeaweedFSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3SelectelStorage creates s3 storage with selectel selectel object storage
+*/
+func (a *Client) CreateS3SelectelStorage(params *CreateS3SelectelStorageParams, opts ...ClientOption) (*CreateS3SelectelStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3SelectelStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3SelectelStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/selectel",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3SelectelStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3SelectelStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3SelectelStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3ServercoreStorage creates s3 storage with servercore servercore object storage
+*/
+func (a *Client) CreateS3ServercoreStorage(params *CreateS3ServercoreStorageParams, opts ...ClientOption) (*CreateS3ServercoreStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3ServercoreStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3ServercoreStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/servercore",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3ServercoreStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3ServercoreStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3ServercoreStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3SpectraLogicStorage creates s3 storage with spectra logic spectra logic black pearl
+*/
+func (a *Client) CreateS3SpectraLogicStorage(params *CreateS3SpectraLogicStorageParams, opts ...ClientOption) (*CreateS3SpectraLogicStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3SpectraLogicStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3SpectraLogicStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/spectralogic",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3SpectraLogicStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3SpectraLogicStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3SpectraLogicStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -3064,6 +3694,49 @@ func (a *Client) CreateS3WasabiStorage(params *CreateS3WasabiStorageParams, opts
 	//
 	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateS3WasabiStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3ZataStorage creates s3 storage with zata zata s3 compatible gateway
+*/
+func (a *Client) CreateS3ZataStorage(params *CreateS3ZataStorageParams, opts ...ClientOption) (*CreateS3ZataStorageOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewCreateS3ZataStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3ZataStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/zata",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3ZataStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*CreateS3ZataStorageOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3ZataStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -3494,49 +4167,6 @@ func (a *Client) CreateUnionStorage(params *CreateUnionStorageParams, opts ...Cl
 	//
 	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for CreateUnionStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-CreateUptoboxStorage creates uptobox storage
-*/
-func (a *Client) CreateUptoboxStorage(params *CreateUptoboxStorageParams, opts ...ClientOption) (*CreateUptoboxStorageOK, error) {
-	// NOTE: parameters are not validated before sending
-	if params == nil {
-		params = NewCreateUptoboxStorageParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "CreateUptoboxStorage",
-		Method:             "POST",
-		PathPattern:        "/storage/uptobox",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &CreateUptoboxStorageReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-
-	// only one success response has to be checked
-	success, ok := result.(*CreateUptoboxStorageOK)
-	if ok {
-		return success, nil
-	}
-
-	// unexpected success response.
-
-	// no default response is defined.
-	//
-	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for CreateUptoboxStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

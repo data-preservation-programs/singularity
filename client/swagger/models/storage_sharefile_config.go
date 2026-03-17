@@ -23,6 +23,9 @@ type StorageSharefileConfig struct {
 	// Upload chunk size.
 	ChunkSize *string `json:"chunkSize,omitempty"`
 
+	// Use client credentials OAuth flow.
+	ClientCredentials *bool `json:"clientCredentials,omitempty"`
+
 	// OAuth Client Id.
 	ClientID string `json:"clientId,omitempty"`
 

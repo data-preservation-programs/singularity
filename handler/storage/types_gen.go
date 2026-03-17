@@ -10,6 +10,7 @@ type azureblobConfig struct {
 	EnvAuth                    bool   `json:"envAuth" default:"false"`                                            // Read credentials from runtime (environment variables, CLI or MSI).
 	Key                        string `json:"key"`                                                                // Storage Account Shared Key.
 	SasUrl                     string `json:"sasUrl"`                                                             // SAS URL for container level access only.
+	ConnectionString           string `json:"connectionString"`                                                   // Storage Connection String.
 	Tenant                     string `json:"tenant"`                                                             // ID of the service principal's tenant. Also called its directory ID.
 	ClientId                   string `json:"clientId"`                                                           // The ID of the client in use.
 	ClientSecret               string `json:"clientSecret"`                                                       // One of the service principal's client secrets
@@ -19,15 +20,20 @@ type azureblobConfig struct {
 	Username                   string `json:"username"`                                                           // User name (usually an email address)
 	Password                   string `json:"password"`                                                           // The user's password
 	ServicePrincipalFile       string `json:"servicePrincipalFile"`                                               // Path to file containing credentials for use with a service principal.
+	DisableInstanceDiscovery   bool   `json:"disableInstanceDiscovery" default:"false"`                           // Skip requesting Microsoft Entra instance metadata
 	UseMsi                     bool   `json:"useMsi" default:"false"`                                             // Use a managed service identity to authenticate (only works in Azure).
 	MsiObjectId                string `json:"msiObjectId"`                                                        // Object ID of the user-assigned MSI to use, if any.
 	MsiClientId                string `json:"msiClientId"`                                                        // Object ID of the user-assigned MSI to use, if any.
 	MsiMiResId                 string `json:"msiMiResId"`                                                         // Azure resource ID of the user-assigned MSI to use, if any.
 	UseEmulator                bool   `json:"useEmulator" default:"false"`                                        // Uses local storage emulator if provided as 'true'.
+	UseAz                      bool   `json:"useAz" default:"false"`                                              // Use Azure CLI tool az for authentication
 	Endpoint                   string `json:"endpoint"`                                                           // Endpoint for the service.
 	UploadCutoff               string `json:"uploadCutoff"`                                                       // Cutoff for switching to chunked upload (<= 256 MiB) (deprecated).
 	ChunkSize                  string `json:"chunkSize" default:"4Mi"`                                            // Upload chunk size.
 	UploadConcurrency          int    `json:"uploadConcurrency" default:"16"`                                     // Concurrency for multipart uploads.
+	CopyCutoff                 string `json:"copyCutoff" default:"8Mi"`                                           // Cutoff for switching to multipart copy.
+	CopyConcurrency            int    `json:"copyConcurrency" default:"512"`                                      // Concurrency for multipart copy.
+	UseCopyBlob                bool   `json:"useCopyBlob" default:"true"`                                         // Whether to use the Copy Blob API when copying to the same storage account.
 	ListChunk                  int    `json:"listChunk" default:"5000"`                                           // Size of blob list.
 	AccessTier                 string `json:"accessTier"`                                                         // Access tier of blob: hot, cool, cold or archive.
 	ArchiveTierDelete          bool   `json:"archiveTierDelete" default:"false"`                                  // Delete archive tier blobs before overwriting.
@@ -81,6 +87,10 @@ type b2Config struct {
 	MemoryPoolUseMmap    bool   `json:"memoryPoolUseMmap" default:"false"`                          // Whether to use mmap buffers in internal memory pool. (no longer used)
 	Lifecycle            int    `json:"lifecycle" default:"0"`                                      // Set the number of days deleted files should be kept when creating a bucket.
 	Encoding             string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
+	SseCustomerAlgorithm string `json:"sseCustomerAlgorithm" example:""`                            // If using SSE-C, the server-side encryption algorithm used when storing this object in B2.
+	SseCustomerKey       string `json:"sseCustomerKey" example:""`                                  // To use SSE-C, you may provide the secret encryption key encoded in a UTF-8 compatible string to encrypt/decrypt your data
+	SseCustomerKeyBase64 string `json:"sseCustomerKeyBase64" example:""`                            // To use SSE-C, you may provide the secret encryption key encoded in Base64 format to encrypt/decrypt your data
+	SseCustomerKeyMd5    string `json:"sseCustomerKeyMd5" example:""`                               // If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
 	Description          string `json:"description"`                                                // Description of the remote.
 }
 
@@ -104,22 +114,24 @@ type createB2StorageRequest struct {
 func createB2Storage() {}
 
 type boxConfig struct {
-	ClientId      string `json:"clientId"`                                                              // OAuth Client Id.
-	ClientSecret  string `json:"clientSecret"`                                                          // OAuth Client Secret.
-	Token         string `json:"token"`                                                                 // OAuth Access Token as a JSON blob.
-	AuthUrl       string `json:"authUrl"`                                                               // Auth server URL.
-	TokenUrl      string `json:"tokenUrl"`                                                              // Token server url.
-	RootFolderId  string `json:"rootFolderId" default:"0"`                                              // Fill in for rclone to use a non root folder as its starting point.
-	BoxConfigFile string `json:"boxConfigFile"`                                                         // Box App config.json location
-	AccessToken   string `json:"accessToken"`                                                           // Box App Primary Access Token
-	BoxSubType    string `json:"boxSubType" default:"user" example:"user"`                              //
-	UploadCutoff  string `json:"uploadCutoff" default:"50Mi"`                                           // Cutoff for switching to multipart upload (>= 50 MiB).
-	CommitRetries int    `json:"commitRetries" default:"100"`                                           // Max number of times to try committing a multipart file.
-	ListChunk     int    `json:"listChunk" default:"1000"`                                              // Size of listing chunk 1-1000.
-	OwnedBy       string `json:"ownedBy"`                                                               // Only show items owned by the login (email address) passed in.
-	Impersonate   string `json:"impersonate"`                                                           // Impersonate this user ID when using a service account.
-	Encoding      string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"` // The encoding for the backend.
-	Description   string `json:"description"`                                                           // Description of the remote.
+	ClientId          string `json:"clientId"`                                                              // OAuth Client Id.
+	ClientSecret      string `json:"clientSecret"`                                                          // OAuth Client Secret.
+	Token             string `json:"token"`                                                                 // OAuth Access Token as a JSON blob.
+	AuthUrl           string `json:"authUrl"`                                                               // Auth server URL.
+	TokenUrl          string `json:"tokenUrl"`                                                              // Token server url.
+	ClientCredentials bool   `json:"clientCredentials" default:"false"`                                     // Use client credentials OAuth flow.
+	RootFolderId      string `json:"rootFolderId" default:"0"`                                              // Fill in for rclone to use a non root folder as its starting point.
+	BoxConfigFile     string `json:"boxConfigFile"`                                                         // Box App config.json location
+	ConfigCredentials string `json:"configCredentials"`                                                     // Box App config.json contents.
+	AccessToken       string `json:"accessToken"`                                                           // Box App Primary Access Token
+	BoxSubType        string `json:"boxSubType" default:"user" example:"user"`                              //
+	UploadCutoff      string `json:"uploadCutoff" default:"50Mi"`                                           // Cutoff for switching to multipart upload (>= 50 MiB).
+	CommitRetries     int    `json:"commitRetries" default:"100"`                                           // Max number of times to try committing a multipart file.
+	ListChunk         int    `json:"listChunk" default:"1000"`                                              // Size of listing chunk 1-1000.
+	OwnedBy           string `json:"ownedBy"`                                                               // Only show items owned by the login (email address) passed in.
+	Impersonate       string `json:"impersonate"`                                                           // Impersonate this user ID when using a service account.
+	Encoding          string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"` // The encoding for the backend.
+	Description       string `json:"description"`                                                           // Description of the remote.
 }
 
 type createBoxStorageRequest struct {
@@ -142,56 +154,58 @@ type createBoxStorageRequest struct {
 func createBoxStorage() {}
 
 type driveConfig struct {
-	ClientId                  string `json:"clientId"`                                        // Google Application Client Id
-	ClientSecret              string `json:"clientSecret"`                                    // OAuth Client Secret.
-	Token                     string `json:"token"`                                           // OAuth Access Token as a JSON blob.
-	AuthUrl                   string `json:"authUrl"`                                         // Auth server URL.
-	TokenUrl                  string `json:"tokenUrl"`                                        // Token server url.
-	Scope                     string `json:"scope" example:"drive"`                           // Comma separated list of scopes that rclone should use when requesting access from drive.
-	RootFolderId              string `json:"rootFolderId"`                                    // ID of the root folder.
-	ServiceAccountFile        string `json:"serviceAccountFile"`                              // Service Account Credentials JSON file path.
-	ServiceAccountCredentials string `json:"serviceAccountCredentials"`                       // Service Account Credentials JSON blob.
-	TeamDrive                 string `json:"teamDrive"`                                       // ID of the Shared Drive (Team Drive).
-	AuthOwnerOnly             bool   `json:"authOwnerOnly" default:"false"`                   // Only consider files owned by the authenticated user.
-	UseTrash                  bool   `json:"useTrash" default:"true"`                         // Send files to the trash instead of deleting permanently.
-	CopyShortcutContent       bool   `json:"copyShortcutContent" default:"false"`             // Server side copy contents of shortcuts instead of the shortcut.
-	SkipGdocs                 bool   `json:"skipGdocs" default:"false"`                       // Skip google documents in all listings.
-	ShowAllGdocs              bool   `json:"showAllGdocs" default:"false"`                    // Show all Google Docs including non-exportable ones in listings.
-	SkipChecksumGphotos       bool   `json:"skipChecksumGphotos" default:"false"`             // Skip checksums on Google photos and videos only.
-	SharedWithMe              bool   `json:"sharedWithMe" default:"false"`                    // Only show files that are shared with me.
-	TrashedOnly               bool   `json:"trashedOnly" default:"false"`                     // Only show files that are in the trash.
-	StarredOnly               bool   `json:"starredOnly" default:"false"`                     // Only show files that are starred.
-	Formats                   string `json:"formats"`                                         // Deprecated: See export_formats.
-	ExportFormats             string `json:"exportFormats" default:"docx,xlsx,pptx,svg"`      // Comma separated list of preferred formats for downloading Google docs.
-	ImportFormats             string `json:"importFormats"`                                   // Comma separated list of preferred formats for uploading Google docs.
-	AllowImportNameChange     bool   `json:"allowImportNameChange" default:"false"`           // Allow the filetype to change when uploading Google docs.
-	UseCreatedDate            bool   `json:"useCreatedDate" default:"false"`                  // Use file created date instead of modified date.
-	UseSharedDate             bool   `json:"useSharedDate" default:"false"`                   // Use date file was shared instead of modified date.
-	ListChunk                 int    `json:"listChunk" default:"1000"`                        // Size of listing chunk 100-1000, 0 to disable.
-	Impersonate               string `json:"impersonate"`                                     // Impersonate this user when using a service account.
-	AlternateExport           bool   `json:"alternateExport" default:"false"`                 // Deprecated: No longer needed.
-	UploadCutoff              string `json:"uploadCutoff" default:"8Mi"`                      // Cutoff for switching to chunked upload.
-	ChunkSize                 string `json:"chunkSize" default:"8Mi"`                         // Upload chunk size.
-	AcknowledgeAbuse          bool   `json:"acknowledgeAbuse" default:"false"`                // Set to allow files which return cannotDownloadAbusiveFile to be downloaded.
-	KeepRevisionForever       bool   `json:"keepRevisionForever" default:"false"`             // Keep new head revision of each file forever.
-	SizeAsQuota               bool   `json:"sizeAsQuota" default:"false"`                     // Show sizes as storage quota usage, not actual size.
-	V2DownloadMinSize         string `json:"v2DownloadMinSize" default:"off"`                 // If Object's are greater, use drive v2 API to download.
-	PacerMinSleep             string `json:"pacerMinSleep" default:"100ms"`                   // Minimum time to sleep between API calls.
-	PacerBurst                int    `json:"pacerBurst" default:"100"`                        // Number of API calls to allow without sleeping.
-	ServerSideAcrossConfigs   bool   `json:"serverSideAcrossConfigs" default:"false"`         // Deprecated: use --server-side-across-configs instead.
-	DisableHttp2              bool   `json:"disableHttp2" default:"true"`                     // Disable drive using http2.
-	StopOnUploadLimit         bool   `json:"stopOnUploadLimit" default:"false"`               // Make upload limit errors be fatal.
-	StopOnDownloadLimit       bool   `json:"stopOnDownloadLimit" default:"false"`             // Make download limit errors be fatal.
-	SkipShortcuts             bool   `json:"skipShortcuts" default:"false"`                   // If set skip shortcut files.
-	SkipDanglingShortcuts     bool   `json:"skipDanglingShortcuts" default:"false"`           // If set skip dangling shortcut files.
-	ResourceKey               string `json:"resourceKey"`                                     // Resource key for accessing a link-shared file.
-	FastListBugFix            bool   `json:"fastListBugFix" default:"true"`                   // Work around a bug in Google Drive listing.
-	MetadataOwner             string `json:"metadataOwner" default:"read" example:"off"`      // Control whether owner should be read or written in metadata.
-	MetadataPermissions       string `json:"metadataPermissions" default:"off" example:"off"` // Control whether permissions should be read or written in metadata.
-	MetadataLabels            string `json:"metadataLabels" default:"off" example:"off"`      // Control whether labels should be read or written in metadata.
-	Encoding                  string `json:"encoding" default:"InvalidUtf8"`                  // The encoding for the backend.
-	EnvAuth                   bool   `json:"envAuth" default:"false" example:"false"`         // Get IAM credentials from runtime (environment variables or instance meta data if no env vars).
-	Description               string `json:"description"`                                     // Description of the remote.
+	ClientId                       string `json:"clientId"`                                        // Google Application Client Id
+	ClientSecret                   string `json:"clientSecret"`                                    // OAuth Client Secret.
+	Token                          string `json:"token"`                                           // OAuth Access Token as a JSON blob.
+	AuthUrl                        string `json:"authUrl"`                                         // Auth server URL.
+	TokenUrl                       string `json:"tokenUrl"`                                        // Token server url.
+	ClientCredentials              bool   `json:"clientCredentials" default:"false"`               // Use client credentials OAuth flow.
+	Scope                          string `json:"scope" example:"drive"`                           // Comma separated list of scopes that rclone should use when requesting access from drive.
+	RootFolderId                   string `json:"rootFolderId"`                                    // ID of the root folder.
+	ServiceAccountFile             string `json:"serviceAccountFile"`                              // Service Account Credentials JSON file path.
+	ServiceAccountCredentials      string `json:"serviceAccountCredentials"`                       // Service Account Credentials JSON blob.
+	TeamDrive                      string `json:"teamDrive"`                                       // ID of the Shared Drive (Team Drive).
+	AuthOwnerOnly                  bool   `json:"authOwnerOnly" default:"false"`                   // Only consider files owned by the authenticated user.
+	UseTrash                       bool   `json:"useTrash" default:"true"`                         // Send files to the trash instead of deleting permanently.
+	CopyShortcutContent            bool   `json:"copyShortcutContent" default:"false"`             // Server side copy contents of shortcuts instead of the shortcut.
+	SkipGdocs                      bool   `json:"skipGdocs" default:"false"`                       // Skip google documents in all listings.
+	ShowAllGdocs                   bool   `json:"showAllGdocs" default:"false"`                    // Show all Google Docs including non-exportable ones in listings.
+	SkipChecksumGphotos            bool   `json:"skipChecksumGphotos" default:"false"`             // Skip checksums on Google photos and videos only.
+	SharedWithMe                   bool   `json:"sharedWithMe" default:"false"`                    // Only show files that are shared with me.
+	TrashedOnly                    bool   `json:"trashedOnly" default:"false"`                     // Only show files that are in the trash.
+	StarredOnly                    bool   `json:"starredOnly" default:"false"`                     // Only show files that are starred.
+	Formats                        string `json:"formats"`                                         // Deprecated: See export_formats.
+	ExportFormats                  string `json:"exportFormats" default:"docx,xlsx,pptx,svg"`      // Comma separated list of preferred formats for downloading Google docs.
+	ImportFormats                  string `json:"importFormats"`                                   // Comma separated list of preferred formats for uploading Google docs.
+	AllowImportNameChange          bool   `json:"allowImportNameChange" default:"false"`           // Allow the filetype to change when uploading Google docs.
+	UseCreatedDate                 bool   `json:"useCreatedDate" default:"false"`                  // Use file created date instead of modified date.
+	UseSharedDate                  bool   `json:"useSharedDate" default:"false"`                   // Use date file was shared instead of modified date.
+	ListChunk                      int    `json:"listChunk" default:"1000"`                        // Size of listing chunk 100-1000, 0 to disable.
+	Impersonate                    string `json:"impersonate"`                                     // Impersonate this user when using a service account.
+	AlternateExport                bool   `json:"alternateExport" default:"false"`                 // Deprecated: No longer needed.
+	UploadCutoff                   string `json:"uploadCutoff" default:"8Mi"`                      // Cutoff for switching to chunked upload.
+	ChunkSize                      string `json:"chunkSize" default:"8Mi"`                         // Upload chunk size.
+	AcknowledgeAbuse               bool   `json:"acknowledgeAbuse" default:"false"`                // Set to allow files which return cannotDownloadAbusiveFile to be downloaded.
+	KeepRevisionForever            bool   `json:"keepRevisionForever" default:"false"`             // Keep new head revision of each file forever.
+	SizeAsQuota                    bool   `json:"sizeAsQuota" default:"false"`                     // Show sizes as storage quota usage, not actual size.
+	V2DownloadMinSize              string `json:"v2DownloadMinSize" default:"off"`                 // If Object's are greater, use drive v2 API to download.
+	PacerMinSleep                  string `json:"pacerMinSleep" default:"100ms"`                   // Minimum time to sleep between API calls.
+	PacerBurst                     int    `json:"pacerBurst" default:"100"`                        // Number of API calls to allow without sleeping.
+	ServerSideAcrossConfigs        bool   `json:"serverSideAcrossConfigs" default:"false"`         // Deprecated: use --server-side-across-configs instead.
+	DisableHttp2                   bool   `json:"disableHttp2" default:"true"`                     // Disable drive using http2.
+	StopOnUploadLimit              bool   `json:"stopOnUploadLimit" default:"false"`               // Make upload limit errors be fatal.
+	StopOnDownloadLimit            bool   `json:"stopOnDownloadLimit" default:"false"`             // Make download limit errors be fatal.
+	SkipShortcuts                  bool   `json:"skipShortcuts" default:"false"`                   // If set skip shortcut files.
+	SkipDanglingShortcuts          bool   `json:"skipDanglingShortcuts" default:"false"`           // If set skip dangling shortcut files.
+	ResourceKey                    string `json:"resourceKey"`                                     // Resource key for accessing a link-shared file.
+	FastListBugFix                 bool   `json:"fastListBugFix" default:"true"`                   // Work around a bug in Google Drive listing.
+	MetadataOwner                  string `json:"metadataOwner" default:"read" example:"off"`      // Control whether owner should be read or written in metadata.
+	MetadataPermissions            string `json:"metadataPermissions" default:"off" example:"off"` // Control whether permissions should be read or written in metadata.
+	MetadataLabels                 string `json:"metadataLabels" default:"off" example:"off"`      // Control whether labels should be read or written in metadata.
+	MetadataEnforceExpansiveAccess bool   `json:"metadataEnforceExpansiveAccess" default:"false"`  // Whether the request should enforce expansive access rules.
+	Encoding                       string `json:"encoding" default:"InvalidUtf8"`                  // The encoding for the backend.
+	EnvAuth                        bool   `json:"envAuth" default:"false" example:"false"`         // Get IAM credentials from runtime (environment variables or instance meta data if no env vars).
+	Description                    string `json:"description"`                                     // Description of the remote.
 }
 
 type createDriveStorageRequest struct {
@@ -219,6 +233,7 @@ type dropboxConfig struct {
 	Token              string `json:"token"`                                                             // OAuth Access Token as a JSON blob.
 	AuthUrl            string `json:"authUrl"`                                                           // Auth server URL.
 	TokenUrl           string `json:"tokenUrl"`                                                          // Token server url.
+	ClientCredentials  bool   `json:"clientCredentials" default:"false"`                                 // Use client credentials OAuth flow.
 	ChunkSize          string `json:"chunkSize" default:"48Mi"`                                          // Upload chunk size (< 150Mi).
 	Impersonate        string `json:"impersonate"`                                                       // Impersonate this user when using a business account.
 	SharedFiles        bool   `json:"sharedFiles" default:"false"`                                       // Instructs rclone to work on individual shared files.
@@ -226,10 +241,13 @@ type dropboxConfig struct {
 	PacerMinSleep      string `json:"pacerMinSleep" default:"10ms"`                                      // Minimum time to sleep between API calls.
 	Encoding           string `json:"encoding" default:"Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"` // The encoding for the backend.
 	RootNamespace      string `json:"rootNamespace"`                                                     // Specify a different Dropbox namespace ID to use as the root for all paths.
+	ExportFormats      string `json:"exportFormats" default:"html,md"`                                   // Comma separated list of preferred formats for exporting files
+	SkipExports        bool   `json:"skipExports" default:"false"`                                       // Skip exportable files in all listings.
+	ShowAllExports     bool   `json:"showAllExports" default:"false"`                                    // Show all exportable files in listings.
 	BatchMode          string `json:"batchMode" default:"sync"`                                          // Upload file batching sync|async|off.
 	BatchSize          int    `json:"batchSize" default:"0"`                                             // Max number of files in upload batch.
 	BatchTimeout       string `json:"batchTimeout" default:"0s"`                                         // Max time to allow an idle upload batch before uploading.
-	BatchCommitTimeout string `json:"batchCommitTimeout" default:"10m0s"`                                // Max time to wait for a batch to finish committing
+	BatchCommitTimeout string `json:"batchCommitTimeout" default:"10m0s"`                                // Max time to wait for a batch to finish committing. (no longer used)
 	Description        string `json:"description"`                                                       // Description of the remote.
 }
 
@@ -312,28 +330,31 @@ type createFilefabricStorageRequest struct {
 func createFilefabricStorage() {}
 
 type ftpConfig struct {
-	Host               string `json:"host"`                                                                             // FTP host to connect to.
-	User               string `json:"user" default:"$USER"`                                                             // FTP username.
-	Port               int    `json:"port" default:"21"`                                                                // FTP port number.
-	Pass               string `json:"pass"`                                                                             // FTP password.
-	Tls                bool   `json:"tls" default:"false"`                                                              // Use Implicit FTPS (FTP over TLS).
-	ExplicitTls        bool   `json:"explicitTls" default:"false"`                                                      // Use Explicit FTPS (FTP over TLS).
-	Concurrency        int    `json:"concurrency" default:"0"`                                                          // Maximum number of FTP simultaneous connections, 0 for unlimited.
-	NoCheckCertificate bool   `json:"noCheckCertificate" default:"false"`                                               // Do not verify the TLS certificate of the server.
-	DisableEpsv        bool   `json:"disableEpsv" default:"false"`                                                      // Disable using EPSV even if server advertises support.
-	DisableMlsd        bool   `json:"disableMlsd" default:"false"`                                                      // Disable using MLSD even if server advertises support.
-	DisableUtf8        bool   `json:"disableUtf8" default:"false"`                                                      // Disable using UTF-8 even if server advertises support.
-	WritingMdtm        bool   `json:"writingMdtm" default:"false"`                                                      // Use MDTM to set modification time (VsFtpd quirk)
-	ForceListHidden    bool   `json:"forceListHidden" default:"false"`                                                  // Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.
-	IdleTimeout        string `json:"idleTimeout" default:"1m0s"`                                                       // Max time before closing idle connections.
-	CloseTimeout       string `json:"closeTimeout" default:"1m0s"`                                                      // Maximum time to wait for a response to close.
-	TlsCacheSize       int    `json:"tlsCacheSize" default:"32"`                                                        // Size of TLS session cache for all control and data connections.
-	DisableTls13       bool   `json:"disableTls13" default:"false"`                                                     // Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
-	ShutTimeout        string `json:"shutTimeout" default:"1m0s"`                                                       // Maximum time to wait for data connection closing status.
-	AskPassword        bool   `json:"askPassword" default:"false"`                                                      // Allow asking for FTP password when needed.
-	SocksProxy         string `json:"socksProxy"`                                                                       // Socks 5 proxy host.
-	Encoding           string `json:"encoding" default:"Slash,Del,Ctl,RightSpace,Dot" example:"Asterisk,Ctl,Dot,Slash"` // The encoding for the backend.
-	Description        string `json:"description"`                                                                      // Description of the remote.
+	Host                    string `json:"host"`                                                                             // FTP host to connect to.
+	User                    string `json:"user" default:"$USER"`                                                             // FTP username.
+	Port                    int    `json:"port" default:"21"`                                                                // FTP port number.
+	Pass                    string `json:"pass"`                                                                             // FTP password.
+	Tls                     bool   `json:"tls" default:"false"`                                                              // Use Implicit FTPS (FTP over TLS).
+	ExplicitTls             bool   `json:"explicitTls" default:"false"`                                                      // Use Explicit FTPS (FTP over TLS).
+	Concurrency             int    `json:"concurrency" default:"0"`                                                          // Maximum number of FTP simultaneous connections, 0 for unlimited.
+	NoCheckCertificate      bool   `json:"noCheckCertificate" default:"false"`                                               // Do not verify the TLS certificate of the server.
+	DisableEpsv             bool   `json:"disableEpsv" default:"false"`                                                      // Disable using EPSV even if server advertises support.
+	DisableMlsd             bool   `json:"disableMlsd" default:"false"`                                                      // Disable using MLSD even if server advertises support.
+	DisableUtf8             bool   `json:"disableUtf8" default:"false"`                                                      // Disable using UTF-8 even if server advertises support.
+	WritingMdtm             bool   `json:"writingMdtm" default:"false"`                                                      // Use MDTM to set modification time (VsFtpd quirk)
+	ForceListHidden         bool   `json:"forceListHidden" default:"false"`                                                  // Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.
+	IdleTimeout             string `json:"idleTimeout" default:"1m0s"`                                                       // Max time before closing idle connections.
+	CloseTimeout            string `json:"closeTimeout" default:"1m0s"`                                                      // Maximum time to wait for a response to close.
+	TlsCacheSize            int    `json:"tlsCacheSize" default:"32"`                                                        // Size of TLS session cache for all control and data connections.
+	DisableTls13            bool   `json:"disableTls13" default:"false"`                                                     // Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
+	AllowInsecureTlsCiphers bool   `json:"allowInsecureTlsCiphers" default:"false"`                                          // Allow insecure TLS ciphers
+	ShutTimeout             string `json:"shutTimeout" default:"1m0s"`                                                       // Maximum time to wait for data connection closing status.
+	AskPassword             bool   `json:"askPassword" default:"false"`                                                      // Allow asking for FTP password when needed.
+	SocksProxy              string `json:"socksProxy"`                                                                       // Socks 5 proxy host.
+	HttpProxy               string `json:"httpProxy"`                                                                        // URL for HTTP CONNECT proxy
+	NoCheckUpload           bool   `json:"noCheckUpload" default:"false"`                                                    // Don't check the upload is OK
+	Encoding                string `json:"encoding" default:"Slash,Del,Ctl,RightSpace,Dot" example:"Asterisk,Ctl,Dot,Slash"` // The encoding for the backend.
+	Description             string `json:"description"`                                                                      // Description of the remote.
 }
 
 type createFtpStorageRequest struct {
@@ -361,10 +382,12 @@ type gcsConfig struct {
 	Token                     string `json:"token"`                                         // OAuth Access Token as a JSON blob.
 	AuthUrl                   string `json:"authUrl"`                                       // Auth server URL.
 	TokenUrl                  string `json:"tokenUrl"`                                      // Token server url.
+	ClientCredentials         bool   `json:"clientCredentials" default:"false"`             // Use client credentials OAuth flow.
 	ProjectNumber             string `json:"projectNumber"`                                 // Project number.
 	UserProject               string `json:"userProject"`                                   // User project.
 	ServiceAccountFile        string `json:"serviceAccountFile"`                            // Service Account Credentials JSON file path.
 	ServiceAccountCredentials string `json:"serviceAccountCredentials"`                     // Service Account Credentials JSON blob.
+	AccessToken               string `json:"accessToken"`                                   // Short-lived access token.
 	Anonymous                 bool   `json:"anonymous" default:"false"`                     // Access public buckets and objects without credentials.
 	ObjectAcl                 string `json:"objectAcl" example:"authenticatedRead"`         // Access Control List for new objects.
 	BucketAcl                 string `json:"bucketAcl" example:"authenticatedRead"`         // Access Control List for new buckets.
@@ -374,7 +397,7 @@ type gcsConfig struct {
 	DirectoryMarkers          bool   `json:"directoryMarkers" default:"false"`              // Upload an empty object with a trailing slash when a new directory is created
 	NoCheckBucket             bool   `json:"noCheckBucket" default:"false"`                 // If set, don't attempt to check the bucket exists or create it.
 	Decompress                bool   `json:"decompress" default:"false"`                    // If set this will decompress gzip encoded objects.
-	Endpoint                  string `json:"endpoint"`                                      // Endpoint for the service.
+	Endpoint                  string `json:"endpoint" example:"storage.example.org"`        // Custom endpoint for the storage API. Leave blank to use the provider default.
 	Encoding                  string `json:"encoding" default:"Slash,CrLf,InvalidUtf8,Dot"` // The encoding for the backend.
 	EnvAuth                   bool   `json:"envAuth" default:"false" example:"false"`       // Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).
 	Description               string `json:"description"`                                   // Description of the remote.
@@ -405,15 +428,17 @@ type gphotosConfig struct {
 	Token              string `json:"token"`                                         // OAuth Access Token as a JSON blob.
 	AuthUrl            string `json:"authUrl"`                                       // Auth server URL.
 	TokenUrl           string `json:"tokenUrl"`                                      // Token server url.
+	ClientCredentials  bool   `json:"clientCredentials" default:"false"`             // Use client credentials OAuth flow.
 	ReadOnly           bool   `json:"readOnly" default:"false"`                      // Set to make the Google Photos backend read only.
 	ReadSize           bool   `json:"readSize" default:"false"`                      // Set to read the size of media items.
 	StartYear          int    `json:"startYear" default:"2000"`                      // Year limits the photos to be downloaded to those which are uploaded after the given year.
 	IncludeArchived    bool   `json:"includeArchived" default:"false"`               // Also view and download archived media.
+	Proxy              string `json:"proxy"`                                         // Use the gphotosdl proxy for downloading the full resolution images
 	Encoding           string `json:"encoding" default:"Slash,CrLf,InvalidUtf8,Dot"` // The encoding for the backend.
 	BatchMode          string `json:"batchMode" default:"sync"`                      // Upload file batching sync|async|off.
 	BatchSize          int    `json:"batchSize" default:"0"`                         // Max number of files in upload batch.
 	BatchTimeout       string `json:"batchTimeout" default:"0s"`                     // Max time to allow an idle upload batch before uploading.
-	BatchCommitTimeout string `json:"batchCommitTimeout" default:"10m0s"`            // Max time to wait for a batch to finish committing
+	BatchCommitTimeout string `json:"batchCommitTimeout" default:"10m0s"`            // Max time to wait for a batch to finish committing. (no longer used)
 	Description        string `json:"description"`                                   // Description of the remote.
 }
 
@@ -470,6 +495,7 @@ type hidriveConfig struct {
 	Token                      string `json:"token"`                                                 // OAuth Access Token as a JSON blob.
 	AuthUrl                    string `json:"authUrl"`                                               // Auth server URL.
 	TokenUrl                   string `json:"tokenUrl"`                                              // Token server url.
+	ClientCredentials          bool   `json:"clientCredentials" default:"false"`                     // Use client credentials OAuth flow.
 	ScopeAccess                string `json:"scopeAccess" default:"rw" example:"rw"`                 // Access permissions that rclone should use when requesting access from HiDrive.
 	ScopeRole                  string `json:"scopeRole" default:"user" example:"user"`               // User-level that rclone should use when requesting access from HiDrive.
 	RootPrefix                 string `json:"rootPrefix" default:"/" example:"/"`                    // The root/parent folder for all paths.
@@ -530,14 +556,16 @@ type createHttpStorageRequest struct {
 func createHttpStorage() {}
 
 type internetarchiveConfig struct {
-	AccessKeyId     string `json:"accessKeyId"`                                                // IAS3 Access Key.
-	SecretAccessKey string `json:"secretAccessKey"`                                            // IAS3 Secret Key (password).
-	Endpoint        string `json:"endpoint" default:"https://s3.us.archive.org"`               // IAS3 Endpoint.
-	FrontEndpoint   string `json:"frontEndpoint" default:"https://archive.org"`                // Host of InternetArchive Frontend.
-	DisableChecksum bool   `json:"disableChecksum" default:"true"`                             // Don't ask the server to test against MD5 checksum calculated by rclone.
-	WaitArchive     string `json:"waitArchive" default:"0s"`                                   // Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.
-	Encoding        string `json:"encoding" default:"Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
-	Description     string `json:"description"`                                                // Description of the remote.
+	AccessKeyId     string   `json:"accessKeyId"`                                                // IAS3 Access Key.
+	SecretAccessKey string   `json:"secretAccessKey"`                                            // IAS3 Secret Key (password).
+	Endpoint        string   `json:"endpoint" default:"https://s3.us.archive.org"`               // IAS3 Endpoint.
+	FrontEndpoint   string   `json:"frontEndpoint" default:"https://archive.org"`                // Host of InternetArchive Frontend.
+	ItemMetadata    []string `json:"itemMetadata" default:"[]"`                                  // Metadata to be set on the IA item, this is different from file-level metadata that can be set using --metadata-set.
+	ItemDerive      bool     `json:"itemDerive" default:"true"`                                  // Whether to trigger derive on the IA item or not. If set to false, the item will not be derived by IA upon upload.
+	DisableChecksum bool     `json:"disableChecksum" default:"true"`                             // Don't ask the server to test against MD5 checksum calculated by rclone.
+	WaitArchive     string   `json:"waitArchive" default:"0s"`                                   // Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.
+	Encoding        string   `json:"encoding" default:"Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
+	Description     string   `json:"description"`                                                // Description of the remote.
 }
 
 type createInternetarchiveStorageRequest struct {
@@ -565,6 +593,7 @@ type jottacloudConfig struct {
 	Token             string `json:"token"`                                                                                          // OAuth Access Token as a JSON blob.
 	AuthUrl           string `json:"authUrl"`                                                                                        // Auth server URL.
 	TokenUrl          string `json:"tokenUrl"`                                                                                       // Token server url.
+	ClientCredentials bool   `json:"clientCredentials" default:"false"`                                                              // Use client credentials OAuth flow.
 	Md5MemoryLimit    string `json:"md5MemoryLimit" default:"10Mi"`                                                                  // Files bigger than this will be cached on disk to calculate the MD5 if required.
 	TrashedOnly       bool   `json:"trashedOnly" default:"false"`                                                                    // Only show files that are in the trash.
 	HardDelete        bool   `json:"hardDelete" default:"false"`                                                                     // Delete files permanently rather than putting them into the trash.
@@ -681,8 +710,9 @@ func createKoofrOtherStorage() {}
 type localConfig struct {
 	Nounc                bool   `json:"nounc" default:"false" example:"true"`     // Disable UNC (long path names) conversion on Windows.
 	CopyLinks            bool   `json:"copyLinks" default:"false"`                // Follow symlinks and copy the pointed to item.
-	Links                bool   `json:"links" default:"false"`                    // Translate symlinks to/from regular files with a '.rclonelink' extension.
+	Links                bool   `json:"links" default:"false"`                    // Translate symlinks to/from regular files with a '.rclonelink' extension for the local backend.
 	SkipLinks            bool   `json:"skipLinks" default:"false"`                // Don't warn about skipped symlinks.
+	SkipSpecials         bool   `json:"skipSpecials" default:"false"`             // Don't warn about skipped pipes, sockets and device objects.
 	ZeroSizeLinks        bool   `json:"zeroSizeLinks" default:"false"`            // Assume the Stat size of links is zero (and read them instead) (deprecated).
 	UnicodeNormalization bool   `json:"unicodeNormalization" default:"false"`     // Apply unicode NFC normalization to paths and filenames.
 	NoCheckUpdated       bool   `json:"noCheckUpdated" default:"false"`           // Don't check to see if the files change during upload.
@@ -694,6 +724,7 @@ type localConfig struct {
 	NoSparse             bool   `json:"noSparse" default:"false"`                 // Disable sparse files for multi-thread downloads.
 	NoSetModtime         bool   `json:"noSetModtime" default:"false"`             // Disable setting modtime.
 	TimeType             string `json:"timeType" default:"mtime" example:"mtime"` // Set what kind of time is returned.
+	Hashes               string `json:"hashes"`                                   // Comma separated list of supported checksum types.
 	Encoding             string `json:"encoding" default:"Slash,Dot"`             // The encoding for the backend.
 	Description          string `json:"description"`                              // Description of the remote.
 }
@@ -723,6 +754,7 @@ type mailruConfig struct {
 	Token               string `json:"token"`                                                                                                    // OAuth Access Token as a JSON blob.
 	AuthUrl             string `json:"authUrl"`                                                                                                  // Auth server URL.
 	TokenUrl            string `json:"tokenUrl"`                                                                                                 // Token server url.
+	ClientCredentials   bool   `json:"clientCredentials" default:"false"`                                                                        // Use client credentials OAuth flow.
 	User                string `json:"user"`                                                                                                     // User name (usually email).
 	Pass                string `json:"pass"`                                                                                                     // Password.
 	SpeedupEnable       bool   `json:"speedupEnable" default:"true" example:"true"`                                                              // Skip full upload if there is another file with same data hash.
@@ -758,6 +790,9 @@ func createMailruStorage() {}
 type megaConfig struct {
 	User        string `json:"user"`                                     // User name.
 	Pass        string `json:"pass"`                                     // Password.
+	TwoFA       string `json:"2fa"`                                      // The 2FA code of your MEGA account if the account is set up with one
+	SessionId   string `json:"sessionId"`                                // Session (internal use only)
+	MasterKey   string `json:"masterKey"`                                // Master key (internal use only)
 	Debug       bool   `json:"debug" default:"false"`                    // Output more debug from Mega.
 	HardDelete  bool   `json:"hardDelete" default:"false"`               // Delete files permanently rather than putting them into the trash.
 	UseHttps    bool   `json:"useHttps" default:"false"`                 // Use HTTPS for transfers.
@@ -817,12 +852,15 @@ type onedriveConfig struct {
 	Token                   string `json:"token"`                                                                                                                                                                                                                    // OAuth Access Token as a JSON blob.
 	AuthUrl                 string `json:"authUrl"`                                                                                                                                                                                                                  // Auth server URL.
 	TokenUrl                string `json:"tokenUrl"`                                                                                                                                                                                                                 // Token server url.
+	ClientCredentials       bool   `json:"clientCredentials" default:"false"`                                                                                                                                                                                        // Use client credentials OAuth flow.
 	Region                  string `json:"region" default:"global" example:"global"`                                                                                                                                                                                 // Choose national cloud region for OneDrive.
+	UploadCutoff            string `json:"uploadCutoff" default:"off"`                                                                                                                                                                                               // Cutoff for switching to chunked upload.
 	ChunkSize               string `json:"chunkSize" default:"10Mi"`                                                                                                                                                                                                 // Chunk size to upload files with - must be multiple of 320k (327,680 bytes).
 	DriveId                 string `json:"driveId"`                                                                                                                                                                                                                  // The ID of the drive to use.
 	DriveType               string `json:"driveType"`                                                                                                                                                                                                                // The type of the drive (personal | business | documentLibrary).
 	RootFolderId            string `json:"rootFolderId"`                                                                                                                                                                                                             // ID of the root folder.
 	AccessScopes            string `json:"accessScopes" default:"Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access" example:"Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"` // Set scopes to be requested by rclone.
+	Tenant                  string `json:"tenant"`                                                                                                                                                                                                                   // ID of the service principal's tenant. Also called its directory ID.
 	DisableSitePermission   bool   `json:"disableSitePermission" default:"false"`                                                                                                                                                                                    // Disable the request for Sites.Read.All permission.
 	ExposeOnenoteFiles      bool   `json:"exposeOnenoteFiles" default:"false"`                                                                                                                                                                                       // Set to make OneNote files show up in directory listings.
 	ServerSideAcrossConfigs bool   `json:"serverSideAcrossConfigs" default:"false"`                                                                                                                                                                                  // Deprecated: use --server-side-across-configs instead.
@@ -861,7 +899,7 @@ func createOnedriveStorage() {}
 
 type oosEnv_authConfig struct {
 	Namespace            string `json:"namespace"`                                         // Object storage namespace
-	Compartment          string `json:"compartment"`                                       // Object storage compartment OCID
+	Compartment          string `json:"compartment"`                                       // Specify compartment OCID, if you need to list buckets.
 	Region               string `json:"region"`                                            // Object storage Region
 	Endpoint             string `json:"endpoint"`                                          // Endpoint for Object storage API.
 	StorageTier          string `json:"storageTier" default:"Standard" example:"Standard"` // The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
@@ -905,7 +943,7 @@ func createOosEnv_authStorage() {}
 
 type oosInstance_principal_authConfig struct {
 	Namespace            string `json:"namespace"`                                         // Object storage namespace
-	Compartment          string `json:"compartment"`                                       // Object storage compartment OCID
+	Compartment          string `json:"compartment"`                                       // Specify compartment OCID, if you need to list buckets.
 	Region               string `json:"region"`                                            // Object storage Region
 	Endpoint             string `json:"endpoint"`                                          // Endpoint for Object storage API.
 	StorageTier          string `json:"storageTier" default:"Standard" example:"Standard"` // The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
@@ -992,7 +1030,7 @@ func createOosNo_authStorage() {}
 
 type oosResource_principal_authConfig struct {
 	Namespace            string `json:"namespace"`                                         // Object storage namespace
-	Compartment          string `json:"compartment"`                                       // Object storage compartment OCID
+	Compartment          string `json:"compartment"`                                       // Specify compartment OCID, if you need to list buckets.
 	Region               string `json:"region"`                                            // Object storage Region
 	Endpoint             string `json:"endpoint"`                                          // Endpoint for Object storage API.
 	StorageTier          string `json:"storageTier" default:"Standard" example:"Standard"` // The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
@@ -1036,7 +1074,7 @@ func createOosResource_principal_authStorage() {}
 
 type oosUser_principal_authConfig struct {
 	Namespace            string `json:"namespace"`                                                  // Object storage namespace
-	Compartment          string `json:"compartment"`                                                // Object storage compartment OCID
+	Compartment          string `json:"compartment"`                                                // Specify compartment OCID, if you need to list buckets.
 	Region               string `json:"region"`                                                     // Object storage Region
 	Endpoint             string `json:"endpoint"`                                                   // Endpoint for Object storage API.
 	ConfigFile           string `json:"configFile" default:"~/.oci/config" example:"~/.oci/config"` // Path to OCI config file
@@ -1082,7 +1120,7 @@ func createOosUser_principal_authStorage() {}
 
 type oosWorkload_identity_authConfig struct {
 	Namespace            string `json:"namespace"`                                         // Object storage namespace
-	Compartment          string `json:"compartment"`                                       // Object storage compartment OCID
+	Compartment          string `json:"compartment"`                                       // Specify compartment OCID, if you need to list buckets.
 	Region               string `json:"region"`                                            // Object storage Region
 	Endpoint             string `json:"endpoint"`                                          // Endpoint for Object storage API.
 	StorageTier          string `json:"storageTier" default:"Standard" example:"Standard"` // The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
@@ -1129,6 +1167,7 @@ type opendriveConfig struct {
 	Password    string `json:"password"`                                                                                                                                         // Password.
 	Encoding    string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"` // The encoding for the backend.
 	ChunkSize   string `json:"chunkSize" default:"10Mi"`                                                                                                                         // Files will be uploaded in chunks this size.
+	Access      string `json:"access" default:"private" example:"private"`                                                                                                       // Files and folders will be uploaded with this access permission (default private)
 	Description string `json:"description"`                                                                                                                                      // Description of the remote.
 }
 
@@ -1152,17 +1191,18 @@ type createOpendriveStorageRequest struct {
 func createOpendriveStorage() {}
 
 type pcloudConfig struct {
-	ClientId     string `json:"clientId"`                                                   // OAuth Client Id.
-	ClientSecret string `json:"clientSecret"`                                               // OAuth Client Secret.
-	Token        string `json:"token"`                                                      // OAuth Access Token as a JSON blob.
-	AuthUrl      string `json:"authUrl"`                                                    // Auth server URL.
-	TokenUrl     string `json:"tokenUrl"`                                                   // Token server url.
-	Encoding     string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
-	RootFolderId string `json:"rootFolderId" default:"d0"`                                  // Fill in for rclone to use a non root folder as its starting point.
-	Hostname     string `json:"hostname" default:"api.pcloud.com" example:"api.pcloud.com"` // Hostname to connect to.
-	Username     string `json:"username"`                                                   // Your pcloud username.
-	Password     string `json:"password"`                                                   // Your pcloud password.
-	Description  string `json:"description"`                                                // Description of the remote.
+	ClientId          string `json:"clientId"`                                                   // OAuth Client Id.
+	ClientSecret      string `json:"clientSecret"`                                               // OAuth Client Secret.
+	Token             string `json:"token"`                                                      // OAuth Access Token as a JSON blob.
+	AuthUrl           string `json:"authUrl"`                                                    // Auth server URL.
+	TokenUrl          string `json:"tokenUrl"`                                                   // Token server url.
+	ClientCredentials bool   `json:"clientCredentials" default:"false"`                          // Use client credentials OAuth flow.
+	Encoding          string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
+	RootFolderId      string `json:"rootFolderId" default:"d0"`                                  // Fill in for rclone to use a non root folder as its starting point.
+	Hostname          string `json:"hostname" default:"api.pcloud.com" example:"api.pcloud.com"` // Hostname to connect to.
+	Username          string `json:"username"`                                                   // Your pcloud username.
+	Password          string `json:"password"`                                                   // Your pcloud password.
+	Description       string `json:"description"`                                                // Description of the remote.
 }
 
 type createPcloudStorageRequest struct {
@@ -1185,14 +1225,15 @@ type createPcloudStorageRequest struct {
 func createPcloudStorage() {}
 
 type premiumizemeConfig struct {
-	ClientId     string `json:"clientId"`                                                               // OAuth Client Id.
-	ClientSecret string `json:"clientSecret"`                                                           // OAuth Client Secret.
-	Token        string `json:"token"`                                                                  // OAuth Access Token as a JSON blob.
-	AuthUrl      string `json:"authUrl"`                                                                // Auth server URL.
-	TokenUrl     string `json:"tokenUrl"`                                                               // Token server url.
-	ApiKey       string `json:"apiKey"`                                                                 // API Key.
-	Encoding     string `json:"encoding" default:"Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
-	Description  string `json:"description"`                                                            // Description of the remote.
+	ClientId          string `json:"clientId"`                                                               // OAuth Client Id.
+	ClientSecret      string `json:"clientSecret"`                                                           // OAuth Client Secret.
+	Token             string `json:"token"`                                                                  // OAuth Access Token as a JSON blob.
+	AuthUrl           string `json:"authUrl"`                                                                // Auth server URL.
+	TokenUrl          string `json:"tokenUrl"`                                                               // Token server url.
+	ClientCredentials bool   `json:"clientCredentials" default:"false"`                                      // Use client credentials OAuth flow.
+	ApiKey            string `json:"apiKey"`                                                                 // API Key.
+	Encoding          string `json:"encoding" default:"Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
+	Description       string `json:"description"`                                                            // Description of the remote.
 }
 
 type createPremiumizemeStorageRequest struct {
@@ -1215,13 +1256,14 @@ type createPremiumizemeStorageRequest struct {
 func createPremiumizemeStorage() {}
 
 type putioConfig struct {
-	ClientId     string `json:"clientId"`                                                   // OAuth Client Id.
-	ClientSecret string `json:"clientSecret"`                                               // OAuth Client Secret.
-	Token        string `json:"token"`                                                      // OAuth Access Token as a JSON blob.
-	AuthUrl      string `json:"authUrl"`                                                    // Auth server URL.
-	TokenUrl     string `json:"tokenUrl"`                                                   // Token server url.
-	Encoding     string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
-	Description  string `json:"description"`                                                // Description of the remote.
+	ClientId          string `json:"clientId"`                                                   // OAuth Client Id.
+	ClientSecret      string `json:"clientSecret"`                                               // OAuth Client Secret.
+	Token             string `json:"token"`                                                      // OAuth Access Token as a JSON blob.
+	AuthUrl           string `json:"authUrl"`                                                    // Auth server URL.
+	TokenUrl          string `json:"tokenUrl"`                                                   // Token server url.
+	ClientCredentials bool   `json:"clientCredentials" default:"false"`                          // Use client credentials OAuth flow.
+	Encoding          string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
+	Description       string `json:"description"`                                                // Description of the remote.
 }
 
 type createPutioStorageRequest struct {
@@ -1277,63 +1319,72 @@ type createQingstorStorageRequest struct {
 func createQingstorStorage() {}
 
 type s3AWSConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:"us-east-1"`               // Region to connect to.
-	Endpoint              string `json:"endpoint"`                                 // Endpoint for S3 API.
-	LocationConstraint    string `json:"locationConstraint" example:""`            // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	RequesterPays         bool   `json:"requesterPays" default:"false"`            // Enables requester pays option when interacting with S3 bucket.
-	ServerSideEncryption  string `json:"serverSideEncryption" example:""`          // The server-side encryption algorithm used when storing this object in S3.
-	SseCustomerAlgorithm  string `json:"sseCustomerAlgorithm" example:""`          // If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
-	SseKmsKeyId           string `json:"sseKmsKeyId" example:""`                   // If using KMS ID you must provide the ARN of Key.
-	SseCustomerKey        string `json:"sseCustomerKey" example:""`                // To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
-	SseCustomerKeyBase64  string `json:"sseCustomerKeyBase64" example:""`          // If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
-	SseCustomerKeyMd5     string `json:"sseCustomerKeyMd5" example:""`             // If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
-	StorageClass          string `json:"storageClass" example:""`                  // The storage class to use when storing new objects in S3.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	UseAccelerateEndpoint bool   `json:"useAccelerateEndpoint" default:"false"`    // If true use the AWS S3 accelerated endpoint.
-	LeavePartsOnError     bool   `json:"leavePartsOnError" default:"false"`        // If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	StsEndpoint           string `json:"stsEndpoint"`                              // Endpoint for STS (deprecated).
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"us-east-1"`                  // Region to connect to.
+	Endpoint                    string `json:"endpoint"`                                    // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint" example:""`               // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	RequesterPays               bool   `json:"requesterPays" default:"false"`               // Enables requester pays option when interacting with S3 bucket.
+	ServerSideEncryption        string `json:"serverSideEncryption"`                        // The server-side encryption algorithm used when storing this object in S3.
+	SseCustomerAlgorithm        string `json:"sseCustomerAlgorithm" example:""`             // If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+	SseKmsKeyId                 string `json:"sseKmsKeyId" example:""`                      // If using KMS ID you must provide the ARN of Key.
+	SseCustomerKey              string `json:"sseCustomerKey" example:""`                   // To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+	SseCustomerKeyBase64        string `json:"sseCustomerKeyBase64" example:""`             // If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+	SseCustomerKeyMd5           string `json:"sseCustomerKeyMd5" example:""`                // If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+	StorageClass                string `json:"storageClass" example:"REDUCED_REDUNDANCY"`   // The storage class to use when storing new objects in S3.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseAccelerateEndpoint       bool   `json:"useAccelerateEndpoint" default:"false"`       // If true use the AWS S3 accelerated endpoint.
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	LeavePartsOnError           bool   `json:"leavePartsOnError" default:"false"`           // If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	StsEndpoint                 string `json:"stsEndpoint"`                                 // Endpoint for STS (deprecated).
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	DirectoryBucket             bool   `json:"directoryBucket" default:"false"`             // Set to use AWS Directory Buckets
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3AWSStorageRequest struct {
@@ -1356,51 +1407,59 @@ type createS3AWSStorageRequest struct {
 func createS3AWSStorage() {}
 
 type s3AlibabaConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                    // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
-	Endpoint              string `json:"endpoint" example:"oss-accelerate.aliyuncs.com"` // Endpoint for OSS API.
-	Acl                   string `json:"acl"`                                            // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                    // Canned ACL used when creating buckets.
-	StorageClass          string `json:"storageClass" example:""`                        // The storage class to use when storing new objects in OSS.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                   // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                        // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                 // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                   // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`                // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                          // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                        // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                   // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                  // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                  // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                         // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                   // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                       // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                        // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                  // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                  // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                         // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                   // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`       // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`             // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`              // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                   // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                    // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`               // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`               // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`             // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`            // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                       // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                        // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                 // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                     // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                      // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`          // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`               // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`            // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                       // Set to debug the SDK
-	Description           string `json:"description"`                                    // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                    // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint" example:"oss-accelerate.aliyuncs.com"` // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                            // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                    // Canned ACL used when creating buckets.
+	StorageClass                string `json:"storageClass"`                                   // The storage class to use when storing new objects in S3.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                   // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                        // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                 // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                   // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                          // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                        // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                   // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                        // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                            // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                 // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                  // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                  // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                         // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                   // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                   // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                       // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                        // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                  // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                  // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                         // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                   // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`       // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`             // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`              // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                   // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                    // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`               // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`               // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`             // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`            // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`    // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                       // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                        // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                 // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                     // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                      // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`          // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`               // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`            // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                         // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`             // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                       // Set to debug the SDK
+	Description                 string `json:"description"`                                    // Description of the remote.
 }
 
 type createS3AlibabaStorageRequest struct {
@@ -1423,52 +1482,60 @@ type createS3AlibabaStorageRequest struct {
 func createS3AlibabaStorage() {}
 
 type s3ArvanCloudConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`          // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                      // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                                  // AWS Secret Access Key (password).
-	Endpoint              string `json:"endpoint" example:"s3.ir-thr-at1.arvanstorage.ir"` // Endpoint for Arvan Cloud Object Storage (AOS) API.
-	LocationConstraint    string `json:"locationConstraint" example:"ir-thr-at1"`          // Location constraint - must match endpoint.
-	Acl                   string `json:"acl"`                                              // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                      // Canned ACL used when creating buckets.
-	StorageClass          string `json:"storageClass" example:"STANDARD"`                  // The storage class to use when storing new objects in ArvanCloud.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                     // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                          // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                   // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                     // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`                  // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                            // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                          // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                     // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                    // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                    // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                           // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                     // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                         // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                          // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                    // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                    // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                           // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                     // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`         // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`               // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`                // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                     // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                      // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`                 // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`                 // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`               // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`              // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                         // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                          // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                   // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                       // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                        // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`            // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                 // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`                 // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`              // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                         // Set to debug the SDK
-	Description           string `json:"description"`                                      // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`          // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                      // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                  // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint" example:"s3.ir-thr-at1.arvanstorage.ir"` // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint" example:"ir-thr-at1"`          // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                              // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                      // Canned ACL used when creating buckets.
+	StorageClass                string `json:"storageClass"`                                     // The storage class to use when storing new objects in S3.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                     // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                          // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                   // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                     // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                  // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                            // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                          // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                     // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                          // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                  // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                              // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                   // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                    // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                    // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                           // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                     // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                     // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                         // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                          // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                    // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                    // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                           // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                     // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`         // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`               // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`                // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                     // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                      // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`                 // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`                 // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`               // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`              // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`      // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                         // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                          // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                   // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                       // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                        // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`            // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`                 // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`                 // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`              // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                           // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`               // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                         // Set to debug the SDK
+	Description                 string `json:"description"`                                      // Description of the remote.
 }
 
 type createS3ArvanCloudStorageRequest struct {
@@ -1490,59 +1557,142 @@ type createS3ArvanCloudStorageRequest struct {
 // @Router /storage/s3/arvancloud [post]
 func createS3ArvanCloudStorage() {}
 
+type s3BizflyCloudConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"hn"`                         // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"hn.ss.bfcplatform.vn"`     // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
+}
+
+type createS3BizflyCloudStorageRequest struct {
+	Name         string              `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string              `json:"path"`                      // Path of the storage
+	Config       s3BizflyCloudConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig  `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3BizflyCloudStorage
+// @Summary Create S3 storage with BizflyCloud - Bizfly Cloud Simple Storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3BizflyCloudStorageRequest true "Request body"
+// @Router /storage/s3/bizflycloud [post]
+func createS3BizflyCloudStorage() {}
+
 type s3CephConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                        // Region to connect to.
-	Endpoint              string `json:"endpoint"`                                 // Endpoint for S3 API.
-	LocationConstraint    string `json:"locationConstraint"`                       // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	ServerSideEncryption  string `json:"serverSideEncryption" example:""`          // The server-side encryption algorithm used when storing this object in S3.
-	SseCustomerAlgorithm  string `json:"sseCustomerAlgorithm" example:""`          // If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
-	SseKmsKeyId           string `json:"sseKmsKeyId" example:""`                   // If using KMS ID you must provide the ARN of Key.
-	SseCustomerKey        string `json:"sseCustomerKey" example:""`                // To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
-	SseCustomerKeyBase64  string `json:"sseCustomerKeyBase64" example:""`          // If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
-	SseCustomerKeyMd5     string `json:"sseCustomerKeyMd5" example:""`             // If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                      // Region to connect to.
+	Endpoint                    string `json:"endpoint"`                                    // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                          // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	ServerSideEncryption        string `json:"serverSideEncryption"`                        // The server-side encryption algorithm used when storing this object in S3.
+	SseCustomerAlgorithm        string `json:"sseCustomerAlgorithm" example:""`             // If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+	SseKmsKeyId                 string `json:"sseKmsKeyId" example:""`                      // If using KMS ID you must provide the ARN of Key.
+	SseCustomerKey              string `json:"sseCustomerKey" example:""`                   // To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+	SseCustomerKeyBase64        string `json:"sseCustomerKeyBase64" example:""`             // If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+	SseCustomerKeyMd5           string `json:"sseCustomerKeyMd5" example:""`                // If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3CephStorageRequest struct {
@@ -1565,57 +1715,65 @@ type createS3CephStorageRequest struct {
 func createS3CephStorage() {}
 
 type s3ChinaMobileConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`   // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                               // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                           // AWS Secret Access Key (password).
-	Endpoint              string `json:"endpoint" example:"eos-wuxi-1.cmecloud.cn"` // Endpoint for China Mobile Ecloud Elastic Object Storage (EOS) API.
-	LocationConstraint    string `json:"locationConstraint" example:"wuxi1"`        // Location constraint - must match endpoint.
-	Acl                   string `json:"acl"`                                       // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`               // Canned ACL used when creating buckets.
-	ServerSideEncryption  string `json:"serverSideEncryption" example:""`           // The server-side encryption algorithm used when storing this object in S3.
-	SseCustomerAlgorithm  string `json:"sseCustomerAlgorithm" example:""`           // If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
-	SseCustomerKey        string `json:"sseCustomerKey" example:""`                 // To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
-	SseCustomerKeyBase64  string `json:"sseCustomerKeyBase64" example:""`           // If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
-	SseCustomerKeyMd5     string `json:"sseCustomerKeyMd5" example:""`              // If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
-	StorageClass          string `json:"storageClass" example:""`                   // The storage class to use when storing new objects in ChinaMobile.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`              // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                   // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`            // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`              // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`           // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                     // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                   // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                              // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`             // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`             // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                    // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`              // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                  // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                   // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`             // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`             // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                    // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`              // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`  // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`        // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`         // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`              // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                               // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`          // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`          // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`        // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`       // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                  // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                   // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`            // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                 // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`     // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`          // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`          // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`       // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                  // Set to debug the SDK
-	Description           string `json:"description"`                               // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint" example:"eos-wuxi-1.cmecloud.cn"`   // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint" example:"wuxi1"`          // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	ServerSideEncryption        string `json:"serverSideEncryption"`                        // The server-side encryption algorithm used when storing this object in S3.
+	SseCustomerAlgorithm        string `json:"sseCustomerAlgorithm" example:""`             // If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+	SseCustomerKey              string `json:"sseCustomerKey" example:""`                   // To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+	SseCustomerKeyBase64        string `json:"sseCustomerKeyBase64" example:""`             // If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+	SseCustomerKeyMd5           string `json:"sseCustomerKeyMd5" example:""`                // If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+	StorageClass                string `json:"storageClass"`                                // The storage class to use when storing new objects in S3.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3ChinaMobileStorageRequest struct {
@@ -1638,50 +1796,57 @@ type createS3ChinaMobileStorageRequest struct {
 func createS3ChinaMobileStorage() {}
 
 type s3CloudflareConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:"auto"`                    // Region to connect to.
-	Endpoint              string `json:"endpoint"`                                 // Endpoint for S3 API.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"auto"`                       // Region to connect to.
+	Endpoint                    string `json:"endpoint"`                                    // Endpoint for S3 API.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3CloudflareStorageRequest struct {
@@ -1703,53 +1868,136 @@ type createS3CloudflareStorageRequest struct {
 // @Router /storage/s3/cloudflare [post]
 func createS3CloudflareStorage() {}
 
+type s3CubbitConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"eu-west-1"`                  // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.cubbit.eu"`             // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
+}
+
+type createS3CubbitStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3CubbitConfig     `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3CubbitStorage
+// @Summary Create S3 storage with Cubbit - Cubbit DS3 Object Storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3CubbitStorageRequest true "Request body"
+// @Router /storage/s3/cubbit [post]
+func createS3CubbitStorage() {}
+
 type s3DigitalOceanConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                    // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                              // Region to connect to.
-	Endpoint              string `json:"endpoint" example:"syd1.digitaloceanspaces.com"` // Endpoint for S3 API.
-	LocationConstraint    string `json:"locationConstraint"`                             // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                            // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                    // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                   // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                        // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                 // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                   // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`                // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                          // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                        // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                   // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                  // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                  // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                         // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                   // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                       // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                        // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                  // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                  // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                         // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                   // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`       // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`             // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`              // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                   // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                    // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`               // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`               // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`             // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`            // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                       // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                        // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                 // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                     // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                      // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`          // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`               // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`            // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                       // Set to debug the SDK
-	Description           string `json:"description"`                                    // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                    // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                         // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"syd1.digitaloceanspaces.com"` // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                             // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                            // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                    // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                   // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                        // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                 // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                   // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                          // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                        // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                   // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                        // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                            // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                 // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                  // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                  // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                         // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                   // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                   // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                       // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                        // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                  // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                  // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                         // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                   // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`       // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`             // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`              // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                   // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                    // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`               // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`               // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`             // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`            // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`    // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                       // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                        // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                 // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                     // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                      // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`          // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`               // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`            // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                         // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`             // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                       // Set to debug the SDK
+	Description                 string `json:"description"`                                    // Description of the remote.
 }
 
 type createS3DigitalOceanStorageRequest struct {
@@ -1772,52 +2020,60 @@ type createS3DigitalOceanStorageRequest struct {
 func createS3DigitalOceanStorage() {}
 
 type s3DreamhostConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`       // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                   // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                               // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                             // Region to connect to.
-	Endpoint              string `json:"endpoint" example:"objects-us-east-1.dream.io"` // Endpoint for S3 API.
-	LocationConstraint    string `json:"locationConstraint"`                            // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                           // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                   // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                  // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                       // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                  // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`               // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                         // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                       // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                  // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                 // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                 // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                        // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                  // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                      // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                       // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                 // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                 // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                        // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                  // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`      // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`            // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`             // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                  // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                   // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`              // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`              // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`            // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`           // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                      // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                       // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                    // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                     // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`         // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`              // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`              // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`           // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                      // Set to debug the SDK
-	Description           string `json:"description"`                                   // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`       // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                   // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                               // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                        // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"objects-us-east-1.dream.io"` // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                            // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                           // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                   // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                  // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                       // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                  // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`               // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                         // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                       // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                  // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                       // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                               // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                           // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                 // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                 // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                        // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                  // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                  // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                      // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                       // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                 // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                 // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                        // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                  // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`      // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`            // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`             // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                  // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                   // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`              // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`              // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`            // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`           // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`   // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                      // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                       // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                    // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                     // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`         // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`              // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`              // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`           // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                        // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`            // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                      // Set to debug the SDK
+	Description                 string `json:"description"`                                   // Description of the remote.
 }
 
 type createS3DreamhostStorageRequest struct {
@@ -1839,53 +2095,284 @@ type createS3DreamhostStorageRequest struct {
 // @Router /storage/s3/dreamhost [post]
 func createS3DreamhostStorage() {}
 
+type s3ExabaConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                      // Region to connect to.
+	Endpoint                    string `json:"endpoint"`                                    // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                          // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
+}
+
+type createS3ExabaStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3ExabaConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3ExabaStorage
+// @Summary Create S3 storage with Exaba - Exaba Object Storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3ExabaStorageRequest true "Request body"
+// @Router /storage/s3/exaba [post]
+func createS3ExabaStorage() {}
+
+type s3FileLuConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"global"`                     // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s5lu.com"`                 // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
+}
+
+type createS3FileLuStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3FileLuConfig     `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3FileLuStorage
+// @Summary Create S3 storage with FileLu - FileLu S5 (S3-Compatible Object Storage)
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3FileLuStorageRequest true "Request body"
+// @Router /storage/s3/filelu [post]
+func createS3FileLuStorage() {}
+
+type s3FlashBladeConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint"`                                    // Endpoint for S3 API.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
+}
+
+type createS3FlashBladeStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3FlashBladeConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3FlashBladeStorage
+// @Summary Create S3 storage with FlashBlade - Pure Storage FlashBlade Object Storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3FlashBladeStorageRequest true "Request body"
+// @Router /storage/s3/flashblade [post]
+func createS3FlashBladeStorage() {}
+
 type s3GCSConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`           // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                       // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                                   // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                                 // Region to connect to.
-	Endpoint              string `json:"endpoint" example:"https://storage.googleapis.com"` // Endpoint for Google Cloud Storage.
-	LocationConstraint    string `json:"locationConstraint"`                                // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                               // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                       // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                      // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                           // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                    // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                      // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`                   // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                             // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                           // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                      // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                     // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                     // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                            // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                      // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                          // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                           // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                     // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                     // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                            // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                      // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`          // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`                // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`                 // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                      // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                       // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`                  // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`                  // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`                // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`               // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                          // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                           // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                    // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                        // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                         // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`             // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                  // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`                  // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`               // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                          // Set to debug the SDK
-	Description           string `json:"description"`                                       // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`           // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                       // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                   // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                            // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"https://storage.googleapis.com"` // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                                // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                               // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                       // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                      // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                           // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                    // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                      // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                   // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                             // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                           // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                      // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                           // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                   // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                               // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                    // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                     // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                     // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                            // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                      // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                      // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                          // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                           // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                     // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                     // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                            // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                      // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`          // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`                // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`                 // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                      // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                       // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`                  // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`                  // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`                // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`               // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`       // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                          // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                           // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                    // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                        // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                         // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`             // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`                  // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`                  // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`               // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                            // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`                // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                          // Set to debug the SDK
+	Description                 string `json:"description"`                                       // Description of the remote.
 }
 
 type createS3GCSStorageRequest struct {
@@ -1907,52 +2394,136 @@ type createS3GCSStorageRequest struct {
 // @Router /storage/s3/gcs [post]
 func createS3GCSStorage() {}
 
+type s3HetznerConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                    // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"hel1"`                          // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"hel1.your-objectstorage.com"` // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                             // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                            // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                    // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                   // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                        // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                 // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                   // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                          // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                        // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                   // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                        // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                            // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                 // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                  // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                  // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                         // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                   // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                   // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                       // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                        // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                  // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                  // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                         // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                   // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`       // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`             // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`              // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                   // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                    // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`               // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`               // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`             // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`            // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`    // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                       // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                        // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                 // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                     // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                      // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`          // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`               // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`            // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                         // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`             // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                       // Set to debug the SDK
+	Description                 string `json:"description"`                                    // Description of the remote.
+}
+
+type createS3HetznerStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3HetznerConfig    `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3HetznerStorage
+// @Summary Create S3 storage with Hetzner - Hetzner Object Storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3HetznerStorageRequest true "Request body"
+// @Router /storage/s3/hetzner [post]
+func createS3HetznerStorage() {}
+
 type s3HuaweiOBSConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`             // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                         // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                                     // AWS Secret Access Key (password).
-	Region                string `json:"region" example:"af-south-1"`                         // Region to connect to. - the location where your bucket will be created and your data stored. Need bo be same with your endpoint.
-	Endpoint              string `json:"endpoint" example:"obs.af-south-1.myhuaweicloud.com"` // Endpoint for OBS API.
-	Acl                   string `json:"acl"`                                                 // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                         // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                        // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                             // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                      // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                        // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`                     // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                               // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                             // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                        // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                       // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                       // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                              // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                        // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                            // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                             // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                       // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                       // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                              // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                        // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`            // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`                  // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`                   // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                        // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                         // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`                    // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`                    // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`                  // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`                 // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                            // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                             // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                      // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                          // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                           // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`               // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                    // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`                    // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`                 // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                            // Set to debug the SDK
-	Description           string `json:"description"`                                         // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`             // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                         // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                     // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"af-south-1"`                         // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"obs.af-south-1.myhuaweicloud.com"` // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                                 // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                         // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                        // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                             // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                      // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                        // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                     // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                               // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                             // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                        // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                             // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                     // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                                 // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                      // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                       // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                       // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                              // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                        // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                        // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                            // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                             // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                       // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                       // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                              // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                        // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`            // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`                  // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`                   // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                        // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                         // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`                    // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`                    // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`                  // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`                 // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`         // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                            // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                             // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                      // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                          // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                           // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`               // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`                    // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`                    // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`                 // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                              // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`                  // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                            // Set to debug the SDK
+	Description                 string `json:"description"`                                         // Description of the remote.
 }
 
 type createS3HuaweiOBSStorageRequest struct {
@@ -1975,52 +2546,62 @@ type createS3HuaweiOBSStorageRequest struct {
 func createS3HuaweiOBSStorage() {}
 
 type s3IBMCOSConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`                       // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                                   // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                                               // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                                             // Region to connect to.
-	Endpoint              string `json:"endpoint" example:"s3.us.cloud-object-storage.appdomain.cloud"` // Endpoint for IBM COS S3 API.
-	LocationConstraint    string `json:"locationConstraint" example:"us-standard"`                      // Location constraint - must match endpoint when using IBM Cloud Public.
-	Acl                   string `json:"acl" example:"private"`                                         // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                                   // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                                  // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                                       // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                                // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                                  // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`                               // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                                         // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                                       // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                                  // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                                 // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                                 // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                                        // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                                  // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                                      // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                                       // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                                 // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                                 // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                                        // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                                  // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`                      // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`                            // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`                             // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                                  // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                                   // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`                              // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`                              // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`                            // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`                           // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                                      // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                                       // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                                // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                                    // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                                     // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`                         // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                              // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`                              // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`                           // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                                      // Set to debug the SDK
-	Description           string `json:"description"`                                                   // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`                       // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                                   // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                               // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                                        // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.us.cloud-object-storage.appdomain.cloud"` // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint" example:"us-standard"`                      // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl" example:"private"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                                   // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                                  // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                                       // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                                // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                                  // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                               // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                                         // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                                       // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                                  // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                                       // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                               // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                                           // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                                // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                                 // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                                 // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                                        // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                                  // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                                  // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                                      // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                                       // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                                 // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                                 // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                                        // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                                  // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`                      // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`                            // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`                             // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                                  // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                                   // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`                              // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`                              // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`                            // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`                           // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`                   // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                                      // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                                       // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                                // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                                    // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                                     // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`                         // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`                              // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`                              // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`                           // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                                        // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`                            // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                                      // Set to debug the SDK
+	IbmApiKey                   string `json:"ibmApiKey"`                                                     // IBM API Key to be used to obtain IAM token
+	IbmResourceInstanceId       string `json:"ibmResourceInstanceId"`                                         // IBM service instance id
+	Description                 string `json:"description"`                                                   // Description of the remote.
 }
 
 type createS3IBMCOSStorageRequest struct {
@@ -2043,49 +2624,57 @@ type createS3IBMCOSStorageRequest struct {
 func createS3IBMCOSStorage() {}
 
 type s3IDriveConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3IDriveStorageRequest struct {
@@ -2108,51 +2697,59 @@ type createS3IDriveStorageRequest struct {
 func createS3IDriveStorage() {}
 
 type s3IONOSConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`           // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                       // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                                   // AWS Secret Access Key (password).
-	Region                string `json:"region" example:"de"`                               // Region where your bucket will be created and your data stored.
-	Endpoint              string `json:"endpoint" example:"s3-eu-central-1.ionoscloud.com"` // Endpoint for IONOS S3 Object Storage.
-	Acl                   string `json:"acl"`                                               // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                       // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                      // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                           // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                    // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                      // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`                   // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                             // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                           // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                      // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                     // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                     // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                            // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                      // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                          // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                           // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                     // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                     // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                            // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                      // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`          // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`                // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`                 // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                      // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                       // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`                  // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`                  // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`                // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`               // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                          // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                           // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                    // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                        // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                         // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`             // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                  // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`                  // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`               // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                          // Set to debug the SDK
-	Description           string `json:"description"`                                       // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`           // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                       // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                   // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"eu-central-2"`                     // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3-eu-central-1.ionoscloud.com"` // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                               // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                       // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                      // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                           // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                    // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                      // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                   // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                             // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                           // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                      // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                           // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                   // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                               // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                    // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                     // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                     // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                            // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                      // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                      // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                          // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                           // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                     // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                     // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                            // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                      // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`          // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`                // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`                 // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                      // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                       // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`                  // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`                  // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`                // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`               // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`       // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                          // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                           // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                    // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                        // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                         // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`             // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`                  // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`                  // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`               // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                            // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`                // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                          // Set to debug the SDK
+	Description                 string `json:"description"`                                       // Description of the remote.
 }
 
 type createS3IONOSStorageRequest struct {
@@ -2174,52 +2771,135 @@ type createS3IONOSStorageRequest struct {
 // @Router /storage/s3/ionos [post]
 func createS3IONOSStorage() {}
 
+type s3IntercoloConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"de-fra"`                     // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"de-fra.i3storage.com"`     // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
+}
+
+type createS3IntercoloStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3IntercoloConfig  `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3IntercoloStorage
+// @Summary Create S3 storage with Intercolo - Intercolo Object Storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3IntercoloStorageRequest true "Request body"
+// @Router /storage/s3/intercolo [post]
+func createS3IntercoloStorage() {}
+
 type s3LeviiaConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                        // Region to connect to.
-	Endpoint              string `json:"endpoint"`                                 // Endpoint for S3 API.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                      // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.leviia.com"`            // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3LeviiaStorageRequest struct {
@@ -2242,51 +2922,59 @@ type createS3LeviiaStorageRequest struct {
 func createS3LeviiaStorage() {}
 
 type s3LiaraConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                 // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
-	Endpoint              string `json:"endpoint" example:"storage.iran.liara.space"` // Endpoint for Liara Object Storage API.
-	Acl                   string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
-	StorageClass          string `json:"storageClass" example:"STANDARD"`             // The storage class to use when storing new objects in Liara
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                     // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
-	Description           string `json:"description"`                                 // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint" example:"storage.iran.liara.space"` // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	StorageClass                string `json:"storageClass"`                                // The storage class to use when storing new objects in S3.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3LiaraStorageRequest struct {
@@ -2309,50 +2997,58 @@ type createS3LiaraStorageRequest struct {
 func createS3LiaraStorage() {}
 
 type s3LinodeConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`             // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                         // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                                     // AWS Secret Access Key (password).
-	Endpoint              string `json:"endpoint" example:"us-southeast-1.linodeobjects.com"` // Endpoint for Linode Object Storage API.
-	Acl                   string `json:"acl"`                                                 // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                         // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                        // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                             // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                      // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                        // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`                     // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                               // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                             // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                        // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                       // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                       // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                              // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                        // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                            // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                             // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                       // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                       // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                              // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                        // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`            // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`                  // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`                   // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                        // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                         // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`                    // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`                    // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`                  // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`                 // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                            // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                             // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                      // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                          // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                           // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`               // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                    // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`                    // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`                 // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                            // Set to debug the SDK
-	Description           string `json:"description"`                                         // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`       // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                   // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                               // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint" example:"nl-ams-1.linodeobjects.com"` // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                           // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                   // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                  // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                       // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                  // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`               // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                         // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                       // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                  // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                       // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                               // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                           // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                 // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                 // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                        // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                  // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                  // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                      // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                       // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                 // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                 // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                        // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                  // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`      // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`            // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`             // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                  // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                   // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`              // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`              // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`            // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`           // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`   // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                      // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                       // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                    // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                     // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`         // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`              // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`              // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`           // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                        // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`            // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                      // Set to debug the SDK
+	Description                 string `json:"description"`                                   // Description of the remote.
 }
 
 type createS3LinodeStorageRequest struct {
@@ -2375,52 +3071,60 @@ type createS3LinodeStorageRequest struct {
 func createS3LinodeStorage() {}
 
 type s3LyveCloudConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`               // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                           // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                                       // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                                     // Region to connect to.
-	Endpoint              string `json:"endpoint" example:"s3.us-east-1.lyvecloud.seagate.com"` // Endpoint for S3 API.
-	LocationConstraint    string `json:"locationConstraint"`                                    // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                                   // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                           // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                          // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                               // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                        // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                          // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`                       // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                                 // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                               // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                          // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                         // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                         // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                                // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                          // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                              // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                               // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                         // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                         // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                                // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                          // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`              // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`                    // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`                     // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                          // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                           // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`                      // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`                      // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`                    // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`                   // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                              // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                               // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                        // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                            // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                             // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`                 // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                      // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`                      // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`                   // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                              // Set to debug the SDK
-	Description           string `json:"description"`                                           // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`                         // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                                     // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                                 // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                                          // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.us-west-1.{account_name}.lyve.seagate.com"` // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                                              // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                                             // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                                     // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                                    // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                                         // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                                  // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                                    // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                                 // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                                           // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                                         // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                                    // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                                         // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                                 // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                                             // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                                  // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                                   // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                                   // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                                          // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                                    // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                                    // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                                        // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                                         // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                                   // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                                   // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                                          // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                                    // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`                        // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`                              // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`                               // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                                    // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                                     // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`                                // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`                                // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`                              // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`                             // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`                     // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                                        // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                                         // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                                  // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                                      // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                                       // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`                           // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`                                // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`                                // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`                             // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                                          // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`                              // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                                        // Set to debug the SDK
+	Description                 string `json:"description"`                                                     // Description of the remote.
 }
 
 type createS3LyveCloudStorageRequest struct {
@@ -2443,51 +3147,59 @@ type createS3LyveCloudStorageRequest struct {
 func createS3LyveCloudStorage() {}
 
 type s3MagaluConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                 // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
-	Endpoint              string `json:"endpoint" example:"br-se1.magaluobjects.com"` // Endpoint for S3 API.
-	Acl                   string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
-	StorageClass          string `json:"storageClass" example:"STANDARD"`             // The storage class to use when storing new objects in Magalu.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                     // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
-	Description           string `json:"description"`                                 // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint" example:"br-se1.magaluobjects.com"` // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	StorageClass                string `json:"storageClass"`                                // The storage class to use when storing new objects in S3.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3MagaluStorageRequest struct {
@@ -2509,59 +3221,140 @@ type createS3MagaluStorageRequest struct {
 // @Router /storage/s3/magalu [post]
 func createS3MagaluStorage() {}
 
+type s3MegaConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`       // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                   // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                               // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint" example:"s3.eu-central-1.s4.mega.io"` // Endpoint for S3 API.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                   // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                  // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                       // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                  // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`               // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                         // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                       // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                  // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                       // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                               // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                           // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                 // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                 // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                        // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                  // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                  // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                      // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                       // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                 // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                 // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                        // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                  // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`      // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`            // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`             // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                  // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                   // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`              // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`              // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`            // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`           // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`   // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                      // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                       // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                    // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                     // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`         // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`              // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`              // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`           // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                        // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`            // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                      // Set to debug the SDK
+	Description                 string `json:"description"`                                   // Description of the remote.
+}
+
+type createS3MegaStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3MegaConfig       `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3MegaStorage
+// @Summary Create S3 storage with Mega - MEGA S4 Object Storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3MegaStorageRequest true "Request body"
+// @Router /storage/s3/mega [post]
+func createS3MegaStorage() {}
+
 type s3MinioConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                        // Region to connect to.
-	Endpoint              string `json:"endpoint"`                                 // Endpoint for S3 API.
-	LocationConstraint    string `json:"locationConstraint"`                       // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	ServerSideEncryption  string `json:"serverSideEncryption" example:""`          // The server-side encryption algorithm used when storing this object in S3.
-	SseCustomerAlgorithm  string `json:"sseCustomerAlgorithm" example:""`          // If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
-	SseKmsKeyId           string `json:"sseKmsKeyId" example:""`                   // If using KMS ID you must provide the ARN of Key.
-	SseCustomerKey        string `json:"sseCustomerKey" example:""`                // To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
-	SseCustomerKeyBase64  string `json:"sseCustomerKeyBase64" example:""`          // If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
-	SseCustomerKeyMd5     string `json:"sseCustomerKeyMd5" example:""`             // If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                      // Region to connect to.
+	Endpoint                    string `json:"endpoint"`                                    // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                          // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	ServerSideEncryption        string `json:"serverSideEncryption"`                        // The server-side encryption algorithm used when storing this object in S3.
+	SseCustomerAlgorithm        string `json:"sseCustomerAlgorithm" example:""`             // If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+	SseKmsKeyId                 string `json:"sseKmsKeyId" example:""`                      // If using KMS ID you must provide the ARN of Key.
+	SseCustomerKey              string `json:"sseCustomerKey" example:""`                   // To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+	SseCustomerKeyBase64        string `json:"sseCustomerKeyBase64" example:""`             // If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+	SseCustomerKeyMd5           string `json:"sseCustomerKeyMd5" example:""`                // If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3MinioStorageRequest struct {
@@ -2584,52 +3377,60 @@ type createS3MinioStorageRequest struct {
 func createS3MinioStorage() {}
 
 type s3NeteaseConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                        // Region to connect to.
-	Endpoint              string `json:"endpoint"`                                 // Endpoint for S3 API.
-	LocationConstraint    string `json:"locationConstraint"`                       // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                      // Region to connect to.
+	Endpoint                    string `json:"endpoint"`                                    // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                          // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3NeteaseStorageRequest struct {
@@ -2651,53 +3452,136 @@ type createS3NeteaseStorageRequest struct {
 // @Router /storage/s3/netease [post]
 func createS3NeteaseStorage() {}
 
+type s3OVHcloudConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"gra"`                        // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.gra.io.cloud.ovh.net"`  // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
+}
+
+type createS3OVHcloudStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3OVHcloudConfig   `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3OVHcloudStorage
+// @Summary Create S3 storage with OVHcloud - OVHcloud Object Storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3OVHcloudStorageRequest true "Request body"
+// @Router /storage/s3/ovhcloud [post]
+func createS3OVHcloudStorage() {}
+
 type s3OtherConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                        // Region to connect to.
-	Endpoint              string `json:"endpoint"`                                 // Endpoint for S3 API.
-	LocationConstraint    string `json:"locationConstraint"`                       // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                      // Region to connect to.
+	Endpoint                    string `json:"endpoint"`                                    // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                          // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3OtherStorageRequest struct {
@@ -2719,52 +3603,135 @@ type createS3OtherStorageRequest struct {
 // @Router /storage/s3/other [post]
 func createS3OtherStorage() {}
 
+type s3OutscaleConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`       // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                   // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                               // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"eu-west-2"`                    // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"oos.eu-west-2.outscale.com"` // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                           // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                   // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                  // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                       // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                  // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`               // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                         // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                       // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                  // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                       // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                               // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                           // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                 // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                 // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                        // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                  // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                  // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                      // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                       // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                 // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                 // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                        // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                  // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`      // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`            // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`             // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                  // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                   // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`              // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`              // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`            // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`           // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`   // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                      // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                       // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                    // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                     // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`         // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`              // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`              // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`           // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                        // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`            // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                      // Set to debug the SDK
+	Description                 string `json:"description"`                                   // Description of the remote.
+}
+
+type createS3OutscaleStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3OutscaleConfig   `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3OutscaleStorage
+// @Summary Create S3 storage with Outscale - OUTSCALE Object Storage (OOS)
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3OutscaleStorageRequest true "Request body"
+// @Router /storage/s3/outscale [post]
+func createS3OutscaleStorage() {}
+
 type s3PetaboxConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:"us-east-1"`               // Region where your bucket will be created and your data stored.
-	Endpoint              string `json:"endpoint" example:"s3.petabox.io"`         // Endpoint for Petabox S3 Object Storage.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"eu-central-1"`               // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.petabox.io"`            // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3PetaboxStorageRequest struct {
@@ -2787,53 +3754,61 @@ type createS3PetaboxStorageRequest struct {
 func createS3PetaboxStorage() {}
 
 type s3QiniuConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                 // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
-	Region                string `json:"region" example:"cn-east-1"`                  // Region to connect to.
-	Endpoint              string `json:"endpoint" example:"s3-cn-east-1.qiniucs.com"` // Endpoint for Qiniu Object Storage.
-	LocationConstraint    string `json:"locationConstraint" example:"cn-east-1"`      // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
-	StorageClass          string `json:"storageClass" example:"STANDARD"`             // The storage class to use when storing new objects in Qiniu.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                     // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
-	Description           string `json:"description"`                                 // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"cn-east-1"`                  // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3-cn-east-1.qiniucs.com"` // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint" example:"cn-east-1"`      // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	StorageClass                string `json:"storageClass" example:"LINE"`                 // The storage class to use when storing new objects in S3.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3QiniuStorageRequest struct {
@@ -2855,53 +3830,135 @@ type createS3QiniuStorageRequest struct {
 // @Router /storage/s3/qiniu [post]
 func createS3QiniuStorage() {}
 
+type s3RabataConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"eu-west-1"`                  // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.us-east-1.rabata.io"`   // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint" example:"us-east-1"`      // Location constraint - must be set to match the Region.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
+}
+
+type createS3RabataStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3RabataConfig     `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3RabataStorage
+// @Summary Create S3 storage with Rabata - Rabata Cloud Storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3RabataStorageRequest true "Request body"
+// @Router /storage/s3/rabata [post]
+func createS3RabataStorage() {}
+
 type s3RackCorpConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:"global"`                  // region - the location where your bucket will be created and your data stored.
-	Endpoint              string `json:"endpoint" example:"s3.rackcorp.com"`       // Endpoint for RackCorp Object Storage.
-	LocationConstraint    string `json:"locationConstraint" example:"global"`      // Location constraint - the location where your bucket will be located and your data stored.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"global"`                     // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.rackcorp.com"`          // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint" example:"global"`         // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3RackCorpStorageRequest struct {
@@ -2924,52 +3981,56 @@ type createS3RackCorpStorageRequest struct {
 func createS3RackCorpStorage() {}
 
 type s3RcloneConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                        // Region to connect to.
-	Endpoint              string `json:"endpoint"`                                 // Endpoint for S3 API.
-	LocationConstraint    string `json:"locationConstraint"`                       // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint"`                                    // Endpoint for S3 API.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3RcloneStorageRequest struct {
@@ -2992,52 +4053,60 @@ type createS3RcloneStorageRequest struct {
 func createS3RcloneStorage() {}
 
 type s3ScalewayConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:"nl-ams"`                  // Region to connect to.
-	Endpoint              string `json:"endpoint" example:"s3.nl-ams.scw.cloud"`   // Endpoint for Scaleway Object Storage.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	StorageClass          string `json:"storageClass" example:""`                  // The storage class to use when storing new objects in S3.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"nl-ams"`                     // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.nl-ams.scw.cloud"`      // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	StorageClass                string `json:"storageClass" example:""`                     // The storage class to use when storing new objects in S3.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3ScalewayStorageRequest struct {
@@ -3060,52 +4129,60 @@ type createS3ScalewayStorageRequest struct {
 func createS3ScalewayStorage() {}
 
 type s3SeaweedFSConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                        // Region to connect to.
-	Endpoint              string `json:"endpoint" example:"localhost:8333"`        // Endpoint for S3 API.
-	LocationConstraint    string `json:"locationConstraint"`                       // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                      // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"localhost:8333"`           // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                          // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3SeaweedFSStorageRequest struct {
@@ -3127,52 +4204,279 @@ type createS3SeaweedFSStorageRequest struct {
 // @Router /storage/s3/seaweedfs [post]
 func createS3SeaweedFSStorage() {}
 
+type s3SelectelConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                    // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"ru-3"`                          // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.ru-1.storage.selcloud.ru"` // Endpoint for S3 API.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                   // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                        // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                 // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                   // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                          // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                        // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                   // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                        // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                            // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                 // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                  // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                  // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                         // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                   // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                   // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                       // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                        // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                  // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                  // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                         // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                   // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`       // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`             // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`              // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                   // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                    // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`               // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`               // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`             // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`            // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`    // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                       // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                        // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                 // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                     // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                      // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`          // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`               // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`            // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                         // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`             // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                       // Set to debug the SDK
+	Description                 string `json:"description"`                                    // Description of the remote.
+}
+
+type createS3SelectelStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3SelectelConfig   `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3SelectelStorage
+// @Summary Create S3 storage with Selectel - Selectel Object Storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3SelectelStorageRequest true "Request body"
+// @Router /storage/s3/selectel [post]
+func createS3SelectelStorage() {}
+
+type s3ServercoreConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                    // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"uz-2"`                          // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.ru-1.storage.selcloud.ru"` // Endpoint for S3 API.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                    // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                   // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                        // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                 // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                   // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                          // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                        // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                   // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                        // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                            // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                 // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                  // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                  // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                         // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                   // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                   // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                       // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                        // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                  // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                  // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                         // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                   // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`       // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`             // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`              // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                   // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                    // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`               // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`               // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`             // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`            // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`    // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                       // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                        // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                 // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                     // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                      // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`          // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`               // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`            // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                         // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`             // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                       // Set to debug the SDK
+	Description                 string `json:"description"`                                    // Description of the remote.
+}
+
+type createS3ServercoreStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3ServercoreConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3ServercoreStorage
+// @Summary Create S3 storage with Servercore - Servercore Object Storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3ServercoreStorageRequest true "Request body"
+// @Router /storage/s3/servercore [post]
+func createS3ServercoreStorage() {}
+
+type s3SpectraLogicConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint"`                                    // Endpoint for S3 API.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
+}
+
+type createS3SpectraLogicStorageRequest struct {
+	Name         string               `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string               `json:"path"`                      // Path of the storage
+	Config       s3SpectraLogicConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig   `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3SpectraLogicStorage
+// @Summary Create S3 storage with SpectraLogic - Spectra Logic Black Pearl
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3SpectraLogicStorageRequest true "Request body"
+// @Router /storage/s3/spectralogic [post]
+func createS3SpectraLogicStorage() {}
+
 type s3StackPathConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`              // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                          // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                                      // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                                    // Region to connect to.
-	Endpoint              string `json:"endpoint" example:"s3.us-east-2.stackpathstorage.com"` // Endpoint for StackPath Object Storage.
-	Acl                   string `json:"acl"`                                                  // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                          // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                         // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                              // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                       // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                         // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`                      // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                                // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                              // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                         // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                        // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                        // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                               // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                         // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                             // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                              // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                        // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                        // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                               // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                         // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`             // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`                   // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`                    // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                         // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                          // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`                     // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`                     // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`                   // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`                  // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                             // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                              // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                       // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                           // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                            // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`                // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                     // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`                     // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`                  // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                             // Set to debug the SDK
-	Description           string `json:"description"`                                          // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`              // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                          // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                      // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                               // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.us-east-2.stackpathstorage.com"` // Endpoint for S3 API.
+	Acl                         string `json:"acl"`                                                  // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                          // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                         // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                              // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                       // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                         // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                      // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                                // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                              // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                         // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                              // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                      // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                                  // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                       // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                        // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                        // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                               // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                         // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                         // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                             // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                              // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                        // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                        // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                               // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                         // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`             // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`                   // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`                    // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                         // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                          // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`                     // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`                     // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`                   // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`                  // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`          // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                             // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                              // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                       // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                           // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                            // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`                // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`                     // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`                     // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`                  // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                               // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`                   // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                             // Set to debug the SDK
+	Description                 string `json:"description"`                                          // Description of the remote.
 }
 
 type createS3StackPathStorageRequest struct {
@@ -3195,49 +4499,56 @@ type createS3StackPathStorageRequest struct {
 func createS3StackPathStorage() {}
 
 type s3StorjConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Endpoint              string `json:"endpoint" example:"gateway.storjshare.io"` // Endpoint for Storj Gateway.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint" example:"gateway.storjshare.io"`    // Endpoint for S3 API.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3StorjStorageRequest struct {
@@ -3260,51 +4571,58 @@ type createS3StorjStorageRequest struct {
 func createS3StorjStorage() {}
 
 type s3SynologyConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                 // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
-	Region                string `json:"region" example:"eu-001"`                     // Region where your data stored.
-	Endpoint              string `json:"endpoint" example:"eu-001.s3.synologyc2.net"` // Endpoint for Synology C2 Object Storage API.
-	LocationConstraint    string `json:"locationConstraint"`                          // Location constraint - must be set to match the Region.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                     // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
-	Description           string `json:"description"`                                 // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"eu-001"`                     // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"eu-001.s3.synologyc2.net"` // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                          // Location constraint - must be set to match the Region.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3SynologyStorageRequest struct {
@@ -3327,51 +4645,59 @@ type createS3SynologyStorageRequest struct {
 func createS3SynologyStorage() {}
 
 type s3TencentCOSConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                                    // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
-	Endpoint              string `json:"endpoint" example:"cos.ap-beijing.myqcloud.com"` // Endpoint for Tencent COS API.
-	Acl                   string `json:"acl" example:"default"`                          // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`                    // Canned ACL used when creating buckets.
-	StorageClass          string `json:"storageClass" example:""`                        // The storage class to use when storing new objects in Tencent COS.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`                   // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                        // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`                 // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`                   // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`                // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                          // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                        // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                                   // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`                  // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`                  // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                         // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`                   // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                       // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                        // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`                  // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`                  // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                         // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`                   // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`       // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`             // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`              // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`                   // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                                    // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`               // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`               // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`             // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`            // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                       // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                        // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`                 // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`                     // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                      // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`          // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`               // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`            // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                       // Set to debug the SDK
-	Description           string `json:"description"`                                    // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                    // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
+	Endpoint                    string `json:"endpoint" example:"cos.ap-beijing.myqcloud.com"` // Endpoint for S3 API.
+	Acl                         string `json:"acl" example:"default"`                          // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                    // Canned ACL used when creating buckets.
+	StorageClass                string `json:"storageClass" example:"ARCHIVE"`                 // The storage class to use when storing new objects in S3.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                   // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                        // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`                 // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                   // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`                // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                          // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                        // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                   // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                        // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                                // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                            // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                                 // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`                  // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`                  // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                         // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                   // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                   // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                       // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                        // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`                  // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`                  // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                         // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                   // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`       // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`             // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`              // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                   // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                    // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`               // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`               // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`             // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`            // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"`    // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                       // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                        // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`                 // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                     // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                      // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`          // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`               // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`            // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                         // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`             // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                       // Set to debug the SDK
+	Description                 string `json:"description"`                                    // Description of the remote.
 }
 
 type createS3TencentCOSStorageRequest struct {
@@ -3394,52 +4720,60 @@ type createS3TencentCOSStorageRequest struct {
 func createS3TencentCOSStorage() {}
 
 type s3WasabiConfig struct {
-	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
-	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
-	Region                string `json:"region" example:""`                        // Region to connect to.
-	Endpoint              string `json:"endpoint" example:"s3.wasabisys.com"`      // Endpoint for S3 API.
-	LocationConstraint    string `json:"locationConstraint"`                       // Location constraint - must be set to match the Region.
-	Acl                   string `json:"acl"`                                      // Canned ACL used when creating buckets and storing or copying objects.
-	BucketAcl             string `json:"bucketAcl" example:"private"`              // Canned ACL used when creating buckets.
-	UploadCutoff          string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
-	ChunkSize             string `json:"chunkSize" default:"5Mi"`                  // Chunk size to use for uploading.
-	MaxUploadParts        int    `json:"maxUploadParts" default:"10000"`           // Maximum number of parts in a multipart upload.
-	CopyCutoff            string `json:"copyCutoff" default:"4.656Gi"`             // Cutoff for switching to multipart copy.
-	DisableChecksum       bool   `json:"disableChecksum" default:"false"`          // Don't store MD5 checksum with object metadata.
-	SharedCredentialsFile string `json:"sharedCredentialsFile"`                    // Path to the shared credentials file.
-	Profile               string `json:"profile"`                                  // Profile to use in the shared credentials file.
-	SessionToken          string `json:"sessionToken"`                             // An AWS session token.
-	UploadConcurrency     int    `json:"uploadConcurrency" default:"4"`            // Concurrency for multipart uploads and copies.
-	ForcePathStyle        bool   `json:"forcePathStyle" default:"true"`            // If true use path style access if false use virtual hosted style.
-	V2Auth                bool   `json:"v2Auth" default:"false"`                   // If true use v2 authentication.
-	UseDualStack          bool   `json:"useDualStack" default:"false"`             // If true use AWS S3 dual-stack endpoint (IPv6 support).
-	ListChunk             int    `json:"listChunk" default:"1000"`                 // Size of listing chunk (response list for each ListObject S3 request).
-	ListVersion           int    `json:"listVersion" default:"0"`                  // Version of ListObjects to use: 1,2 or 0 for auto.
-	ListUrlEncode         string `json:"listUrlEncode" default:"unset"`            // Whether to url encode listings: true/false/unset
-	NoCheckBucket         bool   `json:"noCheckBucket" default:"false"`            // If set, don't attempt to check the bucket exists or create it.
-	NoHead                bool   `json:"noHead" default:"false"`                   // If set, don't HEAD uploaded objects to check integrity.
-	NoHeadObject          bool   `json:"noHeadObject" default:"false"`             // If set, do not do HEAD before GET when getting objects.
-	Encoding              string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	MemoryPoolFlushTime   string `json:"memoryPoolFlushTime" default:"1m0s"`       // How often internal memory buffer pools will be flushed. (no longer used)
-	MemoryPoolUseMmap     bool   `json:"memoryPoolUseMmap" default:"false"`        // Whether to use mmap buffers in internal memory pool. (no longer used)
-	DisableHttp2          bool   `json:"disableHttp2" default:"false"`             // Disable usage of http2 for S3 backends.
-	DownloadUrl           string `json:"downloadUrl"`                              // Custom endpoint for downloads.
-	DirectoryMarkers      bool   `json:"directoryMarkers" default:"false"`         // Upload an empty object with a trailing slash when a new directory is created
-	UseMultipartEtag      string `json:"useMultipartEtag" default:"unset"`         // Whether to use ETag in multipart uploads for verification
-	UseUnsignedPayload    string `json:"useUnsignedPayload" default:"unset"`       // Whether to use an unsigned payload in PutObject
-	UsePresignedRequest   bool   `json:"usePresignedRequest" default:"false"`      // Whether to use a presigned request or PutObject for single part uploads
-	Versions              bool   `json:"versions" default:"false"`                 // Include old versions in directory listings.
-	VersionAt             string `json:"versionAt" default:"off"`                  // Show file versions as they were at the specified time.
-	VersionDeleted        bool   `json:"versionDeleted" default:"false"`           // Show deleted file markers when using versions.
-	Decompress            bool   `json:"decompress" default:"false"`               // If set this will decompress gzip encoded objects.
-	MightGzip             string `json:"mightGzip" default:"unset"`                // Set this if the backend might gzip objects.
-	UseAcceptEncodingGzip string `json:"useAcceptEncodingGzip" default:"unset"`    // Whether to send `Accept-Encoding: gzip` header.
-	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
-	UseAlreadyExists      string `json:"useAlreadyExists" default:"unset"`         // Set if rclone should report BucketAlreadyExists errors on bucket creation.
-	UseMultipartUploads   string `json:"useMultipartUploads" default:"unset"`      // Set if rclone should use multipart uploads.
-	SdkLogMode            string `json:"sdkLogMode" default:"Off"`                 // Set to debug the SDK
-	Description           string `json:"description"`                              // Description of the remote.
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region"`                                      // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"s3.wasabisys.com"`         // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                          // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
 }
 
 type createS3WasabiStorageRequest struct {
@@ -3461,17 +4795,93 @@ type createS3WasabiStorageRequest struct {
 // @Router /storage/s3/wasabi [post]
 func createS3WasabiStorage() {}
 
+type s3ZataConfig struct {
+	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+	AccessKeyId                 string `json:"accessKeyId"`                                 // AWS Access Key ID.
+	SecretAccessKey             string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
+	Region                      string `json:"region" example:"us-east-1"`                  // Region to connect to.
+	Endpoint                    string `json:"endpoint" example:"idr01.zata.ai"`            // Endpoint for S3 API.
+	LocationConstraint          string `json:"locationConstraint"`                          // Location constraint - must be set to match the Region.
+	Acl                         string `json:"acl"`                                         // Canned ACL used when creating buckets and storing or copying objects.
+	BucketAcl                   string `json:"bucketAcl" example:"private"`                 // Canned ACL used when creating buckets.
+	UploadCutoff                string `json:"uploadCutoff" default:"200Mi"`                // Cutoff for switching to chunked upload.
+	ChunkSize                   string `json:"chunkSize" default:"5Mi"`                     // Chunk size to use for uploading.
+	MaxUploadParts              int    `json:"maxUploadParts" default:"10000"`              // Maximum number of parts in a multipart upload.
+	CopyCutoff                  string `json:"copyCutoff" default:"4.656Gi"`                // Cutoff for switching to multipart copy.
+	DisableChecksum             bool   `json:"disableChecksum" default:"false"`             // Don't store MD5 checksum with object metadata.
+	SharedCredentialsFile       string `json:"sharedCredentialsFile"`                       // Path to the shared credentials file.
+	Profile                     string `json:"profile"`                                     // Profile to use in the shared credentials file.
+	SessionToken                string `json:"sessionToken"`                                // An AWS session token.
+	RoleArn                     string `json:"roleArn"`                                     // ARN of the IAM role to assume.
+	RoleSessionName             string `json:"roleSessionName"`                             // Session name for assumed role.
+	RoleSessionDuration         string `json:"roleSessionDuration"`                         // Session duration for assumed role.
+	RoleExternalId              string `json:"roleExternalId"`                              // External ID for assumed role.
+	UploadConcurrency           int    `json:"uploadConcurrency" default:"4"`               // Concurrency for multipart uploads and copies.
+	ForcePathStyle              bool   `json:"forcePathStyle" default:"true"`               // If true use path style access if false use virtual hosted style.
+	V2Auth                      bool   `json:"v2Auth" default:"false"`                      // If true use v2 authentication.
+	UseDualStack                bool   `json:"useDualStack" default:"false"`                // If true use AWS S3 dual-stack endpoint (IPv6 support).
+	UseArnRegion                bool   `json:"useArnRegion" default:"false"`                // If true, enables arn region support for the service.
+	ListChunk                   int    `json:"listChunk" default:"1000"`                    // Size of listing chunk (response list for each ListObject S3 request).
+	ListVersion                 int    `json:"listVersion" default:"0"`                     // Version of ListObjects to use: 1,2 or 0 for auto.
+	ListUrlEncode               string `json:"listUrlEncode" default:"unset"`               // Whether to url encode listings: true/false/unset
+	NoCheckBucket               bool   `json:"noCheckBucket" default:"false"`               // If set, don't attempt to check the bucket exists or create it.
+	NoHead                      bool   `json:"noHead" default:"false"`                      // If set, don't HEAD uploaded objects to check integrity.
+	NoHeadObject                bool   `json:"noHeadObject" default:"false"`                // If set, do not do HEAD before GET when getting objects.
+	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8,Dot"`    // The encoding for the backend.
+	MemoryPoolFlushTime         string `json:"memoryPoolFlushTime" default:"1m0s"`          // How often internal memory buffer pools will be flushed. (no longer used)
+	MemoryPoolUseMmap           bool   `json:"memoryPoolUseMmap" default:"false"`           // Whether to use mmap buffers in internal memory pool. (no longer used)
+	DisableHttp2                bool   `json:"disableHttp2" default:"false"`                // Disable usage of http2 for S3 backends.
+	DownloadUrl                 string `json:"downloadUrl"`                                 // Custom endpoint for downloads.
+	DirectoryMarkers            bool   `json:"directoryMarkers" default:"false"`            // Upload an empty object with a trailing slash when a new directory is created
+	UseMultipartEtag            string `json:"useMultipartEtag" default:"unset"`            // Whether to use ETag in multipart uploads for verification
+	UseUnsignedPayload          string `json:"useUnsignedPayload" default:"unset"`          // Whether to use an unsigned payload in PutObject
+	UsePresignedRequest         bool   `json:"usePresignedRequest" default:"false"`         // Whether to use a presigned request or PutObject for single part uploads
+	UseDataIntegrityProtections string `json:"useDataIntegrityProtections" default:"unset"` // If true use AWS S3 data integrity protections.
+	Versions                    bool   `json:"versions" default:"false"`                    // Include old versions in directory listings.
+	VersionAt                   string `json:"versionAt" default:"off"`                     // Show file versions as they were at the specified time.
+	VersionDeleted              bool   `json:"versionDeleted" default:"false"`              // Show deleted file markers when using versions.
+	Decompress                  bool   `json:"decompress" default:"false"`                  // If set this will decompress gzip encoded objects.
+	MightGzip                   string `json:"mightGzip" default:"unset"`                   // Set this if the backend might gzip objects.
+	UseAcceptEncodingGzip       string `json:"useAcceptEncodingGzip" default:"unset"`       // Whether to send `Accept-Encoding: gzip` header.
+	NoSystemMetadata            bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
+	UseAlreadyExists            string `json:"useAlreadyExists" default:"unset"`            // Set if rclone should report BucketAlreadyExists errors on bucket creation.
+	UseMultipartUploads         string `json:"useMultipartUploads" default:"unset"`         // Set if rclone should use multipart uploads.
+	UseXId                      string `json:"useXId" default:"unset"`                      // Set if rclone should add x-id URL parameters.
+	SignAcceptEncoding          string `json:"signAcceptEncoding" default:"unset"`          // Set if rclone should include Accept-Encoding as part of the signature.
+	SdkLogMode                  string `json:"sdkLogMode" default:"Off"`                    // Set to debug the SDK
+	Description                 string `json:"description"`                                 // Description of the remote.
+}
+
+type createS3ZataStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3ZataConfig       `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateS3ZataStorage
+// @Summary Create S3 storage with Zata - Zata (S3 compatible Gateway)
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createS3ZataStorageRequest true "Request body"
+// @Router /storage/s3/zata [post]
+func createS3ZataStorage() {}
+
 type seafileConfig struct {
-	Url           string `json:"url" example:"https://cloud.seafile.com/"`                       // URL of seafile host to connect to.
-	User          string `json:"user"`                                                           // User name (usually email address).
-	Pass          string `json:"pass"`                                                           // Password.
-	TwoFA         bool   `json:"2fa" default:"false"`                                            // Two-factor authentication ('true' if the account has 2FA enabled).
-	Library       string `json:"library"`                                                        // Name of the library.
-	LibraryKey    string `json:"libraryKey"`                                                     // Library password (for encrypted libraries only).
-	CreateLibrary bool   `json:"createLibrary" default:"false"`                                  // Should rclone create a library if it doesn't exist.
-	AuthToken     string `json:"authToken"`                                                      // Authentication token.
-	Encoding      string `json:"encoding" default:"Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8"` // The encoding for the backend.
-	Description   string `json:"description"`                                                    // Description of the remote.
+	Url           string `json:"url" example:"https://cloud.seafile.com/"`                           // URL of seafile host to connect to.
+	User          string `json:"user"`                                                               // User name (usually email address).
+	Pass          string `json:"pass"`                                                               // Password.
+	TwoFA         bool   `json:"2fa" default:"false"`                                                // Two-factor authentication ('true' if the account has 2FA enabled).
+	Library       string `json:"library"`                                                            // Name of the library.
+	LibraryKey    string `json:"libraryKey"`                                                         // Library password (for encrypted libraries only).
+	CreateLibrary bool   `json:"createLibrary" default:"false"`                                      // Should rclone create a library if it doesn't exist.
+	AuthToken     string `json:"authToken"`                                                          // Authentication token.
+	Encoding      string `json:"encoding" default:"Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
+	Description   string `json:"description"`                                                        // Description of the remote.
 }
 
 type createSeafileStorageRequest struct {
@@ -3501,6 +4911,7 @@ type sftpConfig struct {
 	KeyPem                  string `json:"keyPem"`                                            // Raw PEM-encoded private key.
 	KeyFile                 string `json:"keyFile"`                                           // Path to PEM-encoded private key file.
 	KeyFilePass             string `json:"keyFilePass"`                                       // The passphrase to decrypt the PEM-encoded private key file.
+	Pubkey                  string `json:"pubkey"`                                            // SSH public certificate for public certificate based authentication.
 	PubkeyFile              string `json:"pubkeyFile"`                                        // Optional path to public key file.
 	KnownHostsFile          string `json:"knownHostsFile" example:"~/.ssh/known_hosts"`       // Optional path to known_hosts file.
 	KeyUseAgent             bool   `json:"keyUseAgent" default:"false"`                       // When set forces the usage of the ssh-agent.
@@ -3510,8 +4921,14 @@ type sftpConfig struct {
 	PathOverride            string `json:"pathOverride"`                                      // Override path used by SSH shell commands.
 	SetModtime              bool   `json:"setModtime" default:"true"`                         // Set the modified time on the remote if set.
 	ShellType               string `json:"shellType" example:"none"`                          // The type of SSH shell on remote server, if any.
-	Md5sumCommand           string `json:"md5sumCommand"`                                     // The command used to read md5 hashes.
-	Sha1sumCommand          string `json:"sha1sumCommand"`                                    // The command used to read sha1 hashes.
+	Hashes                  string `json:"hashes"`                                            // Comma separated list of supported checksum types.
+	Md5sumCommand           string `json:"md5sumCommand"`                                     // The command used to read MD5 hashes.
+	Sha1sumCommand          string `json:"sha1sumCommand"`                                    // The command used to read SHA-1 hashes.
+	Crc32sumCommand         string `json:"crc32sumCommand"`                                   // The command used to read CRC-32 hashes.
+	Sha256sumCommand        string `json:"sha256sumCommand"`                                  // The command used to read SHA-256 hashes.
+	Blake3sumCommand        string `json:"blake3sumCommand"`                                  // The command used to read BLAKE3 hashes.
+	Xxh3sumCommand          string `json:"xxh3sumCommand"`                                    // The command used to read XXH3 hashes.
+	Xxh128sumCommand        string `json:"xxh128sumCommand"`                                  // The command used to read XXH128 hashes.
 	SkipLinks               bool   `json:"skipLinks" default:"false"`                         // Set to skip any symlinks and any other non regular files.
 	Subsystem               string `json:"subsystem" default:"sftp"`                          // Specifies the SSH2 subsystem on the remote host.
 	ServerCommand           string `json:"serverCommand"`                                     // Specifies the path or command to run a sftp server on the remote host.
@@ -3529,6 +4946,7 @@ type sftpConfig struct {
 	HostKeyAlgorithms       string `json:"hostKeyAlgorithms"`                                 // Space separated list of host key algorithms, ordered by preference.
 	Ssh                     string `json:"ssh"`                                               // Path and arguments to external ssh binary.
 	SocksProxy              string `json:"socksProxy"`                                        // Socks 5 proxy host.
+	HttpProxy               string `json:"httpProxy"`                                         // URL for HTTP CONNECT proxy
 	CopyIsHardlink          bool   `json:"copyIsHardlink" default:"false"`                    // Set to enable server side copies using hardlinks.
 	Description             string `json:"description"`                                       // Description of the remote.
 }
@@ -3553,17 +4971,18 @@ type createSftpStorageRequest struct {
 func createSftpStorage() {}
 
 type sharefileConfig struct {
-	ClientId     string `json:"clientId"`                                                                                                                                         // OAuth Client Id.
-	ClientSecret string `json:"clientSecret"`                                                                                                                                     // OAuth Client Secret.
-	Token        string `json:"token"`                                                                                                                                            // OAuth Access Token as a JSON blob.
-	AuthUrl      string `json:"authUrl"`                                                                                                                                          // Auth server URL.
-	TokenUrl     string `json:"tokenUrl"`                                                                                                                                         // Token server url.
-	UploadCutoff string `json:"uploadCutoff" default:"128Mi"`                                                                                                                     // Cutoff for switching to multipart upload.
-	RootFolderId string `json:"rootFolderId" example:""`                                                                                                                          // ID of the root folder.
-	ChunkSize    string `json:"chunkSize" default:"64Mi"`                                                                                                                         // Upload chunk size.
-	Endpoint     string `json:"endpoint"`                                                                                                                                         // Endpoint for API calls.
-	Encoding     string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"` // The encoding for the backend.
-	Description  string `json:"description"`                                                                                                                                      // Description of the remote.
+	ClientId          string `json:"clientId"`                                                                                                                                         // OAuth Client Id.
+	ClientSecret      string `json:"clientSecret"`                                                                                                                                     // OAuth Client Secret.
+	Token             string `json:"token"`                                                                                                                                            // OAuth Access Token as a JSON blob.
+	AuthUrl           string `json:"authUrl"`                                                                                                                                          // Auth server URL.
+	TokenUrl          string `json:"tokenUrl"`                                                                                                                                         // Token server url.
+	ClientCredentials bool   `json:"clientCredentials" default:"false"`                                                                                                                // Use client credentials OAuth flow.
+	UploadCutoff      string `json:"uploadCutoff" default:"128Mi"`                                                                                                                     // Cutoff for switching to multipart upload.
+	RootFolderId      string `json:"rootFolderId" example:""`                                                                                                                          // ID of the root folder.
+	ChunkSize         string `json:"chunkSize" default:"64Mi"`                                                                                                                         // Upload chunk size.
+	Endpoint          string `json:"endpoint"`                                                                                                                                         // Endpoint for API calls.
+	Encoding          string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"` // The encoding for the backend.
+	Description       string `json:"description"`                                                                                                                                      // Description of the remote.
 }
 
 type createSharefileStorageRequest struct {
@@ -3619,9 +5038,11 @@ type smbConfig struct {
 	Pass             string `json:"pass"`                                                                                                                        // SMB password.
 	Domain           string `json:"domain" default:"WORKGROUP"`                                                                                                  // Domain name for NTLM authentication.
 	Spn              string `json:"spn"`                                                                                                                         // Service principal name.
+	UseKerberos      bool   `json:"useKerberos" default:"false"`                                                                                                 // Use Kerberos authentication.
 	IdleTimeout      string `json:"idleTimeout" default:"1m0s"`                                                                                                  // Max time before closing idle connections.
 	HideSpecialShare bool   `json:"hideSpecialShare" default:"true"`                                                                                             // Hide special shares (e.g. print$) which users aren't supposed to access.
 	CaseInsensitive  bool   `json:"caseInsensitive" default:"true"`                                                                                              // Whether the server is configured to be case-insensitive.
+	KerberosCcache   string `json:"kerberosCcache"`                                                                                                              // Path to the Kerberos credential cache (krb5cc).
 	Encoding         string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot"` // The encoding for the backend.
 	Description      string `json:"description"`                                                                                                                 // Description of the remote.
 }
@@ -3807,32 +5228,6 @@ type createUnionStorageRequest struct {
 // @Router /storage/union [post]
 func createUnionStorage() {}
 
-type uptoboxConfig struct {
-	AccessToken string `json:"accessToken"`                                                                           // Your access token.
-	Private     bool   `json:"private" default:"false"`                                                               // Set to make uploaded files private
-	Encoding    string `json:"encoding" default:"Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"` // The encoding for the backend.
-	Description string `json:"description"`                                                                           // Description of the remote.
-}
-
-type createUptoboxStorageRequest struct {
-	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path         string             `json:"path"`                      // Path of the storage
-	Config       uptoboxConfig      `json:"config"`                    // config for the storage
-	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
-}
-
-// @ID CreateUptoboxStorage
-// @Summary Create Uptobox storage
-// @Tags Storage
-// @Accept json
-// @Produce json
-// @Success 200 {object} model.Storage
-// @Failure 400 {object} api.HTTPError
-// @Failure 500 {object} api.HTTPError
-// @Param request body createUptoboxStorageRequest true "Request body"
-// @Router /storage/uptobox [post]
-func createUptoboxStorage() {}
-
 type webdavConfig struct {
 	Url                   string `json:"url"`                                   // URL of http host to connect to.
 	Vendor                string `json:"vendor" example:"fastmail"`             // Name of the WebDAV site/service/software you are using.
@@ -3847,6 +5242,7 @@ type webdavConfig struct {
 	OwncloudExcludeShares bool   `json:"owncloudExcludeShares" default:"false"` // Exclude ownCloud shares
 	OwncloudExcludeMounts bool   `json:"owncloudExcludeMounts" default:"false"` // Exclude ownCloud mounted storages
 	UnixSocket            string `json:"unixSocket"`                            // Path to a unix domain socket to dial to, instead of opening a TCP connection directly
+	AuthRedirect          bool   `json:"authRedirect" default:"false"`          // Preserve authentication on redirect.
 	Description           string `json:"description"`                           // Description of the remote.
 }
 
@@ -3870,15 +5266,16 @@ type createWebdavStorageRequest struct {
 func createWebdavStorage() {}
 
 type yandexConfig struct {
-	ClientId     string `json:"clientId"`                                         // OAuth Client Id.
-	ClientSecret string `json:"clientSecret"`                                     // OAuth Client Secret.
-	Token        string `json:"token"`                                            // OAuth Access Token as a JSON blob.
-	AuthUrl      string `json:"authUrl"`                                          // Auth server URL.
-	TokenUrl     string `json:"tokenUrl"`                                         // Token server url.
-	HardDelete   bool   `json:"hardDelete" default:"false"`                       // Delete files permanently rather than putting them into the trash.
-	Encoding     string `json:"encoding" default:"Slash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
-	SpoofUa      bool   `json:"spoofUa" default:"true"`                           // Set the user agent to match an official version of the yandex disk client. May help with upload performance.
-	Description  string `json:"description"`                                      // Description of the remote.
+	ClientId          string `json:"clientId"`                                         // OAuth Client Id.
+	ClientSecret      string `json:"clientSecret"`                                     // OAuth Client Secret.
+	Token             string `json:"token"`                                            // OAuth Access Token as a JSON blob.
+	AuthUrl           string `json:"authUrl"`                                          // Auth server URL.
+	TokenUrl          string `json:"tokenUrl"`                                         // Token server url.
+	ClientCredentials bool   `json:"clientCredentials" default:"false"`                // Use client credentials OAuth flow.
+	HardDelete        bool   `json:"hardDelete" default:"false"`                       // Delete files permanently rather than putting them into the trash.
+	Encoding          string `json:"encoding" default:"Slash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
+	SpoofUa           bool   `json:"spoofUa" default:"true"`                           // Set the user agent to match an official version of the yandex disk client. May help with upload performance.
+	Description       string `json:"description"`                                      // Description of the remote.
 }
 
 type createYandexStorageRequest struct {
@@ -3901,14 +5298,16 @@ type createYandexStorageRequest struct {
 func createYandexStorage() {}
 
 type zohoConfig struct {
-	ClientId     string `json:"clientId"`                               // OAuth Client Id.
-	ClientSecret string `json:"clientSecret"`                           // OAuth Client Secret.
-	Token        string `json:"token"`                                  // OAuth Access Token as a JSON blob.
-	AuthUrl      string `json:"authUrl"`                                // Auth server URL.
-	TokenUrl     string `json:"tokenUrl"`                               // Token server url.
-	Region       string `json:"region" example:"com"`                   // Zoho region to connect to.
-	Encoding     string `json:"encoding" default:"Del,Ctl,InvalidUtf8"` // The encoding for the backend.
-	Description  string `json:"description"`                            // Description of the remote.
+	ClientId          string `json:"clientId"`                               // OAuth Client Id.
+	ClientSecret      string `json:"clientSecret"`                           // OAuth Client Secret.
+	Token             string `json:"token"`                                  // OAuth Access Token as a JSON blob.
+	AuthUrl           string `json:"authUrl"`                                // Auth server URL.
+	TokenUrl          string `json:"tokenUrl"`                               // Token server url.
+	ClientCredentials bool   `json:"clientCredentials" default:"false"`      // Use client credentials OAuth flow.
+	Region            string `json:"region" example:"com"`                   // Zoho region to connect to.
+	UploadCutoff      string `json:"uploadCutoff" default:"10Mi"`            // Cutoff for switching to large file upload api (>= 10 MiB).
+	Encoding          string `json:"encoding" default:"Del,Ctl,InvalidUtf8"` // The encoding for the backend.
+	Description       string `json:"description"`                            // Description of the remote.
 }
 
 type createZohoStorageRequest struct {

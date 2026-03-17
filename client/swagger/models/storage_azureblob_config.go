@@ -44,6 +44,15 @@ type StorageAzureblobConfig struct {
 	// Send the certificate chain when using certificate auth.
 	ClientSendCertificateChain *bool `json:"clientSendCertificateChain,omitempty"`
 
+	// Storage Connection String.
+	ConnectionString string `json:"connectionString,omitempty"`
+
+	// Concurrency for multipart copy.
+	CopyConcurrency *int64 `json:"copyConcurrency,omitempty"`
+
+	// Cutoff for switching to multipart copy.
+	CopyCutoff *string `json:"copyCutoff,omitempty"`
+
 	// Set to specify how to deal with snapshots on blob deletion.
 	DeleteSnapshots string `json:"deleteSnapshots,omitempty"`
 
@@ -55,6 +64,9 @@ type StorageAzureblobConfig struct {
 
 	// Don't store MD5 checksum with object metadata.
 	DisableChecksum *bool `json:"disableChecksum,omitempty"`
+
+	// Skip requesting Microsoft Entra instance metadata
+	DisableInstanceDiscovery *bool `json:"disableInstanceDiscovery,omitempty"`
 
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
@@ -112,6 +124,12 @@ type StorageAzureblobConfig struct {
 
 	// Cutoff for switching to chunked upload (<= 256 MiB) (deprecated).
 	UploadCutoff string `json:"uploadCutoff,omitempty"`
+
+	// Use Azure CLI tool az for authentication
+	UseAz *bool `json:"useAz,omitempty"`
+
+	// Whether to use the Copy Blob API when copying to the same storage account.
+	UseCopyBlob *bool `json:"useCopyBlob,omitempty"`
 
 	// Uses local storage emulator if provided as 'true'.
 	UseEmulator *bool `json:"useEmulator,omitempty"`

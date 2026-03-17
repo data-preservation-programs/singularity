@@ -33,6 +33,13 @@ DESCRIPTION:
       
       Leave blank to use the provider defaults.
 
+   --client-credentials
+      Use client credentials OAuth flow.
+      
+      This will use the OAUTH2 client Credentials Flow as described in RFC 6749.
+      
+      Note that this option is NOT supported by all backends.
+
    --scope
       Comma separated list of scopes that rclone should use when requesting access from drive.
 
@@ -415,6 +422,15 @@ DESCRIPTION:
          | failok     | If writing fails log errors only, don't fail the transfer
          | read,write | Read and Write the value.
 
+   --metadata-enforce-expansive-access
+      Whether the request should enforce expansive access rules.
+      
+      From Feb 2026 this flag will be set by default so this flag can be used for
+      testing before then.
+      
+      See: https://developers.google.com/workspace/drive/api/guides/limited-expansive-access
+      
+
    --encoding
       The encoding for the backend.
       
@@ -448,6 +464,7 @@ OPTIONS:
    --auth-owner-only                    Only consider files owned by the authenticated user. (default: false) [$AUTH_OWNER_ONLY]
    --auth-url value                     Auth server URL. [$AUTH_URL]
    --chunk-size value                   Upload chunk size. (default: "8Mi") [$CHUNK_SIZE]
+   --client-credentials                 Use client credentials OAuth flow. (default: false) [$CLIENT_CREDENTIALS]
    --copy-shortcut-content              Server side copy contents of shortcuts instead of the shortcut. (default: false) [$COPY_SHORTCUT_CONTENT]
    --description value                  Description of the remote. [$DESCRIPTION]
    --disable-http2                      Disable drive using http2. (default: true) [$DISABLE_HTTP2]
@@ -460,6 +477,7 @@ OPTIONS:
    --import-formats value               Comma separated list of preferred formats for uploading Google docs. [$IMPORT_FORMATS]
    --keep-revision-forever              Keep new head revision of each file forever. (default: false) [$KEEP_REVISION_FOREVER]
    --list-chunk value                   Size of listing chunk 100-1000, 0 to disable. (default: 1000) [$LIST_CHUNK]
+   --metadata-enforce-expansive-access  Whether the request should enforce expansive access rules. (default: false) [$METADATA_ENFORCE_EXPANSIVE_ACCESS]
    --metadata-labels value              Control whether labels should be read or written in metadata. (default: "off") [$METADATA_LABELS]
    --metadata-owner value               Control whether owner should be read or written in metadata. (default: "read") [$METADATA_OWNER]
    --metadata-permissions value         Control whether permissions should be read or written in metadata. (default: "off") [$METADATA_PERMISSIONS]

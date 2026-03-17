@@ -55,7 +55,7 @@ type StorageS3IBMCOSConfig struct {
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 
-	// Endpoint for IBM COS S3 API.
+	// Endpoint for S3 API.
 	// Example: s3.us.cloud-object-storage.appdomain.cloud
 	Endpoint string `json:"endpoint,omitempty"`
 
@@ -66,6 +66,12 @@ type StorageS3IBMCOSConfig struct {
 	// If true use path style access if false use virtual hosted style.
 	ForcePathStyle *bool `json:"forcePathStyle,omitempty"`
 
+	// IBM API Key to be used to obtain IAM token
+	IbmAPIKey string `json:"ibmApiKey,omitempty"`
+
+	// IBM service instance id
+	IbmResourceInstanceID string `json:"ibmResourceInstanceId,omitempty"`
+
 	// Size of listing chunk (response list for each ListObject S3 request).
 	ListChunk *int64 `json:"listChunk,omitempty"`
 
@@ -75,7 +81,7 @@ type StorageS3IBMCOSConfig struct {
 	// Version of ListObjects to use: 1,2 or 0 for auto.
 	ListVersion int64 `json:"listVersion,omitempty"`
 
-	// Location constraint - must match endpoint when using IBM Cloud Public.
+	// Location constraint - must be set to match the Region.
 	// Example: us-standard
 	LocationConstraint string `json:"locationConstraint,omitempty"`
 
@@ -109,6 +115,18 @@ type StorageS3IBMCOSConfig struct {
 	// Region to connect to.
 	Region string `json:"region,omitempty"`
 
+	// ARN of the IAM role to assume.
+	RoleArn string `json:"roleArn,omitempty"`
+
+	// External ID for assumed role.
+	RoleExternalID string `json:"roleExternalId,omitempty"`
+
+	// Session duration for assumed role.
+	RoleSessionDuration string `json:"roleSessionDuration,omitempty"`
+
+	// Session name for assumed role.
+	RoleSessionName string `json:"roleSessionName,omitempty"`
+
 	// Set to debug the SDK
 	SdkLogMode *string `json:"sdkLogMode,omitempty"`
 
@@ -121,6 +139,9 @@ type StorageS3IBMCOSConfig struct {
 	// Path to the shared credentials file.
 	SharedCredentialsFile string `json:"sharedCredentialsFile,omitempty"`
 
+	// Set if rclone should include Accept-Encoding as part of the signature.
+	SignAcceptEncoding *string `json:"signAcceptEncoding,omitempty"`
+
 	// Concurrency for multipart uploads and copies.
 	UploadConcurrency *int64 `json:"uploadConcurrency,omitempty"`
 
@@ -132,6 +153,12 @@ type StorageS3IBMCOSConfig struct {
 
 	// Set if rclone should report BucketAlreadyExists errors on bucket creation.
 	UseAlreadyExists *string `json:"useAlreadyExists,omitempty"`
+
+	// If true, enables arn region support for the service.
+	UseArnRegion *bool `json:"useArnRegion,omitempty"`
+
+	// If true use AWS S3 data integrity protections.
+	UseDataIntegrityProtections *string `json:"useDataIntegrityProtections,omitempty"`
 
 	// If true use AWS S3 dual-stack endpoint (IPv6 support).
 	UseDualStack *bool `json:"useDualStack,omitempty"`
@@ -147,6 +174,9 @@ type StorageS3IBMCOSConfig struct {
 
 	// Whether to use an unsigned payload in PutObject
 	UseUnsignedPayload *string `json:"useUnsignedPayload,omitempty"`
+
+	// Set if rclone should add x-id URL parameters.
+	UseXID *string `json:"useXId,omitempty"`
 
 	// If true use v2 authentication.
 	V2Auth *bool `json:"v2Auth,omitempty"`

@@ -63,7 +63,7 @@ OPTIONS:
 
    --create-library     Should rclone create a library if it doesn't exist. (default: false) [$CREATE_LIBRARY]
    --description value  Description of the remote. [$DESCRIPTION]
-   --encoding value     The encoding for the backend. (default: "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8") [$ENCODING]
+   --encoding value     The encoding for the backend. (default: "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8,Dot") [$ENCODING]
 
    Client Config
 

@@ -20,7 +20,7 @@ type StorageGphotosConfig struct {
 	// Auth server URL.
 	AuthURL string `json:"authUrl,omitempty"`
 
-	// Max time to wait for a batch to finish committing
+	// Max time to wait for a batch to finish committing. (no longer used)
 	BatchCommitTimeout *string `json:"batchCommitTimeout,omitempty"`
 
 	// Upload file batching sync|async|off.
@@ -31,6 +31,9 @@ type StorageGphotosConfig struct {
 
 	// Max time to allow an idle upload batch before uploading.
 	BatchTimeout *string `json:"batchTimeout,omitempty"`
+
+	// Use client credentials OAuth flow.
+	ClientCredentials *bool `json:"clientCredentials,omitempty"`
 
 	// OAuth Client Id.
 	ClientID string `json:"clientId,omitempty"`
@@ -46,6 +49,9 @@ type StorageGphotosConfig struct {
 
 	// Also view and download archived media.
 	IncludeArchived *bool `json:"includeArchived,omitempty"`
+
+	// Use the gphotosdl proxy for downloading the full resolution images
+	Proxy string `json:"proxy,omitempty"`
 
 	// Set to make the Google Photos backend read only.
 	ReadOnly *bool `json:"readOnly,omitempty"`

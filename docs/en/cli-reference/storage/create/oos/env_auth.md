@@ -13,7 +13,9 @@ DESCRIPTION:
       Object storage namespace
 
    --compartment
-      Object storage compartment OCID
+      Specify compartment OCID, if you need to list buckets.
+      
+      List objects works without compartment OCID.
 
    --region
       Object storage Region
@@ -188,7 +190,7 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --compartment value  Object storage compartment OCID [$COMPARTMENT]
+   --compartment value  Specify compartment OCID, if you need to list buckets. [$COMPARTMENT]
    --endpoint value     Endpoint for Object storage API. [$ENDPOINT]
    --help, -h           show help
    --namespace value    Object storage namespace [$NAMESPACE]

@@ -20,7 +20,8 @@ DESCRIPTION:
       Examples:
          | fastmail        | Fastmail Files
          | nextcloud       | Nextcloud
-         | owncloud        | Owncloud
+         | owncloud        | Owncloud 10 PHP based WebDAV server
+         | infinitescale   | ownCloud Infinite Scale
          | sharepoint      | Sharepoint Online, authenticated by Microsoft account
          | sharepoint-ntlm | Sharepoint with NTLM authentication, usually self-hosted or on-premises
          | rclone          | rclone WebDAV server to serve a remote over HTTP via the WebDAV protocol
@@ -81,6 +82,21 @@ DESCRIPTION:
    --unix-socket
       Path to a unix domain socket to dial to, instead of opening a TCP connection directly
 
+   --auth-redirect
+      Preserve authentication on redirect.
+      
+      If the server redirects rclone to a new domain when it is trying to
+      read a file then normally rclone will drop the Authorization: header
+      from the request.
+      
+      This is standard security practice to avoid sending your credentials
+      to an unknown webserver.
+      
+      However this is desirable in some circumstances. If you are getting
+      an error like "401 Unauthorized" when rclone is attempting to read
+      files from the webdav server then you can try this option.
+      
+
    --description
       Description of the remote.
 
@@ -95,6 +111,7 @@ OPTIONS:
 
    Advanced
 
+   --auth-redirect               Preserve authentication on redirect. (default: false) [$AUTH_REDIRECT]
    --bearer-token-command value  Command to run to get a bearer token. [$BEARER_TOKEN_COMMAND]
    --description value           Description of the remote. [$DESCRIPTION]
    --encoding value              The encoding for the backend. [$ENCODING]

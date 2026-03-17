@@ -54,7 +54,7 @@ type StorageS3RackCorpConfig struct {
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 
-	// Endpoint for RackCorp Object Storage.
+	// Endpoint for S3 API.
 	// Example: s3.rackcorp.com
 	Endpoint string `json:"endpoint,omitempty"`
 
@@ -74,7 +74,7 @@ type StorageS3RackCorpConfig struct {
 	// Version of ListObjects to use: 1,2 or 0 for auto.
 	ListVersion int64 `json:"listVersion,omitempty"`
 
-	// Location constraint - the location where your bucket will be located and your data stored.
+	// Location constraint - must be set to match the Region.
 	// Example: global
 	LocationConstraint string `json:"locationConstraint,omitempty"`
 
@@ -105,9 +105,21 @@ type StorageS3RackCorpConfig struct {
 	// Profile to use in the shared credentials file.
 	Profile string `json:"profile,omitempty"`
 
-	// region - the location where your bucket will be created and your data stored.
+	// Region to connect to.
 	// Example: global
 	Region string `json:"region,omitempty"`
+
+	// ARN of the IAM role to assume.
+	RoleArn string `json:"roleArn,omitempty"`
+
+	// External ID for assumed role.
+	RoleExternalID string `json:"roleExternalId,omitempty"`
+
+	// Session duration for assumed role.
+	RoleSessionDuration string `json:"roleSessionDuration,omitempty"`
+
+	// Session name for assumed role.
+	RoleSessionName string `json:"roleSessionName,omitempty"`
 
 	// Set to debug the SDK
 	SdkLogMode *string `json:"sdkLogMode,omitempty"`
@@ -121,6 +133,9 @@ type StorageS3RackCorpConfig struct {
 	// Path to the shared credentials file.
 	SharedCredentialsFile string `json:"sharedCredentialsFile,omitempty"`
 
+	// Set if rclone should include Accept-Encoding as part of the signature.
+	SignAcceptEncoding *string `json:"signAcceptEncoding,omitempty"`
+
 	// Concurrency for multipart uploads and copies.
 	UploadConcurrency *int64 `json:"uploadConcurrency,omitempty"`
 
@@ -132,6 +147,12 @@ type StorageS3RackCorpConfig struct {
 
 	// Set if rclone should report BucketAlreadyExists errors on bucket creation.
 	UseAlreadyExists *string `json:"useAlreadyExists,omitempty"`
+
+	// If true, enables arn region support for the service.
+	UseArnRegion *bool `json:"useArnRegion,omitempty"`
+
+	// If true use AWS S3 data integrity protections.
+	UseDataIntegrityProtections *string `json:"useDataIntegrityProtections,omitempty"`
 
 	// If true use AWS S3 dual-stack endpoint (IPv6 support).
 	UseDualStack *bool `json:"useDualStack,omitempty"`
@@ -147,6 +168,9 @@ type StorageS3RackCorpConfig struct {
 
 	// Whether to use an unsigned payload in PutObject
 	UseUnsignedPayload *string `json:"useUnsignedPayload,omitempty"`
+
+	// Set if rclone should add x-id URL parameters.
+	UseXID *string `json:"useXId,omitempty"`
 
 	// If true use v2 authentication.
 	V2Auth *bool `json:"v2Auth,omitempty"`

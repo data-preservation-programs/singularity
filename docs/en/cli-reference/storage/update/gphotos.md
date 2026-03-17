@@ -32,6 +32,13 @@ DESCRIPTION:
       
       Leave blank to use the provider defaults.
 
+   --client-credentials
+      Use client credentials OAuth flow.
+      
+      This will use the OAUTH2 client Credentials Flow as described in RFC 6749.
+      
+      Note that this option is NOT supported by all backends.
+
    --read-only
       Set to make the Google Photos backend read only.
       
@@ -64,6 +71,32 @@ DESCRIPTION:
       
       Without this flag, archived media will not be visible in directory
       listings and won't be transferred.
+
+   --proxy
+      Use the gphotosdl proxy for downloading the full resolution images
+      
+      The Google API will deliver images and video which aren't full
+      resolution, and/or have EXIF data missing.
+      
+      However if you use the gphotosdl proxy then you can download original,
+      unchanged images.
+      
+      This runs a headless browser in the background.
+      
+      Download the software from [gphotosdl](https://github.com/rclone/gphotosdl)
+      
+      First run with
+      
+          gphotosdl -login
+      
+      Then once you have logged into google photos close the browser window
+      and run
+      
+          gphotosdl
+      
+      Then supply the parameter `--gphotos-proxy "http://localhost:8282"` to make
+      rclone use the proxy.
+      
 
    --encoding
       The encoding for the backend.
@@ -120,7 +153,7 @@ DESCRIPTION:
       
 
    --batch-commit-timeout
-      Max time to wait for a batch to finish committing
+      Max time to wait for a batch to finish committing. (no longer used)
 
    --description
       Description of the remote.
@@ -135,13 +168,15 @@ OPTIONS:
    Advanced
 
    --auth-url value              Auth server URL. [$AUTH_URL]
-   --batch-commit-timeout value  Max time to wait for a batch to finish committing (default: "10m0s") [$BATCH_COMMIT_TIMEOUT]
+   --batch-commit-timeout value  Max time to wait for a batch to finish committing. (no longer used) (default: "10m0s") [$BATCH_COMMIT_TIMEOUT]
    --batch-mode value            Upload file batching sync|async|off. (default: "sync") [$BATCH_MODE]
    --batch-size value            Max number of files in upload batch. (default: 0) [$BATCH_SIZE]
    --batch-timeout value         Max time to allow an idle upload batch before uploading. (default: "0s") [$BATCH_TIMEOUT]
+   --client-credentials          Use client credentials OAuth flow. (default: false) [$CLIENT_CREDENTIALS]
    --description value           Description of the remote. [$DESCRIPTION]
    --encoding value              The encoding for the backend. (default: "Slash,CrLf,InvalidUtf8,Dot") [$ENCODING]
    --include-archived            Also view and download archived media. (default: false) [$INCLUDE_ARCHIVED]
+   --proxy value                 Use the gphotosdl proxy for downloading the full resolution images [$PROXY]
    --read-size                   Set to read the size of media items. (default: false) [$READ_SIZE]
    --start-year value            Year limits the photos to be downloaded to those which are uploaded after the given year. (default: 2000) [$START_YEAR]
    --token value                 OAuth Access Token as a JSON blob. [$TOKEN]

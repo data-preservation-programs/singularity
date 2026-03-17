@@ -37,6 +37,15 @@ DESCRIPTION:
       Leave blank if not sure.
       
 
+   --use-kerberos
+      Use Kerberos authentication.
+      
+      If set, rclone will use Kerberos authentication instead of NTLM. This
+      requires a valid Kerberos configuration and credentials cache to be
+      available, either in the default locations or as specified by the
+      KRB5_CONFIG and KRB5CCNAME environment variables.
+      
+
    --idle-timeout
       Max time before closing idle connections.
       
@@ -54,6 +63,19 @@ DESCRIPTION:
       
       Always true on Windows shares.
 
+   --kerberos-ccache
+      Path to the Kerberos credential cache (krb5cc).
+      
+      Overrides the default KRB5CCNAME environment variable and allows this
+      instance of the SMB backend to use a different Kerberos cache file.
+      This is useful when mounting multiple SMB with different credentials
+      or running in multi-user environments.
+      
+      Supported formats:
+        - FILE:/path/to/ccache   – Use the specified file.
+        - DIR:/path/to/ccachedir – Use the primary file inside the specified directory.
+        - /path/to/ccache        – Interpreted as a file path.
+
    --encoding
       The encoding for the backend.
       
@@ -70,15 +92,17 @@ OPTIONS:
    --pass value    SMB password. [$PASS]
    --port value    SMB port number. (default: 445) [$PORT]
    --spn value     Service principal name. [$SPN]
+   --use-kerberos  Use Kerberos authentication. (default: false) [$USE_KERBEROS]
    --user value    SMB username. (default: "$USER") [$USER]
 
    Advanced
 
-   --case-insensitive    Whether the server is configured to be case-insensitive. (default: true) [$CASE_INSENSITIVE]
-   --description value   Description of the remote. [$DESCRIPTION]
-   --encoding value      The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot") [$ENCODING]
-   --hide-special-share  Hide special shares (e.g. print$) which users aren't supposed to access. (default: true) [$HIDE_SPECIAL_SHARE]
-   --idle-timeout value  Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
+   --case-insensitive       Whether the server is configured to be case-insensitive. (default: true) [$CASE_INSENSITIVE]
+   --description value      Description of the remote. [$DESCRIPTION]
+   --encoding value         The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot") [$ENCODING]
+   --hide-special-share     Hide special shares (e.g. print$) which users aren't supposed to access. (default: true) [$HIDE_SPECIAL_SHARE]
+   --idle-timeout value     Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
+   --kerberos-ccache value  Path to the Kerberos credential cache (krb5cc). [$KERBEROS_CCACHE]
 
    Client Config
 

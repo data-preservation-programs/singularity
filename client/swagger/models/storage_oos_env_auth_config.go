@@ -23,7 +23,7 @@ type StorageOosEnvAuthConfig struct {
 	// Chunk size to use for uploading.
 	ChunkSize *string `json:"chunkSize,omitempty"`
 
-	// Object storage compartment OCID
+	// Specify compartment OCID, if you need to list buckets.
 	Compartment string `json:"compartment,omitempty"`
 
 	// Cutoff for switching to multipart copy.

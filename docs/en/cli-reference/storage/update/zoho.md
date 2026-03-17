@@ -32,6 +32,13 @@ DESCRIPTION:
       
       Leave blank to use the provider defaults.
 
+   --client-credentials
+      Use client credentials OAuth flow.
+      
+      This will use the OAUTH2 client Credentials Flow as described in RFC 6749.
+      
+      Note that this option is NOT supported by all backends.
+
    --region
       Zoho region to connect to.
       
@@ -46,6 +53,9 @@ DESCRIPTION:
          | jp     | Japan
          | com.cn | China
          | com.au | Australia
+
+   --upload-cutoff
+      Cutoff for switching to large file upload api (>= 10 MiB).
 
    --encoding
       The encoding for the backend.
@@ -64,11 +74,13 @@ OPTIONS:
 
    Advanced
 
-   --auth-url value     Auth server URL. [$AUTH_URL]
-   --description value  Description of the remote. [$DESCRIPTION]
-   --encoding value     The encoding for the backend. (default: "Del,Ctl,InvalidUtf8") [$ENCODING]
-   --token value        OAuth Access Token as a JSON blob. [$TOKEN]
-   --token-url value    Token server url. [$TOKEN_URL]
+   --auth-url value       Auth server URL. [$AUTH_URL]
+   --client-credentials   Use client credentials OAuth flow. (default: false) [$CLIENT_CREDENTIALS]
+   --description value    Description of the remote. [$DESCRIPTION]
+   --encoding value       The encoding for the backend. (default: "Del,Ctl,InvalidUtf8") [$ENCODING]
+   --token value          OAuth Access Token as a JSON blob. [$TOKEN]
+   --token-url value      Token server url. [$TOKEN_URL]
+   --upload-cutoff value  Cutoff for switching to large file upload api (>= 10 MiB). (default: "10Mi") [$UPLOAD_CUTOFF]
 
    Client Config
 

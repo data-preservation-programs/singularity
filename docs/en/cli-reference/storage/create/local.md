@@ -19,13 +19,20 @@ DESCRIPTION:
       Follow symlinks and copy the pointed to item.
 
    --links
-      Translate symlinks to/from regular files with a '.rclonelink' extension.
+      Translate symlinks to/from regular files with a '.rclonelink' extension for the local backend.
 
    --skip-links
       Don't warn about skipped symlinks.
       
       This flag disables warning messages on skipped symlinks or junction
       points, as you explicitly acknowledge that they should be skipped.
+
+   --skip-specials
+      Don't warn about skipped pipes, sockets and device objects.
+      
+      This flag disables warning messages on skipped pipes, sockets and
+      device objects, as you explicitly acknowledge that they should be
+      skipped.
 
    --zero-size-links
       Assume the Stat size of links is zero (and read them instead) (deprecated).
@@ -176,6 +183,9 @@ DESCRIPTION:
          | btime | The creation time.
          | ctime | The last status change time.
 
+   --hashes
+      Comma separated list of supported checksum types.
+
    --encoding
       The encoding for the backend.
       
@@ -195,7 +205,8 @@ OPTIONS:
    --copy-links, -L         Follow symlinks and copy the pointed to item. (default: false) [$COPY_LINKS]
    --description value      Description of the remote. [$DESCRIPTION]
    --encoding value         The encoding for the backend. (default: "Slash,Dot") [$ENCODING]
-   --links, -l              Translate symlinks to/from regular files with a '.rclonelink' extension. (default: false) [$LINKS]
+   --hashes value           Comma separated list of supported checksum types. [$HASHES]
+   --links                  Translate symlinks to/from regular files with a '.rclonelink' extension for the local backend. (default: false) [$LINKS]
    --no-check-updated       Don't check to see if the files change during upload. (default: false) [$NO_CHECK_UPDATED]
    --no-clone               Disable reflink cloning for server-side copies. (default: false) [$NO_CLONE]
    --no-preallocate         Disable preallocation of disk space for transferred files. (default: false) [$NO_PREALLOCATE]
@@ -204,6 +215,7 @@ OPTIONS:
    --nounc                  Disable UNC (long path names) conversion on Windows. (default: false) [$NOUNC]
    --one-file-system, -x    Don't cross filesystem boundaries (unix/macOS only). (default: false) [$ONE_FILE_SYSTEM]
    --skip-links             Don't warn about skipped symlinks. (default: false) [$SKIP_LINKS]
+   --skip-specials          Don't warn about skipped pipes, sockets and device objects. (default: false) [$SKIP_SPECIALS]
    --time-type value        Set what kind of time is returned. (default: "mtime") [$TIME_TYPE]
    --unicode-normalization  Apply unicode NFC normalization to paths and filenames. (default: false) [$UNICODE_NORMALIZATION]
    --zero-size-links        Assume the Stat size of links is zero (and read them instead) (deprecated). (default: false) [$ZERO_SIZE_LINKS]

@@ -32,6 +32,13 @@ DESCRIPTION:
       
       Leave blank to use the provider defaults.
 
+   --client-credentials
+      Use client credentials OAuth flow.
+      
+      This will use the OAUTH2 client Credentials Flow as described in RFC 6749.
+      
+      Note that this option is NOT supported by all backends.
+
    --hard-delete
       Delete files permanently rather than putting them into the trash.
 
@@ -54,13 +61,14 @@ OPTIONS:
 
    Advanced
 
-   --auth-url value     Auth server URL. [$AUTH_URL]
-   --description value  Description of the remote. [$DESCRIPTION]
-   --encoding value     The encoding for the backend. (default: "Slash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
-   --hard-delete        Delete files permanently rather than putting them into the trash. (default: false) [$HARD_DELETE]
-   --spoof-ua           Set the user agent to match an official version of the yandex disk client. May help with upload performance. (default: true) [$SPOOF_UA]
-   --token value        OAuth Access Token as a JSON blob. [$TOKEN]
-   --token-url value    Token server url. [$TOKEN_URL]
+   --auth-url value      Auth server URL. [$AUTH_URL]
+   --client-credentials  Use client credentials OAuth flow. (default: false) [$CLIENT_CREDENTIALS]
+   --description value   Description of the remote. [$DESCRIPTION]
+   --encoding value      The encoding for the backend. (default: "Slash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
+   --hard-delete         Delete files permanently rather than putting them into the trash. (default: false) [$HARD_DELETE]
+   --spoof-ua            Set the user agent to match an official version of the yandex disk client. May help with upload performance. (default: true) [$SPOOF_UA]
+   --token value         OAuth Access Token as a JSON blob. [$TOKEN]
+   --token-url value     Token server url. [$TOKEN_URL]
 
    Client Config
 

@@ -26,6 +26,14 @@ DESCRIPTION:
       Note that these chunks are buffered in memory so increasing them will
       increase memory use.
 
+   --access
+      Files and folders will be uploaded with this access permission (default private)
+
+      Examples:
+         | private | The file or folder access can be granted in a way that will allow select users to view, read or write what is absolutely essential for them.
+         | public  | The file or folder can be downloaded by anyone from a web browser. The link can be shared in any way,
+         | hidden  | The file or folder can be accessed has the same restrictions as  Public if the user knows the URL of the file or folder link in order to access the contents
+
    --description
       Description of the remote.
 
@@ -37,6 +45,7 @@ OPTIONS:
 
    Advanced
 
+   --access value       Files and folders will be uploaded with this access permission (default private) (default: "private") [$ACCESS]
    --chunk-size value   Files will be uploaded in chunks this size. (default: "10Mi") [$CHUNK_SIZE]
    --description value  Description of the remote. [$DESCRIPTION]
    --encoding value     The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot") [$ENCODING]
