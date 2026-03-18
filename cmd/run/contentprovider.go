@@ -2,7 +2,6 @@ package run
 
 import (
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/urfave/cli/v2"
 )
@@ -11,6 +10,7 @@ var ContentProviderCmd = &cli.Command{
 	Name:  "content-provider",
 	Usage: "Start a content provider that serves retrieval requests",
 	Flags: []cli.Flag{
+		NoAutoMigrateFlag,
 		&cli.StringFlag{
 			Category: "HTTP Retrieval",
 			Name:     "http-bind",
@@ -50,7 +50,7 @@ var ContentProviderCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		db, closer, err := database.OpenFromCLI(c)
+		db, closer, err := openAndMigrate(c)
 		if err != nil {
 			return errors.WithStack(err)
 		}

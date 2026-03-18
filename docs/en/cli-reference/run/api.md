@@ -9,7 +9,8 @@ USAGE:
    singularity run api [command options]
 
 OPTIONS:
-   --bind value  Bind address for the API server (default: ":9090")
-   --help, -h    show help
+   --no-automigrate  skip automatic database migration and correctness checks on startup; only use if you run 'admin init' on every upgrade or manually before starting daemons (default: false)
+   --bind value      Bind address for the API server (default: ":9090")
+   --help, -h        show help
 ```
 {% endcode %}

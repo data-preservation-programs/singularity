@@ -9,6 +9,7 @@ USAGE:
    singularity run deal-pusher [command options]
 
 OPTIONS:
+   --no-automigrate                          skip automatic database migration and correctness checks on startup; only use if you run 'admin init' on every upgrade or manually before starting daemons (default: false)
    --deal-attempts value, -d value           Number of times to attempt a deal before giving up (default: 3)
    --max-replication-factor value, -M value  Max number of replicas for each individual PieceCID across all clients and providers (default: Unlimited)
    --pdp-batch-size value                    Number of roots to include in each PDP add-roots transaction (default: 128)

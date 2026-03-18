@@ -8,7 +8,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/go-synapse"
 	"github.com/data-preservation-programs/go-synapse/constants"
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/pdptracker"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,6 +19,7 @@ var PDPTrackerCmd = &cli.Command{
 	Name:  "pdp-tracker",
 	Usage: "Track PDP deals via Shovel event indexing (requires PostgreSQL)",
 	Flags: []cli.Flag{
+		NoAutoMigrateFlag,
 		&cli.StringFlag{
 			Name:    "eth-rpc",
 			Usage:   "Ethereum RPC endpoint for FEVM",
@@ -43,7 +43,7 @@ var PDPTrackerCmd = &cli.Command{
 			return errors.New("PDP tracking requires PostgreSQL (Shovel is Postgres-only)")
 		}
 
-		db, closer, err := database.OpenFromCLI(c)
+		db, closer, err := openAndMigrate(c)
 		if err != nil {
 			return errors.WithStack(err)
 		}

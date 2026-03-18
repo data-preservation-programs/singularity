@@ -70,6 +70,10 @@ func exportOneKey(db *gorm.DB, ks keystore.KeyStore, actor model.Actor) (exporte
 			existing.ActorID = &actor.ID
 			db.Save(&existing)
 		}
+		// verify the key file actually exists on disk
+		if !ks.Has(existing.KeyPath) {
+			return false, fmt.Sprintf("actor %s: wallet record exists but key file missing at %s", actor.ID, existing.KeyPath)
+		}
 		logger.Debugw("wallet already exists for actor", "actorID", actor.ID, "address", addr.String())
 		return false, ""
 	}

@@ -183,6 +183,35 @@ func TestExportKeysHandler_InvalidKeyRecordsError(t *testing.T) {
 	})
 }
 
+func TestExportKeysHandler_MissingKeyFile(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		ks, err := keystore.NewLocalKeyStore(t.TempDir())
+		require.NoError(t, err)
+
+		// create actor with legacy key
+		actor := model.Actor{
+			ID:         "f01234",
+			Address:    testutil.TestWalletAddr,
+			PrivateKey: testutil.TestPrivateKeyHex,
+		}
+		require.NoError(t, db.Create(&actor).Error)
+
+		// create wallet record pointing to a nonexistent key file
+		require.NoError(t, db.Create(&model.Wallet{
+			KeyPath:  "/nonexistent/key",
+			KeyStore: "local",
+			Address:  testutil.TestWalletAddr,
+		}).Error)
+
+		result, err := ExportKeysHandler(ctx, db, ks)
+		require.NoError(t, err)
+		require.Equal(t, 0, result.Exported)
+		require.Equal(t, 0, result.Skipped)
+		require.Len(t, result.Errors, 1)
+		require.Contains(t, result.Errors[0], "key file missing")
+	})
+}
+
 func TestDropPrivateKeyColumn(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		// column exists after AutoMigrate
