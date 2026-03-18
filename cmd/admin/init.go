@@ -4,6 +4,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/admin"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/urfave/cli/v2"
 )
 
@@ -26,6 +27,12 @@ var InitCmd = &cli.Command{
 		err = admin.Default.InitHandler(c.Context, db)
 		if err != nil {
 			return errors.WithStack(err)
+		}
+		if n := wallet.CountLegacyKeys(db); n > 0 {
+			return errors.Errorf(
+				"%d actor(s) have private keys in the database that are not usable by current code.\n"+
+					"Run 'singularity wallet export-keys' to migrate them to the filesystem keystore",
+				n)
 		}
 		if c.IsSet("identity") {
 			err = admin.Default.SetIdentityHandler(c.Context, db, admin.SetIdentityRequest{

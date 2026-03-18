@@ -105,6 +105,17 @@ func HasPrivateKeyColumn(db *gorm.DB) bool {
 	return db.Migrator().HasColumn(&model.Actor{}, "private_key")
 }
 
+// counts actors that still have a non-empty private_key in the database.
+// returns 0 if the column has been dropped.
+func CountLegacyKeys(db *gorm.DB) int64 {
+	if !HasPrivateKeyColumn(db) {
+		return 0
+	}
+	var count int64
+	db.Raw("SELECT COUNT(*) FROM actors WHERE private_key != '' AND private_key IS NOT NULL").Scan(&count)
+	return count
+}
+
 // drops the private_key column from the actors table.
 // caller is responsible for confirming this is desired.
 func DropPrivateKeyColumn(db *gorm.DB) error {
