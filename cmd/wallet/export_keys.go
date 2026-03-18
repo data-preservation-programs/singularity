@@ -46,6 +46,12 @@ to skip the prompt.`,
 		}
 		defer closer.Close()
 
+		// check if column still exists -- if not, nothing to do
+		if !wallet.HasPrivateKeyColumn(db) {
+			fmt.Println("nothing to do -- private_key column already dropped")
+			return nil
+		}
+
 		keystoreDir := wallet.GetKeystoreDir()
 		ks, err := keystore.NewLocalKeyStore(keystoreDir)
 		if err != nil {
@@ -58,7 +64,9 @@ to skip the prompt.`,
 		}
 
 		fmt.Printf("exported: %d\n", result.Exported)
-		fmt.Printf("skipped:  %d (wallet already exists)\n", result.Skipped)
+		if result.Skipped > 0 {
+			fmt.Printf("skipped:  %d (wallet already exists)\n", result.Skipped)
+		}
 		if len(result.Errors) > 0 {
 			fmt.Printf("errors:   %d\n", len(result.Errors))
 			for _, e := range result.Errors {
@@ -76,14 +84,14 @@ to skip the prompt.`,
 		fmt.Printf("\nkeystore: %s (%d keys)\n", keystoreDir, len(keys))
 
 		// determine whether to drop the column
-		dropFlags := c.Bool("drop-db-keys")
+		dropFlag := c.Bool("drop-db-keys")
 		sureFlag := c.Bool("i-am-really-sure")
 
-		if dropFlags && !sureFlag {
+		if dropFlag && !sureFlag {
 			return errors.New("--drop-db-keys requires --i-am-really-sure")
 		}
 
-		shouldDrop := dropFlags && sureFlag
+		shouldDrop := dropFlag && sureFlag
 		if !shouldDrop {
 			// interactive prompt
 			fmt.Printf("\n" +
@@ -105,7 +113,6 @@ to skip the prompt.`,
 				fmt.Println("aborted -- keys exported but column retained")
 				return nil
 			}
-			shouldDrop = true
 		}
 
 		if err := wallet.DropPrivateKeyColumn(db); err != nil {

@@ -101,10 +101,14 @@ func exportOneKey(db *gorm.DB, ks keystore.KeyStore, actor model.Actor) (exporte
 	return true, ""
 }
 
+func HasPrivateKeyColumn(db *gorm.DB) bool {
+	return db.Migrator().HasColumn(&model.Actor{}, "private_key")
+}
+
 // drops the private_key column from the actors table.
 // caller is responsible for confirming this is desired.
 func DropPrivateKeyColumn(db *gorm.DB) error {
-	if !db.Migrator().HasColumn(&model.Actor{}, "private_key") {
+	if !HasPrivateKeyColumn(db) {
 		return nil // already dropped
 	}
 	return db.Exec("ALTER TABLE actors DROP COLUMN private_key").Error
