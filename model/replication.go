@@ -181,7 +181,7 @@ type Schedule struct {
 type Actor struct {
 	ID         string `gorm:"primaryKey;size:15"   json:"id"`      // actor ID (f0...)
 	Address    string `gorm:"index"                json:"address"` // filecoin address
-	PrivateKey string `json:"privateKey,omitempty" table:"-"`      // TODO: orphaned column, will be dropped by export-keys command
+	PrivateKey string `json:"privateKey,omitempty" table:"-"`      // orphaned: run `singularity wallet export-keys` to migrate, then drop column
 }
 
 // GORM will rename "wallets" table to "actors" on AutoMigrate

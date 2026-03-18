@@ -66,6 +66,7 @@
   * [Import](cli-reference/wallet/import.md)
   * [List](cli-reference/wallet/list.md)
   * [Remove](cli-reference/wallet/remove.md)
+  * [Export Keys](cli-reference/wallet/export-keys.md)
 * [Storage](cli-reference/storage/README.md)
   * [Create](cli-reference/storage/create/README.md)
     * [Azureblob](cli-reference/storage/create/azureblob.md)
