@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/model"
@@ -208,7 +209,39 @@ func TestExportKeysHandler_MissingKeyFile(t *testing.T) {
 		require.Equal(t, 0, result.Exported)
 		require.Equal(t, 0, result.Skipped)
 		require.Len(t, result.Errors, 1)
-		require.Contains(t, result.Errors[0], "key file missing")
+		require.Contains(t, result.Errors[0], "key file unreadable")
+	})
+}
+
+func TestExportKeysHandler_CorruptKeyFile(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		dir := t.TempDir()
+		ks, err := keystore.NewLocalKeyStore(dir)
+		require.NoError(t, err)
+
+		actor := model.Actor{
+			ID:         "f01234",
+			Address:    testutil.TestWalletAddr,
+			PrivateKey: testutil.TestPrivateKeyHex,
+		}
+		require.NoError(t, db.Create(&actor).Error)
+
+		// write garbage to the key file path
+		corruptPath := dir + "/corrupt"
+		require.NoError(t, os.WriteFile(corruptPath, []byte("garbage"), 0600))
+
+		require.NoError(t, db.Create(&model.Wallet{
+			KeyPath:  corruptPath,
+			KeyStore: "local",
+			Address:  testutil.TestWalletAddr,
+		}).Error)
+
+		result, err := ExportKeysHandler(ctx, db, ks)
+		require.NoError(t, err)
+		require.Equal(t, 0, result.Exported)
+		require.Equal(t, 0, result.Skipped)
+		require.Len(t, result.Errors, 1)
+		require.Contains(t, result.Errors[0], "corrupt")
 	})
 }
 

@@ -175,9 +175,9 @@ type Schedule struct {
 	Preparation   *Preparation  `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"expand"`
 }
 
-// on-chain actor identity tracked by singularity
-// actor may or may not be controlled by us (linked via optional WalletID)
-// TODO: after migration, add WalletID field linking to new Wallet model
+// on-chain actor identity tracked by singularity.
+// actors we control have a Wallet with ActorID pointing here.
+// actors we don't control (counterparties) exist as bare records.
 type Actor struct {
 	ID         string `gorm:"primaryKey;size:15"   json:"id"`      // actor ID (f0...)
 	Address    string `gorm:"index"                json:"address"` // filecoin address
