@@ -138,7 +138,14 @@ func TestIntegration_FullResync(t *testing.T) {
 		indexCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
 		exitErr := make(chan error, 1)
 		require.NoError(t, indexer.Start(indexCtx, exitErr))
-		time.Sleep(10 * time.Second)
+
+		// poll until shovel has indexed at least one block
+		require.Eventually(t, func() bool {
+			var count int64
+			db.Raw("SELECT count(*) FROM shovel.task_updates WHERE src_name = ?", srcName).Scan(&count)
+			return count > 0
+		}, 30*time.Second, 500*time.Millisecond, "shovel should index at least one block")
+
 		cancel()
 		select {
 		case <-exitErr:
