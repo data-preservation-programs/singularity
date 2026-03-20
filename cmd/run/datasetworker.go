@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	"github.com/urfave/cli/v2"
 )
@@ -13,6 +12,7 @@ var DatasetWorkerCmd = &cli.Command{
 	Name:  "dataset-worker",
 	Usage: "Start a dataset preparation worker to process dataset scanning and preparation tasks",
 	Flags: []cli.Flag{
+		NoAutoMigrateFlag,
 		&cli.IntFlag{
 			Name:  "concurrency",
 			Usage: "Number of concurrent workers to run",
@@ -55,7 +55,7 @@ var DatasetWorkerCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		db, closer, err := database.OpenFromCLI(c)
+		db, closer, err := openAndMigrate(c)
 		if err != nil {
 			return errors.WithStack(err)
 		}

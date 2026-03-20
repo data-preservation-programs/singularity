@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/dealpusher"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
@@ -15,6 +14,7 @@ var DealPusherCmd = &cli.Command{
 	Name:  "deal-pusher",
 	Usage: "Start a deal pusher that monitors deal schedules and pushes deals to storage providers",
 	Flags: []cli.Flag{
+		NoAutoMigrateFlag,
 		&cli.UintFlag{
 			Name:    "deal-attempts",
 			Usage:   "Number of times to attempt a deal before giving up",
@@ -54,7 +54,7 @@ var DealPusherCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		db, closer, err := database.OpenFromCLI(c)
+		db, closer, err := openAndMigrate(c)
 		if err != nil {
 			return errors.WithStack(err)
 		}

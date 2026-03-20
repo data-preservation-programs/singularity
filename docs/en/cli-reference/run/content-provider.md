@@ -9,7 +9,8 @@ USAGE:
    singularity run content-provider [command options]
 
 OPTIONS:
-   --help, -h  show help
+   --help, -h        show help
+   --no-automigrate  skip automatic database migration and correctness checks on startup; only use if you run 'admin init' on every upgrade or manually before starting daemons (default: false)
 
    Bitswap Retrieval
 
