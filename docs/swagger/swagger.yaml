@@ -395,6 +395,13 @@ definitions:
         type: string
       createdAt:
         type: string
+      ddoAllocationId:
+        description: DDO-specific fields (only populated for DealTypeDDO)
+        type: integer
+      ddoPaymentToken:
+        type: string
+      ddoRailId:
+        type: integer
       dealId:
         type: integer
       dealType:
@@ -472,10 +479,12 @@ definitions:
     enum:
     - market
     - pdp
+    - ddo
     type: string
     x-enum-varnames:
     - DealTypeMarket
     - DealTypePDP
+    - DealTypeDDO
   model.File:
     properties:
       attachmentId:
@@ -745,7 +754,7 @@ definitions:
           type: string
         type: array
       dealType:
-        description: 'Deal type: market (f05) or pdp (f41)'
+        description: 'Deal type: market (f05), pdp (f41), or ddo'
         type: string
       duration:
         default: 12840h

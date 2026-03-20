@@ -29,20 +29,6 @@ func defaultPDPSchedulingConfig() PDPSchedulingConfig {
 	}
 }
 
-func inferScheduleDealType(schedule *model.Schedule) model.DealType {
-	if schedule == nil {
-		return model.DealTypeMarket
-	}
-	providerAddr, err := address.NewFromString(schedule.Provider)
-	if err != nil {
-		return model.DealTypeMarket
-	}
-	if providerAddr.Protocol() == address.Delegated {
-		return model.DealTypePDP
-	}
-	return model.DealTypeMarket
-}
-
 func validatePDPProofSetPieceSize(pieceSize int64) error {
 	if pieceSize <= 0 {
 		return fmt.Errorf("piece size must be greater than 0, got %d", pieceSize)
@@ -316,9 +302,10 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 		}
 		currentProofSetPieceCount += len(cars)
 
-		for _, car := range cars {
+		deals := make([]model.Deal, len(cars))
+		for i, car := range cars {
 			proofSetIDCopy := proofSetID
-			dealModel := &model.Deal{
+			deals[i] = model.Deal{
 				State:      model.DealProposed,
 				DealType:   model.DealTypePDP,
 				Provider:   schedule.Provider,
@@ -332,10 +319,11 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 				WalletID:   &walletObj.ID,
 				ProofSetID: &proofSetIDCopy,
 			}
-
-			if err := database.DoRetry(ctx, func() error { return db.Create(dealModel).Error }); err != nil {
-				return model.ScheduleError, errors.Wrap(err, "failed to create PDP deal")
-			}
+		}
+		if err := database.DoRetry(ctx, func() error { return db.Create(&deals).Error }); err != nil {
+			return model.ScheduleError, errors.Wrap(err, "failed to create PDP deals")
+		}
+		for _, car := range cars {
 			current.DealNumber++
 			current.DealSize += car.PieceSize
 		}

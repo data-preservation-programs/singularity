@@ -25,6 +25,15 @@ type ModelDeal struct {
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
 
+	// DDO-specific fields (only populated for DealTypeDDO)
+	DdoAllocationID int64 `json:"ddoAllocationId,omitempty"`
+
+	// ddo payment token
+	DdoPaymentToken string `json:"ddoPaymentToken,omitempty"`
+
+	// ddo rail Id
+	DdoRailID int64 `json:"ddoRailId,omitempty"`
+
 	// deal Id
 	DealID int64 `json:"dealId,omitempty"`
 

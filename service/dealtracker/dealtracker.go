@@ -91,14 +91,30 @@ func (c CloserFunc) Close() error {
 
 var Logger = log.Logger("dealtracker")
 
+// DDOAllocationTracker polls DDO allocation activation status.
+// Injected optionally; when nil, DDO deal tracking is skipped.
+type DDOAllocationTracker interface {
+	GetAllocationInfo(ctx context.Context, allocationID uint64) (*model.DDOAllocationStatus, error)
+}
+
 type DealTracker struct {
-	workerID    uuid.UUID
-	dbNoContext *gorm.DB
-	interval    time.Duration
-	dealZstURL  string
-	lotusURL    string
-	lotusToken  string
-	once        bool
+	workerID        uuid.UUID
+	dbNoContext     *gorm.DB
+	interval        time.Duration
+	dealZstURL      string
+	lotusURL        string
+	lotusToken      string
+	once            bool
+	ddoAllocTracker DDOAllocationTracker
+}
+
+// DealTrackerOption customizes DealTracker initialization.
+type DealTrackerOption func(*DealTracker)
+
+func WithDDOAllocationTracker(tracker DDOAllocationTracker) DealTrackerOption {
+	return func(dt *DealTracker) {
+		dt.ddoAllocTracker = tracker
+	}
 }
 
 func NewDealTracker(
@@ -108,8 +124,9 @@ func NewDealTracker(
 	lotusURL string,
 	lotusToken string,
 	once bool,
+	opts ...DealTrackerOption,
 ) DealTracker {
-	return DealTracker{
+	dt := DealTracker{
 		workerID:    uuid.New(),
 		dbNoContext: db,
 		interval:    interval,
@@ -118,6 +135,10 @@ func NewDealTracker(
 		lotusToken:  lotusToken,
 		once:        once,
 	}
+	for _, opt := range opts {
+		opt(&dt)
+	}
+	return dt
 }
 
 // ThreadSafeReadCloser is a thread-safe implementation of the io.ReadCloser interface.
@@ -615,6 +636,51 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	}
 	Logger.Infof("marked %d deal as proposal_expired", result.RowsAffected)
 
+	if err := d.trackDDOAllocations(ctx); err != nil {
+		Logger.Errorw("failed to track DDO allocations", "error", err)
+	}
+
+	return nil
+}
+
+// trackDDOAllocations polls pending DDO deals for activation.
+func (d *DealTracker) trackDDOAllocations(ctx context.Context) error {
+	if d.ddoAllocTracker == nil {
+		return nil
+	}
+
+	db := d.dbNoContext.WithContext(ctx)
+	var deals []model.Deal
+	if err := db.Where("deal_type = ? AND state = ? AND ddo_allocation_id IS NOT NULL",
+		model.DealTypeDDO, model.DealProposed).Find(&deals).Error; err != nil {
+		return errors.Wrap(err, "failed to query pending DDO deals")
+	}
+
+	var activated int64
+	for _, deal := range deals {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		status, err := d.ddoAllocTracker.GetAllocationInfo(ctx, *deal.DDOAllocationID)
+		if err != nil {
+			Logger.Errorw("failed to get DDO allocation info",
+				"dealID", deal.ID, "allocationID", *deal.DDOAllocationID, "error", err)
+			continue
+		}
+		if !status.Activated {
+			continue
+		}
+		if err := db.Model(&model.Deal{}).Where("id = ?", deal.ID).Updates(map[string]any{
+			"state": model.DealActive,
+		}).Error; err != nil {
+			Logger.Errorw("failed to activate DDO deal", "dealID", deal.ID, "error", err)
+			continue
+		}
+		activated++
+	}
+	if activated > 0 {
+		Logger.Infof("activated %d DDO deals", activated)
+	}
 	return nil
 }
 

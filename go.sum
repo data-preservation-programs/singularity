@@ -74,6 +74,10 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DataDog/zstd v1.4.5 h1:EndNeuB0l9syBZhut0wns3gV1hL8zX8LIu6ZiVHWLIQ=
 github.com/DataDog/zstd v1.4.5/go.mod h1:1jcaCB/ufaK+sKp1NBhlGmpz41jOoPQ35bpF36t7BBo=
+github.com/Eastore-project/ddo-client v0.0.0-20260310144650-71b11a08d096 h1:B3Jwiln6WuVqh7iTSf/nv7fBU1FrsR5fC8oVLTrXGMo=
+github.com/Eastore-project/ddo-client v0.0.0-20260310144650-71b11a08d096/go.mod h1:j6R36SyuUQYGuNVDm97MS1wIcAp6RcJ77408K2TKkvM=
+github.com/Eastore-project/ddo-client v0.0.0-20260311152933-2fff1a5b168a h1:QmANfGhKRd8Cy0Fv8MVC0C1Lr548eS5RyrnFEKaAepY=
+github.com/Eastore-project/ddo-client v0.0.0-20260311152933-2fff1a5b168a/go.mod h1:j6R36SyuUQYGuNVDm97MS1wIcAp6RcJ77408K2TKkvM=
 github.com/Files-com/files-sdk-go/v3 v3.2.258 h1:9wfRblRg0qc7SIMD8AaE+pMWp1KvR6eFwvMVTwDVIG4=
 github.com/Files-com/files-sdk-go/v3 v3.2.258/go.mod h1:wGqkOzRu/ClJibvDgcfuJNAqI2nLhe8g91tPlDKRCdE=
 github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc=

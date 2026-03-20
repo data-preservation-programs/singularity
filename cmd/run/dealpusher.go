@@ -49,8 +49,53 @@ var DealPusherCmd = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:    "eth-rpc",
-			Usage:   "Ethereum RPC endpoint for FEVM (required to execute PDP schedules on-chain)",
+			Usage:   "Ethereum RPC endpoint for FEVM (required to execute PDP and DDO schedules on-chain)",
 			EnvVars: []string{"ETH_RPC_URL"},
+		},
+		&cli.StringFlag{
+			Name:    "ddo-contract",
+			Usage:   "DDO Diamond proxy contract address",
+			EnvVars: []string{"DDO_CONTRACT_ADDRESS"},
+		},
+		&cli.StringFlag{
+			Name:    "ddo-payments-contract",
+			Usage:   "DDO Payments proxy contract address",
+			EnvVars: []string{"DDO_PAYMENTS_CONTRACT_ADDRESS"},
+		},
+		&cli.StringFlag{
+			Name:    "ddo-payment-token",
+			Usage:   "ERC20 payment token address (e.g. USDFC)",
+			EnvVars: []string{"DDO_PAYMENT_TOKEN"},
+		},
+		&cli.IntFlag{
+			Name:  "ddo-batch-size",
+			Usage: "Number of pieces per DDO allocation transaction",
+			Value: 10,
+		},
+		&cli.Uint64Flag{
+			Name:  "ddo-confirmation-depth",
+			Usage: "Number of block confirmations required for DDO transactions",
+			Value: 5,
+		},
+		&cli.DurationFlag{
+			Name:  "ddo-poll-interval",
+			Usage: "Polling interval for DDO transaction confirmation checks",
+			Value: 30 * time.Second,
+		},
+		&cli.Int64Flag{
+			Name:  "ddo-term-min",
+			Usage: "Minimum term in epochs (~6 months default)",
+			Value: 518400,
+		},
+		&cli.Int64Flag{
+			Name:  "ddo-term-max",
+			Usage: "Maximum term in epochs (~5 years default)",
+			Value: 5256000,
+		},
+		&cli.Int64Flag{
+			Name:  "ddo-expiration-offset",
+			Usage: "Expiration offset in epochs",
+			Value: 172800,
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -90,6 +135,38 @@ var DealPusherCmd = &cli.Command{
 				dealpusher.WithPDPProofSetManager(pdpAdapter),
 				dealpusher.WithPDPTransactionConfirmer(pdpAdapter),
 			)
+		}
+
+		if ddoContract := c.String("ddo-contract"); ddoContract != "" {
+			ddoCfg := dealpusher.DDOSchedulingConfig{
+				BatchSize:         c.Int("ddo-batch-size"),
+				ConfirmationDepth: c.Uint64("ddo-confirmation-depth"),
+				PollingInterval:   c.Duration("ddo-poll-interval"),
+				TermMin:           c.Int64("ddo-term-min"),
+				TermMax:           c.Int64("ddo-term-max"),
+				ExpirationOffset:  c.Int64("ddo-expiration-offset"),
+			}
+			if err := ddoCfg.Validate(); err != nil {
+				return errors.WithStack(err)
+			}
+			opts = append(opts, dealpusher.WithDDOSchedulingConfig(ddoCfg))
+
+			rpcURL := c.String("eth-rpc")
+			if rpcURL == "" {
+				return errors.New("--eth-rpc is required when --ddo-contract is set")
+			}
+			ddoAdapter, err := dealpusher.NewOnChainDDO(c.Context,
+				rpcURL,
+				ddoContract,
+				c.String("ddo-payments-contract"),
+				c.String("ddo-payment-token"),
+			)
+			if err != nil {
+				return errors.Wrap(err, "failed to initialize DDO on-chain adapter")
+			}
+			defer ddoAdapter.Close()
+
+			opts = append(opts, dealpusher.WithDDODealManager(ddoAdapter))
 		}
 
 		dm, err := dealpusher.NewDealPusher(

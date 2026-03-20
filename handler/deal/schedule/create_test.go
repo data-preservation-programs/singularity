@@ -41,8 +41,16 @@ func (m *MockRPCClient) CallBatchRaw(ctx context.Context, requests jsonrpc.RPCRe
 }
 
 func getMockLotusClient() jsonrpc.RPCClient {
+	return getMockLotusClientWithActorID("f01000")
+}
+
+func getMockLotusClientWithActorID(actorID string) jsonrpc.RPCClient {
 	lotusClient := new(MockRPCClient)
 	lotusClient.On("CallFor", mock.Anything, mock.Anything, "Filecoin.StateLookupID", mock.Anything).
+		Run(func(args mock.Arguments) {
+			out := args.Get(1).(*string)
+			*out = actorID
+		}).
 		Return(nil)
 	return lotusClient
 }
@@ -238,6 +246,18 @@ func TestCreateHandler_PDPRejectsPreparationWithOversizedPiece(t *testing.T) {
 	})
 }
 
+func TestCreateHandler_ProviderNormalizedToActorID(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		createPrepWithWallet(t, db, "")
+		req := createRequest
+		req.Provider = "f2abc123"
+		lotusClient := getMockLotusClientWithActorID("f01234")
+		schedule, err := Default.CreateHandler(ctx, db, lotusClient, req)
+		require.NoError(t, err)
+		require.Equal(t, "f01234", schedule.Provider)
+	})
+}
+
 func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		createPrepWithWallet(t, db, "")
@@ -280,6 +300,7 @@ func TestCreateHandler_Success(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, schedule)
 				require.Equal(t, model.DealTypeMarket, schedule.DealType)
+				require.Equal(t, "f01000", schedule.Provider)
 				require.True(t, createRequest.Force)
 			})
 		})

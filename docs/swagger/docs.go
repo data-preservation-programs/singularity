@@ -6493,6 +6493,16 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "ddoAllocationId": {
+                    "description": "DDO-specific fields (only populated for DealTypeDDO)",
+                    "type": "integer"
+                },
+                "ddoPaymentToken": {
+                    "type": "string"
+                },
+                "ddoRailId": {
+                    "type": "integer"
+                },
                 "dealId": {
                     "type": "integer"
                 },
@@ -6593,11 +6603,13 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "market",
-                "pdp"
+                "pdp",
+                "ddo"
             ],
             "x-enum-varnames": [
                 "DealTypeMarket",
-                "DealTypePDP"
+                "DealTypePDP",
+                "DealTypeDDO"
             ]
         },
         "model.File": {
@@ -6982,7 +6994,7 @@ const docTemplate = `{
                     }
                 },
                 "dealType": {
-                    "description": "Deal type: market (f05) or pdp (f41)",
+                    "description": "Deal type: market (f05), pdp (f41), or ddo",
                     "type": "string"
                 },
                 "duration": {
