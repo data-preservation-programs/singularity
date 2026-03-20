@@ -395,6 +395,13 @@ definitions:
         type: string
       createdAt:
         type: string
+      f05PaymentContract:
+        description: F05 paid-deal fields (only populated for DealTypeF05Paid)
+        type: string
+      f05PaymentStatus:
+        type: string
+      f05PaymentTxHash:
+        type: string
       ddoAllocationId:
         description: DDO-specific fields (only populated for DealTypeDDO)
         type: integer
@@ -478,11 +485,13 @@ definitions:
   model.DealType:
     enum:
     - market
+    - f05_paid
     - pdp
     - ddo
     type: string
     x-enum-varnames:
     - DealTypeMarket
+    - DealTypeF05Paid
     - DealTypePDP
     - DealTypeDDO
   model.File:
@@ -754,7 +763,7 @@ definitions:
           type: string
         type: array
       dealType:
-        description: 'Deal type: market (f05), pdp (f41), or ddo'
+        description: 'Deal type: market (legacy f05), f05_paid (f05 with on-chain payments), pdp (f41), or ddo'
         type: string
       duration:
         default: 12840h

@@ -10,7 +10,7 @@ type DealState string
 
 type ScheduleState string
 
-// DealType represents the type of deal (legacy market vs PDP)
+// DealType represents the type of deal (legacy market, paid f05, PDP, etc.)
 type DealType string
 
 const (
@@ -27,6 +27,8 @@ const (
 const (
 	// DealTypeMarket represents legacy f05 market actor deals
 	DealTypeMarket DealType = "market"
+	// DealTypeF05Paid represents f05 deals with on-chain payments
+	DealTypeF05Paid DealType = "f05_paid"
 	// DealTypePDP represents f41 PDP (Proof of Data Possession) deals
 	DealTypePDP DealType = "pdp"
 	// DealTypeDDO represents DDO (Decentralized Data Onboarding) allocation deals
@@ -68,12 +70,14 @@ var DealStates = []DealState{
 
 var DealTypeStrings = []string{
 	string(DealTypeMarket),
+	string(DealTypeF05Paid),
 	string(DealTypePDP),
 	string(DealTypeDDO),
 }
 
 var DealTypes = []DealType{
 	DealTypeMarket,
+	DealTypeF05Paid,
 	DealTypePDP,
 	DealTypeDDO,
 }
@@ -133,6 +137,11 @@ type Deal struct {
 	ProofSetID         *uint64 `json:"proofSetId,omitempty"         table:"verbose"` // ProofSetID is the on-chain proof set ID for PDP deals
 	ProofSetLive       *bool   `json:"proofSetLive,omitempty"       table:"verbose"` // ProofSetLive indicates if the proof set is live (actively being challenged)
 	NextChallengeEpoch *int32  `json:"nextChallengeEpoch,omitempty" table:"verbose"` // NextChallengeEpoch is the next epoch when a challenge proof is due
+
+	// F05 paid-deal fields (only populated for DealTypeF05Paid)
+	F05PaymentContract *string `json:"f05PaymentContract,omitempty" table:"verbose"`
+	F05PaymentTxHash   *string `json:"f05PaymentTxHash,omitempty"   table:"verbose"`
+	F05PaymentStatus   *string `json:"f05PaymentStatus,omitempty"   table:"verbose"`
 
 	// DDO-specific fields (only populated for DealTypeDDO)
 	DDOAllocationID *uint64 `json:"ddoAllocationId,omitempty" table:"verbose"`

@@ -284,6 +284,19 @@ func TestUpdateHandler_DDORequiresURLTemplate(t *testing.T) {
 	})
 }
 
+func TestUpdateHandler_F05PaidAccepted(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Schedule{
+			Preparation: &model.Preparation{},
+		}).Error
+		require.NoError(t, err)
+		req := UpdateRequest{DealType: ptr.Of(string(model.DealTypeF05Paid))}
+		schedule, err := Default.UpdateHandler(ctx, db, 1, req)
+		require.NoError(t, err)
+		require.Equal(t, model.DealTypeF05Paid, schedule.DealType)
+	})
+}
+
 func TestUpdateHandler_DDOClearURLTemplateRejected(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Schedule{

@@ -36,7 +36,7 @@ var ListCmd = &cli.Command{
 		},
 		&cli.StringSliceFlag{
 			Name:  "deal-type",
-			Usage: "Filter deals by type: market (legacy f05), pdp (f41 PDP deals)",
+			Usage: "Filter deals by type: market, f05_paid, pdp, ddo",
 		},
 	},
 	Action: func(c *cli.Context) error {

@@ -6493,6 +6493,16 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "f05PaymentContract": {
+                    "description": "F05 paid-deal fields (only populated for DealTypeF05Paid)",
+                    "type": "string"
+                },
+                "f05PaymentStatus": {
+                    "type": "string"
+                },
+                "f05PaymentTxHash": {
+                    "type": "string"
+                },
                 "ddoAllocationId": {
                     "description": "DDO-specific fields (only populated for DealTypeDDO)",
                     "type": "integer"
@@ -6603,11 +6613,13 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "market",
+                "f05_paid",
                 "pdp",
                 "ddo"
             ],
             "x-enum-varnames": [
                 "DealTypeMarket",
+                "DealTypeF05Paid",
                 "DealTypePDP",
                 "DealTypeDDO"
             ]
@@ -6994,7 +7006,7 @@ const docTemplate = `{
                     }
                 },
                 "dealType": {
-                    "description": "Deal type: market (f05), pdp (f41), or ddo",
+                    "description": "Deal type: market (legacy f05), f05_paid (f05 with on-chain payments), pdp (f41), or ddo",
                     "type": "string"
                 },
                 "duration": {
