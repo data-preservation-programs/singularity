@@ -12,6 +12,7 @@
 * [Built from source](installation/install-from-source.md)
 * [Deploy to production](installation/deploy-to-production.md)
 * [Version upgrade](installation/upgrade.md)
+* [Migrating from legacy deals](installation/migrating-from-legacy-deals.md)
 
 ## Data Preparation <a href="#data-preparation" id="data-preparation"></a>
 
@@ -31,6 +32,7 @@
 * [Inline Preparation](topics/inline-preparation.md)
 * [Benchmark](topics/benchmark.md)
 * [PDP Calibnet E2E Runbook](topics/pdp-calibnet-e2e.md)
+* [DDO Contract Deal Guide](topics/ddo-contract-deal-guide.md)
 
 ## 💻 CLI Reference <a href="#cli-reference" id="cli-reference"></a>
 <!-- cli begin -->
