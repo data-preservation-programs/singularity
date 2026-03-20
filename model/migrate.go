@@ -70,6 +70,12 @@ var fkMigrations = []fkMigration{
 // Returns:
 //   - An error if any issues arise during the process, otherwise nil.
 func AutoMigrate(db *gorm.DB) error {
+	// pre-migration: rename legacy wallets table to actors before GORM
+	// tries to reconcile the new Wallet model with the old table schema
+	if err := renameLegacyWalletsTable(db); err != nil {
+		return errors.Wrap(err, "failed to rename legacy wallets table")
+	}
+
 	logger.Info("Auto migrating tables")
 	err := db.AutoMigrate(Tables...)
 	if err != nil {
@@ -511,6 +517,33 @@ func migrateWalletAssignments(db *gorm.DB) error {
 		return errors.Wrap(err, "failed to drop wallet_assignments")
 	}
 	logger.Infow("migrated wallet_assignments to preparation.wallet_id", "preparations", len(byPrep))
+	return nil
+}
+
+// renameLegacyWalletsTable detects the pre-v0.8 schema where "wallets" was the
+// actor identity table (id=f0..., private_key) and renames it to "actors" so
+// AutoMigrate can create the new "wallets" table (keystore-backed model).
+// idempotent -- skips if wallets already has key_path (new schema) or if
+// actors already exists.
+func renameLegacyWalletsTable(db *gorm.DB) error {
+	if !db.Migrator().HasTable("wallets") {
+		return nil // fresh install
+	}
+	if db.Migrator().HasColumn(&Wallet{}, "key_path") {
+		return nil // already migrated
+	}
+	// old wallets table has private_key but no key_path -- it's the actor table
+	if db.Migrator().HasTable("actors") {
+		return nil // actors table already exists, can't rename
+	}
+
+	logger.Info("renaming legacy wallets table to actors")
+	if err := db.Exec("ALTER TABLE wallets RENAME TO actors").Error; err != nil {
+		return err
+	}
+	// drop old indexes that followed the rename -- they'd conflict with
+	// indexes AutoMigrate creates on the new wallets table
+	db.Exec("DROP INDEX IF EXISTS idx_wallets_address")
 	return nil
 }
 

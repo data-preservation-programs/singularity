@@ -168,6 +168,7 @@ Upgrading:
 				wallet.ImportCmd,
 				wallet.ListCmd,
 				wallet.RemoveCmd,
+				wallet.ExportKeysCmd,
 			},
 		},
 		{

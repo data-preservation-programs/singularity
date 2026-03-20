@@ -112,19 +112,3 @@ func GetOrCreateActor(
 
 	return &newActor, nil
 }
-
-// loads wallet by actor ID for signing operations
-func LoadWalletByActorID(ctx context.Context, db *gorm.DB, actorID string) (*model.Wallet, error) {
-	db = db.WithContext(ctx)
-
-	var wallet model.Wallet
-	err := db.Where("actor_id = ?", actorID).First(&wallet).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.Errorf("no wallet found for actor %s - actor may not be controlled by this instance", actorID)
-		}
-		return nil, errors.Wrap(err, "failed to query wallet by actor ID")
-	}
-
-	return &wallet, nil
-}

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/dealtracker"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
@@ -15,6 +14,7 @@ var DealTrackerCmd = &cli.Command{
 	Name:  "deal-tracker",
 	Usage: "Start a deal tracker that tracks the deal for all relevant wallets",
 	Flags: []cli.Flag{
+		NoAutoMigrateFlag,
 		&cli.StringFlag{
 			Name:    "market-deal-url",
 			Usage:   "The URL for ZST compressed state market deals json. Set to empty to use Lotus API.",
@@ -45,7 +45,7 @@ var DealTrackerCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		db, closer, err := database.OpenFromCLI(c)
+		db, closer, err := openAndMigrate(c)
 		if err != nil {
 			return errors.WithStack(err)
 		}

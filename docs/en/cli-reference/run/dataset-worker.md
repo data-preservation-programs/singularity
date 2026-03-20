@@ -9,6 +9,7 @@ USAGE:
    singularity run dataset-worker [command options]
 
 OPTIONS:
+   --no-automigrate      skip automatic database migration and correctness checks on startup; only use if you run 'admin init' on every upgrade or manually before starting daemons (default: false)
    --concurrency value   Number of concurrent workers to run (default: 1)
    --enable-scan         Enable scanning of datasets (default: true)
    --enable-pack         Enable packing of datasets that calculates CIDs and packs them into CAR files (default: true)

@@ -9,6 +9,7 @@ USAGE:
    singularity run deal-tracker [command options]
 
 OPTIONS:
+   --no-automigrate                   skip automatic database migration and correctness checks on startup; only use if you run 'admin init' on every upgrade or manually before starting daemons (default: false)
    --market-deal-url value, -m value  The URL for ZST compressed state market deals json. Set to empty to use Lotus API. (default: "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst") [$MARKET_DEAL_URL]
    --interval value, -i value         How often to check for new deals (default: 1h0m0s)
    --once                             Run once and exit (default: false)
