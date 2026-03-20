@@ -179,9 +179,12 @@ type Schedule struct {
 // actors we control have a Wallet with ActorID pointing here.
 // actors we don't control (counterparties) exist as bare records.
 type Actor struct {
-	ID         string `gorm:"primaryKey;size:15"   json:"id"`      // actor ID (f0...)
-	Address    string `gorm:"index"                json:"address"` // filecoin address
-	PrivateKey string `json:"privateKey,omitempty" table:"-"`      // orphaned: run `singularity wallet export-keys` to migrate, then drop column
+	ID      string `gorm:"primaryKey;size:15" json:"id"`      // actor ID (f0...)
+	Address string `gorm:"index"              json:"address"` // filecoin address
+	// PrivateKey is excluded from GORM entirely so AutoMigrate won't
+	// create the column and SELECTs won't reference it. The export-keys
+	// handler reads it via raw SQL for legacy databases that still have it.
+
 }
 
 // GORM will rename "wallets" table to "actors" on AutoMigrate

@@ -12,18 +12,38 @@ import (
 	"gorm.io/gorm"
 )
 
+// model without -:migration, used to simulate a legacy database where
+// AutoMigrate created the private_key column
+type legacyActor struct {
+	ID         string `gorm:"primaryKey;size:15"`
+	Address    string `gorm:"index"`
+	PrivateKey string
+}
+
+func (legacyActor) TableName() string { return "actors" }
+
+// simulates a legacy database by running AutoMigrate with the old model
+// that includes private_key as a normal column
+func addLegacyColumn(t *testing.T, db *gorm.DB) {
+	t.Helper()
+	require.NoError(t, db.AutoMigrate(&legacyActor{}))
+}
+
+// inserts an actor with a legacy private_key via the legacy model
+func createLegacyActor(t *testing.T, db *gorm.DB, id, address, privateKey string) {
+	t.Helper()
+	require.NoError(t, db.Create(&legacyActor{
+		ID: id, Address: address, PrivateKey: privateKey,
+	}).Error)
+}
+
 func TestExportKeysHandler_ExportsActorKey(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ks, err := keystore.NewLocalKeyStore(t.TempDir())
 		require.NoError(t, err)
 
-		// create an actor with a legacy private key
-		actor := model.Actor{
-			ID:         "f01234",
-			Address:    testutil.TestWalletAddr,
-			PrivateKey: testutil.TestPrivateKeyHex,
-		}
-		require.NoError(t, db.Create(&actor).Error)
+		addLegacyColumn(t, db)
+		createLegacyActor(t, db, "f01234", testutil.TestWalletAddr, testutil.TestPrivateKeyHex)
 
 		result, err := ExportKeysHandler(ctx, db, ks)
 		require.NoError(t, err)
@@ -50,13 +70,8 @@ func TestExportKeysHandler_SkipsExistingWallet(t *testing.T) {
 		ks, err := keystore.NewLocalKeyStore(t.TempDir())
 		require.NoError(t, err)
 
-		// create actor with legacy key
-		actor := model.Actor{
-			ID:         "f01234",
-			Address:    testutil.TestWalletAddr,
-			PrivateKey: testutil.TestPrivateKeyHex,
-		}
-		require.NoError(t, db.Create(&actor).Error)
+		addLegacyColumn(t, db)
+		createLegacyActor(t, db, "f01234", testutil.TestWalletAddr, testutil.TestPrivateKeyHex)
 
 		// pre-import the wallet via normal import path
 		h := DefaultHandler{}
@@ -83,13 +98,8 @@ func TestExportKeysHandler_SkipsExistingWalletLinksActor(t *testing.T) {
 		ks, err := keystore.NewLocalKeyStore(t.TempDir())
 		require.NoError(t, err)
 
-		// create actor with legacy key
-		actor := model.Actor{
-			ID:         "f01234",
-			Address:    testutil.TestWalletAddr,
-			PrivateKey: testutil.TestPrivateKeyHex,
-		}
-		require.NoError(t, db.Create(&actor).Error)
+		addLegacyColumn(t, db)
+		createLegacyActor(t, db, "f01234", testutil.TestWalletAddr, testutil.TestPrivateKeyHex)
 
 		// pre-import the wallet WITHOUT actor linkage
 		h := DefaultHandler{}
@@ -116,12 +126,8 @@ func TestExportKeysHandler_Idempotent(t *testing.T) {
 		ks, err := keystore.NewLocalKeyStore(t.TempDir())
 		require.NoError(t, err)
 
-		actor := model.Actor{
-			ID:         "f01234",
-			Address:    testutil.TestWalletAddr,
-			PrivateKey: testutil.TestPrivateKeyHex,
-		}
-		require.NoError(t, db.Create(&actor).Error)
+		addLegacyColumn(t, db)
+		createLegacyActor(t, db, "f01234", testutil.TestWalletAddr, testutil.TestPrivateKeyHex)
 
 		// first run exports
 		r1, err := ExportKeysHandler(ctx, db, ks)
@@ -146,12 +152,12 @@ func TestExportKeysHandler_NoActorsWithKeys(t *testing.T) {
 		ks, err := keystore.NewLocalKeyStore(t.TempDir())
 		require.NoError(t, err)
 
+		addLegacyColumn(t, db)
 		// actor with no private key
-		actor := model.Actor{
+		require.NoError(t, db.Create(&model.Actor{
 			ID:      "f09999",
 			Address: "f1abc",
-		}
-		require.NoError(t, db.Create(&actor).Error)
+		}).Error)
 
 		result, err := ExportKeysHandler(ctx, db, ks)
 		require.NoError(t, err)
@@ -166,13 +172,8 @@ func TestExportKeysHandler_InvalidKeyRecordsError(t *testing.T) {
 		ks, err := keystore.NewLocalKeyStore(t.TempDir())
 		require.NoError(t, err)
 
-		// actor with garbage key
-		actor := model.Actor{
-			ID:         "f05555",
-			Address:    "f1bad",
-			PrivateKey: "not-a-valid-key",
-		}
-		require.NoError(t, db.Create(&actor).Error)
+		addLegacyColumn(t, db)
+		createLegacyActor(t, db, "f05555", "f1bad", "not-a-valid-key")
 
 		result, err := ExportKeysHandler(ctx, db, ks)
 		require.NoError(t, err) // overall operation succeeds
@@ -189,13 +190,8 @@ func TestExportKeysHandler_MissingKeyFile(t *testing.T) {
 		ks, err := keystore.NewLocalKeyStore(t.TempDir())
 		require.NoError(t, err)
 
-		// create actor with legacy key
-		actor := model.Actor{
-			ID:         "f01234",
-			Address:    testutil.TestWalletAddr,
-			PrivateKey: testutil.TestPrivateKeyHex,
-		}
-		require.NoError(t, db.Create(&actor).Error)
+		addLegacyColumn(t, db)
+		createLegacyActor(t, db, "f01234", testutil.TestWalletAddr, testutil.TestPrivateKeyHex)
 
 		// create wallet record pointing to a nonexistent key file
 		require.NoError(t, db.Create(&model.Wallet{
@@ -219,12 +215,8 @@ func TestExportKeysHandler_CorruptKeyFile(t *testing.T) {
 		ks, err := keystore.NewLocalKeyStore(dir)
 		require.NoError(t, err)
 
-		actor := model.Actor{
-			ID:         "f01234",
-			Address:    testutil.TestWalletAddr,
-			PrivateKey: testutil.TestPrivateKeyHex,
-		}
-		require.NoError(t, db.Create(&actor).Error)
+		addLegacyColumn(t, db)
+		createLegacyActor(t, db, "f01234", testutil.TestWalletAddr, testutil.TestPrivateKeyHex)
 
 		// write garbage to the key file path
 		corruptPath := dir + "/corrupt"
@@ -245,17 +237,22 @@ func TestExportKeysHandler_CorruptKeyFile(t *testing.T) {
 	})
 }
 
-func TestDropPrivateKeyColumn(t *testing.T) {
+func TestExportKeysHandler_AutoMigrateDoesNotRecreateColumn(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		// column exists after AutoMigrate
-		require.True(t, db.Migrator().HasColumn(&model.Actor{}, "private_key"))
+		// AutoMigrate already ran (via testutil.All) -- column should NOT exist
+		require.False(t, db.Migrator().HasColumn(&model.Actor{}, "private_key"),
+			"AutoMigrate must not create private_key column (gorm:-:migration)")
 
-		// drop it
+		// simulate legacy db, export, drop
+		addLegacyColumn(t, db)
+		require.True(t, HasPrivateKeyColumn(db))
 		require.NoError(t, DropPrivateKeyColumn(db))
-		require.False(t, db.Migrator().HasColumn(&model.Actor{}, "private_key"))
+		require.False(t, HasPrivateKeyColumn(db))
 
-		// idempotent -- second call is a no-op
-		require.NoError(t, DropPrivateKeyColumn(db))
+		// re-run AutoMigrate -- must NOT re-add the column
+		require.NoError(t, model.AutoMigrate(db))
+		require.False(t, HasPrivateKeyColumn(db),
+			"AutoMigrate must not re-add private_key column after drop")
 	})
 }
 
@@ -264,13 +261,8 @@ func TestDropPrivateKeyColumn_ExportThenDrop(t *testing.T) {
 		ks, err := keystore.NewLocalKeyStore(t.TempDir())
 		require.NoError(t, err)
 
-		// create actor with legacy key
-		actor := model.Actor{
-			ID:         "f01234",
-			Address:    testutil.TestWalletAddr,
-			PrivateKey: testutil.TestPrivateKeyHex,
-		}
-		require.NoError(t, db.Create(&actor).Error)
+		addLegacyColumn(t, db)
+		createLegacyActor(t, db, "f01234", testutil.TestWalletAddr, testutil.TestPrivateKeyHex)
 
 		// export
 		result, err := ExportKeysHandler(ctx, db, ks)

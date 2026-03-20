@@ -17,6 +17,14 @@ type ExportKeysResult struct {
 	Errors   []string // actors that failed (logged but don't abort)
 }
 
+// actor row with the legacy private_key column, used only by export-keys.
+// Actor.PrivateKey is gorm:"-" in the model so we need a local type for raw SQL.
+type legacyActorRow struct {
+	ID         string
+	Address    string
+	PrivateKey string
+}
+
 // exports private keys from the legacy Actor.PrivateKey column into the
 // filesystem keystore, creating Wallet records where needed.
 // idempotent -- skips actors whose address already has a Wallet record.
@@ -28,8 +36,8 @@ func ExportKeysHandler(
 ) (*ExportKeysResult, error) {
 	db = db.WithContext(ctx)
 
-	var actors []model.Actor
-	err := db.Where("private_key != '' AND private_key IS NOT NULL").Find(&actors).Error
+	var actors []legacyActorRow
+	err := db.Raw("SELECT id, address, private_key FROM actors WHERE private_key != '' AND private_key IS NOT NULL").Scan(&actors).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query actors with private keys")
 	}
@@ -54,7 +62,7 @@ func ExportKeysHandler(
 
 // exports a single actor's key to keystore, returns (true, "") on success,
 // (false, "") on skip, ("", errMsg) on failure
-func exportOneKey(db *gorm.DB, ks keystore.KeyStore, actor model.Actor) (exported bool, errMsg string) {
+func exportOneKey(db *gorm.DB, ks keystore.KeyStore, actor legacyActorRow) (exported bool, errMsg string) {
 	// derive address to check for existing wallet
 	addr, err := keystore.AddressFromExport(actor.PrivateKey)
 	if err != nil {
@@ -114,7 +122,17 @@ func exportOneKey(db *gorm.DB, ks keystore.KeyStore, actor model.Actor) (exporte
 }
 
 func HasPrivateKeyColumn(db *gorm.DB) bool {
-	return db.Migrator().HasColumn(&model.Actor{}, "private_key")
+	// can't use db.Migrator().HasColumn(&model.Actor{}, "private_key") because
+	// the field is gorm:"-" -- GORM won't resolve the column name. query directly.
+	dialect := db.Dialector.Name()
+	var count int64
+	switch dialect {
+	case "sqlite":
+		db.Raw("SELECT COUNT(*) FROM pragma_table_info('actors') WHERE name = 'private_key'").Scan(&count)
+	default:
+		db.Raw("SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'actors' AND column_name = 'private_key'").Scan(&count)
+	}
+	return count > 0
 }
 
 // counts actors that still have a non-empty private_key in the database.
