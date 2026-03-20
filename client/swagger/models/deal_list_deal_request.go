@@ -20,7 +20,7 @@ import (
 // swagger:model deal.ListDealRequest
 type DealListDealRequest struct {
 
-	// deal type filter (market for f05, pdp for f41)
+	// deal type filter (market/f05_paid for f05, pdp for f41, ddo for allocations)
 	DealTypes []ModelDealType `json:"dealTypes"`
 
 	// preparation ID or name filter

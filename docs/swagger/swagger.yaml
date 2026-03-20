@@ -152,7 +152,8 @@ definitions:
   deal.ListDealRequest:
     properties:
       dealTypes:
-        description: deal type filter (market for f05, pdp for f41)
+        description: deal type filter (market/f05_paid for f05, pdp for f41, ddo for
+          allocations)
         items:
           $ref: '#/definitions/model.DealType'
         type: array
@@ -395,13 +396,6 @@ definitions:
         type: string
       createdAt:
         type: string
-      f05PaymentContract:
-        description: F05 paid-deal fields (only populated for DealTypeF05Paid)
-        type: string
-      f05PaymentStatus:
-        type: string
-      f05PaymentTxHash:
-        type: string
       ddoAllocationId:
         description: DDO-specific fields (only populated for DealTypeDDO)
         type: integer
@@ -416,6 +410,13 @@ definitions:
       endEpoch:
         type: integer
       errorMessage:
+        type: string
+      f05PaymentContract:
+        description: F05 paid-deal fields (only populated for DealTypeF05Paid)
+        type: string
+      f05PaymentStatus:
+        type: string
+      f05PaymentTxHash:
         type: string
       id:
         type: integer
@@ -763,7 +764,8 @@ definitions:
           type: string
         type: array
       dealType:
-        description: 'Deal type: market (legacy f05), f05_paid (f05 with on-chain payments), pdp (f41), or ddo'
+        description: 'Deal type: market (legacy f05), f05_paid (f05 with on-chain
+          payments), pdp (f41), or ddo'
         type: string
       duration:
         default: 12840h
@@ -852,7 +854,8 @@ definitions:
           type: string
         type: array
       dealType:
-        description: 'Deal type: market (f05) or pdp (f41)'
+        description: 'Deal type: market (legacy f05), f05_paid (f05 with on-chain
+          payments), pdp (f41), or ddo'
         type: string
       duration:
         default: 12840h

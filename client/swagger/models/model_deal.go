@@ -25,15 +25,6 @@ type ModelDeal struct {
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
 
-	// F05 paid-deal fields (only populated for DealTypeF05Paid)
-	F05PaymentContract string `json:"f05PaymentContract,omitempty"`
-
-	// f05 payment status
-	F05PaymentStatus string `json:"f05PaymentStatus,omitempty"`
-
-	// f05 payment transaction hash
-	F05PaymentTxHash string `json:"f05PaymentTxHash,omitempty"`
-
 	// DDO-specific fields (only populated for DealTypeDDO)
 	DdoAllocationID int64 `json:"ddoAllocationId,omitempty"`
 
@@ -54,6 +45,15 @@ type ModelDeal struct {
 
 	// error message
 	ErrorMessage string `json:"errorMessage,omitempty"`
+
+	// F05 paid-deal fields (only populated for DealTypeF05Paid)
+	F05PaymentContract string `json:"f05PaymentContract,omitempty"`
+
+	// f05 payment status
+	F05PaymentStatus string `json:"f05PaymentStatus,omitempty"`
+
+	// f05 payment tx hash
+	F05PaymentTxHash string `json:"f05PaymentTxHash,omitempty"`
 
 	// id
 	ID int64 `json:"id,omitempty"`
