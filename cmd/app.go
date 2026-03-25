@@ -15,6 +15,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/dataprep"
 	"github.com/data-preservation-programs/singularity/cmd/deal"
 	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
+	"github.com/data-preservation-programs/singularity/cmd/deal/sppool"
 	"github.com/data-preservation-programs/singularity/cmd/ez"
 	"github.com/data-preservation-programs/singularity/cmd/run"
 	"github.com/data-preservation-programs/singularity/cmd/storage"
@@ -139,6 +140,23 @@ Upgrading:
 						schedule.PauseCmd,
 						schedule.ResumeCmd,
 						schedule.RemoveCmd,
+					},
+				},
+				{
+					Name:  "sp-pool",
+					Usage: "SP Pool management",
+					Subcommands: []*cli.Command{
+						sppool.CreateCmd,
+						sppool.ListCmd,
+						sppool.GetCmd,
+						sppool.UpdateCmd,
+						sppool.RemoveCmd,
+						sppool.PauseCmd,
+						sppool.ResumeCmd,
+						sppool.AddProviderCmd,
+						sppool.RemoveProviderCmd,
+						sppool.AddPreparationCmd,
+						sppool.RemovePreparationCmd,
 					},
 				},
 				deal.SendManualCmd,

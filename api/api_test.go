@@ -27,6 +27,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/handler/deal/sppool"
 	"github.com/data-preservation-programs/singularity/handler/file"
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
@@ -120,6 +121,33 @@ func setupMockSchedule() schedule.Handler {
 	return m
 }
 
+func setupMockSPPool() sppool.Handler {
+	m := new(sppool.MockSPPool)
+	m.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything).
+		Return(&model.SPPool{}, nil)
+	m.On("ListHandler", mock.Anything, mock.Anything).
+		Return([]model.SPPool{{}}, nil)
+	m.On("GetHandler", mock.Anything, mock.Anything, mock.Anything).
+		Return(&model.SPPool{}, nil)
+	m.On("UpdateHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		Return(&model.SPPool{}, nil)
+	m.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).
+		Return(nil)
+	m.On("PauseHandler", mock.Anything, mock.Anything, mock.Anything).
+		Return(&model.SPPool{}, nil)
+	m.On("ResumeHandler", mock.Anything, mock.Anything, mock.Anything).
+		Return(&model.SPPool{}, nil)
+	m.On("AddProviderHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		Return(&model.SPPoolProvider{}, nil)
+	m.On("RemoveProviderHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		Return(nil)
+	m.On("AddPreparationHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		Return(&model.SPPoolPreparation{}, nil)
+	m.On("RemovePreparationHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		Return(nil)
+	return m
+}
+
 type nopCloser struct {
 	io.ReadSeeker
 }
@@ -207,6 +235,7 @@ func TestAllAPIs(t *testing.T) {
 	mockFile := setupMockFile()
 	mockJob := setupMockJob()
 	mockSchedule := setupMockSchedule()
+	mockSPPool := setupMockSPPool()
 	mockDealMaker := new(MockDealMaker)
 
 	listener, err := net.Listen("tcp", apiBind)
@@ -234,6 +263,7 @@ func TestAllAPIs(t *testing.T) {
 			fileHandler:     mockFile,
 			jobHandler:      mockJob,
 			scheduleHandler: mockSchedule,
+			sppoolHandler:   mockSPPool,
 		}
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()

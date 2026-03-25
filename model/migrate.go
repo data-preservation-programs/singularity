@@ -29,6 +29,9 @@ var Tables = []any{
 	&Actor{},
 	&Wallet{},
 	&PDPProofSet{},
+	&SPPool{},
+	&SPPoolProvider{},
+	&SPPoolPreparation{},
 }
 
 var logger = logging.Logger("model")
@@ -248,6 +251,9 @@ var sequenceTables = []string{
 	"deals",
 	"schedules",
 	"wallets",
+	"sp_pools",
+	"sp_pool_providers",
+	"sp_pool_preparations",
 }
 
 // fixPostgresSequences detects and fixes out-of-sync sequences.

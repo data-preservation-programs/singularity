@@ -19,6 +19,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/handler/deal/sppool"
 	"github.com/data-preservation-programs/singularity/handler/file"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/handler/job"
@@ -60,6 +61,7 @@ type Server struct {
 	fileHandler     file.Handler
 	jobHandler      job.Handler
 	scheduleHandler schedule.Handler
+	sppoolHandler   sppool.Handler
 }
 
 func (s *Server) Name() string {
@@ -163,6 +165,7 @@ func InitServer(ctx context.Context, params APIParams) (*Server, error) {
 		fileHandler:     &file.DefaultHandler{},
 		jobHandler:      &job.DefaultHandler{},
 		scheduleHandler: &schedule.DefaultHandler{},
+		sppoolHandler:   &sppool.DefaultHandler{},
 	}, nil
 }
 
@@ -378,6 +381,19 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/schedule/:id/resume", s.toEchoHandler(s.scheduleHandler.ResumeHandler))
 	e.PATCH("/api/schedule/:id", s.toEchoHandler(s.scheduleHandler.UpdateHandler))
 	e.DELETE("/api/schedule/:id", s.toEchoHandler(s.scheduleHandler.RemoveHandler))
+
+	// SP Pool
+	e.POST("/api/sp-pool", s.toEchoHandler(s.sppoolHandler.CreateHandler))
+	e.GET("/api/sp-pool", s.toEchoHandler(s.sppoolHandler.ListHandler))
+	e.GET("/api/sp-pool/:id", s.toEchoHandler(s.sppoolHandler.GetHandler))
+	e.PATCH("/api/sp-pool/:id", s.toEchoHandler(s.sppoolHandler.UpdateHandler))
+	e.DELETE("/api/sp-pool/:id", s.toEchoHandler(s.sppoolHandler.RemoveHandler))
+	e.POST("/api/sp-pool/:id/pause", s.toEchoHandler(s.sppoolHandler.PauseHandler))
+	e.POST("/api/sp-pool/:id/resume", s.toEchoHandler(s.sppoolHandler.ResumeHandler))
+	e.POST("/api/sp-pool/:id/provider", s.toEchoHandler(s.sppoolHandler.AddProviderHandler))
+	e.DELETE("/api/sp-pool/:id/provider/:provider_id", s.toEchoHandler(s.sppoolHandler.RemoveProviderHandler))
+	e.POST("/api/sp-pool/:id/preparation", s.toEchoHandler(s.sppoolHandler.AddPreparationHandler))
+	e.DELETE("/api/sp-pool/:id/preparation/:preparation_id", s.toEchoHandler(s.sppoolHandler.RemovePreparationHandler))
 
 	// Deal
 	e.POST("/api/deal", s.toEchoHandler(s.dealHandler.ListHandler))
