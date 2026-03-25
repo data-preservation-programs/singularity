@@ -1918,6 +1918,554 @@
                 }
             }
         },
+        "/sp-pool": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SP Pool"
+                ],
+                "summary": "List all SP Pools",
+                "operationId": "ListSPPools",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.SPPool"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new SP Pool with default deal parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SP Pool"
+                ],
+                "summary": "Create a new SP Pool",
+                "operationId": "CreateSPPool",
+                "parameters": [
+                    {
+                        "description": "CreateRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sppool.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SPPool"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/sp-pool/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SP Pool"
+                ],
+                "summary": "Get an SP Pool by ID",
+                "operationId": "GetSPPool",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SP Pool ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SPPool"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes the pool. Generated schedules are preserved but unlinked.",
+                "tags": [
+                    "SP Pool"
+                ],
+                "summary": "Remove an SP Pool",
+                "operationId": "RemoveSPPool",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SP Pool ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SP Pool"
+                ],
+                "summary": "Update an SP Pool",
+                "operationId": "UpdateSPPool",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SP Pool ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "UpdateRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sppool.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SPPool"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/sp-pool/{id}/pause": {
+            "post": {
+                "description": "Pauses the pool and all its generated schedules.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SP Pool"
+                ],
+                "summary": "Pause an SP Pool",
+                "operationId": "PauseSPPool",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SP Pool ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SPPool"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/sp-pool/{id}/preparation": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SP Pool"
+                ],
+                "summary": "Add a preparation to an SP Pool",
+                "operationId": "AddSPPoolPreparation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SP Pool ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "AddPreparationRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sppool.AddPreparationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SPPoolPreparation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/sp-pool/{id}/preparation/{preparation_id}": {
+            "delete": {
+                "description": "Removes the preparation. Associated schedules are paused and unlinked, not deleted.",
+                "tags": [
+                    "SP Pool"
+                ],
+                "summary": "Remove a preparation from an SP Pool",
+                "operationId": "RemoveSPPoolPreparation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SP Pool ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Pool Preparation ID",
+                        "name": "preparation_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/sp-pool/{id}/provider": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SP Pool"
+                ],
+                "summary": "Add a storage provider to an SP Pool",
+                "operationId": "AddSPPoolProvider",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SP Pool ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "AddProviderRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sppool.AddProviderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SPPoolProvider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/sp-pool/{id}/provider/{provider_id}": {
+            "delete": {
+                "description": "Removes the provider. Associated schedules are paused and unlinked, not deleted.",
+                "tags": [
+                    "SP Pool"
+                ],
+                "summary": "Remove a provider from an SP Pool",
+                "operationId": "RemoveSPPoolProvider",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SP Pool ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/sp-pool/{id}/resume": {
+            "post": {
+                "description": "Resumes the pool and reconciles all generated schedules.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SP Pool"
+                ],
+                "summary": "Resume a paused SP Pool",
+                "operationId": "ResumeSPPool",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SP Pool ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.SPPool"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage": {
             "get": {
                 "consumes": [
@@ -6796,6 +7344,138 @@
                 }
             }
         },
+        "model.ReplicationPolicy": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
+        "model.SPPool": {
+            "type": "object",
+            "properties": {
+                "announceToIpni": {
+                    "type": "boolean"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "force": {
+                    "type": "boolean"
+                },
+                "httpHeaders": {
+                    "$ref": "#/definitions/model.ConfigMap"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "keepUnsealed": {
+                    "type": "boolean"
+                },
+                "maxPendingDealNumber": {
+                    "type": "integer"
+                },
+                "maxPendingDealSize": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "pricePerDeal": {
+                    "type": "number"
+                },
+                "pricePerGb": {
+                    "type": "number"
+                },
+                "pricePerGbEpoch": {
+                    "type": "number"
+                },
+                "scheduleCron": {
+                    "type": "string"
+                },
+                "scheduleCronPerpetual": {
+                    "type": "boolean"
+                },
+                "scheduleDealNumber": {
+                    "type": "integer"
+                },
+                "scheduleDealSize": {
+                    "type": "integer"
+                },
+                "startDelay": {
+                    "type": "integer"
+                },
+                "state": {
+                    "$ref": "#/definitions/model.SPPoolState"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "urlTemplate": {
+                    "description": "Default deal parameters inherited by all generated schedules.",
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "model.SPPoolPreparation": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "poolId": {
+                    "type": "integer"
+                },
+                "preparationId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.SPPoolProvider": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "policy": {
+                    "description": "Policy: how many schedules of each deal type per preparation.\nExample: {\"market\": 1, \"pdp\": 1} means 1 market + 1 PDP schedule per preparation.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ReplicationPolicy"
+                        }
+                    ]
+                },
+                "poolId": {
+                    "type": "integer"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "urlTemplate": {
+                    "description": "Optional per-provider URL template override (nil = inherit from pool).",
+                    "type": "string"
+                }
+            }
+        },
+        "model.SPPoolState": {
+            "type": "string",
+            "enum": [
+                "active",
+                "paused"
+            ],
+            "x-enum-varnames": [
+                "SPPoolActive",
+                "SPPoolPaused"
+            ]
+        },
         "model.Schedule": {
             "type": "object",
             "properties": {
@@ -6867,6 +7547,9 @@
                     "type": "integer"
                 },
                 "scheduleDealSize": {
+                    "type": "integer"
+                },
+                "spPoolProviderId": {
                     "type": "integer"
                 },
                 "startDelay": {
@@ -7207,6 +7890,175 @@
                     "description": "Whether the deal should be verified",
                     "type": "boolean",
                     "default": true
+                }
+            }
+        },
+        "sppool.AddPreparationRequest": {
+            "type": "object",
+            "properties": {
+                "preparation": {
+                    "description": "Preparation ID or name",
+                    "type": "string"
+                }
+            }
+        },
+        "sppool.AddProviderRequest": {
+            "type": "object",
+            "properties": {
+                "policy": {
+                    "description": "Replication policy, e.g. {\"market\": 1, \"pdp\": 1}",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ReplicationPolicy"
+                        }
+                    ]
+                },
+                "provider": {
+                    "description": "Storage Provider address",
+                    "type": "string"
+                },
+                "urlTemplate": {
+                    "description": "Optional per-provider URL template override",
+                    "type": "string"
+                }
+            }
+        },
+        "sppool.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "string",
+                    "default": "12840h"
+                },
+                "force": {
+                    "type": "boolean"
+                },
+                "httpHeaders": {
+                    "description": "http headers to be passed with the request (i.e. key=value)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ipni": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "keepUnsealed": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "maxPendingDealNumber": {
+                    "type": "integer"
+                },
+                "maxPendingDealSize": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Pool name (must be unique)",
+                    "type": "string"
+                },
+                "notes": {
+                    "description": "Notes",
+                    "type": "string"
+                },
+                "pricePerDeal": {
+                    "type": "number",
+                    "default": 0
+                },
+                "pricePerGb": {
+                    "type": "number",
+                    "default": 0
+                },
+                "pricePerGbEpoch": {
+                    "type": "number",
+                    "default": 0
+                },
+                "scheduleCron": {
+                    "type": "string"
+                },
+                "scheduleCronPerpetual": {
+                    "type": "boolean"
+                },
+                "scheduleDealNumber": {
+                    "type": "integer"
+                },
+                "scheduleDealSize": {
+                    "type": "string"
+                },
+                "startDelay": {
+                    "type": "string",
+                    "default": "72h"
+                },
+                "urlTemplate": {
+                    "description": "URL template with PIECE_CID placeholder",
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean",
+                    "default": true
+                }
+            }
+        },
+        "sppool.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "string"
+                },
+                "force": {
+                    "type": "boolean"
+                },
+                "httpHeaders": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ipni": {
+                    "type": "boolean"
+                },
+                "keepUnsealed": {
+                    "type": "boolean"
+                },
+                "maxPendingDealNumber": {
+                    "type": "integer"
+                },
+                "maxPendingDealSize": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "pricePerDeal": {
+                    "type": "number"
+                },
+                "pricePerGb": {
+                    "type": "number"
+                },
+                "pricePerGbEpoch": {
+                    "type": "number"
+                },
+                "scheduleCron": {
+                    "type": "string"
+                },
+                "scheduleCronPerpetual": {
+                    "type": "boolean"
+                },
+                "scheduleDealNumber": {
+                    "type": "integer"
+                },
+                "scheduleDealSize": {
+                    "type": "string"
+                },
+                "startDelay": {
+                    "type": "string"
+                },
+                "urlTemplate": {
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
                 }
             }
         },

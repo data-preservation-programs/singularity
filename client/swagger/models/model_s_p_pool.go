@@ -14,13 +14,10 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// ModelSchedule model schedule
+// ModelSPPool model s p pool
 //
-// swagger:model model.Schedule
-type ModelSchedule struct {
-
-	// allowed piece cids
-	AllowedPieceCids []string `json:"allowedPieceCids"`
+// swagger:model model.SPPool
+type ModelSPPool struct {
 
 	// announce to ipni
 	AnnounceToIpni bool `json:"announceToIpni,omitempty"`
@@ -28,14 +25,8 @@ type ModelSchedule struct {
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
 
-	// deal type
-	DealType ModelDealType `json:"dealType,omitempty"`
-
 	// duration
 	Duration int64 `json:"duration,omitempty"`
-
-	// error message
-	ErrorMessage string `json:"errorMessage,omitempty"`
 
 	// force
 	Force bool `json:"force,omitempty"`
@@ -55,11 +46,11 @@ type ModelSchedule struct {
 	// max pending deal size
 	MaxPendingDealSize int64 `json:"maxPendingDealSize,omitempty"`
 
+	// name
+	Name string `json:"name,omitempty"`
+
 	// notes
 	Notes string `json:"notes,omitempty"`
-
-	// Associations
-	PreparationID int64 `json:"preparationId,omitempty"`
 
 	// price per deal
 	PricePerDeal float64 `json:"pricePerDeal,omitempty"`
@@ -69,9 +60,6 @@ type ModelSchedule struct {
 
 	// price per gb epoch
 	PricePerGbEpoch float64 `json:"pricePerGbEpoch,omitempty"`
-
-	// provider
-	Provider string `json:"provider,omitempty"`
 
 	// schedule cron
 	ScheduleCron string `json:"scheduleCron,omitempty"`
@@ -85,38 +73,25 @@ type ModelSchedule struct {
 	// schedule deal size
 	ScheduleDealSize int64 `json:"scheduleDealSize,omitempty"`
 
-	// sp pool provider Id
-	SpPoolProviderID int64 `json:"spPoolProviderId,omitempty"`
-
 	// start delay
 	StartDelay int64 `json:"startDelay,omitempty"`
 
 	// state
-	State ModelScheduleState `json:"state,omitempty"`
-
-	// total deal number
-	TotalDealNumber int64 `json:"totalDealNumber,omitempty"`
-
-	// total deal size
-	TotalDealSize int64 `json:"totalDealSize,omitempty"`
+	State ModelSPPoolState `json:"state,omitempty"`
 
 	// updated at
 	UpdatedAt string `json:"updatedAt,omitempty"`
 
-	// url template
+	// Default deal parameters inherited by all generated schedules.
 	URLTemplate string `json:"urlTemplate,omitempty"`
 
 	// verified
 	Verified bool `json:"verified,omitempty"`
 }
 
-// Validate validates this model schedule
-func (m *ModelSchedule) Validate(formats strfmt.Registry) error {
+// Validate validates this model s p pool
+func (m *ModelSPPool) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateDealType(formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.validateHTTPHeaders(formats); err != nil {
 		res = append(res, err)
@@ -132,28 +107,7 @@ func (m *ModelSchedule) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ModelSchedule) validateDealType(formats strfmt.Registry) error {
-	if swag.IsZero(m.DealType) { // not required
-		return nil
-	}
-
-	if err := m.DealType.Validate(formats); err != nil {
-		ve := new(errors.Validation)
-		if stderrors.As(err, &ve) {
-			return ve.ValidateName("dealType")
-		}
-		ce := new(errors.CompositeError)
-		if stderrors.As(err, &ce) {
-			return ce.ValidateName("dealType")
-		}
-
-		return err
-	}
-
-	return nil
-}
-
-func (m *ModelSchedule) validateHTTPHeaders(formats strfmt.Registry) error {
+func (m *ModelSPPool) validateHTTPHeaders(formats strfmt.Registry) error {
 	if swag.IsZero(m.HTTPHeaders) { // not required
 		return nil
 	}
@@ -176,7 +130,7 @@ func (m *ModelSchedule) validateHTTPHeaders(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ModelSchedule) validateState(formats strfmt.Registry) error {
+func (m *ModelSPPool) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
@@ -197,13 +151,9 @@ func (m *ModelSchedule) validateState(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this model schedule based on the context it is used
-func (m *ModelSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this model s p pool based on the context it is used
+func (m *ModelSPPool) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.contextValidateDealType(ctx, formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.contextValidateHTTPHeaders(ctx, formats); err != nil {
 		res = append(res, err)
@@ -219,29 +169,7 @@ func (m *ModelSchedule) ContextValidate(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *ModelSchedule) contextValidateDealType(ctx context.Context, formats strfmt.Registry) error {
-
-	if swag.IsZero(m.DealType) { // not required
-		return nil
-	}
-
-	if err := m.DealType.ContextValidate(ctx, formats); err != nil {
-		ve := new(errors.Validation)
-		if stderrors.As(err, &ve) {
-			return ve.ValidateName("dealType")
-		}
-		ce := new(errors.CompositeError)
-		if stderrors.As(err, &ce) {
-			return ce.ValidateName("dealType")
-		}
-
-		return err
-	}
-
-	return nil
-}
-
-func (m *ModelSchedule) contextValidateHTTPHeaders(ctx context.Context, formats strfmt.Registry) error {
+func (m *ModelSPPool) contextValidateHTTPHeaders(ctx context.Context, formats strfmt.Registry) error {
 
 	if swag.IsZero(m.HTTPHeaders) { // not required
 		return nil
@@ -263,7 +191,7 @@ func (m *ModelSchedule) contextValidateHTTPHeaders(ctx context.Context, formats 
 	return nil
 }
 
-func (m *ModelSchedule) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *ModelSPPool) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
 	if swag.IsZero(m.State) { // not required
 		return nil
@@ -286,7 +214,7 @@ func (m *ModelSchedule) contextValidateState(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *ModelSchedule) MarshalBinary() ([]byte, error) {
+func (m *ModelSPPool) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -294,8 +222,8 @@ func (m *ModelSchedule) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ModelSchedule) UnmarshalBinary(b []byte) error {
-	var res ModelSchedule
+func (m *ModelSPPool) UnmarshalBinary(b []byte) error {
+	var res ModelSPPool
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

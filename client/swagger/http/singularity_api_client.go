@@ -17,6 +17,7 @@ import (
 	"github.com/data-preservation-programs/singularity/client/swagger/http/job"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/piece"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/preparation"
+	"github.com/data-preservation-programs/singularity/client/swagger/http/s_p_pool"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/storage"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/wallet"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/wallet_association"
@@ -71,6 +72,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Singularit
 	cli.Job = job.New(transport, formats)
 	cli.Piece = piece.New(transport, formats)
 	cli.Preparation = preparation.New(transport, formats)
+	cli.SpPool = s_p_pool.New(transport, formats)
 	cli.Storage = storage.New(transport, formats)
 	cli.Wallet = wallet.New(transport, formats)
 	cli.WalletAssociation = wallet_association.New(transport, formats)
@@ -132,6 +134,8 @@ type SingularityAPI struct {
 
 	Preparation preparation.ClientService
 
+	SpPool s_p_pool.ClientService
+
 	Storage storage.ClientService
 
 	Wallet wallet.ClientService
@@ -151,6 +155,7 @@ func (c *SingularityAPI) SetTransport(transport runtime.ClientTransport) {
 	c.Job.SetTransport(transport)
 	c.Piece.SetTransport(transport)
 	c.Preparation.SetTransport(transport)
+	c.SpPool.SetTransport(transport)
 	c.Storage.SetTransport(transport)
 	c.Wallet.SetTransport(transport)
 	c.WalletAssociation.SetTransport(transport)

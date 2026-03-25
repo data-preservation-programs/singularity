@@ -10,6 +10,7 @@ USAGE:
 
 COMMANDS:
    schedule         Schedule deals
+   sp-pool          SP Pool management
    send-manual      Send a manual deal proposal to boost or legacy market
    send-manual-pdp  Send a manual PDP deal on-chain
    list             List all deals

@@ -626,6 +626,96 @@ definitions:
         description: Associations
         type: integer
     type: object
+  model.ReplicationPolicy:
+    additionalProperties:
+      type: integer
+    type: object
+  model.SPPool:
+    properties:
+      announceToIpni:
+        type: boolean
+      createdAt:
+        type: string
+      duration:
+        type: integer
+      force:
+        type: boolean
+      httpHeaders:
+        $ref: '#/definitions/model.ConfigMap'
+      id:
+        type: integer
+      keepUnsealed:
+        type: boolean
+      maxPendingDealNumber:
+        type: integer
+      maxPendingDealSize:
+        type: integer
+      name:
+        type: string
+      notes:
+        type: string
+      pricePerDeal:
+        type: number
+      pricePerGb:
+        type: number
+      pricePerGbEpoch:
+        type: number
+      scheduleCron:
+        type: string
+      scheduleCronPerpetual:
+        type: boolean
+      scheduleDealNumber:
+        type: integer
+      scheduleDealSize:
+        type: integer
+      startDelay:
+        type: integer
+      state:
+        $ref: '#/definitions/model.SPPoolState'
+      updatedAt:
+        type: string
+      urlTemplate:
+        description: Default deal parameters inherited by all generated schedules.
+        type: string
+      verified:
+        type: boolean
+    type: object
+  model.SPPoolPreparation:
+    properties:
+      id:
+        type: integer
+      poolId:
+        type: integer
+      preparationId:
+        type: integer
+    type: object
+  model.SPPoolProvider:
+    properties:
+      id:
+        type: integer
+      policy:
+        allOf:
+        - $ref: '#/definitions/model.ReplicationPolicy'
+        description: |-
+          Policy: how many schedules of each deal type per preparation.
+          Example: {"market": 1, "pdp": 1} means 1 market + 1 PDP schedule per preparation.
+      poolId:
+        type: integer
+      provider:
+        type: string
+      urlTemplate:
+        description: Optional per-provider URL template override (nil = inherit from
+          pool).
+        type: string
+    type: object
+  model.SPPoolState:
+    enum:
+    - active
+    - paused
+    type: string
+    x-enum-varnames:
+    - SPPoolActive
+    - SPPoolPaused
   model.Schedule:
     properties:
       allowedPieceCids:
@@ -674,6 +764,8 @@ definitions:
       scheduleDealNumber:
         type: integer
       scheduleDealSize:
+        type: integer
+      spPoolProviderId:
         type: integer
       startDelay:
         type: integer
@@ -928,6 +1020,121 @@ definitions:
       verified:
         default: true
         description: Whether the deal should be verified
+        type: boolean
+    type: object
+  sppool.AddPreparationRequest:
+    properties:
+      preparation:
+        description: Preparation ID or name
+        type: string
+    type: object
+  sppool.AddProviderRequest:
+    properties:
+      policy:
+        allOf:
+        - $ref: '#/definitions/model.ReplicationPolicy'
+        description: 'Replication policy, e.g. {"market": 1, "pdp": 1}'
+      provider:
+        description: Storage Provider address
+        type: string
+      urlTemplate:
+        description: Optional per-provider URL template override
+        type: string
+    type: object
+  sppool.CreateRequest:
+    properties:
+      duration:
+        default: 12840h
+        type: string
+      force:
+        type: boolean
+      httpHeaders:
+        description: http headers to be passed with the request (i.e. key=value)
+        items:
+          type: string
+        type: array
+      ipni:
+        default: true
+        type: boolean
+      keepUnsealed:
+        default: true
+        type: boolean
+      maxPendingDealNumber:
+        type: integer
+      maxPendingDealSize:
+        type: string
+      name:
+        description: Pool name (must be unique)
+        type: string
+      notes:
+        description: Notes
+        type: string
+      pricePerDeal:
+        default: 0
+        type: number
+      pricePerGb:
+        default: 0
+        type: number
+      pricePerGbEpoch:
+        default: 0
+        type: number
+      scheduleCron:
+        type: string
+      scheduleCronPerpetual:
+        type: boolean
+      scheduleDealNumber:
+        type: integer
+      scheduleDealSize:
+        type: string
+      startDelay:
+        default: 72h
+        type: string
+      urlTemplate:
+        description: URL template with PIECE_CID placeholder
+        type: string
+      verified:
+        default: true
+        type: boolean
+    type: object
+  sppool.UpdateRequest:
+    properties:
+      duration:
+        type: string
+      force:
+        type: boolean
+      httpHeaders:
+        items:
+          type: string
+        type: array
+      ipni:
+        type: boolean
+      keepUnsealed:
+        type: boolean
+      maxPendingDealNumber:
+        type: integer
+      maxPendingDealSize:
+        type: string
+      notes:
+        type: string
+      pricePerDeal:
+        type: number
+      pricePerGb:
+        type: number
+      pricePerGbEpoch:
+        type: number
+      scheduleCron:
+        type: string
+      scheduleCronPerpetual:
+        type: boolean
+      scheduleDealNumber:
+        type: integer
+      scheduleDealSize:
+        type: string
+      startDelay:
+        type: string
+      urlTemplate:
+        type: string
+      verified:
         type: boolean
     type: object
   storage.DirEntry:
@@ -12433,6 +12640,373 @@ paths:
       summary: Send a manual deal proposal
       tags:
       - Deal
+  /sp-pool:
+    get:
+      operationId: ListSPPools
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.SPPool'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: List all SP Pools
+      tags:
+      - SP Pool
+    post:
+      consumes:
+      - application/json
+      description: Create a new SP Pool with default deal parameters
+      operationId: CreateSPPool
+      parameters:
+      - description: CreateRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/sppool.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SPPool'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Create a new SP Pool
+      tags:
+      - SP Pool
+  /sp-pool/{id}:
+    delete:
+      description: Removes the pool. Generated schedules are preserved but unlinked.
+      operationId: RemoveSPPool
+      parameters:
+      - description: SP Pool ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Remove an SP Pool
+      tags:
+      - SP Pool
+    get:
+      operationId: GetSPPool
+      parameters:
+      - description: SP Pool ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SPPool'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Get an SP Pool by ID
+      tags:
+      - SP Pool
+    patch:
+      consumes:
+      - application/json
+      operationId: UpdateSPPool
+      parameters:
+      - description: SP Pool ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: UpdateRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/sppool.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SPPool'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Update an SP Pool
+      tags:
+      - SP Pool
+  /sp-pool/{id}/pause:
+    post:
+      description: Pauses the pool and all its generated schedules.
+      operationId: PauseSPPool
+      parameters:
+      - description: SP Pool ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SPPool'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Pause an SP Pool
+      tags:
+      - SP Pool
+  /sp-pool/{id}/preparation:
+    post:
+      consumes:
+      - application/json
+      operationId: AddSPPoolPreparation
+      parameters:
+      - description: SP Pool ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: AddPreparationRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/sppool.AddPreparationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SPPoolPreparation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Add a preparation to an SP Pool
+      tags:
+      - SP Pool
+  /sp-pool/{id}/preparation/{preparation_id}:
+    delete:
+      description: Removes the preparation. Associated schedules are paused and unlinked,
+        not deleted.
+      operationId: RemoveSPPoolPreparation
+      parameters:
+      - description: SP Pool ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Pool Preparation ID
+        in: path
+        name: preparation_id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Remove a preparation from an SP Pool
+      tags:
+      - SP Pool
+  /sp-pool/{id}/provider:
+    post:
+      consumes:
+      - application/json
+      operationId: AddSPPoolProvider
+      parameters:
+      - description: SP Pool ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: AddProviderRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/sppool.AddProviderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SPPoolProvider'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Add a storage provider to an SP Pool
+      tags:
+      - SP Pool
+  /sp-pool/{id}/provider/{provider_id}:
+    delete:
+      description: Removes the provider. Associated schedules are paused and unlinked,
+        not deleted.
+      operationId: RemoveSPPoolProvider
+      parameters:
+      - description: SP Pool ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Provider ID
+        in: path
+        name: provider_id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Remove a provider from an SP Pool
+      tags:
+      - SP Pool
+  /sp-pool/{id}/resume:
+    post:
+      description: Resumes the pool and reconciles all generated schedules.
+      operationId: ResumeSPPool
+      parameters:
+      - description: SP Pool ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SPPool'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Resume a paused SP Pool
+      tags:
+      - SP Pool
   /storage:
     get:
       consumes:
