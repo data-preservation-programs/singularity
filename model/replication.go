@@ -194,8 +194,8 @@ type Schedule struct {
 	DealType              DealType      `gorm:"index;default:'market'"                json:"dealType"`
 
 	// Associations
-	PreparationID    PreparationID    `json:"preparationId"`
-	Preparation      *Preparation     `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"expand"`
+	PreparationID    PreparationID     `json:"preparationId"`
+	Preparation      *Preparation      `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"expand"`
 	SPPoolProviderID *SPPoolProviderID `json:"spPoolProviderId,omitempty" table:"verbose"`
 	SPPoolProvider   *SPPoolProvider   `gorm:"foreignKey:SPPoolProviderID;constraint:OnDelete:SET NULL" json:"spPoolProvider,omitempty" swaggerignore:"true"`
 }
