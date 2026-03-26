@@ -57,7 +57,54 @@ func ExportKeysHandler(
 		}
 	}
 
+	// after exporting keys, migrate wallet_assignments if the legacy table exists
+	if err := migrateWalletAssignments(db); err != nil {
+		result.Errors = append(result.Errors, fmt.Sprintf("wallet_assignments migration: %v", err))
+	}
+
 	return result, nil
+}
+
+// migrates legacy wallet_assignments (preparation_id, wallet_id=actor_id_string)
+// to preparation.wallet_id (uint FK to new wallets table). drops the table after.
+func migrateWalletAssignments(db *gorm.DB) error {
+	if !db.Migrator().HasTable("wallet_assignments") {
+		return nil
+	}
+
+	type row struct {
+		PreparationID uint
+		WalletID      string // old actor ID (f0...)
+	}
+	var rows []row
+	if err := db.Raw("SELECT preparation_id, wallet_id FROM wallet_assignments").Scan(&rows).Error; err != nil {
+		return errors.Wrap(err, "failed to read wallet_assignments")
+	}
+
+	migrated := 0
+	for _, r := range rows {
+		// find the new wallet by actor_id
+		var wallet model.Wallet
+		if err := db.Where("actor_id = ?", r.WalletID).First(&wallet).Error; err != nil {
+			logger.Warnw("wallet_assignment: no wallet found for actor, skipping",
+				"preparation_id", r.PreparationID, "actor_id", r.WalletID)
+			continue
+		}
+		if err := db.Exec("UPDATE preparations SET wallet_id = ? WHERE id = ? AND wallet_id IS NULL",
+			wallet.ID, r.PreparationID).Error; err != nil {
+			return errors.Wrapf(err, "failed to set wallet_id for preparation %d", r.PreparationID)
+		}
+		migrated++
+	}
+
+	if err := db.Migrator().DropTable("wallet_assignments"); err != nil {
+		return errors.Wrap(err, "failed to drop wallet_assignments")
+	}
+
+	if migrated > 0 {
+		logger.Infow("migrated wallet_assignments to preparation.wallet_id", "migrated", migrated)
+	}
+	return nil
 }
 
 // exports a single actor's key to keystore, returns (true, "") on success,
@@ -129,8 +176,10 @@ func HasPrivateKeyColumn(db *gorm.DB) bool {
 	switch dialect {
 	case "sqlite":
 		db.Raw("SELECT COUNT(*) FROM pragma_table_info('actors') WHERE name = 'private_key'").Scan(&count)
-	default:
-		db.Raw("SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'actors' AND column_name = 'private_key'").Scan(&count)
+	case "postgres":
+		db.Raw("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'actors' AND column_name = 'private_key'").Scan(&count)
+	default: // mysql
+		db.Raw("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'actors' AND column_name = 'private_key'").Scan(&count)
 	}
 	return count > 0
 }
