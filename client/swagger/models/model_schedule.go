@@ -85,9 +85,6 @@ type ModelSchedule struct {
 	// schedule deal size
 	ScheduleDealSize int64 `json:"scheduleDealSize,omitempty"`
 
-	// sp pool provider Id
-	SpPoolProviderID int64 `json:"spPoolProviderId,omitempty"`
-
 	// start delay
 	StartDelay int64 `json:"startDelay,omitempty"`
 
