@@ -40,6 +40,9 @@ type ModelSchedule struct {
 	// force
 	Force bool `json:"force,omitempty"`
 
+	// group
+	Group string `json:"group,omitempty"`
+
 	// http headers
 	HTTPHeaders ModelConfigMap `json:"httpHeaders,omitempty"`
 

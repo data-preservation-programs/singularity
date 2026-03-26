@@ -6830,6 +6830,9 @@ const docTemplate = `{
                 "force": {
                     "type": "boolean"
                 },
+                "group": {
+                    "type": "string"
+                },
                 "httpHeaders": {
                     "$ref": "#/definitions/model.ConfigMap"
                 },
@@ -7018,6 +7021,10 @@ const docTemplate = `{
                     "description": "Force to send out deals regardless of replication restriction",
                     "type": "boolean"
                 },
+                "group": {
+                    "description": "Group label for related schedules",
+                    "type": "string"
+                },
                 "httpHeaders": {
                     "description": "http headers to be passed with the request (i.e. key=value)",
                     "type": "array",
@@ -7132,6 +7139,10 @@ const docTemplate = `{
                 "force": {
                     "description": "Force to send out deals regardless of replication restriction",
                     "type": "boolean"
+                },
+                "group": {
+                    "description": "Group label for related schedules",
+                    "type": "string"
                 },
                 "httpHeaders": {
                     "description": "http headers to be passed with the request (i.e. key=value)",

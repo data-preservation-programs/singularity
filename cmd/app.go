@@ -134,6 +134,7 @@ Upgrading:
 					Usage: "Schedule deals",
 					Subcommands: []*cli.Command{
 						schedule.CreateCmd,
+						schedule.CreateBatchCmd,
 						schedule.ListCmd,
 						schedule.UpdateCmd,
 						schedule.PauseCmd,

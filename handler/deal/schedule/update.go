@@ -26,6 +26,7 @@ type UpdateRequest struct {
 	PricePerDeal          *float64 `default:"0"                  json:"pricePerDeal"`    // Price in FIL per deal
 	Verified              *bool    `default:"true"               json:"verified"`        // Whether the deal should be verified
 	IPNI                  *bool    `default:"true"               json:"ipni"`            // Whether the deal should be IPNI
+	Group                 *string  `json:"group"`                                        // Group label for related schedules
 	KeepUnsealed          *bool    `default:"true"               json:"keepUnsealed"`    // Whether the deal should be kept unsealed
 	StartDelay            *string  `default:"72h"                json:"startDelay"`      // Deal start delay in epoch or in duration format, i.e. 1000, 72h
 	Duration              *string  `default:"12840h"             json:"duration"`        // Duration in epoch or in duration format, i.e. 1500000, 2400h
@@ -127,6 +128,10 @@ func (DefaultHandler) UpdateHandler(
 
 	if request.IPNI != nil {
 		updates["announce_to_ipni"] = *request.IPNI
+	}
+
+	if request.Group != nil {
+		updates["group"] = *request.Group
 	}
 
 	if request.KeepUnsealed != nil {

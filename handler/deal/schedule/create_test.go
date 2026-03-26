@@ -69,6 +69,7 @@ var createRequest = CreateRequest{
 	Preparation:           "1",
 	Provider:              "f01000",
 	DealType:              string(model.DealTypeMarket),
+	Group:                 "batch-a",
 	HTTPHeaders:           []string{"a=b"},
 	URLTemplate:           "http://127.0.0.1",
 	PricePerGBEpoch:       0,
@@ -256,6 +257,7 @@ func TestCreateHandler_F05PaidAccepted(t *testing.T) {
 		schedule, err := Default.CreateHandler(ctx, db, getMockLotusClient(), req)
 		require.NoError(t, err)
 		require.Equal(t, model.DealTypeF05Paid, schedule.DealType)
+		require.Equal(t, createRequest.Group, schedule.Group)
 	})
 }
 

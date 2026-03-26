@@ -644,6 +644,8 @@ definitions:
         type: string
       force:
         type: boolean
+      group:
+        type: string
       httpHeaders:
         $ref: '#/definitions/model.ConfigMap'
       id:
@@ -774,6 +776,9 @@ definitions:
       force:
         description: Force to send out deals regardless of replication restriction
         type: boolean
+      group:
+        description: Group label for related schedules
+        type: string
       httpHeaders:
         description: http headers to be passed with the request (i.e. key=value)
         items:
@@ -864,6 +869,9 @@ definitions:
       force:
         description: Force to send out deals regardless of replication restriction
         type: boolean
+      group:
+        description: Group label for related schedules
+        type: string
       httpHeaders:
         description: http headers to be passed with the request (i.e. key=value)
         items:

@@ -88,6 +88,11 @@ var UpdateCmd = &cli.Command{
 			Category: "Deal Proposal",
 			Usage:    "Deal type: market (legacy f05), f05_paid (f05 with on-chain payments), pdp (f41), or ddo (DDO allocations)",
 		},
+		&cli.StringFlag{
+			Name:     "group",
+			Category: "Tracking",
+			Usage:    "Group label for related schedules",
+		},
 		&cli.BoolFlag{
 			Name:     "ipni",
 			Category: "Boost Only",
@@ -215,6 +220,9 @@ var UpdateCmd = &cli.Command{
 		}
 		if c.IsSet("deal-type") {
 			request.DealType = ptr.Of(c.String("deal-type"))
+		}
+		if c.IsSet("group") {
+			request.Group = ptr.Of(c.String("group"))
 		}
 		if c.IsSet("ipni") {
 			request.IPNI = ptr.Of(c.Bool("ipni"))

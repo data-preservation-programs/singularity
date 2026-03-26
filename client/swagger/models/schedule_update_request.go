@@ -29,6 +29,9 @@ type ScheduleUpdateRequest struct {
 	// Force to send out deals regardless of replication restriction
 	Force bool `json:"force,omitempty"`
 
+	// Group label for related schedules
+	Group string `json:"group,omitempty"`
+
 	// http headers to be passed with the request (i.e. key=value)
 	HTTPHeaders []string `json:"httpHeaders"`
 

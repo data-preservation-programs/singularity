@@ -77,6 +77,7 @@ OPTIONS:
 
    Tracking
 
+   --group value            Group label for related schedules
    --notes value, -n value  Any notes or tag to store along with the request, for tracking purpose
 
 ```
