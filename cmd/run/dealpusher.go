@@ -4,9 +4,11 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/dealpusher"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
+	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/urfave/cli/v2"
 )
 
@@ -49,8 +51,28 @@ var DealPusherCmd = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:    "eth-rpc",
-			Usage:   "Ethereum RPC endpoint for FEVM (required to execute PDP and DDO schedules on-chain)",
+			Usage:   "Ethereum RPC endpoint for FEVM (required to execute PDP, DDO, and experimental paid f05 schedules on-chain)",
 			EnvVars: []string{"ETH_RPC_URL"},
+		},
+		&cli.BoolFlag{
+			Name:  "f05-experimental",
+			Usage: "Enable experimental paid f05 registry and FIL-balance preflight",
+		},
+		&cli.StringFlag{
+			Name:    "f05-min-wallet-balance",
+			Usage:   "Minimum FIL wallet balance required before attempting paid f05 schedules",
+			Value:   "0",
+			EnvVars: []string{"F05_MIN_WALLET_BALANCE"},
+		},
+		&cli.StringFlag{
+			Name:    "f05-sp-registry-contract",
+			Usage:   "SP Registry contract address override for experimental paid f05 scheduling",
+			EnvVars: []string{"F05_SP_REGISTRY_CONTRACT_ADDRESS"},
+		},
+		&cli.StringFlag{
+			Name:    "f05-payments-contract",
+			Usage:   "Payments contract address override for experimental paid f05 scheduling",
+			EnvVars: []string{"F05_PAYMENTS_CONTRACT_ADDRESS"},
 		},
 		&cli.StringFlag{
 			Name:    "ddo-contract",
@@ -135,6 +157,38 @@ var DealPusherCmd = &cli.Command{
 				dealpusher.WithPDPProofSetManager(pdpAdapter),
 				dealpusher.WithPDPTransactionConfirmer(pdpAdapter),
 			)
+		}
+
+		if c.Bool("f05-experimental") {
+			rpcURL := c.String("eth-rpc")
+			if rpcURL == "" {
+				return errors.New("--eth-rpc is required when --f05-experimental is set")
+			}
+
+			minWalletBalance, err := dealpusher.ParseFILAmount(c.String("f05-min-wallet-balance"))
+			if err != nil {
+				return errors.Wrap(err, "invalid --f05-min-wallet-balance")
+			}
+			f05Cfg := dealpusher.F05PaidSchedulingConfig{
+				MinWalletBalanceAttoFIL: minWalletBalance,
+				SPRegistryAddress:       c.String("f05-sp-registry-contract"),
+				PaymentsAddress:         c.String("f05-payments-contract"),
+			}
+			if err := f05Cfg.Validate(); err != nil {
+				return errors.WithStack(err)
+			}
+
+			ks, err := keystore.NewLocalKeyStore(wallet.GetKeystoreDir())
+			if err != nil {
+				return errors.Wrap(err, "failed to initialize keystore for paid f05 scheduling")
+			}
+			f05Adapter, err := dealpusher.NewOnChainF05Paid(c.Context, db, ks, rpcURL, f05Cfg)
+			if err != nil {
+				return errors.Wrap(err, "failed to initialize experimental paid f05 adapter")
+			}
+			defer f05Adapter.Close()
+
+			opts = append(opts, dealpusher.WithF05PaidDealManager(f05Adapter))
 		}
 
 		if ddoContract := c.String("ddo-contract"); ddoContract != "" {

@@ -16,7 +16,11 @@ OPTIONS:
    --pdp-max-pieces-per-proofset value       Maximum pieces per proof set before handing off to the storage provider (default: 1024)
    --pdp-confirmation-depth value            Number of block confirmations required for PDP transactions (default: 5)
    --pdp-poll-interval value                 Polling interval for PDP transaction confirmation checks (default: 30s)
-   --eth-rpc value                           Ethereum RPC endpoint for FEVM (required to execute PDP and DDO schedules on-chain) [$ETH_RPC_URL]
+   --eth-rpc value                           Ethereum RPC endpoint for FEVM (required to execute PDP, DDO, and experimental paid f05 schedules on-chain) [$ETH_RPC_URL]
+   --f05-experimental                        Enable experimental paid f05 registry and FIL-balance preflight (default: false)
+   --f05-min-wallet-balance value            Minimum FIL wallet balance required before attempting paid f05 schedules (default: "0") [$F05_MIN_WALLET_BALANCE]
+   --f05-sp-registry-contract value          SP Registry contract address override for experimental paid f05 scheduling [$F05_SP_REGISTRY_CONTRACT_ADDRESS]
+   --f05-payments-contract value             Payments contract address override for experimental paid f05 scheduling [$F05_PAYMENTS_CONTRACT_ADDRESS]
    --ddo-contract value                      DDO Diamond proxy contract address [$DDO_CONTRACT_ADDRESS]
    --ddo-payments-contract value             DDO Payments proxy contract address [$DDO_PAYMENTS_CONTRACT_ADDRESS]
    --ddo-payment-token value                 ERC20 payment token address (e.g. USDFC) [$DDO_PAYMENT_TOKEN]
