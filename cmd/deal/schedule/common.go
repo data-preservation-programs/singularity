@@ -206,15 +206,6 @@ func allowedPieceCIDsFromContext(c *cli.Context) ([]string, error) {
 	return allowedPieceCIDs, nil
 }
 
-func createRequestFromContext(c *cli.Context, preparation string, provider string, dealType string) (handlerschedule.CreateRequest, error) {
-	allowedPieceCIDs, err := allowedPieceCIDsFromContext(c)
-	if err != nil {
-		return handlerschedule.CreateRequest{}, err
-	}
-
-	return createRequest(c, preparation, provider, dealType, allowedPieceCIDs), nil
-}
-
 func createRequest(c *cli.Context, preparation string, provider string, dealType string, allowedPieceCIDs []string) handlerschedule.CreateRequest {
 	return handlerschedule.CreateRequest{
 		Preparation:          preparation,
