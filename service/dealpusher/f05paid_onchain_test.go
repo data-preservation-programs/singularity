@@ -34,6 +34,31 @@ func (m *providerRegistryMock) GetProvider(context.Context, int) (*spregistry.Pr
 	return m.provider, m.err
 }
 
+type paymentsContractMock struct {
+	availableFunds *big.Int
+	approved       bool
+	accountErr     error
+	approvalErr    error
+}
+
+func (m *paymentsContractMock) GetAccountInfoIfSettled(context.Context, common.Address, common.Address) (*big.Int, *big.Int, *big.Int, *big.Int, error) {
+	if m.accountErr != nil {
+		return nil, nil, nil, nil, m.accountErr
+	}
+	availableFunds := big.NewInt(0)
+	if m.availableFunds != nil {
+		availableFunds = new(big.Int).Set(m.availableFunds)
+	}
+	return big.NewInt(0), big.NewInt(0), availableFunds, big.NewInt(0), nil
+}
+
+func (m *paymentsContractMock) GetOperatorApproval(context.Context, common.Address, common.Address, common.Address) (bool, *big.Int, *big.Int, *big.Int, *big.Int, *big.Int, error) {
+	if m.approvalErr != nil {
+		return false, nil, nil, nil, nil, nil, m.approvalErr
+	}
+	return m.approved, big.NewInt(10), big.NewInt(20), big.NewInt(1), big.NewInt(2), big.NewInt(30), nil
+}
+
 func newF05PaidTestSchedule(t *testing.T) (*keystore.LocalKeyStore, *model.Schedule) {
 	t.Helper()
 
@@ -59,6 +84,23 @@ func newF05PaidTestSchedule(t *testing.T) (*keystore.LocalKeyStore, *model.Sched
 	}
 }
 
+func newPaidProviderInfo() *spregistry.ProviderInfo {
+	return &spregistry.ProviderInfo{
+		Active:          true,
+		ServiceProvider: common.HexToAddress("0x00000000000000000000000000000000000000cc"),
+		Payee:           common.HexToAddress("0x00000000000000000000000000000000000000aa"),
+		Products: map[string]*spregistry.ServiceProduct{
+			"PDP": {
+				IsActive: true,
+				Data: &spregistry.PDPOffering{
+					ServiceURL:          "https://provider.example",
+					PaymentTokenAddress: common.HexToAddress("0x00000000000000000000000000000000000000dd"),
+				},
+			},
+		},
+	}
+}
+
 func TestOnChainF05PaidRunScheduleRequiresWallet(t *testing.T) {
 	manager := &OnChainF05Paid{cfg: defaultF05PaidSchedulingConfig()}
 	state, err := manager.RunSchedule(context.Background(), &model.Schedule{})
@@ -73,6 +115,7 @@ func TestOnChainF05PaidRunScheduleRejectsMissingProvider(t *testing.T) {
 		cfg:              defaultF05PaidSchedulingConfig(),
 		balanceClient:    &balanceClientMock{balance: big.NewInt(1)},
 		providerRegistry: &providerRegistryMock{},
+		paymentsContract: &paymentsContractMock{availableFunds: big.NewInt(1), approved: true},
 	}
 
 	state, err := manager.RunSchedule(context.Background(), schedule)
@@ -89,6 +132,7 @@ func TestOnChainF05PaidRunScheduleRejectsInactiveProvider(t *testing.T) {
 		providerRegistry: &providerRegistryMock{provider: &spregistry.ProviderInfo{
 			Active: false,
 		}},
+		paymentsContract: &paymentsContractMock{availableFunds: big.NewInt(1), approved: true},
 	}
 
 	state, err := manager.RunSchedule(context.Background(), schedule)
@@ -103,11 +147,9 @@ func TestOnChainF05PaidRunScheduleRejectsLowBalance(t *testing.T) {
 		cfg: F05PaidSchedulingConfig{
 			MinWalletBalanceAttoFIL: big.NewInt(2),
 		},
-		balanceClient: &balanceClientMock{balance: big.NewInt(1)},
-		providerRegistry: &providerRegistryMock{provider: &spregistry.ProviderInfo{
-			Active: true,
-			Payee:  common.HexToAddress("0x00000000000000000000000000000000000000aa"),
-		}},
+		balanceClient:    &balanceClientMock{balance: big.NewInt(1)},
+		providerRegistry: &providerRegistryMock{provider: newPaidProviderInfo()},
+		paymentsContract: &paymentsContractMock{availableFunds: big.NewInt(1), approved: true},
 	}
 
 	state, err := manager.RunSchedule(context.Background(), schedule)
@@ -115,22 +157,47 @@ func TestOnChainF05PaidRunScheduleRejectsLowBalance(t *testing.T) {
 	require.Equal(t, model.ScheduleError, state)
 }
 
+func TestOnChainF05PaidRunScheduleRejectsMissingPaymentsFunds(t *testing.T) {
+	ks, schedule := newF05PaidTestSchedule(t)
+	manager := &OnChainF05Paid{
+		keyStore:         ks,
+		cfg:              defaultF05PaidSchedulingConfig(),
+		balanceClient:    &balanceClientMock{balance: big.NewInt(1)},
+		paymentsAddr:     common.HexToAddress("0x00000000000000000000000000000000000000bb"),
+		providerRegistry: &providerRegistryMock{provider: newPaidProviderInfo()},
+		paymentsContract: &paymentsContractMock{availableFunds: big.NewInt(0), approved: true},
+	}
+
+	state, err := manager.RunSchedule(context.Background(), schedule)
+	require.ErrorContains(t, err, "has no available funds in payments contract")
+	require.Equal(t, model.ScheduleError, state)
+}
+
+func TestOnChainF05PaidRunScheduleRejectsMissingOperatorApproval(t *testing.T) {
+	ks, schedule := newF05PaidTestSchedule(t)
+	manager := &OnChainF05Paid{
+		keyStore:         ks,
+		cfg:              defaultF05PaidSchedulingConfig(),
+		balanceClient:    &balanceClientMock{balance: big.NewInt(1)},
+		paymentsAddr:     common.HexToAddress("0x00000000000000000000000000000000000000bb"),
+		providerRegistry: &providerRegistryMock{provider: newPaidProviderInfo()},
+		paymentsContract: &paymentsContractMock{availableFunds: big.NewInt(100), approved: false},
+	}
+
+	state, err := manager.RunSchedule(context.Background(), schedule)
+	require.ErrorContains(t, err, "has not approved provider")
+	require.Equal(t, model.ScheduleError, state)
+}
+
 func TestOnChainF05PaidRunScheduleReturnsNotImplementedAfterPreflight(t *testing.T) {
 	ks, schedule := newF05PaidTestSchedule(t)
 	manager := &OnChainF05Paid{
-		keyStore:      ks,
-		cfg:           defaultF05PaidSchedulingConfig(),
-		balanceClient: &balanceClientMock{balance: big.NewInt(1)},
-		paymentsAddr:  common.HexToAddress("0x00000000000000000000000000000000000000bb"),
-		providerRegistry: &providerRegistryMock{provider: &spregistry.ProviderInfo{
-			Active: true,
-			Payee:  common.HexToAddress("0x00000000000000000000000000000000000000aa"),
-			Products: map[string]*spregistry.ServiceProduct{
-				"PDP": {
-					Data: &spregistry.PDPOffering{ServiceURL: "https://provider.example"},
-				},
-			},
-		}},
+		keyStore:         ks,
+		cfg:              defaultF05PaidSchedulingConfig(),
+		balanceClient:    &balanceClientMock{balance: big.NewInt(1)},
+		paymentsAddr:     common.HexToAddress("0x00000000000000000000000000000000000000bb"),
+		providerRegistry: &providerRegistryMock{provider: newPaidProviderInfo()},
+		paymentsContract: &paymentsContractMock{availableFunds: big.NewInt(100), approved: true},
 	}
 
 	state, err := manager.RunSchedule(context.Background(), schedule)
