@@ -35,7 +35,7 @@ var DealTrackerCmd = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:    "eth-rpc",
-			Usage:   "Ethereum RPC endpoint for FEVM (required for DDO allocation tracking)",
+			Usage:   "Ethereum RPC endpoint for FEVM (required for DDO allocation tracking and paid f05 transaction receipt tracking)",
 			EnvVars: []string{"ETH_RPC_URL"},
 		},
 		&cli.StringFlag{
@@ -59,6 +59,15 @@ var DealTrackerCmd = &cli.Command{
 		}
 
 		var opts []dealtracker.DealTrackerOption
+		if rpcURL := c.String("eth-rpc"); rpcURL != "" {
+			f05Client, err := dealtracker.NewF05PaymentTrackingClient(c.Context, rpcURL)
+			if err != nil {
+				return errors.Wrap(err, "failed to initialize paid f05 tracking client")
+			}
+			defer f05Client.Close()
+			opts = append(opts, dealtracker.WithF05PaymentTracker(f05Client))
+		}
+
 		if ddoContract := c.String("ddo-contract"); ddoContract != "" {
 			rpcURL := c.String("eth-rpc")
 			if rpcURL == "" {

@@ -97,6 +97,12 @@ type DDOAllocationTracker interface {
 	GetAllocationInfo(ctx context.Context, allocationID uint64) (*model.DDOAllocationStatus, error)
 }
 
+// F05PaymentTracker polls transaction receipts for paid-f05 payment transactions.
+// Injected optionally; when nil, paid-f05 receipt tracking is skipped.
+type F05PaymentTracker interface {
+	GetTransactionReceipt(ctx context.Context, txHash string) (*F05PaymentReceipt, error)
+}
+
 type DealTracker struct {
 	workerID        uuid.UUID
 	dbNoContext     *gorm.DB
@@ -106,6 +112,7 @@ type DealTracker struct {
 	lotusToken      string
 	once            bool
 	ddoAllocTracker DDOAllocationTracker
+	f05PayTracker   F05PaymentTracker
 }
 
 // DealTrackerOption customizes DealTracker initialization.
@@ -114,6 +121,12 @@ type DealTrackerOption func(*DealTracker)
 func WithDDOAllocationTracker(tracker DDOAllocationTracker) DealTrackerOption {
 	return func(dt *DealTracker) {
 		dt.ddoAllocTracker = tracker
+	}
+}
+
+func WithF05PaymentTracker(tracker F05PaymentTracker) DealTrackerOption {
+	return func(dt *DealTracker) {
+		dt.f05PayTracker = tracker
 	}
 }
 
@@ -639,6 +652,9 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	if err := d.trackDDOAllocations(ctx); err != nil {
 		Logger.Errorw("failed to track DDO allocations", "error", err)
 	}
+	if err := d.trackF05Payments(ctx); err != nil {
+		Logger.Errorw("failed to track paid f05 transactions", "error", err)
+	}
 
 	return nil
 }
@@ -680,6 +696,73 @@ func (d *DealTracker) trackDDOAllocations(ctx context.Context) error {
 	}
 	if activated > 0 {
 		Logger.Infof("activated %d DDO deals", activated)
+	}
+	return nil
+}
+
+// trackF05Payments polls pending paid-f05 deals for payment-transaction confirmation.
+func (d *DealTracker) trackF05Payments(ctx context.Context) error {
+	if d.f05PayTracker == nil {
+		return nil
+	}
+
+	db := d.dbNoContext.WithContext(ctx)
+	var deals []model.Deal
+	if err := db.Where(
+		"deal_type = ? AND f05_payment_tx_hash IS NOT NULL AND (f05_payment_status IS NULL OR f05_payment_status NOT IN ?)",
+		model.DealTypeF05Paid,
+		[]string{"confirmed", "failed"},
+	).Find(&deals).Error; err != nil {
+		return errors.Wrap(err, "failed to query paid f05 deals")
+	}
+
+	var confirmed, failed int64
+	for _, deal := range deals {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		if deal.F05PaymentTxHash == nil || *deal.F05PaymentTxHash == "" {
+			continue
+		}
+
+		receipt, err := d.f05PayTracker.GetTransactionReceipt(ctx, *deal.F05PaymentTxHash)
+		if err != nil {
+			Logger.Errorw("failed to get paid f05 transaction receipt",
+				"dealID", deal.ID, "txHash", *deal.F05PaymentTxHash, "error", err)
+			continue
+		}
+		if receipt == nil {
+			continue
+		}
+
+		updates := map[string]any{
+			"f05_payment_status": "confirmed",
+			"updated_at":         time.Now(),
+		}
+		if receipt.Status != 1 {
+			updates["f05_payment_status"] = "failed"
+			updates["state"] = model.DealErrored
+			updates["error_message"] = fmt.Sprintf("paid f05 payment transaction %s failed with receipt status %d", *deal.F05PaymentTxHash, receipt.Status)
+		}
+
+		if err := db.Model(&model.Deal{}).Where("id = ?", deal.ID).Updates(updates).Error; err != nil {
+			Logger.Errorw("failed to update paid f05 deal",
+				"dealID", deal.ID, "txHash", *deal.F05PaymentTxHash, "error", err)
+			continue
+		}
+
+		if receipt.Status == 1 {
+			confirmed++
+		} else {
+			failed++
+		}
+	}
+
+	if confirmed > 0 {
+		Logger.Infof("confirmed %d paid f05 payment transactions", confirmed)
+	}
+	if failed > 0 {
+		Logger.Infof("marked %d paid f05 payment transactions as failed", failed)
 	}
 	return nil
 }
