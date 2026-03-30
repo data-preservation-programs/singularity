@@ -86,7 +86,7 @@ var UpdateCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:     "deal-type",
 			Category: "Deal Proposal",
-			Usage:    "Deal type: market (legacy f05), f05_paid (f05 with on-chain payments), pdp (f41), or ddo (DDO allocations)",
+			Usage:    "Deal type: market (legacy f05), pdp (f41), or ddo (DDO allocations)",
 		},
 		&cli.StringFlag{
 			Name:     "group",

@@ -42,7 +42,7 @@ type UpdateRequest struct {
 	//nolint:tagliatelle
 	AllowedPieceCIDs []string `json:"allowedPieceCids"` // Allowed piece CIDs in this schedule
 	Force            *bool    `json:"force"`            // Force to send out deals regardless of replication restriction
-	DealType         *string  `json:"dealType"`         // Deal type: market (legacy f05), f05_paid (f05 with on-chain payments), pdp (f41), or ddo
+	DealType         *string  `json:"dealType"`         // Deal type: market (legacy f05), pdp (f41), or ddo
 }
 
 // UpdateHandler modifies an existing schedule record based on the provided update request.

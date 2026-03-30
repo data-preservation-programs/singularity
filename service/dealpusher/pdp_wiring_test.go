@@ -49,17 +49,6 @@ type txConfirmerMock struct {
 	txHash string
 }
 
-type f05PaidDealManagerMock struct {
-	schedule *model.Schedule
-	state    model.ScheduleState
-	err      error
-}
-
-func (m *f05PaidDealManagerMock) RunSchedule(_ context.Context, schedule *model.Schedule) (model.ScheduleState, error) {
-	m.schedule = schedule
-	return m.state, m.err
-}
-
 func (m *txConfirmerMock) WaitForConfirmations(_ context.Context, txHash string, _ uint64, _ time.Duration) (*PDPTransactionReceipt, error) {
 	m.txHash = txHash
 	return &PDPTransactionReceipt{Hash: txHash}, nil
@@ -94,30 +83,6 @@ func TestDealPusher_RunSchedule_PDPWithoutDependenciesReturnsConfiguredError(t *
 	require.Error(t, err)
 	require.Equal(t, model.ScheduleError, state)
 	require.Contains(t, err.Error(), "pdp scheduling dependencies are not configured")
-}
-
-func TestDealPusher_RunSchedule_F05PaidWithoutDependenciesReturnsConfiguredError(t *testing.T) {
-	d := &DealPusher{
-		scheduleDealTypeResolver: func(_ *model.Schedule) model.DealType {
-			return model.DealTypeF05Paid
-		},
-	}
-
-	state, err := d.runSchedule(context.Background(), &model.Schedule{})
-	require.Error(t, err)
-	require.Equal(t, model.ScheduleError, state)
-	require.Contains(t, err.Error(), "f05 paid scheduling dependencies are not configured")
-}
-
-func TestDealPusher_RunSchedule_F05PaidUsesManager(t *testing.T) {
-	manager := &f05PaidDealManagerMock{state: model.ScheduleCompleted}
-	schedule := &model.Schedule{ID: 7, DealType: model.DealTypeF05Paid}
-	d := &DealPusher{f05PaidDealManager: manager}
-
-	state, err := d.runSchedule(context.Background(), schedule)
-	require.NoError(t, err)
-	require.Equal(t, model.ScheduleCompleted, state)
-	require.Same(t, schedule, manager.schedule)
 }
 
 func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation(t *testing.T) {

@@ -20,7 +20,7 @@ type ScheduleUpdateRequest struct {
 	// Allowed piece CIDs in this schedule
 	AllowedPieceCids []string `json:"allowedPieceCids"`
 
-	// Deal type: market (legacy f05), f05_paid (f05 with on-chain payments), pdp (f41), or ddo
+	// Deal type: market (legacy f05), pdp (f41), or ddo
 	DealType string `json:"dealType,omitempty"`
 
 	// Duration in epoch or in duration format, i.e. 1500000, 2400h

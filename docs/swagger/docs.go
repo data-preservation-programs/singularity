@@ -6163,7 +6163,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "dealTypes": {
-                    "description": "deal type filter (market/f05_paid for f05, pdp for f41, ddo for allocations)",
+                    "description": "deal type filter (market for f05, pdp for f41, ddo for allocations)",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.DealType"
@@ -6515,16 +6515,6 @@ const docTemplate = `{
                 "errorMessage": {
                     "type": "string"
                 },
-                "f05PaymentContract": {
-                    "description": "F05 paid-deal fields (only populated for DealTypeF05Paid)",
-                    "type": "string"
-                },
-                "f05PaymentStatus": {
-                    "type": "string"
-                },
-                "f05PaymentTxHash": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "integer"
                 },
@@ -6613,13 +6603,11 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "market",
-                "f05_paid",
                 "pdp",
                 "ddo"
             ],
             "x-enum-varnames": [
                 "DealTypeMarket",
-                "DealTypeF05Paid",
                 "DealTypePDP",
                 "DealTypeDDO"
             ]
@@ -7009,7 +6997,7 @@ const docTemplate = `{
                     }
                 },
                 "dealType": {
-                    "description": "Deal type: market (legacy f05), f05_paid (f05 with on-chain payments), pdp (f41), or ddo",
+                    "description": "Deal type: market (legacy f05), pdp (f41), or ddo",
                     "type": "string"
                 },
                 "duration": {
@@ -7128,7 +7116,7 @@ const docTemplate = `{
                     }
                 },
                 "dealType": {
-                    "description": "Deal type: market (legacy f05), f05_paid (f05 with on-chain payments), pdp (f41), or ddo",
+                    "description": "Deal type: market (legacy f05), pdp (f41), or ddo",
                     "type": "string"
                 },
                 "duration": {

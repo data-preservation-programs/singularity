@@ -247,20 +247,6 @@ func TestCreateHandler_PDPRejectsPreparationWithOversizedPiece(t *testing.T) {
 	})
 }
 
-func TestCreateHandler_F05PaidAccepted(t *testing.T) {
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		prep := createPrepWithWallet(t, db, "")
-		req := createRequest
-		req.Preparation = fmt.Sprintf("%d", prep.ID)
-		req.DealType = string(model.DealTypeF05Paid)
-
-		schedule, err := Default.CreateHandler(ctx, db, getMockLotusClient(), req)
-		require.NoError(t, err)
-		require.Equal(t, model.DealTypeF05Paid, schedule.DealType)
-		require.Equal(t, createRequest.Group, schedule.Group)
-	})
-}
-
 func TestCreateHandler_ProviderNormalizedToActorID(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		createPrepWithWallet(t, db, "")
@@ -315,6 +301,7 @@ func TestCreateHandler_Success(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, schedule)
 				require.Equal(t, model.DealTypeMarket, schedule.DealType)
+				require.Equal(t, createRequest.Group, schedule.Group)
 				require.Equal(t, "f01000", schedule.Provider)
 				require.True(t, createRequest.Force)
 			})

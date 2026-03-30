@@ -11,12 +11,6 @@ func WithPDPProofSetManager(manager PDPProofSetManager) Option {
 	}
 }
 
-func WithF05PaidDealManager(manager F05PaidDealManager) Option {
-	return func(d *DealPusher) {
-		d.f05PaidDealManager = manager
-	}
-}
-
 func WithPDPTransactionConfirmer(confirmer PDPTransactionConfirmer) Option {
 	return func(d *DealPusher) {
 		d.pdpTxConfirmer = confirmer

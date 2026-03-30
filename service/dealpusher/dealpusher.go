@@ -45,7 +45,6 @@ type DealPusher struct {
 	lotusClient         jsonrpc.RPCClient       // Lotus JSON-RPC client for chain queries
 	dealMaker           replication.DealMaker   // Object responsible for making a deal in replication.
 	pdpProofSetManager  PDPProofSetManager      // Optional PDP proof set lifecycle manager.
-	f05PaidDealManager  F05PaidDealManager      // Optional paid f05 deal lifecycle manager.
 	pdpTxConfirmer      PDPTransactionConfirmer // Optional PDP transaction confirmer.
 	pdpSchedulingConfig PDPSchedulingConfig     // PDP scheduling config for root batching and tx confirmation.
 	ddoDealManager      DDODealManager          // Optional DDO deal lifecycle manager.
@@ -257,11 +256,6 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 	switch d.resolveScheduleDealType(schedule) {
 	case model.DealTypePDP:
 		return d.runPDPSchedule(ctx, schedule)
-	case model.DealTypeF05Paid:
-		if d.f05PaidDealManager == nil {
-			return model.ScheduleError, errors.New("f05 paid scheduling dependencies are not configured")
-		}
-		return d.f05PaidDealManager.RunSchedule(ctx, schedule)
 	case model.DealTypeDDO:
 		return d.runDDOSchedule(ctx, schedule)
 	case model.DealTypeMarket:
