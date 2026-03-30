@@ -20,6 +20,7 @@ var updateRequest = UpdateRequest{
 	PricePerDeal:          ptr.Of(0.0),
 	Verified:              ptr.Of(true),
 	IPNI:                  ptr.Of(true),
+	Group:                 ptr.Of("batch-a"),
 	KeepUnsealed:          ptr.Of(true),
 	StartDelay:            ptr.Of("24h"),
 	Duration:              ptr.Of("2400h"),
@@ -219,7 +220,22 @@ func TestUpdateHandler_Success(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, schedule)
 		require.True(t, schedule.Force)
+		require.Equal(t, "batch-a", schedule.Group)
 		require.Equal(t, model.DealTypeMarket, schedule.DealType)
+	})
+}
+
+func TestUpdateHandler_ClearGroup(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Schedule{
+			Group:       "batch-a",
+			Preparation: &model.Preparation{},
+		}).Error
+		require.NoError(t, err)
+		req := UpdateRequest{Group: ptr.Of("")}
+		schedule, err := Default.UpdateHandler(ctx, db, 1, req)
+		require.NoError(t, err)
+		require.Empty(t, schedule.Group)
 	})
 }
 

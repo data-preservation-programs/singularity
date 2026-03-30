@@ -25,7 +25,8 @@ import (
 type CreateRequest struct {
 	Preparation           string   `json:"preparation"           validation:"required"`  // Preparation ID or name
 	Provider              string   `json:"provider"              validation:"required"`  // Provider
-	DealType              string   `json:"dealType"`                                     // Deal type: market (f05), pdp (f41), or ddo
+	DealType              string   `json:"dealType"`                                     // Deal type: market (legacy f05), pdp (f41), or ddo
+	Group                 string   `json:"group"`                                        // Group label for related schedules
 	HTTPHeaders           []string `json:"httpHeaders"`                                  // http headers to be passed with the request (i.e. key=value)
 	URLTemplate           string   `json:"urlTemplate"`                                  // URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
 	PricePerGBEpoch       float64  `default:"0"                  json:"pricePerGbEpoch"` // Price in FIL per GiB per epoch
@@ -116,6 +117,25 @@ func (DefaultHandler) CreateHandler(
 	request CreateRequest,
 ) (*model.Schedule, error) {
 	db = db.WithContext(ctx)
+	schedule, err := buildSchedule(ctx, db, lotusClient, request)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := database.DoRetry(ctx, func() error {
+		return db.Create(schedule).Error
+	}); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return schedule, nil
+}
+
+func buildSchedule(
+	ctx context.Context,
+	db *gorm.DB,
+	lotusClient jsonrpc.RPCClient,
+	request CreateRequest,
+) (*model.Schedule, error) {
 	if request.ScheduleDealSize == "" {
 		request.ScheduleDealSize = "0"
 	}
@@ -240,6 +260,7 @@ func (DefaultHandler) CreateHandler(
 		ScheduleDealSize:      int64(scheduleDealSize),
 		MaxPendingDealNumber:  request.MaxPendingDealNumber,
 		MaxPendingDealSize:    int64(pendingDealSize),
+		Group:                 request.Group,
 		Notes:                 request.Notes,
 		AllowedPieceCIDs:      underscore.Unique(request.AllowedPieceCIDs),
 		ScheduleCron:          scheduleCron,
@@ -251,11 +272,6 @@ func (DefaultHandler) CreateHandler(
 		DealType:              dealType,
 	}
 
-	if err := database.DoRetry(ctx, func() error {
-		return db.Create(&schedule).Error
-	}); err != nil {
-		return nil, errors.WithStack(err)
-	}
 	return &schedule, nil
 }
 

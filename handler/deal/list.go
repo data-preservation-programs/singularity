@@ -15,7 +15,7 @@ type ListDealRequest struct {
 	Schedules    []uint32          `json:"schedules"`    // schedule id filter
 	Providers    []string          `json:"providers"`    // provider filter
 	States       []model.DealState `json:"states"`       // state filter
-	DealTypes    []model.DealType  `json:"dealTypes"`    // deal type filter (market for f05, pdp for f41)
+	DealTypes    []model.DealType  `json:"dealTypes"`    // deal type filter (market for f05, pdp for f41, ddo for allocations)
 }
 
 // ListHandler retrieves a list of deals from the database based on the specified filtering criteria in ListDealRequest.
