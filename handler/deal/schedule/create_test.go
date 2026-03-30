@@ -69,6 +69,7 @@ var createRequest = CreateRequest{
 	Preparation:           "1",
 	Provider:              "f01000",
 	DealType:              string(model.DealTypeMarket),
+	Group:                 "batch-a",
 	HTTPHeaders:           []string{"a=b"},
 	URLTemplate:           "http://127.0.0.1",
 	PricePerGBEpoch:       0,
@@ -300,6 +301,7 @@ func TestCreateHandler_Success(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, schedule)
 				require.Equal(t, model.DealTypeMarket, schedule.DealType)
+				require.Equal(t, createRequest.Group, schedule.Group)
 				require.Equal(t, "f01000", schedule.Provider)
 				require.True(t, createRequest.Force)
 			})

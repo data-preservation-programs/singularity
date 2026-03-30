@@ -86,7 +86,12 @@ var UpdateCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:     "deal-type",
 			Category: "Deal Proposal",
-			Usage:    "Deal type: market (legacy f05) or pdp (f41)",
+			Usage:    "Deal type: market (legacy f05), pdp (f41), or ddo (DDO allocations)",
+		},
+		&cli.StringFlag{
+			Name:     "group",
+			Category: "Tracking",
+			Usage:    "Group label for related schedules",
 		},
 		&cli.BoolFlag{
 			Name:     "ipni",
@@ -215,6 +220,9 @@ var UpdateCmd = &cli.Command{
 		}
 		if c.IsSet("deal-type") {
 			request.DealType = ptr.Of(c.String("deal-type"))
+		}
+		if c.IsSet("group") {
+			request.Group = ptr.Of(c.String("group"))
 		}
 		if c.IsSet("ipni") {
 			request.IPNI = ptr.Of(c.Bool("ipni"))

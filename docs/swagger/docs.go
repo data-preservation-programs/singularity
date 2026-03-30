@@ -6163,7 +6163,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "dealTypes": {
-                    "description": "deal type filter (market for f05, pdp for f41)",
+                    "description": "deal type filter (market for f05, pdp for f41, ddo for allocations)",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.DealType"
@@ -6818,6 +6818,9 @@ const docTemplate = `{
                 "force": {
                     "type": "boolean"
                 },
+                "group": {
+                    "type": "string"
+                },
                 "httpHeaders": {
                     "$ref": "#/definitions/model.ConfigMap"
                 },
@@ -6994,7 +6997,7 @@ const docTemplate = `{
                     }
                 },
                 "dealType": {
-                    "description": "Deal type: market (f05), pdp (f41), or ddo",
+                    "description": "Deal type: market (legacy f05), pdp (f41), or ddo",
                     "type": "string"
                 },
                 "duration": {
@@ -7005,6 +7008,10 @@ const docTemplate = `{
                 "force": {
                     "description": "Force to send out deals regardless of replication restriction",
                     "type": "boolean"
+                },
+                "group": {
+                    "description": "Group label for related schedules",
+                    "type": "string"
                 },
                 "httpHeaders": {
                     "description": "http headers to be passed with the request (i.e. key=value)",
@@ -7109,7 +7116,7 @@ const docTemplate = `{
                     }
                 },
                 "dealType": {
-                    "description": "Deal type: market (f05) or pdp (f41)",
+                    "description": "Deal type: market (legacy f05), pdp (f41), or ddo",
                     "type": "string"
                 },
                 "duration": {
@@ -7120,6 +7127,10 @@ const docTemplate = `{
                 "force": {
                     "description": "Force to send out deals regardless of replication restriction",
                     "type": "boolean"
+                },
+                "group": {
+                    "description": "Group label for related schedules",
+                    "type": "string"
                 },
                 "httpHeaders": {
                     "description": "http headers to be passed with the request (i.e. key=value)",
