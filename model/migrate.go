@@ -478,45 +478,36 @@ func backfillDealWalletID(db *gorm.DB) error {
 	return nil
 }
 
-// migrateWalletAssignments moves from many2many wallet_assignments to
-// preparation.wallet_id 1:1. idempotent — skips if table doesn't exist.
-func migrateWalletAssignments(db *gorm.DB) error {
-	if !db.Migrator().HasTable("wallet_assignments") {
+// stripWalletAssignmentFKs removes FK constraints from wallet_assignments
+// so AutoMigrate won't cascade-delete rows when creating the new wallets table.
+func stripWalletAssignmentFKs(db *gorm.DB) error {
+	dialect := db.Dialector.Name()
+	switch dialect {
+	case "sqlite":
+		// sqlite can't drop constraints; recreate table without them
+		if err := db.Exec(`CREATE TABLE wallet_assignments_tmp (preparation_id integer, wallet_id text, PRIMARY KEY (preparation_id, wallet_id))`).Error; err != nil {
+			return err
+		}
+		db.Exec(`INSERT INTO wallet_assignments_tmp SELECT * FROM wallet_assignments`)
+		db.Exec(`DROP TABLE wallet_assignments`)
+		return db.Exec(`ALTER TABLE wallet_assignments_tmp RENAME TO wallet_assignments`).Error
+	case "postgres":
+		db.Exec(`ALTER TABLE wallet_assignments DROP CONSTRAINT IF EXISTS fk_wallet_assignments_wallet`)
+		db.Exec(`ALTER TABLE wallet_assignments DROP CONSTRAINT IF EXISTS fk_wallet_assignments_preparation`)
+		return nil
+	case "mysql":
+		db.Exec(`ALTER TABLE wallet_assignments DROP FOREIGN KEY fk_wallet_assignments_wallet`)
+		db.Exec(`ALTER TABLE wallet_assignments DROP FOREIGN KEY fk_wallet_assignments_preparation`)
 		return nil
 	}
+	return nil
+}
 
-	type row struct {
-		PreparationID uint
-		WalletID      uint
-	}
-	var rows []row
-	err := db.Raw(`SELECT preparation_id, wallet_id FROM wallet_assignments ORDER BY preparation_id, wallet_id`).Scan(&rows).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to read wallet_assignments")
-	}
-
-	// group by preparation
-	byPrep := make(map[uint][]uint)
-	for _, r := range rows {
-		byPrep[r.PreparationID] = append(byPrep[r.PreparationID], r.WalletID)
-	}
-
-	for prepID, walletIDs := range byPrep {
-		if len(walletIDs) > 1 {
-			logger.Warnw("preparation has multiple wallets, picking lowest ID",
-				"preparation_id", prepID, "wallet_ids", walletIDs)
-		}
-		// walletIDs are ordered by wallet_id (from ORDER BY in query above)
-		err := db.Exec(`UPDATE preparations SET wallet_id = ? WHERE id = ? AND wallet_id IS NULL`, walletIDs[0], prepID).Error
-		if err != nil {
-			return errors.Wrapf(err, "failed to set wallet_id for preparation %d", prepID)
-		}
-	}
-
-	if err := db.Migrator().DropTable("wallet_assignments"); err != nil {
-		return errors.Wrap(err, "failed to drop wallet_assignments")
-	}
-	logger.Infow("migrated wallet_assignments to preparation.wallet_id", "preparations", len(byPrep))
+// migrateWalletAssignments is a no-op during AutoMigrate. the legacy
+// wallet_assignments table (preparation_id, wallet_id=actor_id_string) is
+// left in place so export-keys can resolve the old actor IDs to new Wallet
+// IDs and restore preparation-wallet links.
+func migrateWalletAssignments(db *gorm.DB) error {
 	return nil
 }
 
@@ -544,6 +535,15 @@ func renameLegacyWalletsTable(db *gorm.DB) error {
 	// drop old indexes that followed the rename -- they'd conflict with
 	// indexes AutoMigrate creates on the new wallets table
 	db.Exec("DROP INDEX IF EXISTS idx_wallets_address")
+
+	// strip FK constraints from wallet_assignments so AutoMigrate doesn't
+	// cascade-delete rows when it creates the new (empty) wallets table.
+	// the data is preserved for export-keys to migrate later.
+	if db.Migrator().HasTable("wallet_assignments") {
+		if err := stripWalletAssignmentFKs(db); err != nil {
+			logger.Warnw("failed to strip wallet_assignment FKs", "err", err)
+		}
+	}
 	return nil
 }
 
