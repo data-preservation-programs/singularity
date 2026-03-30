@@ -1,48 +1,32 @@
-# Create a schedule to send out deals to a storage provider
+# Create the cross-product of schedules for multiple preparations and providers
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity deal schedule create - Create a schedule to send out deals to a storage provider
+   singularity deal schedule create-batch - Create the cross-product of schedules for multiple preparations and providers
 
 USAGE:
-   singularity deal schedule create [command options]
+   singularity deal schedule create-batch [command options]
 
 DESCRIPTION:
-   CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field
-     Standard CRON:
-       ┌───────────── minute (0 - 59)
-       │ ┌───────────── hour (0 - 23)
-       │ │ ┌───────────── day of the month (1 - 31)
-       │ │ │ ┌───────────── month (1 - 12)
-       │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
-       │ │ │ │ │                                   
-       │ │ │ │ │
-       │ │ │ │ │
-       * * * * *
+   Create all schedules for preparations x providers x replication policy.
 
-     Optional Second field:
-       ┌─────────────  second (0 - 59)
-       │ ┌─────────────  minute (0 - 59)
-       │ │ ┌─────────────  hour (0 - 23)
-       │ │ │ ┌─────────────  day of the month (1 - 31)
-       │ │ │ │ ┌─────────────  month (1 - 12)
-       │ │ │ │ │ ┌─────────────  day of the week (0 - 6) (Sunday to Saturday)
-       │ │ │ │ │ │
-       │ │ │ │ │ │
-       * * * * * *
+   Examples:
+     singularity deal schedule create-batch \
+       --group dataset-a \
+       --preparation prep-a --preparation prep-b \
+       --provider f01000 --provider f02000 \
+       --replication market=1 --replication pdp=1
 
-     Descriptor:
-       @yearly, @annually - Equivalent to 0 0 1 1 *
-       @monthly           - Equivalent to 0 0 1 * *
-       @weekly            - Equivalent to 0 0 * * 0
-       @daily,  @midnight - Equivalent to 0 0 * * *
-       @hourly            - Equivalent to 0 * * * *
 
 OPTIONS:
-   --help, -h           show help
-   --preparation value  Preparation ID or name
-   --provider value     Storage Provider ID to send deals to
+   --help, -h                                   show help
+   --preparation value [ --preparation value ]  Preparation IDs or names to include. Repeat this flag.
+   --provider value [ --provider value ]        Storage provider IDs to include. Repeat this flag.
+
+   Batching
+
+   --replication value [ --replication value ]  Replication policy entry in dealType=count form, e.g. market=1 or pdp=2. Repeat this flag. (default: "market=1")
 
    Boost Only
 
@@ -52,7 +36,6 @@ OPTIONS:
 
    Deal Proposal
 
-   --deal-type value              Deal type: market (legacy f05), pdp (f41), or ddo (DDO allocations) (default: "market")
    --duration value, -d value     Duration in epoch or in duration format, i.e. 1500000, 2400h (default: 12840h[535 days])
    --keep-unsealed                Whether to keep unsealed copy (default: true)
    --price-per-deal value         Price in FIL per deal (default: 0)

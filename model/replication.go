@@ -178,11 +178,12 @@ type Schedule struct {
 	ScheduleDealSize      int64         `json:"scheduleDealSize"`
 	MaxPendingDealNumber  int           `json:"maxPendingDealNumber"`
 	MaxPendingDealSize    int64         `json:"maxPendingDealSize"`
+	Group                 string        `json:"group"                               table:"verbose"`
 	Notes                 string        `json:"notes"`
 	ErrorMessage          string        `json:"errorMessage"                        table:"verbose"`
 	AllowedPieceCIDs      StringSlice   `gorm:"type:JSON;column:allowed_piece_cids" json:"allowedPieceCids"                    table:"verbose"`
 	Force                 bool          `json:"force"`
-	DealType              DealType      `gorm:"index;default:'market'"                json:"dealType"`
+	DealType              DealType      `gorm:"index;default:'market'"              json:"dealType"`
 
 	// Associations
 	PreparationID PreparationID `json:"preparationId"`

@@ -152,7 +152,7 @@ definitions:
   deal.ListDealRequest:
     properties:
       dealTypes:
-        description: deal type filter (market for f05, pdp for f41)
+        description: deal type filter (market for f05, pdp for f41, ddo for allocations)
         items:
           $ref: '#/definitions/model.DealType'
         type: array
@@ -634,6 +634,8 @@ definitions:
         type: string
       force:
         type: boolean
+      group:
+        type: string
       httpHeaders:
         $ref: '#/definitions/model.ConfigMap'
       id:
@@ -754,7 +756,7 @@ definitions:
           type: string
         type: array
       dealType:
-        description: 'Deal type: market (f05), pdp (f41), or ddo'
+        description: 'Deal type: market (legacy f05), pdp (f41), or ddo'
         type: string
       duration:
         default: 12840h
@@ -763,6 +765,9 @@ definitions:
       force:
         description: Force to send out deals regardless of replication restriction
         type: boolean
+      group:
+        description: Group label for related schedules
+        type: string
       httpHeaders:
         description: http headers to be passed with the request (i.e. key=value)
         items:
@@ -843,7 +848,7 @@ definitions:
           type: string
         type: array
       dealType:
-        description: 'Deal type: market (f05) or pdp (f41)'
+        description: 'Deal type: market (legacy f05), pdp (f41), or ddo'
         type: string
       duration:
         default: 12840h
@@ -852,6 +857,9 @@ definitions:
       force:
         description: Force to send out deals regardless of replication restriction
         type: boolean
+      group:
+        description: Group label for related schedules
+        type: string
       httpHeaders:
         description: http headers to be passed with the request (i.e. key=value)
         items:

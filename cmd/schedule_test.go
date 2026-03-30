@@ -39,6 +39,7 @@ var testSchedule = model.Schedule{
 	ScheduleDealSize:     600,
 	MaxPendingDealNumber: 700,
 	MaxPendingDealSize:   800,
+	Group:                "batch-a",
 	Notes:                "my note",
 	PreparationID:        5,
 }
@@ -121,14 +122,27 @@ func TestScheduleCreateHandler(t *testing.T) {
 		err := os.WriteFile(filepath.Join(tmp, "cid.txt"), []byte(testutil.TestCid.String()), 0644)
 		require.NoError(t, err)
 		mockHandler.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testSchedule, nil)
-		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity deal schedule create --force --allowed-piece-cid-file %s --allowed-piece-cid %s --preparation 5 --provider provider",
+		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity deal schedule create --group batch-a --force --allowed-piece-cid-file %s --allowed-piece-cid %s --preparation 5 --provider provider",
 			testutil.EscapePath(filepath.Join(tmp, "cid.txt")),
 			testutil.TestCid.String()))
 		require.NoError(t, err)
 
-		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity --verbose deal schedule create --force --allowed-piece-cid-file %s --allowed-piece-cid %s --preparation 5 --provider provider",
+		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity --verbose deal schedule create --group batch-a --force --allowed-piece-cid-file %s --allowed-piece-cid %s --preparation 5 --provider provider",
 			testutil.EscapePath(filepath.Join(tmp, "cid.txt")),
 			testutil.TestCid.String()))
+		require.NoError(t, err)
+	})
+}
+
+func TestScheduleCreateBatchHandler(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(schedule.MockSchedule)
+		defer swapScheduleHandler(mockHandler)()
+		mockHandler.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testSchedule, nil).Times(4)
+
+		_, _, err := runner.Run(ctx, "singularity deal schedule create-batch --group batch-a --preparation 5 --preparation 6 --provider f01000 --provider f02000")
 		require.NoError(t, err)
 	})
 }
@@ -143,12 +157,12 @@ func TestScheduleUpdateHandler(t *testing.T) {
 		err := os.WriteFile(filepath.Join(tmp, "cid.txt"), []byte(testutil.TestCid.String()), 0644)
 		require.NoError(t, err)
 		mockHandler.On("UpdateHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testSchedule, nil)
-		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity deal schedule update --force -H a=b --ipni --url-template \"http://127.0.0.1\" -d 2400h --keep-unsealed --price-per-deal 0 --price-per-gb 0 --price-per-gb-epoch 0 --start-delay 72h --verified --max-pending-deal-number 1 --max-pending-deal-size 1 --total-deal-number 1 --total-deal-size 1 --schedule-cron @daily --schedule-deal-number 1 --schedule-deal-size 1 --notes notes --allowed-piece-cid-file %s --allowed-piece-cid %s 1",
+		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity deal schedule update --group batch-a --force -H a=b --ipni --url-template \"http://127.0.0.1\" -d 2400h --keep-unsealed --price-per-deal 0 --price-per-gb 0 --price-per-gb-epoch 0 --start-delay 72h --verified --max-pending-deal-number 1 --max-pending-deal-size 1 --total-deal-number 1 --total-deal-size 1 --schedule-cron @daily --schedule-deal-number 1 --schedule-deal-size 1 --notes notes --allowed-piece-cid-file %s --allowed-piece-cid %s 1",
 			testutil.EscapePath(filepath.Join(tmp, "cid.txt")),
 			testutil.TestCid.String()))
 		require.NoError(t, err)
 
-		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity --verbose deal schedule update --force -H a=b --ipni --url-template \"http://127.0.0.1\" -d 2400h --keep-unsealed --price-per-deal 0 --price-per-gb 0 --price-per-gb-epoch 0 --start-delay 72h --verified --max-pending-deal-number 1 --max-pending-deal-size 1 --total-deal-number 1 --total-deal-size 1 --schedule-cron @daily --schedule-deal-number 1 --schedule-deal-size 1 --notes notes --allowed-piece-cid-file %s --allowed-piece-cid %s 1",
+		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity --verbose deal schedule update --group batch-a --force -H a=b --ipni --url-template \"http://127.0.0.1\" -d 2400h --keep-unsealed --price-per-deal 0 --price-per-gb 0 --price-per-gb-epoch 0 --start-delay 72h --verified --max-pending-deal-number 1 --max-pending-deal-size 1 --total-deal-number 1 --total-deal-size 1 --schedule-cron @daily --schedule-deal-number 1 --schedule-deal-size 1 --notes notes --allowed-piece-cid-file %s --allowed-piece-cid %s 1",
 			testutil.EscapePath(filepath.Join(tmp, "cid.txt")),
 			testutil.TestCid.String()))
 		require.NoError(t, err)

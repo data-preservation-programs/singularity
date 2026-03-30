@@ -20,7 +20,7 @@ type ScheduleCreateRequest struct {
 	// Allowed piece CIDs in this schedule
 	AllowedPieceCids []string `json:"allowedPieceCids"`
 
-	// Deal type: market (f05), pdp (f41), or ddo
+	// Deal type: market (legacy f05), pdp (f41), or ddo
 	DealType string `json:"dealType,omitempty"`
 
 	// Duration in epoch or in duration format, i.e. 1500000, 2400h
@@ -28,6 +28,9 @@ type ScheduleCreateRequest struct {
 
 	// Force to send out deals regardless of replication restriction
 	Force bool `json:"force,omitempty"`
+
+	// Group label for related schedules
+	Group string `json:"group,omitempty"`
 
 	// http headers to be passed with the request (i.e. key=value)
 	HTTPHeaders []string `json:"httpHeaders"`

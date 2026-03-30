@@ -46,6 +46,7 @@
 * [Deal](cli-reference/deal/README.md)
   * [Schedule](cli-reference/deal/schedule/README.md)
     * [Create](cli-reference/deal/schedule/create.md)
+    * [Create Batch](cli-reference/deal/schedule/create-batch.md)
     * [List](cli-reference/deal/schedule/list.md)
     * [Update](cli-reference/deal/schedule/update.md)
     * [Pause](cli-reference/deal/schedule/pause.md)
