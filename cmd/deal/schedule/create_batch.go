@@ -79,8 +79,8 @@ Examples:
 		created := make([]model.Schedule, 0, len(preparations)*len(providers)*len(replicationPolicy))
 
 		for _, preparation := range preparations {
-			for _, provider := range providers {
-				for _, dealType := range replicationPolicy {
+			for _, dealType := range replicationPolicy {
+				for _, provider := range providers {
 					request := createRequest(c, preparation, provider, string(dealType), allowedPieceCIDs)
 					schedule, err := handlerschedule.Default.CreateHandler(c.Context, db, lotusClient, request)
 					if err != nil {
