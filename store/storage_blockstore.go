@@ -36,6 +36,7 @@ type fileReader struct {
 	fileID model.FileID
 	reader io.ReadCloser
 	offset int64
+	cancel context.CancelFunc
 }
 
 func (s *StorageBlockStore) Has(ctx context.Context, c cid.Cid) (bool, error) {
@@ -92,14 +93,19 @@ func (s *StorageBlockStore) readFileBlock(ctx context.Context, carBlock model.Ca
 	// different file or non-sequential offset -- close old, open new
 	s.closeActive()
 
-	reader, obj, err := handler.Read(ctx, file.Path, carBlock.FileOffset, file.Size-carBlock.FileOffset)
+	// use a detached context for the cached reader so it outlives the
+	// request that created it. closeActive() cancels it on cleanup.
+	readerCtx, readerCancel := context.WithCancel(context.Background())
+	reader, obj, err := handler.Read(readerCtx, file.Path, carBlock.FileOffset, file.Size-carBlock.FileOffset)
 	if err != nil {
+		readerCancel()
 		return nil, errors.WithStack(err)
 	}
 
 	same, explanation := storagesystem.IsSameEntry(ctx, file, obj)
 	if !same {
 		reader.Close()
+		readerCancel()
 		return nil, errors.Wrap(ErrFileHasChanged, explanation)
 	}
 
@@ -107,6 +113,7 @@ func (s *StorageBlockStore) readFileBlock(ctx context.Context, carBlock model.Ca
 		fileID: file.ID,
 		reader: reader,
 		offset: carBlock.FileOffset,
+		cancel: readerCancel,
 	}
 
 	data, err := s.readFromActive(blockLen)
@@ -130,6 +137,7 @@ func (s *StorageBlockStore) readFromActive(length int64) ([]byte, error) {
 func (s *StorageBlockStore) closeActive() {
 	if s.active != nil {
 		s.active.reader.Close()
+		s.active.cancel()
 		s.active = nil
 	}
 }
