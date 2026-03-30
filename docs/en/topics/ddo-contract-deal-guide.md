@@ -121,6 +121,21 @@ Expected state flow:
 - `proposed`: allocation submitted, waiting for activation
 - `active`: allocation activated on-chain and picked up by `deal-tracker`
 
+## Batch DDO schedules
+
+To schedule DDO deals across multiple preparations and providers in one command, use `create-batch` with `--replication ddo=1`:
+
+```bash
+singularity deal schedule create-batch \
+  --group my-ddo-dataset \
+  --preparation prep-a --preparation prep-b \
+  --provider t01000 --provider t02000 \
+  --replication ddo=1 \
+  --url-template "https://downloads.example.com/piece/{PIECE_CID}.car"
+```
+
+This creates the cross-product of DDO schedules (2 preparations x 1 deal type x 2 providers = 4 schedules), all tagged with the `--group` label for easy management. See [Create a deal schedule](../deal-making/create-a-deal-schedule.md#batch-schedule-creation) for more on batch creation.
+
 ## Updating an existing DDO schedule
 
 DDO schedules can be updated, but keep these invariants in mind:

@@ -43,6 +43,37 @@ With the same command, you can create your own schedule to control how fast and 
 singularity deal schedule create -h
 ```
 
+## Batch schedule creation
+
+When you need to replicate multiple preparations across multiple storage providers with a defined replication policy, use `create-batch` to generate all schedules in one command:
+
+```sh
+singularity deal schedule create-batch \
+  --group my-dataset \
+  --preparation prep-a --preparation prep-b \
+  --provider f01000 --provider f02000 \
+  --replication market=1 --replication pdp=1
+```
+
+This creates the full cross-product: for each preparation, for each deal type in the replication policy, a schedule is created for every provider. The example above produces 8 schedules (2 preparations x 2 deal types x 2 providers).
+
+### Replication policy
+
+The `--replication` flag specifies deal types and how many schedules of that type to create per provider per preparation:
+
+- `market=1` — one legacy market deal schedule
+- `pdp=2` — two PDP deal schedules
+- `ddo=1` — one DDO allocation schedule
+
+### Group labels
+
+The `--group` flag is required for `create-batch` and tags all generated schedules with a shared label. This makes it easy to identify and manage related schedules together. You can also set `--group` on individual `schedule create` commands.
+
+### When to use create-batch vs individual schedules
+
+- **`create-batch`**: best for one-shot setup when you know the full set of preparations, providers, and deal types upfront
+- **`schedule create`**: best for adding individual schedules or when different preparations need different parameters per provider
+
 ## PDP caveats
 
 - Accepted PDP piece CID formats: legacy CommP and CommPv2.
