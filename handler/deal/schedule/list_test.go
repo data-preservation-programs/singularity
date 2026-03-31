@@ -27,7 +27,7 @@ func TestListHandler(t *testing.T) {
 		require.Len(t, schedules, 1)
 
 		// Test filtering by group
-		err = db.Model(&model.Schedule{}).Where("id = ?", 1).Update("`group`", "test-group").Error
+		err = db.Model(&model.Schedule{}).Where("id = ?", 1).UpdateColumn("group", "test-group").Error
 		require.NoError(t, err)
 		filtered, err := Default.ListHandler(ctx, db, ListRequest{Group: "test-group"})
 		require.NoError(t, err)

@@ -32,7 +32,7 @@ func (DefaultHandler) ListHandler(
 ) ([]model.Schedule, error) {
 	db = db.WithContext(ctx)
 	if request.Group != "" {
-		db = db.Where("`group` = ?", request.Group)
+		db = db.Where(&model.Schedule{Group: request.Group})
 	}
 	var schedules []model.Schedule
 	err := db.Find(&schedules).Error
