@@ -10,5 +10,10 @@ USAGE:
 
 OPTIONS:
    --help, -h  show help
+
+   Filtering
+
+   --group value  Filter schedules by group label
+
 ```
 {% endcode %}

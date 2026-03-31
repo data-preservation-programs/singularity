@@ -169,7 +169,7 @@ OPTIONS:
    --pass value    FTP password. [$PASS]
    --port value    FTP port number. (default: 21) [$PORT]
    --tls           Use Implicit FTPS (FTP over TLS). (default: false) [$TLS]
-   --user value    FTP username. (default: "$USER") [$USER]
+   --user value    FTP username. (default: "anjor") [$USER]
 
    Advanced
 

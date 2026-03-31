@@ -16607,6 +16607,11 @@ paths:
   /schedule:
     get:
       operationId: ListSchedules
+      parameters:
+      - description: Filter by group label
+        in: query
+        name: group
+        type: string
       produces:
       - application/json
       responses:

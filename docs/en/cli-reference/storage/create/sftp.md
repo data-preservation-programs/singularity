@@ -456,7 +456,7 @@ OPTIONS:
    --pubkey-file value    Optional path to public key file. [$PUBKEY_FILE]
    --ssh value            Path and arguments to external ssh binary. [$SSH]
    --use-insecure-cipher  Enable the use of insecure ciphers and key exchange methods. (default: false) [$USE_INSECURE_CIPHER]
-   --user value           SSH username. (default: "$USER") [$USER]
+   --user value           SSH username. (default: "anjor") [$USER]
 
    Advanced
 

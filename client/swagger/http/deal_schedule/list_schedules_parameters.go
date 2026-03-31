@@ -60,6 +60,13 @@ ListSchedulesParams contains all the parameters to send to the API endpoint
 	Typically these are written to a http.Request.
 */
 type ListSchedulesParams struct {
+
+	/* Group.
+
+	   Filter by group label
+	*/
+	Group *string
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -113,6 +120,17 @@ func (o *ListSchedulesParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithGroup adds the group to the list schedules params
+func (o *ListSchedulesParams) WithGroup(group *string) *ListSchedulesParams {
+	o.SetGroup(group)
+	return o
+}
+
+// SetGroup adds the group to the list schedules params
+func (o *ListSchedulesParams) SetGroup(group *string) {
+	o.Group = group
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *ListSchedulesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -120,6 +138,23 @@ func (o *ListSchedulesParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		return err
 	}
 	var res []error
+
+	if o.Group != nil {
+
+		// query param group
+		var qrGroup string
+
+		if o.Group != nil {
+			qrGroup = *o.Group
+		}
+		qGroup := qrGroup
+		if qGroup != "" {
+
+			if err := r.SetQueryParam("group", qGroup); err != nil {
+				return err
+			}
+		}
+	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

@@ -1636,6 +1636,14 @@ const docTemplate = `{
                 ],
                 "summary": "List all deal making schedules",
                 "operationId": "ListSchedules",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by group label",
+                        "name": "group",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
