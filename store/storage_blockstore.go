@@ -71,6 +71,9 @@ func (s *StorageBlockStore) readFileBlock(ctx context.Context, carBlock model.Ca
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	if carBlock.File == nil || carBlock.File.Attachment == nil || carBlock.File.Attachment.Storage == nil {
+		return nil, errors.Errorf("block %s has no associated storage (orphaned or deleted source file)", c)
+	}
 	storage := *carBlock.File.Attachment.Storage
 	file := *carBlock.File
 	blockLen := int64(carBlock.BlockLength())
@@ -188,6 +191,8 @@ func (s *StorageBlockStore) DeleteBlock(ctx context.Context, c cid.Cid) error {
 }
 
 // Close releases all held resources.
+// rclone handler cleanup is not implemented -- backends may hold
+// connections (e.g. SFTP) but RCloneHandler doesn't expose Shutdown.
 func (s *StorageBlockStore) Close() {
 	s.mu.Lock()
 	defer s.mu.Unlock()

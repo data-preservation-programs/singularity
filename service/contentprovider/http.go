@@ -105,8 +105,9 @@ func (s *HTTPServer) Start(ctx context.Context, exitErr chan<- error) error {
 		e.GET("/piece/:id", s.handleGetPiece)
 		e.HEAD("/piece/:id", s.handleGetPiece)
 	}
+	var bs *store.StorageBlockStore
 	if s.enableIPFS {
-		bs := &store.StorageBlockStore{DBNoContext: s.dbNoContext}
+		bs = &store.StorageBlockStore{DBNoContext: s.dbNoContext}
 		wrapped := &errorMappingBlockStore{inner: bs}
 		exch := offline.Exchange(wrapped)
 		bsvc := blockservice.New(wrapped, exch)
@@ -146,6 +147,9 @@ func (s *HTTPServer) Start(ctx context.Context, exitErr chan<- error) error {
 		select {
 		case <-ctx.Done():
 		case <-forceShutdown:
+		}
+		if bs != nil {
+			bs.Close()
 		}
 		//nolint:contextcheck
 		shutdownErr <- e.Shutdown(context.Background())
