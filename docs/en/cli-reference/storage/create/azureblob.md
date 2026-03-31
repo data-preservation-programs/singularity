@@ -35,6 +35,12 @@ DESCRIPTION:
       
       Leave blank if using account/key or Emulator.
 
+   --connection-string
+      Storage Connection String.
+      
+      Connection string for the storage. Leave blank if using other auth methods.
+      
+
    --tenant
       ID of the service principal's tenant. Also called its directory ID.
       
@@ -118,6 +124,20 @@ DESCRIPTION:
       keys instead of setting `service_principal_file`.
       
 
+   --disable-instance-discovery
+      Skip requesting Microsoft Entra instance metadata
+      
+      This should be set true only by applications authenticating in
+      disconnected clouds, or private clouds such as Azure Stack.
+      
+      It determines whether rclone requests Microsoft Entra instance
+      metadata from `https://login.microsoft.com/` before
+      authenticating.
+      
+      Setting this to true will skip this request, making you responsible
+      for ensuring the configured authority is valid and trustworthy.
+      
+
    --use-msi
       Use a managed service identity to authenticate (only works in Azure).
       
@@ -149,6 +169,18 @@ DESCRIPTION:
       Uses local storage emulator if provided as 'true'.
       
       Leave blank if using real azure storage endpoint.
+
+   --use-az
+      Use Azure CLI tool az for authentication
+      
+      Set to use the [Azure CLI tool az](https://learn.microsoft.com/en-us/cli/azure/)
+      as the sole means of authentication.
+      
+      Setting this can be useful if you wish to use the az CLI on a host with
+      a System Managed Identity that you do not want to use.
+      
+      Don't set env_auth at the same time.
+      
 
    --endpoint
       Endpoint for the service.
@@ -182,6 +214,41 @@ DESCRIPTION:
       Note that chunks are stored in memory and there may be up to
       "--transfers" * "--azureblob-upload-concurrency" chunks stored at once
       in memory.
+
+   --copy-cutoff
+      Cutoff for switching to multipart copy.
+      
+      Any files larger than this that need to be server-side copied will be
+      copied in chunks of chunk_size using the put block list API.
+      
+      Files smaller than this limit will be copied with the Copy Blob API.
+
+   --copy-concurrency
+      Concurrency for multipart copy.
+      
+      This is the number of chunks of the same file that are copied
+      concurrently.
+      
+      These chunks are not buffered in memory and Microsoft recommends
+      setting this value to greater than 1000 in the azcopy documentation.
+      
+      https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-optimize#increase-concurrency
+      
+      In tests, copy speed increases almost linearly with copy
+      concurrency.
+
+   --use-copy-blob
+      Whether to use the Copy Blob API when copying to the same storage account.
+      
+      If true (the default) then rclone will use the Copy Blob API for
+      copies to the same storage account even when the size is above the
+      copy_cutoff.
+      
+      Rclone assumes that the same storage account means the same config
+      and does not check for the same storage account in different configs.
+      
+      There should be no need to change this value.
+      
 
    --list-chunk
       Size of blob list.
@@ -290,6 +357,7 @@ OPTIONS:
    --client-certificate-path value      Path to a PEM or PKCS12 certificate file including the private key. [$CLIENT_CERTIFICATE_PATH]
    --client-id value                    The ID of the client in use. [$CLIENT_ID]
    --client-secret value                One of the service principal's client secrets [$CLIENT_SECRET]
+   --connection-string value            Storage Connection String. [$CONNECTION_STRING]
    --env-auth                           Read credentials from runtime (environment variables, CLI or MSI). (default: false) [$ENV_AUTH]
    --help, -h                           show help
    --key value                          Storage Account Shared Key. [$KEY]
@@ -302,10 +370,13 @@ OPTIONS:
    --archive-tier-delete            Delete archive tier blobs before overwriting. (default: false) [$ARCHIVE_TIER_DELETE]
    --chunk-size value               Upload chunk size. (default: "4Mi") [$CHUNK_SIZE]
    --client-send-certificate-chain  Send the certificate chain when using certificate auth. (default: false) [$CLIENT_SEND_CERTIFICATE_CHAIN]
+   --copy-concurrency value         Concurrency for multipart copy. (default: 512) [$COPY_CONCURRENCY]
+   --copy-cutoff value              Cutoff for switching to multipart copy. (default: "8Mi") [$COPY_CUTOFF]
    --delete-snapshots value         Set to specify how to deal with snapshots on blob deletion. [$DELETE_SNAPSHOTS]
    --description value              Description of the remote. [$DESCRIPTION]
    --directory-markers              Upload an empty object with a trailing slash when a new directory is created (default: false) [$DIRECTORY_MARKERS]
    --disable-checksum               Don't store MD5 checksum with object metadata. (default: false) [$DISABLE_CHECKSUM]
+   --disable-instance-discovery     Skip requesting Microsoft Entra instance metadata (default: false) [$DISABLE_INSTANCE_DISCOVERY]
    --encoding value                 The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8") [$ENCODING]
    --endpoint value                 Endpoint for the service. [$ENDPOINT]
    --list-chunk value               Size of blob list. (default: 5000) [$LIST_CHUNK]
@@ -321,6 +392,8 @@ OPTIONS:
    --service-principal-file value   Path to file containing credentials for use with a service principal. [$SERVICE_PRINCIPAL_FILE]
    --upload-concurrency value       Concurrency for multipart uploads. (default: 16) [$UPLOAD_CONCURRENCY]
    --upload-cutoff value            Cutoff for switching to chunked upload (<= 256 MiB) (deprecated). [$UPLOAD_CUTOFF]
+   --use-az                         Use Azure CLI tool az for authentication (default: false) [$USE_AZ]
+   --use-copy-blob                  Whether to use the Copy Blob API when copying to the same storage account. (default: true) [$USE_COPY_BLOB]
    --use-emulator                   Uses local storage emulator if provided as 'true'. (default: false) [$USE_EMULATOR]
    --use-msi                        Use a managed service identity to authenticate (only works in Azure). (default: false) [$USE_MSI]
    --username value                 User name (usually an email address) [$USERNAME]

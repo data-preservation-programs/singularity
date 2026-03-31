@@ -15,6 +15,15 @@ DESCRIPTION:
    --pass
       Password.
 
+   --2fa
+      The 2FA code of your MEGA account if the account is set up with one
+
+   --session-id
+      Session (internal use only)
+
+   --master-key
+      Master key (internal use only)
+
    --debug
       Output more debug from Mega.
       
@@ -47,6 +56,7 @@ DESCRIPTION:
 
 
 OPTIONS:
+   --2fa value   The 2FA code of your MEGA account if the account is set up with one [$2FA]
    --help, -h    show help
    --pass value  Password. [$PASS]
    --user value  User name. [$USER]
@@ -57,6 +67,8 @@ OPTIONS:
    --description value  Description of the remote. [$DESCRIPTION]
    --encoding value     The encoding for the backend. (default: "Slash,InvalidUtf8,Dot") [$ENCODING]
    --hard-delete        Delete files permanently rather than putting them into the trash. (default: false) [$HARD_DELETE]
+   --master-key value   Master key (internal use only) [$MASTER_KEY]
+   --session-id value   Session (internal use only) [$SESSION_ID]
    --use-https          Use HTTPS for transfers. (default: false) [$USE_HTTPS]
 
    Client Config

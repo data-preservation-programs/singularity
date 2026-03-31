@@ -17,6 +17,9 @@ import (
 // swagger:model storage.gcsConfig
 type StorageGcsConfig struct {
 
+	// Short-lived access token.
+	AccessToken string `json:"accessToken,omitempty"`
+
 	// Access public buckets and objects without credentials.
 	Anonymous *bool `json:"anonymous,omitempty"`
 
@@ -29,6 +32,9 @@ type StorageGcsConfig struct {
 
 	// Access checks should use bucket-level IAM policies.
 	BucketPolicyOnly *bool `json:"bucketPolicyOnly,omitempty"`
+
+	// Use client credentials OAuth flow.
+	ClientCredentials *bool `json:"clientCredentials,omitempty"`
 
 	// OAuth Client Id.
 	ClientID string `json:"clientId,omitempty"`
@@ -48,7 +54,8 @@ type StorageGcsConfig struct {
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 
-	// Endpoint for the service.
+	// Custom endpoint for the storage API. Leave blank to use the provider default.
+	// Example: storage.example.org
 	Endpoint string `json:"endpoint,omitempty"`
 
 	// Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).

@@ -35,6 +35,9 @@ type StorageDriveConfig struct {
 	// Upload chunk size.
 	ChunkSize *string `json:"chunkSize,omitempty"`
 
+	// Use client credentials OAuth flow.
+	ClientCredentials *bool `json:"clientCredentials,omitempty"`
+
 	// Google Application Client Id
 	ClientID string `json:"clientId,omitempty"`
 
@@ -77,6 +80,9 @@ type StorageDriveConfig struct {
 
 	// Size of listing chunk 100-1000, 0 to disable.
 	ListChunk *int64 `json:"listChunk,omitempty"`
+
+	// Whether the request should enforce expansive access rules.
+	MetadataEnforceExpansiveAccess *bool `json:"metadataEnforceExpansiveAccess,omitempty"`
 
 	// Control whether labels should be read or written in metadata.
 	// Example: off

@@ -45,7 +45,6 @@ import (
 	_ "github.com/rclone/rclone/backend/sugarsync"
 	_ "github.com/rclone/rclone/backend/swift"
 	_ "github.com/rclone/rclone/backend/union"
-	_ "github.com/rclone/rclone/backend/uptobox"
 	_ "github.com/rclone/rclone/backend/webdav"
 	_ "github.com/rclone/rclone/backend/yandex"
 	_ "github.com/rclone/rclone/backend/zoho"
@@ -187,17 +186,25 @@ func (option *Option) ToCLIFlag(prefix string, useBuiltIn bool, category string)
 			EnvVars:  []string{strings.ToUpper(strings.ReplaceAll(name, "-", "_"))},
 		}
 	default:
-		//nolint:forcetypeassert
+		var value string
+		switch v := option.Default.(type) {
+		case interface{ String() string }:
+			value = v.String()
+		case []string:
+			value = strings.Join(v, ",")
+		case string:
+			value = v
+		default:
+			value = fmt.Sprintf("%v", v)
+		}
 		flag = &cli.StringFlag{
 			Category: category,
 			Name:     name,
 			Required: required,
 			Usage:    usage,
-			Value: option.Default.(interface {
-				String() string
-			}).String(),
-			Aliases: aliases,
-			EnvVars: []string{strings.ToUpper(strings.ReplaceAll(name, "-", "_"))},
+			Value:    value,
+			Aliases:  aliases,
+			EnvVars:  []string{strings.ToUpper(strings.ReplaceAll(name, "-", "_"))},
 		}
 	}
 	return flag

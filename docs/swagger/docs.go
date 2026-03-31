@@ -3665,6 +3665,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/s3/bizflycloud": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with BizflyCloud - Bizfly Cloud Simple Storage",
+                "operationId": "CreateS3BizflyCloudStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3BizflyCloudStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/s3/ceph": {
             "post": {
                 "consumes": [
@@ -3803,6 +3849,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/s3/cubbit": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Cubbit - Cubbit DS3 Object Storage",
+                "operationId": "CreateS3CubbitStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3CubbitStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/s3/digitalocean": {
             "post": {
                 "consumes": [
@@ -3895,6 +3987,144 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/s3/exaba": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Exaba - Exaba Object Storage",
+                "operationId": "CreateS3ExabaStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3ExabaStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/filelu": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with FileLu - FileLu S5 (S3-Compatible Object Storage)",
+                "operationId": "CreateS3FileLuStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3FileLuStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/flashblade": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with FlashBlade - Pure Storage FlashBlade Object Storage",
+                "operationId": "CreateS3FlashBladeStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3FlashBladeStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/s3/gcs": {
             "post": {
                 "consumes": [
@@ -3916,6 +4146,52 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/storage.createS3GCSStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/hetzner": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Hetzner - Hetzner Object Storage",
+                "operationId": "CreateS3HetznerStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3HetznerStorageRequest"
                         }
                     }
                 ],
@@ -4054,6 +4330,52 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/storage.createS3IDriveStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/intercolo": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Intercolo - Intercolo Object Storage",
+                "operationId": "CreateS3IntercoloStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3IntercoloStorageRequest"
                         }
                     }
                 ],
@@ -4355,6 +4677,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/s3/mega": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Mega - MEGA S4 Object Storage",
+                "operationId": "CreateS3MegaStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3MegaStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/s3/minio": {
             "post": {
                 "consumes": [
@@ -4493,6 +4861,98 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/s3/outscale": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Outscale - OUTSCALE Object Storage (OOS)",
+                "operationId": "CreateS3OutscaleStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3OutscaleStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/ovhcloud": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with OVHcloud - OVHcloud Object Storage",
+                "operationId": "CreateS3OVHcloudStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3OVHcloudStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/s3/petabox": {
             "post": {
                 "consumes": [
@@ -4560,6 +5020,52 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/storage.createS3QiniuStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/rabata": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Rabata - Rabata Cloud Storage",
+                "operationId": "CreateS3RabataStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3RabataStorageRequest"
                         }
                     }
                 ],
@@ -4744,6 +5250,144 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/storage.createS3SeaweedFSStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/selectel": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Selectel - Selectel Object Storage",
+                "operationId": "CreateS3SelectelStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3SelectelStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/servercore": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Servercore - Servercore Object Storage",
+                "operationId": "CreateS3ServercoreStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3ServercoreStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/spectralogic": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with SpectraLogic - Spectra Logic Black Pearl",
+                "operationId": "CreateS3SpectraLogicStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3SpectraLogicStorageRequest"
                         }
                     }
                 ],
@@ -4974,6 +5618,52 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/storage.createS3WasabiStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/zata": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Zata - Zata (S3 compatible Gateway)",
+                "operationId": "CreateS3ZataStorage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.createS3ZataStorageRequest"
                         }
                     }
                 ],
@@ -5434,52 +6124,6 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/storage.createUnionStorageRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Storage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/storage/uptobox": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Storage"
-                ],
-                "summary": "Create Uptobox storage",
-                "operationId": "CreateUptoboxStorage",
-                "parameters": [
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/storage.createUptoboxStorageRequest"
                         }
                     }
                 ],
@@ -7295,6 +7939,20 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "connectionString": {
+                    "description": "Storage Connection String.",
+                    "type": "string"
+                },
+                "copyConcurrency": {
+                    "description": "Concurrency for multipart copy.",
+                    "type": "integer",
+                    "default": 512
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "8Mi"
+                },
                 "deleteSnapshots": {
                     "description": "Set to specify how to deal with snapshots on blob deletion.",
                     "type": "string",
@@ -7311,6 +7969,11 @@ const docTemplate = `{
                 },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableInstanceDiscovery": {
+                    "description": "Skip requesting Microsoft Entra instance metadata",
                     "type": "boolean",
                     "default": false
                 },
@@ -7399,6 +8062,16 @@ const docTemplate = `{
                     "description": "Cutoff for switching to chunked upload (\u003c= 256 MiB) (deprecated).",
                     "type": "string"
                 },
+                "useAz": {
+                    "description": "Use Azure CLI tool az for authentication",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useCopyBlob": {
+                    "description": "Whether to use the Copy Blob API when copying to the same storage account.",
+                    "type": "boolean",
+                    "default": true
+                },
                 "useEmulator": {
                     "description": "Uses local storage emulator if provided as 'true'.",
                     "type": "boolean",
@@ -7483,6 +8156,26 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in B2.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C, you may provide the secret encryption key encoded in a UTF-8 compatible string to encrypt/decrypt your data",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyBase64": {
+                    "description": "To use SSE-C, you may provide the secret encryption key encoded in Base64 format to encrypt/decrypt your data",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyMd5": {
+                    "description": "If using SSE-C you may provide the secret encryption key MD5 checksum (optional).",
+                    "type": "string",
+                    "example": ""
+                },
                 "testMode": {
                     "description": "A flag string for X-Bz-Test-Mode header for debugging.",
                     "type": "string"
@@ -7529,6 +8222,11 @@ const docTemplate = `{
                     "default": "user",
                     "example": "user"
                 },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "clientId": {
                     "description": "OAuth Client Id.",
                     "type": "string"
@@ -7541,6 +8239,10 @@ const docTemplate = `{
                     "description": "Max number of times to try committing a multipart file.",
                     "type": "integer",
                     "default": 100
+                },
+                "configCredentials": {
+                    "description": "Box App config.json contents.",
+                    "type": "string"
                 },
                 "description": {
                     "description": "Description of the remote.",
@@ -7975,34 +8677,7 @@ const docTemplate = `{
             }
         },
         "storage.createInternetarchiveStorageRequest": {
-            "type": "object",
-            "properties": {
-                "clientConfig": {
-                    "description": "config for underlying HTTP client",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.ClientConfig"
-                        }
-                    ]
-                },
-                "config": {
-                    "description": "config for the storage",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/storage.internetarchiveConfig"
-                        }
-                    ]
-                },
-                "name": {
-                    "description": "Name of the storage, must be unique",
-                    "type": "string",
-                    "example": "my-storage"
-                },
-                "path": {
-                    "description": "Path of the storage",
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "storage.createJottacloudStorageRequest": {
             "type": "object",
@@ -8694,6 +9369,36 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.createS3BizflyCloudStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3BizflyCloudConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
         "storage.createS3CephStorageRequest": {
             "type": "object",
             "properties": {
@@ -8784,6 +9489,36 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.createS3CubbitStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3CubbitConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
         "storage.createS3DigitalOceanStorageRequest": {
             "type": "object",
             "properties": {
@@ -8844,6 +9579,96 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.createS3ExabaStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3ExabaConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3FileLuStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3FileLuConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3FlashBladeStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3FlashBladeConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
         "storage.createS3GCSStorageRequest": {
             "type": "object",
             "properties": {
@@ -8860,6 +9685,36 @@ const docTemplate = `{
                     "allOf": [
                         {
                             "$ref": "#/definitions/storage.s3GCSConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3HetznerStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3HetznerConfig"
                         }
                     ]
                 },
@@ -8980,6 +9835,36 @@ const docTemplate = `{
                     "allOf": [
                         {
                             "$ref": "#/definitions/storage.s3IONOSConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3IntercoloStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3IntercoloConfig"
                         }
                     ]
                 },
@@ -9144,6 +10029,36 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.createS3MegaStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3MegaConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
         "storage.createS3MinioStorageRequest": {
             "type": "object",
             "properties": {
@@ -9204,6 +10119,36 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.createS3OVHcloudStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3OVHcloudConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
         "storage.createS3OtherStorageRequest": {
             "type": "object",
             "properties": {
@@ -9220,6 +10165,36 @@ const docTemplate = `{
                     "allOf": [
                         {
                             "$ref": "#/definitions/storage.s3OtherConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3OutscaleStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3OutscaleConfig"
                         }
                     ]
                 },
@@ -9280,6 +10255,36 @@ const docTemplate = `{
                     "allOf": [
                         {
                             "$ref": "#/definitions/storage.s3QiniuConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3RabataStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3RabataConfig"
                         }
                     ]
                 },
@@ -9400,6 +10405,96 @@ const docTemplate = `{
                     "allOf": [
                         {
                             "$ref": "#/definitions/storage.s3SeaweedFSConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3SelectelStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3SelectelConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3ServercoreStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3ServercoreConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3SpectraLogicStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3SpectraLogicConfig"
                         }
                     ]
                 },
@@ -9550,6 +10645,36 @@ const docTemplate = `{
                     "allOf": [
                         {
                             "$ref": "#/definitions/storage.s3WasabiConfig"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.createS3ZataStorageRequest": {
+            "type": "object",
+            "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
+                "config": {
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3ZataConfig"
                         }
                     ]
                 },
@@ -9864,36 +10989,6 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.createUptoboxStorageRequest": {
-            "type": "object",
-            "properties": {
-                "clientConfig": {
-                    "description": "config for underlying HTTP client",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.ClientConfig"
-                        }
-                    ]
-                },
-                "config": {
-                    "description": "config for the storage",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/storage.uptoboxConfig"
-                        }
-                    ]
-                },
-                "name": {
-                    "description": "Name of the storage, must be unique",
-                    "type": "string",
-                    "example": "my-storage"
-                },
-                "path": {
-                    "description": "Path of the storage",
-                    "type": "string"
-                }
-            }
-        },
         "storage.createWebdavStorageRequest": {
             "type": "object",
             "properties": {
@@ -10016,6 +11111,11 @@ const docTemplate = `{
                     "type": "string",
                     "default": "8Mi"
                 },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "clientId": {
                     "description": "Google Application Client Id",
                     "type": "string"
@@ -10080,6 +11180,11 @@ const docTemplate = `{
                     "description": "Size of listing chunk 100-1000, 0 to disable.",
                     "type": "integer",
                     "default": 1000
+                },
+                "metadataEnforceExpansiveAccess": {
+                    "description": "Whether the request should enforce expansive access rules.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "metadataLabels": {
                     "description": "Control whether labels should be read or written in metadata.",
@@ -10237,7 +11342,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "batchCommitTimeout": {
-                    "description": "Max time to wait for a batch to finish committing",
+                    "description": "Max time to wait for a batch to finish committing. (no longer used)",
                     "type": "string",
                     "default": "10m0s"
                 },
@@ -10261,6 +11366,11 @@ const docTemplate = `{
                     "type": "string",
                     "default": "48Mi"
                 },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "clientId": {
                     "description": "OAuth Client Id.",
                     "type": "string"
@@ -10277,6 +11387,11 @@ const docTemplate = `{
                     "description": "The encoding for the backend.",
                     "type": "string",
                     "default": "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"
+                },
+                "exportFormats": {
+                    "description": "Comma separated list of preferred formats for exporting files",
+                    "type": "string",
+                    "default": "html,md"
                 },
                 "impersonate": {
                     "description": "Impersonate this user when using a business account.",
@@ -10298,6 +11413,16 @@ const docTemplate = `{
                 },
                 "sharedFolders": {
                     "description": "Instructs rclone to work on shared folders.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "showAllExports": {
+                    "description": "Show all exportable files in listings.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "skipExports": {
+                    "description": "Skip exportable files in all listings.",
                     "type": "boolean",
                     "default": false
                 },
@@ -10388,6 +11513,11 @@ const docTemplate = `{
         "storage.ftpConfig": {
             "type": "object",
             "properties": {
+                "allowInsecureTlsCiphers": {
+                    "description": "Allow insecure TLS ciphers",
+                    "type": "boolean",
+                    "default": false
+                },
                 "askPassword": {
                     "description": "Allow asking for FTP password when needed.",
                     "type": "boolean",
@@ -10447,6 +11577,10 @@ const docTemplate = `{
                     "description": "FTP host to connect to.",
                     "type": "string"
                 },
+                "httpProxy": {
+                    "description": "URL for HTTP CONNECT proxy",
+                    "type": "string"
+                },
                 "idleTimeout": {
                     "description": "Max time before closing idle connections.",
                     "type": "string",
@@ -10454,6 +11588,11 @@ const docTemplate = `{
                 },
                 "noCheckCertificate": {
                     "description": "Do not verify the TLS certificate of the server.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noCheckUpload": {
+                    "description": "Don't check the upload is OK",
                     "type": "boolean",
                     "default": false
                 },
@@ -10500,6 +11639,10 @@ const docTemplate = `{
         "storage.gcsConfig": {
             "type": "object",
             "properties": {
+                "accessToken": {
+                    "description": "Short-lived access token.",
+                    "type": "string"
+                },
                 "anonymous": {
                     "description": "Access public buckets and objects without credentials.",
                     "type": "boolean",
@@ -10516,6 +11659,11 @@ const docTemplate = `{
                 },
                 "bucketPolicyOnly": {
                     "description": "Access checks should use bucket-level IAM policies.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
                     "type": "boolean",
                     "default": false
                 },
@@ -10547,8 +11695,9 @@ const docTemplate = `{
                     "default": "Slash,CrLf,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for the service.",
-                    "type": "string"
+                    "description": "Custom endpoint for the storage API. Leave blank to use the provider default.",
+                    "type": "string",
+                    "example": "storage.example.org"
                 },
                 "envAuth": {
                     "description": "Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).",
@@ -10610,7 +11759,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "batchCommitTimeout": {
-                    "description": "Max time to wait for a batch to finish committing",
+                    "description": "Max time to wait for a batch to finish committing. (no longer used)",
                     "type": "string",
                     "default": "10m0s"
                 },
@@ -10628,6 +11777,11 @@ const docTemplate = `{
                     "description": "Max time to allow an idle upload batch before uploading.",
                     "type": "string",
                     "default": "0s"
+                },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "clientId": {
                     "description": "OAuth Client Id.",
@@ -10650,6 +11804,10 @@ const docTemplate = `{
                     "description": "Also view and download archived media.",
                     "type": "boolean",
                     "default": false
+                },
+                "proxy": {
+                    "description": "Use the gphotosdl proxy for downloading the full resolution images",
+                    "type": "string"
                 },
                 "readOnly": {
                     "description": "Set to make the Google Photos backend read only.",
@@ -10719,6 +11877,11 @@ const docTemplate = `{
                     "description": "Chunksize for chunked uploads.",
                     "type": "string",
                     "default": "48Mi"
+                },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "clientId": {
                     "description": "OAuth Client Id.",
@@ -10817,54 +11980,17 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.internetarchiveConfig": {
-            "type": "object",
-            "properties": {
-                "accessKeyId": {
-                    "description": "IAS3 Access Key.",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "Description of the remote.",
-                    "type": "string"
-                },
-                "disableChecksum": {
-                    "description": "Don't ask the server to test against MD5 checksum calculated by rclone.",
-                    "type": "boolean",
-                    "default": true
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "endpoint": {
-                    "description": "IAS3 Endpoint.",
-                    "type": "string",
-                    "default": "https://s3.us.archive.org"
-                },
-                "frontEndpoint": {
-                    "description": "Host of InternetArchive Frontend.",
-                    "type": "string",
-                    "default": "https://archive.org"
-                },
-                "secretAccessKey": {
-                    "description": "IAS3 Secret Key (password).",
-                    "type": "string"
-                },
-                "waitArchive": {
-                    "description": "Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.",
-                    "type": "string",
-                    "default": "0s"
-                }
-            }
-        },
         "storage.jottacloudConfig": {
             "type": "object",
             "properties": {
                 "authUrl": {
                     "description": "Auth server URL.",
                     "type": "string"
+                },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "clientId": {
                     "description": "OAuth Client Id.",
@@ -11042,8 +12168,12 @@ const docTemplate = `{
                     "type": "string",
                     "default": "Slash,Dot"
                 },
+                "hashes": {
+                    "description": "Comma separated list of supported checksum types.",
+                    "type": "string"
+                },
                 "links": {
-                    "description": "Translate symlinks to/from regular files with a '.rclonelink' extension.",
+                    "description": "Translate symlinks to/from regular files with a '.rclonelink' extension for the local backend.",
                     "type": "boolean",
                     "default": false
                 },
@@ -11088,6 +12218,11 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "skipSpecials": {
+                    "description": "Don't warn about skipped pipes, sockets and device objects.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "timeType": {
                     "description": "Set what kind of time is returned.",
                     "type": "string",
@@ -11118,6 +12253,11 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": true,
                     "example": true
+                },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "clientId": {
                     "description": "OAuth Client Id.",
@@ -11189,6 +12329,10 @@ const docTemplate = `{
         "storage.megaConfig": {
             "type": "object",
             "properties": {
+                "2fa": {
+                    "description": "The 2FA code of your MEGA account if the account is set up with one",
+                    "type": "string"
+                },
                 "debug": {
                     "description": "Output more debug from Mega.",
                     "type": "boolean",
@@ -11208,8 +12352,16 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "masterKey": {
+                    "description": "Master key (internal use only)",
+                    "type": "string"
+                },
                 "pass": {
                     "description": "Password.",
+                    "type": "string"
+                },
+                "sessionId": {
+                    "description": "Session (internal use only)",
                     "type": "string"
                 },
                 "useHttps": {
@@ -11272,6 +12424,11 @@ const docTemplate = `{
                     "description": "Chunk size to upload files with - must be multiple of 320k (327,680 bytes).",
                     "type": "string",
                     "default": "10Mi"
+                },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "clientId": {
                     "description": "OAuth Client Id.",
@@ -11371,6 +12528,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "tenant": {
+                    "description": "ID of the service principal's tenant. Also called its directory ID.",
+                    "type": "string"
+                },
                 "token": {
                     "description": "OAuth Access Token as a JSON blob.",
                     "type": "string"
@@ -11378,6 +12539,11 @@ const docTemplate = `{
                 "tokenUrl": {
                     "description": "Token server url.",
                     "type": "string"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "off"
                 }
             }
         },
@@ -11395,7 +12561,7 @@ const docTemplate = `{
                     "default": "5Mi"
                 },
                 "compartment": {
-                    "description": "Object storage compartment OCID",
+                    "description": "Specify compartment OCID, if you need to list buckets.",
                     "type": "string"
                 },
                 "copyCutoff": {
@@ -11506,7 +12672,7 @@ const docTemplate = `{
                     "default": "5Mi"
                 },
                 "compartment": {
-                    "description": "Object storage compartment OCID",
+                    "description": "Specify compartment OCID, if you need to list buckets.",
                     "type": "string"
                 },
                 "copyCutoff": {
@@ -11724,7 +12890,7 @@ const docTemplate = `{
                     "default": "5Mi"
                 },
                 "compartment": {
-                    "description": "Object storage compartment OCID",
+                    "description": "Specify compartment OCID, if you need to list buckets.",
                     "type": "string"
                 },
                 "copyCutoff": {
@@ -11835,7 +13001,7 @@ const docTemplate = `{
                     "default": "5Mi"
                 },
                 "compartment": {
-                    "description": "Object storage compartment OCID",
+                    "description": "Specify compartment OCID, if you need to list buckets.",
                     "type": "string"
                 },
                 "configFile": {
@@ -11958,7 +13124,7 @@ const docTemplate = `{
                     "default": "5Mi"
                 },
                 "compartment": {
-                    "description": "Object storage compartment OCID",
+                    "description": "Specify compartment OCID, if you need to list buckets.",
                     "type": "string"
                 },
                 "copyCutoff": {
@@ -12058,6 +13224,12 @@ const docTemplate = `{
         "storage.opendriveConfig": {
             "type": "object",
             "properties": {
+                "access": {
+                    "description": "Files and folders will be uploaded with this access permission (default private)",
+                    "type": "string",
+                    "default": "private",
+                    "example": "private"
+                },
                 "chunkSize": {
                     "description": "Files will be uploaded in chunks this size.",
                     "type": "string",
@@ -12088,6 +13260,11 @@ const docTemplate = `{
                 "authUrl": {
                     "description": "Auth server URL.",
                     "type": "string"
+                },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "clientId": {
                     "description": "OAuth Client Id.",
@@ -12146,6 +13323,11 @@ const docTemplate = `{
                     "description": "Auth server URL.",
                     "type": "string"
                 },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "clientId": {
                     "description": "OAuth Client Id.",
                     "type": "string"
@@ -12179,6 +13361,11 @@ const docTemplate = `{
                 "authUrl": {
                     "description": "Auth server URL.",
                     "type": "string"
+                },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "clientId": {
                     "description": "OAuth Client Id.",
@@ -12299,6 +13486,11 @@ const docTemplate = `{
                     "description": "Description of the remote.",
                     "type": "string"
                 },
+                "directoryBucket": {
+                    "description": "Set to use AWS Directory Buckets",
+                    "type": "boolean",
+                    "default": false
+                },
                 "directoryMarkers": {
                     "description": "Upload an empty object with a trailing slash when a new directory is created",
                     "type": "boolean",
@@ -12417,6 +13609,22 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -12428,8 +13636,7 @@ const docTemplate = `{
                 },
                 "serverSideEncryption": {
                     "description": "The server-side encryption algorithm used when storing this object in S3.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
                 },
                 "sessionToken": {
                     "description": "An AWS session token.",
@@ -12438,6 +13645,11 @@ const docTemplate = `{
                 "sharedCredentialsFile": {
                     "description": "Path to the shared credentials file.",
                     "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "sseCustomerAlgorithm": {
                     "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
@@ -12467,7 +13679,7 @@ const docTemplate = `{
                 "storageClass": {
                     "description": "The storage class to use when storing new objects in S3.",
                     "type": "string",
-                    "example": ""
+                    "example": "REDUCED_REDUNDANCY"
                 },
                 "stsEndpoint": {
                     "description": "Endpoint for STS (deprecated).",
@@ -12498,6 +13710,16 @@ const docTemplate = `{
                     "type": "string",
                     "default": "unset"
                 },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "useDualStack": {
                     "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
                     "type": "boolean",
@@ -12520,6 +13742,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -12605,7 +13832,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for OSS API.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "oss-accelerate.aliyuncs.com"
                 },
@@ -12679,6 +13906,22 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -12696,10 +13939,14 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
-                "storageClass": {
-                    "description": "The storage class to use when storing new objects in OSS.",
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
                     "type": "string",
-                    "example": ""
+                    "default": "unset"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in S3.",
+                    "type": "string"
                 },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
@@ -12718,6 +13965,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -12743,6 +14000,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -12828,7 +14090,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for Arvan Cloud Object Storage (AOS) API.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "s3.ir-thr-at1.arvanstorage.ir"
                 },
@@ -12859,7 +14121,7 @@ const docTemplate = `{
                     "default": 0
                 },
                 "locationConstraint": {
-                    "description": "Location constraint - must match endpoint.",
+                    "description": "Location constraint - must be set to match the Region.",
                     "type": "string",
                     "example": "ir-thr-at1"
                 },
@@ -12907,6 +14169,22 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -12924,10 +14202,14 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
-                "storageClass": {
-                    "description": "The storage class to use when storing new objects in ArvanCloud.",
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
                     "type": "string",
-                    "example": "STANDARD"
+                    "default": "unset"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in S3.",
+                    "type": "string"
                 },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
@@ -12946,6 +14228,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -12971,6 +14263,270 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3BizflyCloudConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "hn.ss.bfcplatform.vn"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "hn"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13135,8 +14691,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -13149,8 +14720,7 @@ const docTemplate = `{
                 },
                 "serverSideEncryption": {
                     "description": "The server-side encryption algorithm used when storing this object in S3.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
                 },
                 "sessionToken": {
                     "description": "An AWS session token.",
@@ -13159,6 +14729,11 @@ const docTemplate = `{
                 "sharedCredentialsFile": {
                     "description": "Path to the shared credentials file.",
                     "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "sseCustomerAlgorithm": {
                     "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
@@ -13205,6 +14780,16 @@ const docTemplate = `{
                     "type": "string",
                     "default": "unset"
                 },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "useDualStack": {
                     "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
                     "type": "boolean",
@@ -13227,6 +14812,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13312,7 +14902,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for China Mobile Ecloud Elastic Object Storage (EOS) API.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "eos-wuxi-1.cmecloud.cn"
                 },
@@ -13343,7 +14933,7 @@ const docTemplate = `{
                     "default": 0
                 },
                 "locationConstraint": {
-                    "description": "Location constraint - must match endpoint.",
+                    "description": "Location constraint - must be set to match the Region.",
                     "type": "string",
                     "example": "wuxi1"
                 },
@@ -13391,6 +14981,22 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -13402,8 +15008,7 @@ const docTemplate = `{
                 },
                 "serverSideEncryption": {
                     "description": "The server-side encryption algorithm used when storing this object in S3.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
                 },
                 "sessionToken": {
                     "description": "An AWS session token.",
@@ -13412,6 +15017,11 @@ const docTemplate = `{
                 "sharedCredentialsFile": {
                     "description": "Path to the shared credentials file.",
                     "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "sseCustomerAlgorithm": {
                     "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
@@ -13434,9 +15044,8 @@ const docTemplate = `{
                     "example": ""
                 },
                 "storageClass": {
-                    "description": "The storage class to use when storing new objects in ChinaMobile.",
-                    "type": "string",
-                    "example": ""
+                    "description": "The storage class to use when storing new objects in S3.",
+                    "type": "string"
                 },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
@@ -13455,6 +15064,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13480,6 +15099,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13511,11 +15135,6 @@ const docTemplate = `{
                 "accessKeyId": {
                     "description": "AWS Access Key ID.",
                     "type": "string"
-                },
-                "bucketAcl": {
-                    "description": "Canned ACL used when creating buckets.",
-                    "type": "string",
-                    "example": "private"
                 },
                 "chunkSize": {
                     "description": "Chunk size to use for uploading.",
@@ -13639,6 +15258,22 @@ const docTemplate = `{
                     "type": "string",
                     "example": "auto"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -13655,6 +15290,11 @@ const docTemplate = `{
                 "sharedCredentialsFile": {
                     "description": "Path to the shared credentials file.",
                     "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
@@ -13673,6 +15313,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13698,6 +15348,270 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3CubbitConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "s3.cubbit.eu"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "eu-west-1"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13863,8 +15777,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -13883,6 +15812,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -13900,6 +15834,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -13925,6 +15869,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14090,8 +16039,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -14110,6 +16074,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -14127,6 +16096,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14152,6 +16131,775 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3ExabaConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3FileLuConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "s5lu.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "global"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3FlashBladeConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14237,7 +16985,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for Google Cloud Storage.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "https://storage.googleapis.com"
                 },
@@ -14317,8 +17065,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -14337,6 +17100,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -14354,6 +17122,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14379,6 +17157,274 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3HetznerConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "hel1.your-objectstorage.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "hel1"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14464,7 +17510,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for OBS API.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "obs.af-south-1.myhuaweicloud.com"
                 },
@@ -14539,9 +17585,25 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "region": {
-                    "description": "Region to connect to. - the location where your bucket will be created and your data stored. Need bo be same with your endpoint.",
+                    "description": "Region to connect to.",
                     "type": "string",
                     "example": "af-south-1"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -14560,6 +17622,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -14577,6 +17644,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14602,6 +17679,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14688,7 +17770,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for IBM COS S3 API.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "s3.us.cloud-object-storage.appdomain.cloud"
                 },
@@ -14702,6 +17784,14 @@ const docTemplate = `{
                     "description": "If true use path style access if false use virtual hosted style.",
                     "type": "boolean",
                     "default": true
+                },
+                "ibmApiKey": {
+                    "description": "IBM API Key to be used to obtain IAM token",
+                    "type": "string"
+                },
+                "ibmResourceInstanceId": {
+                    "description": "IBM service instance id",
+                    "type": "string"
                 },
                 "listChunk": {
                     "description": "Size of listing chunk (response list for each ListObject S3 request).",
@@ -14719,7 +17809,7 @@ const docTemplate = `{
                     "default": 0
                 },
                 "locationConstraint": {
-                    "description": "Location constraint - must match endpoint when using IBM Cloud Public.",
+                    "description": "Location constraint - must be set to match the Region.",
                     "type": "string",
                     "example": "us-standard"
                 },
@@ -14769,8 +17859,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -14789,6 +17894,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -14806,6 +17916,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14831,6 +17951,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -14985,6 +18110,22 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -15001,6 +18142,11 @@ const docTemplate = `{
                 "sharedCredentialsFile": {
                     "description": "Path to the shared credentials file.",
                     "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
@@ -15019,6 +18165,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15044,6 +18200,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15129,7 +18290,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for IONOS S3 Object Storage.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "s3-eu-central-1.ionoscloud.com"
                 },
@@ -15204,9 +18365,25 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "region": {
-                    "description": "Region where your bucket will be created and your data stored.",
+                    "description": "Region to connect to.",
                     "type": "string",
-                    "example": "de"
+                    "example": "eu-central-2"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -15225,6 +18402,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -15242,6 +18424,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15267,6 +18459,270 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3IntercoloConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "de-fra.i3storage.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "de-fra"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15353,7 +18809,8 @@ const docTemplate = `{
                 },
                 "endpoint": {
                     "description": "Endpoint for S3 API.",
-                    "type": "string"
+                    "type": "string",
+                    "example": "s3.leviia.com"
                 },
                 "envAuth": {
                     "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
@@ -15427,8 +18884,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -15447,6 +18919,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -15464,6 +18941,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15489,6 +18976,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15574,7 +19066,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for Liara Object Storage API.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "storage.iran.liara.space"
                 },
@@ -15648,6 +19140,22 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -15665,10 +19173,14 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
-                "storageClass": {
-                    "description": "The storage class to use when storing new objects in Liara",
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
                     "type": "string",
-                    "example": "STANDARD"
+                    "default": "unset"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in S3.",
+                    "type": "string"
                 },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
@@ -15687,6 +19199,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15712,6 +19234,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15797,9 +19324,9 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for Linode Object Storage API.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
-                    "example": "us-southeast-1.linodeobjects.com"
+                    "example": "nl-ams-1.linodeobjects.com"
                 },
                 "envAuth": {
                     "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
@@ -15871,6 +19398,22 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -15887,6 +19430,11 @@ const docTemplate = `{
                 "sharedCredentialsFile": {
                     "description": "Path to the shared credentials file.",
                     "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
@@ -15905,6 +19453,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -15930,6 +19488,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -16017,7 +19580,7 @@ const docTemplate = `{
                 "endpoint": {
                     "description": "Endpoint for S3 API.",
                     "type": "string",
-                    "example": "s3.us-east-1.lyvecloud.seagate.com"
+                    "example": "s3.us-west-1.{account_name}.lyve.seagate.com"
                 },
                 "envAuth": {
                     "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
@@ -16095,8 +19658,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -16115,6 +19693,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -16132,6 +19715,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -16157,6 +19750,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -16316,6 +19914,22 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -16333,10 +19947,14 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
-                "storageClass": {
-                    "description": "The storage class to use when storing new objects in Magalu.",
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
                     "type": "string",
-                    "example": "STANDARD"
+                    "default": "unset"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in S3.",
+                    "type": "string"
                 },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
@@ -16355,6 +19973,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -16380,6 +20008,261 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3MegaConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "s3.eu-central-1.s4.mega.io"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -16544,8 +20427,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -16558,8 +20456,7 @@ const docTemplate = `{
                 },
                 "serverSideEncryption": {
                     "description": "The server-side encryption algorithm used when storing this object in S3.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
                 },
                 "sessionToken": {
                     "description": "An AWS session token.",
@@ -16568,6 +20465,11 @@ const docTemplate = `{
                 "sharedCredentialsFile": {
                     "description": "Path to the shared credentials file.",
                     "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "sseCustomerAlgorithm": {
                     "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
@@ -16614,6 +20516,16 @@ const docTemplate = `{
                     "type": "string",
                     "default": "unset"
                 },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "useDualStack": {
                     "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
                     "type": "boolean",
@@ -16636,6 +20548,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -16800,8 +20717,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -16820,6 +20752,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -16837,6 +20774,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -16862,6 +20809,270 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3OVHcloudConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "s3.gra.io.cloud.ovh.net"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "gra"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -17026,8 +21237,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -17046,6 +21272,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -17063,6 +21294,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -17088,6 +21329,270 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3OutscaleConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "oos.eu-west-2.outscale.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "eu-west-2"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -17173,7 +21678,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for Petabox S3 Object Storage.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "s3.petabox.io"
                 },
@@ -17248,9 +21753,25 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "region": {
-                    "description": "Region where your bucket will be created and your data stored.",
+                    "description": "Region to connect to.",
                     "type": "string",
-                    "example": "us-east-1"
+                    "example": "eu-central-1"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -17269,6 +21790,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -17286,6 +21812,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -17311,6 +21847,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -17396,7 +21937,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for Qiniu Object Storage.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "s3-cn-east-1.qiniucs.com"
                 },
@@ -17480,6 +22021,22 @@ const docTemplate = `{
                     "type": "string",
                     "example": "cn-east-1"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -17497,10 +22054,15 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
-                "storageClass": {
-                    "description": "The storage class to use when storing new objects in Qiniu.",
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
                     "type": "string",
-                    "example": "STANDARD"
+                    "default": "unset"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in S3.",
+                    "type": "string",
+                    "example": "LINE"
                 },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
@@ -17519,6 +22081,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -17544,6 +22116,266 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3RabataConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "s3.us-east-1.rabata.io"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string",
+                    "example": "us-east-1"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "eu-west-1"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -17629,7 +22461,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for RackCorp Object Storage.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "s3.rackcorp.com"
                 },
@@ -17660,7 +22492,7 @@ const docTemplate = `{
                     "default": 0
                 },
                 "locationConstraint": {
-                    "description": "Location constraint - the location where your bucket will be located and your data stored.",
+                    "description": "Location constraint - must be set to match the Region.",
                     "type": "string",
                     "example": "global"
                 },
@@ -17709,9 +22541,25 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "region": {
-                    "description": "region - the location where your bucket will be created and your data stored.",
+                    "description": "Region to connect to.",
                     "type": "string",
                     "example": "global"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -17730,6 +22578,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -17747,6 +22600,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -17772,6 +22635,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -17803,15 +22671,6 @@ const docTemplate = `{
                 "accessKeyId": {
                     "description": "AWS Access Key ID.",
                     "type": "string"
-                },
-                "acl": {
-                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
-                    "type": "string"
-                },
-                "bucketAcl": {
-                    "description": "Canned ACL used when creating buckets.",
-                    "type": "string",
-                    "example": "private"
                 },
                 "chunkSize": {
                     "description": "Chunk size to use for uploading.",
@@ -17886,10 +22745,6 @@ const docTemplate = `{
                     "type": "integer",
                     "default": 0
                 },
-                "locationConstraint": {
-                    "description": "Location constraint - must be set to match the Region.",
-                    "type": "string"
-                },
                 "maxUploadParts": {
                     "description": "Maximum number of parts in a multipart upload.",
                     "type": "integer",
@@ -17934,10 +22789,21 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
-                "region": {
-                    "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -17956,6 +22822,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -17973,6 +22844,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -17998,6 +22879,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -18083,7 +22969,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for Scaleway Object Storage.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "s3.nl-ams.scw.cloud"
                 },
@@ -18162,6 +23048,22 @@ const docTemplate = `{
                     "type": "string",
                     "example": "nl-ams"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -18178,6 +23080,11 @@ const docTemplate = `{
                 "sharedCredentialsFile": {
                     "description": "Path to the shared credentials file.",
                     "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "storageClass": {
                     "description": "The storage class to use when storing new objects in S3.",
@@ -18204,6 +23111,16 @@ const docTemplate = `{
                     "type": "string",
                     "default": "unset"
                 },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "useDualStack": {
                     "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
                     "type": "boolean",
@@ -18226,6 +23143,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -18391,8 +23313,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -18411,6 +23348,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -18428,6 +23370,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -18453,6 +23405,760 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3SelectelConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "s3.ru-1.storage.selcloud.ru"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "ru-3"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3ServercoreConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "s3.ru-1.storage.selcloud.ru"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "uz-2"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3SpectraLogicConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -18538,7 +24244,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for StackPath Object Storage.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "s3.us-east-2.stackpathstorage.com"
                 },
@@ -18614,8 +24320,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -18634,6 +24355,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -18651,6 +24377,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -18676,6 +24412,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -18707,11 +24448,6 @@ const docTemplate = `{
                 "accessKeyId": {
                     "description": "AWS Access Key ID.",
                     "type": "string"
-                },
-                "bucketAcl": {
-                    "description": "Canned ACL used when creating buckets.",
-                    "type": "string",
-                    "example": "private"
                 },
                 "chunkSize": {
                     "description": "Chunk size to use for uploading.",
@@ -18757,7 +24493,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for Storj Gateway.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "gateway.storjshare.io"
                 },
@@ -18831,6 +24567,22 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -18847,6 +24599,11 @@ const docTemplate = `{
                 "sharedCredentialsFile": {
                     "description": "Path to the shared credentials file.",
                     "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
                 },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
@@ -18865,6 +24622,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -18890,6 +24657,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -18921,11 +24693,6 @@ const docTemplate = `{
                 "accessKeyId": {
                     "description": "AWS Access Key ID.",
                     "type": "string"
-                },
-                "bucketAcl": {
-                    "description": "Canned ACL used when creating buckets.",
-                    "type": "string",
-                    "example": "private"
                 },
                 "chunkSize": {
                     "description": "Chunk size to use for uploading.",
@@ -18971,7 +24738,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for Synology C2 Object Storage API.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "eu-001.s3.synologyc2.net"
                 },
@@ -19050,9 +24817,25 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "region": {
-                    "description": "Region where your data stored.",
+                    "description": "Region to connect to.",
                     "type": "string",
                     "example": "eu-001"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -19071,6 +24854,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -19088,6 +24876,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -19113,6 +24911,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -19199,7 +25002,7 @@ const docTemplate = `{
                     "default": "Slash,InvalidUtf8,Dot"
                 },
                 "endpoint": {
-                    "description": "Endpoint for Tencent COS API.",
+                    "description": "Endpoint for S3 API.",
                     "type": "string",
                     "example": "cos.ap-beijing.myqcloud.com"
                 },
@@ -19273,6 +25076,22 @@ const docTemplate = `{
                     "description": "Profile to use in the shared credentials file.",
                     "type": "string"
                 },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
                     "type": "string",
@@ -19290,10 +25109,15 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
-                "storageClass": {
-                    "description": "The storage class to use when storing new objects in Tencent COS.",
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
                     "type": "string",
-                    "example": ""
+                    "default": "unset"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in S3.",
+                    "type": "string",
+                    "example": "ARCHIVE"
                 },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
@@ -19312,6 +25136,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -19337,6 +25171,11 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -19502,8 +25341,23 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Region to connect to.",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
                 },
                 "sdkLogMode": {
                     "description": "Set to debug the SDK",
@@ -19522,6 +25376,11 @@ const docTemplate = `{
                     "description": "Path to the shared credentials file.",
                     "type": "string"
                 },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
                 "uploadConcurrency": {
                     "description": "Concurrency for multipart uploads and copies.",
                     "type": "integer",
@@ -19539,6 +25398,16 @@ const docTemplate = `{
                 },
                 "useAlreadyExists": {
                     "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -19564,6 +25433,274 @@ const docTemplate = `{
                 },
                 "useUnsignedPayload": {
                     "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versionDeleted": {
+                    "description": "Show deleted file markers when using versions.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.s3ZataConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "description": {
+                    "description": "Description of the remote.",
+                    "type": "string"
+                },
+                "directoryMarkers": {
+                    "description": "Upload an empty object with a trailing slash when a new directory is created",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "idr01.zata.ai"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed. (no longer used)",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool. (no longer used)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "us-east-1"
+                },
+                "roleArn": {
+                    "description": "ARN of the IAM role to assume.",
+                    "type": "string"
+                },
+                "roleExternalId": {
+                    "description": "External ID for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionDuration": {
+                    "description": "Session duration for assumed role.",
+                    "type": "string"
+                },
+                "roleSessionName": {
+                    "description": "Session name for assumed role.",
+                    "type": "string"
+                },
+                "sdkLogMode": {
+                    "description": "Set to debug the SDK",
+                    "type": "string",
+                    "default": "Off"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "signAcceptEncoding": {
+                    "description": "Set if rclone should include Accept-Encoding as part of the signature.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads and copies.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAcceptEncodingGzip": {
+                    "description": "Whether to send ` + "`" + `Accept-Encoding: gzip` + "`" + ` header.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useAlreadyExists": {
+                    "description": "Set if rclone should report BucketAlreadyExists errors on bucket creation.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useArnRegion": {
+                    "description": "If true, enables arn region support for the service.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useDataIntegrityProtections": {
+                    "description": "If true use AWS S3 data integrity protections.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useDualStack": {
+                    "description": "If true use AWS S3 dual-stack endpoint (IPv6 support).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useMultipartUploads": {
+                    "description": "Set if rclone should use multipart uploads.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useUnsignedPayload": {
+                    "description": "Whether to use an unsigned payload in PutObject",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "useXId": {
+                    "description": "Set if rclone should add x-id URL parameters.",
                     "type": "string",
                     "default": "unset"
                 },
@@ -19613,7 +25750,7 @@ const docTemplate = `{
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
-                    "default": "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8"
+                    "default": "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8,Dot"
                 },
                 "library": {
                     "description": "Name of the library.",
@@ -19646,6 +25783,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "blake3sumCommand": {
+                    "description": "The command used to read BLAKE3 hashes.",
+                    "type": "string"
+                },
                 "chunkSize": {
                     "description": "Upload and download chunk size.",
                     "type": "string",
@@ -19670,6 +25811,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "crc32sumCommand": {
+                    "description": "The command used to read CRC-32 hashes.",
+                    "type": "string"
+                },
                 "description": {
                     "description": "Description of the remote.",
                     "type": "string"
@@ -19689,12 +25834,20 @@ const docTemplate = `{
                     "type": "boolean",
                     "default": false
                 },
+                "hashes": {
+                    "description": "Comma separated list of supported checksum types.",
+                    "type": "string"
+                },
                 "host": {
                     "description": "SSH host to connect to.",
                     "type": "string"
                 },
                 "hostKeyAlgorithms": {
                     "description": "Space separated list of host key algorithms, ordered by preference.",
+                    "type": "string"
+                },
+                "httpProxy": {
+                    "description": "URL for HTTP CONNECT proxy",
                     "type": "string"
                 },
                 "idleTimeout": {
@@ -19733,7 +25886,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "md5sumCommand": {
-                    "description": "The command used to read md5 hashes.",
+                    "description": "The command used to read MD5 hashes.",
                     "type": "string"
                 },
                 "pass": {
@@ -19748,6 +25901,10 @@ const docTemplate = `{
                     "description": "SSH port number.",
                     "type": "integer",
                     "default": 22
+                },
+                "pubkey": {
+                    "description": "SSH public certificate for public certificate based authentication.",
+                    "type": "string"
                 },
                 "pubkeyFile": {
                     "description": "Optional path to public key file.",
@@ -19767,7 +25924,11 @@ const docTemplate = `{
                     "default": true
                 },
                 "sha1sumCommand": {
-                    "description": "The command used to read sha1 hashes.",
+                    "description": "The command used to read SHA-1 hashes.",
+                    "type": "string"
+                },
+                "sha256sumCommand": {
+                    "description": "The command used to read SHA-256 hashes.",
                     "type": "string"
                 },
                 "shellType": {
@@ -19808,6 +25969,14 @@ const docTemplate = `{
                     "description": "SSH username.",
                     "type": "string",
                     "default": "$USER"
+                },
+                "xxh128sumCommand": {
+                    "description": "The command used to read XXH128 hashes.",
+                    "type": "string"
+                },
+                "xxh3sumCommand": {
+                    "description": "The command used to read XXH3 hashes.",
+                    "type": "string"
                 }
             }
         },
@@ -19822,6 +25991,11 @@ const docTemplate = `{
                     "description": "Upload chunk size.",
                     "type": "string",
                     "default": "64Mi"
+                },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "clientId": {
                     "description": "OAuth Client Id.",
@@ -19928,6 +26102,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "1m0s"
                 },
+                "kerberosCcache": {
+                    "description": "Path to the Kerberos credential cache (krb5cc).",
+                    "type": "string"
+                },
                 "pass": {
                     "description": "SMB password.",
                     "type": "string"
@@ -19940,6 +26118,11 @@ const docTemplate = `{
                 "spn": {
                     "description": "Service principal name.",
                     "type": "string"
+                },
+                "useKerberos": {
+                    "description": "Use Kerberos authentication.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "user": {
                     "description": "SMB username.",
@@ -20205,32 +26388,14 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.uptoboxConfig": {
-            "type": "object",
-            "properties": {
-                "accessToken": {
-                    "description": "Your access token.",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "Description of the remote.",
-                    "type": "string"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"
-                },
-                "private": {
-                    "description": "Set to make uploaded files private",
-                    "type": "boolean",
-                    "default": false
-                }
-            }
-        },
         "storage.webdavConfig": {
             "type": "object",
             "properties": {
+                "authRedirect": {
+                    "description": "Preserve authentication on redirect.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "bearerToken": {
                     "description": "Bearer token instead of user/pass (e.g. a Macaroon).",
                     "type": "string"
@@ -20301,6 +26466,11 @@ const docTemplate = `{
                     "description": "Auth server URL.",
                     "type": "string"
                 },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "clientId": {
                     "description": "OAuth Client Id.",
                     "type": "string"
@@ -20345,6 +26515,11 @@ const docTemplate = `{
                     "description": "Auth server URL.",
                     "type": "string"
                 },
+                "clientCredentials": {
+                    "description": "Use client credentials OAuth flow.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "clientId": {
                     "description": "OAuth Client Id.",
                     "type": "string"
@@ -20374,6 +26549,11 @@ const docTemplate = `{
                 "tokenUrl": {
                     "description": "Token server url.",
                     "type": "string"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to large file upload api (\u003e= 10 MiB).",
+                    "type": "string",
+                    "default": "10Mi"
                 }
             }
         },

@@ -213,10 +213,6 @@
    --sugarsync-private-access-key value  Sugarsync Private Access Key. [$SUGARSYNC_PRIVATE_ACCESS_KEY]
    --sugarsync-refresh-token value       Sugarsync refresh token. [$SUGARSYNC_REFRESH_TOKEN]
 
-   Uptobox
-
-   --uptobox-access-token value  アクセストークン。[$UPTOBOX_ACCESS_TOKEN]
-
    WebDAV
 
    --webdav-bearer-token value          ユーザー/パスワードの代わりにベアラトークン（Macaroonなど）を使用します。[$WEBDAV_BEARER_TOKEN]

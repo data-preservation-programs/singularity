@@ -30,6 +30,8 @@ DESCRIPTION:
 
    --region
       Region to connect to.
+      
+      Leave blank if you are using an S3 clone and you don't have a region.
 
       Examples:
          | auto | R2 buckets are automatically distributed across Cloudflare's data centers for low latency.
@@ -38,29 +40,6 @@ DESCRIPTION:
       Endpoint for S3 API.
       
       Required when using an S3 clone.
-
-   --bucket-acl
-      Canned ACL used when creating buckets.
-      
-      For more info visit https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl
-      
-      Note that this ACL is applied when only when creating buckets.  If it
-      isn't set then "acl" is used instead.
-      
-      If the "acl" and "bucket_acl" are empty strings then no X-Amz-Acl:
-      header is added and the default (private) will be used.
-      
-
-      Examples:
-         | private            | Owner gets FULL_CONTROL.
-         |                    | No one else has access rights (default).
-         | public-read        | Owner gets FULL_CONTROL.
-         |                    | The AllUsers group gets READ access.
-         | public-read-write  | Owner gets FULL_CONTROL.
-         |                    | The AllUsers group gets READ and WRITE access.
-         |                    | Granting this on a bucket is generally not recommended.
-         | authenticated-read | Owner gets FULL_CONTROL.
-         |                    | The AuthenticatedUsers group gets READ access.
 
    --upload-cutoff
       Cutoff for switching to chunked upload.
@@ -153,6 +132,26 @@ DESCRIPTION:
    --session-token
       An AWS session token.
 
+   --role-arn
+      ARN of the IAM role to assume.
+            
+      Leave blank if not using assume role.
+
+   --role-session-name
+      Session name for assumed role.
+            
+      If empty, a session name will be generated automatically.
+
+   --role-session-duration
+      Session duration for assumed role.
+            
+      If empty, the default session duration will be used.
+
+   --role-external-id
+      External ID for assumed role.
+            
+      Leave blank if not using an external ID.
+
    --upload-concurrency
       Concurrency for multipart uploads and copies.
       
@@ -191,6 +190,9 @@ DESCRIPTION:
       If true use AWS S3 dual-stack endpoint (IPv6 support).
       
       See [AWS Docs on Dualstack Endpoints](https://docs.aws.amazon.com/AmazonS3/latest/userguide/dual-stack-endpoints.html)
+
+   --use-arn-region
+      If true, enables arn region support for the service.
 
    --list-chunk
       Size of listing chunk (response list for each ListObject S3 request).
@@ -332,6 +334,11 @@ DESCRIPTION:
       circumstances or for testing.
       
 
+   --use-data-integrity-protections
+      If true use AWS S3 data integrity protections.
+      
+      See [AWS Docs on Data Integrity Protections](https://docs.aws.amazon.com/sdkref/latest/guide/feature-dataintegrity.html)
+
    --versions
       Include old versions in directory listings.
 
@@ -344,7 +351,7 @@ DESCRIPTION:
       Note that when using this no file write operations are permitted,
       so you can't upload files or delete them.
       
-      See [the time option docs](/docs/#time-option) for valid formats.
+      See [the time option docs](/docs/#time-options) for valid formats.
       
 
    --version-deleted
@@ -446,6 +453,30 @@ DESCRIPTION:
       knows about - please make a bug report if not.
       
 
+   --use-x-id
+      Set if rclone should add x-id URL parameters.
+      
+      You can change this if you want to disable the AWS SDK from
+      adding x-id URL parameters.
+      
+      This shouldn't be necessary in normal operation.
+      
+      This should be automatically set correctly for all providers rclone
+      knows about - please make a bug report if not.
+      
+
+   --sign-accept-encoding
+      Set if rclone should include Accept-Encoding as part of the signature.
+      
+      You can change this if you want to stop rclone including
+      Accept-Encoding as part of the signature.
+      
+      This shouldn't be necessary in normal operation.
+      
+      This should be automatically set correctly for all providers rclone
+      knows about - please make a bug report if not.
+      
+
    --sdk-log-mode
       Set to debug the SDK
       
@@ -479,7 +510,6 @@ OPTIONS:
 
    Advanced
 
-   --bucket-acl value                                Canned ACL used when creating buckets. [$BUCKET_ACL]
    --chunk-size value                                Chunk size to use for uploading. (default: "5Mi") [$CHUNK_SIZE]
    --copy-cutoff value                               Cutoff for switching to multipart copy. (default: "4.656Gi") [$COPY_CUTOFF]
    --decompress                                      If set this will decompress gzip encoded objects. (default: false) [$DECOMPRESS]
@@ -502,18 +532,26 @@ OPTIONS:
    --no-head-object                                  If set, do not do HEAD before GET when getting objects. (default: false) [$NO_HEAD_OBJECT]
    --no-system-metadata                              Suppress setting and reading of system metadata (default: false) [$NO_SYSTEM_METADATA]
    --profile value                                   Profile to use in the shared credentials file. [$PROFILE]
+   --role-arn value                                  ARN of the IAM role to assume. [$ROLE_ARN]
+   --role-external-id value                          External ID for assumed role. [$ROLE_EXTERNAL_ID]
+   --role-session-duration value                     Session duration for assumed role. [$ROLE_SESSION_DURATION]
+   --role-session-name value                         Session name for assumed role. [$ROLE_SESSION_NAME]
    --sdk-log-mode value                              Set to debug the SDK (default: "Off") [$SDK_LOG_MODE]
    --session-token value                             An AWS session token. [$SESSION_TOKEN]
    --shared-credentials-file value                   Path to the shared credentials file. [$SHARED_CREDENTIALS_FILE]
+   --sign-accept-encoding value                      Set if rclone should include Accept-Encoding as part of the signature. (default: "unset") [$SIGN_ACCEPT_ENCODING]
    --upload-concurrency value                        Concurrency for multipart uploads and copies. (default: 4) [$UPLOAD_CONCURRENCY]
    --upload-cutoff value                             Cutoff for switching to chunked upload. (default: "200Mi") [$UPLOAD_CUTOFF]
    --use-accept-encoding-gzip Accept-Encoding: gzip  Whether to send Accept-Encoding: gzip header. (default: "unset") [$USE_ACCEPT_ENCODING_GZIP]
    --use-already-exists value                        Set if rclone should report BucketAlreadyExists errors on bucket creation. (default: "unset") [$USE_ALREADY_EXISTS]
+   --use-arn-region                                  If true, enables arn region support for the service. (default: false) [$USE_ARN_REGION]
+   --use-data-integrity-protections value            If true use AWS S3 data integrity protections. (default: "unset") [$USE_DATA_INTEGRITY_PROTECTIONS]
    --use-dual-stack                                  If true use AWS S3 dual-stack endpoint (IPv6 support). (default: false) [$USE_DUAL_STACK]
    --use-multipart-etag value                        Whether to use ETag in multipart uploads for verification (default: "unset") [$USE_MULTIPART_ETAG]
    --use-multipart-uploads value                     Set if rclone should use multipart uploads. (default: "unset") [$USE_MULTIPART_UPLOADS]
    --use-presigned-request                           Whether to use a presigned request or PutObject for single part uploads (default: false) [$USE_PRESIGNED_REQUEST]
    --use-unsigned-payload value                      Whether to use an unsigned payload in PutObject (default: "unset") [$USE_UNSIGNED_PAYLOAD]
+   --use-x-id value                                  Set if rclone should add x-id URL parameters. (default: "unset") [$USE_X_ID]
    --v2-auth                                         If true use v2 authentication. (default: false) [$V2_AUTH]
    --version-at value                                Show file versions as they were at the specified time. (default: "off") [$VERSION_AT]
    --version-deleted                                 Show deleted file markers when using versions. (default: false) [$VERSION_DELETED]

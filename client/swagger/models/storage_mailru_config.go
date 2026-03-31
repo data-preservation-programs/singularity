@@ -24,6 +24,9 @@ type StorageMailruConfig struct {
 	// Example: true
 	CheckHash *bool `json:"checkHash,omitempty"`
 
+	// Use client credentials OAuth flow.
+	ClientCredentials *bool `json:"clientCredentials,omitempty"`
+
 	// OAuth Client Id.
 	ClientID string `json:"clientId,omitempty"`
 

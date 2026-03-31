@@ -46,7 +46,6 @@ COMMANDS:
    storj            Storj 분산 클라우드 스토리지
    sugarsync        Sugarsync
    swift            OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
-   uptobox          Uptobox
    webdav           WebDAV
    yandex           Yandex Disk
    zoho             Zoho

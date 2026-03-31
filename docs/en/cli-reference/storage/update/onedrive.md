@@ -32,14 +32,34 @@ DESCRIPTION:
       
       Leave blank to use the provider defaults.
 
+   --client-credentials
+      Use client credentials OAuth flow.
+      
+      This will use the OAUTH2 client Credentials Flow as described in RFC 6749.
+      
+      Note that this option is NOT supported by all backends.
+
    --region
       Choose national cloud region for OneDrive.
 
       Examples:
          | global | Microsoft Cloud Global
          | us     | Microsoft Cloud for US Government
-         | de     | Microsoft Cloud Germany
+         | de     | Microsoft Cloud Germany (deprecated - try global region first).
          | cn     | Azure and Office 365 operated by Vnet Group in China
+
+   --upload-cutoff
+      Cutoff for switching to chunked upload.
+      
+      Any files larger than this will be uploaded in chunks of chunk_size.
+      
+      This is disabled by default as uploading using single part uploads
+      causes rclone to use twice the storage on Onedrive business as when
+      rclone sets the modification time after the upload Onedrive creates a
+      new version.
+      
+      See: https://github.com/rclone/rclone/issues/1716
+      
 
    --chunk-size
       Chunk size to upload files with - must be multiple of 320k (327,680 bytes).
@@ -73,6 +93,13 @@ DESCRIPTION:
          | Files.Read Files.Read.All Sites.Read.All offline_access                                     | Read only access to all resources
          | Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All offline_access                | Read and write access to all resources, without the ability to browse SharePoint sites. 
          |                                                                                             | Same as if disable_site_permission was set to true
+
+   --tenant
+      ID of the service principal's tenant. Also called its directory ID.
+      
+      Set this if using
+      - Client Credential flow
+      
 
    --disable-site-permission
       Disable the request for Sites.Read.All permission.
@@ -221,7 +248,7 @@ DESCRIPTION:
       
       As a rule of thumb if nearly all of your data is under rclone's root
       directory (the `root/directory` in `onedrive:root/directory`) then
-      using this flag will be be a big performance win. If your data is
+      using this flag will be a big performance win. If your data is
       mostly not under the root then using this flag will be a big
       performance loss.
       
@@ -257,6 +284,7 @@ OPTIONS:
    --client-secret value  OAuth Client Secret. [$CLIENT_SECRET]
    --help, -h             show help
    --region value         Choose national cloud region for OneDrive. (default: "global") [$REGION]
+   --tenant value         ID of the service principal's tenant. Also called its directory ID. [$TENANT]
 
    Advanced
 
@@ -264,6 +292,7 @@ OPTIONS:
    --auth-url value              Auth server URL. [$AUTH_URL]
    --av-override                 Allows download of files the server thinks has a virus. (default: false) [$AV_OVERRIDE]
    --chunk-size value            Chunk size to upload files with - must be multiple of 320k (327,680 bytes). (default: "10Mi") [$CHUNK_SIZE]
+   --client-credentials          Use client credentials OAuth flow. (default: false) [$CLIENT_CREDENTIALS]
    --delta                       If set rclone will use delta listing to implement recursive listings. (default: false) [$DELTA]
    --description value           Description of the remote. [$DESCRIPTION]
    --disable-site-permission     Disable the request for Sites.Read.All permission. (default: false) [$DISABLE_SITE_PERMISSION]
@@ -283,6 +312,7 @@ OPTIONS:
    --server-side-across-configs  Deprecated: use --server-side-across-configs instead. (default: false) [$SERVER_SIDE_ACROSS_CONFIGS]
    --token value                 OAuth Access Token as a JSON blob. [$TOKEN]
    --token-url value             Token server url. [$TOKEN_URL]
+   --upload-cutoff value         Cutoff for switching to chunked upload. (default: "off") [$UPLOAD_CUTOFF]
 
    Client Config
 

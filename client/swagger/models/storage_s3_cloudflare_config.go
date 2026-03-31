@@ -20,10 +20,6 @@ type StorageS3CloudflareConfig struct {
 	// AWS Access Key ID.
 	AccessKeyID string `json:"accessKeyId,omitempty"`
 
-	// Canned ACL used when creating buckets.
-	// Example: private
-	BucketACL string `json:"bucketAcl,omitempty"`
-
 	// Chunk size to use for uploading.
 	ChunkSize *string `json:"chunkSize,omitempty"`
 
@@ -101,6 +97,18 @@ type StorageS3CloudflareConfig struct {
 	// Example: auto
 	Region string `json:"region,omitempty"`
 
+	// ARN of the IAM role to assume.
+	RoleArn string `json:"roleArn,omitempty"`
+
+	// External ID for assumed role.
+	RoleExternalID string `json:"roleExternalId,omitempty"`
+
+	// Session duration for assumed role.
+	RoleSessionDuration string `json:"roleSessionDuration,omitempty"`
+
+	// Session name for assumed role.
+	RoleSessionName string `json:"roleSessionName,omitempty"`
+
 	// Set to debug the SDK
 	SdkLogMode *string `json:"sdkLogMode,omitempty"`
 
@@ -113,6 +121,9 @@ type StorageS3CloudflareConfig struct {
 	// Path to the shared credentials file.
 	SharedCredentialsFile string `json:"sharedCredentialsFile,omitempty"`
 
+	// Set if rclone should include Accept-Encoding as part of the signature.
+	SignAcceptEncoding *string `json:"signAcceptEncoding,omitempty"`
+
 	// Concurrency for multipart uploads and copies.
 	UploadConcurrency *int64 `json:"uploadConcurrency,omitempty"`
 
@@ -124,6 +135,12 @@ type StorageS3CloudflareConfig struct {
 
 	// Set if rclone should report BucketAlreadyExists errors on bucket creation.
 	UseAlreadyExists *string `json:"useAlreadyExists,omitempty"`
+
+	// If true, enables arn region support for the service.
+	UseArnRegion *bool `json:"useArnRegion,omitempty"`
+
+	// If true use AWS S3 data integrity protections.
+	UseDataIntegrityProtections *string `json:"useDataIntegrityProtections,omitempty"`
 
 	// If true use AWS S3 dual-stack endpoint (IPv6 support).
 	UseDualStack *bool `json:"useDualStack,omitempty"`
@@ -139,6 +156,9 @@ type StorageS3CloudflareConfig struct {
 
 	// Whether to use an unsigned payload in PutObject
 	UseUnsignedPayload *string `json:"useUnsignedPayload,omitempty"`
+
+	// Set if rclone should add x-id URL parameters.
+	UseXID *string `json:"useXId,omitempty"`
 
 	// If true use v2 authentication.
 	V2Auth *bool `json:"v2Auth,omitempty"`

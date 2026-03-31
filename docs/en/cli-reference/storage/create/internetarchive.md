@@ -30,6 +30,15 @@ DESCRIPTION:
       
       Leave blank for default value.
 
+   --item-metadata
+      Metadata to be set on the IA item, this is different from file-level metadata that can be set using --metadata-set.
+      Format is key=value and the 'x-archive-meta-' prefix is automatically added.
+
+   --item-derive
+      Whether to trigger derive on the IA item or not. If set to false, the item will not be derived by IA upon upload.
+      The derive process produces a number of secondary files from an upload to make an upload more usable on the web.
+      Setting this to false is useful for uploading files that are already in a format that IA can display or reduce burden on IA's infrastructure.
+
    --disable-checksum
       Don't ask the server to test against MD5 checksum calculated by rclone.
       Normally rclone will calculate the MD5 checksum of the input before
@@ -54,6 +63,7 @@ DESCRIPTION:
 OPTIONS:
    --access-key-id value      IAS3 Access Key. [$ACCESS_KEY_ID]
    --help, -h                 show help
+   --item-derive              Whether to trigger derive on the IA item or not. If set to false, the item will not be derived by IA upon upload. (default: true) [$ITEM_DERIVE]
    --secret-access-key value  IAS3 Secret Key (password). [$SECRET_ACCESS_KEY]
 
    Advanced
@@ -63,6 +73,7 @@ OPTIONS:
    --encoding value        The encoding for the backend. (default: "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --endpoint value        IAS3 Endpoint. (default: "https://s3.us.archive.org") [$ENDPOINT]
    --front-endpoint value  Host of InternetArchive Frontend. (default: "https://archive.org") [$FRONT_ENDPOINT]
+   --item-metadata value   Metadata to be set on the IA item, this is different from file-level metadata that can be set using --metadata-set. [$ITEM_METADATA]
    --wait-archive value    Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish. (default: "0s") [$WAIT_ARCHIVE]
 
    Client Config

@@ -32,6 +32,13 @@ DESCRIPTION:
       
       Leave blank to use the provider defaults.
 
+   --client-credentials
+      Use client credentials OAuth flow.
+      
+      This will use the OAUTH2 client Credentials Flow as described in RFC 6749.
+      
+      Note that this option is NOT supported by all backends.
+
    --encoding
       The encoding for the backend.
       
@@ -74,6 +81,7 @@ OPTIONS:
    Advanced
 
    --auth-url value        Auth server URL. [$AUTH_URL]
+   --client-credentials    Use client credentials OAuth flow. (default: false) [$CLIENT_CREDENTIALS]
    --description value     Description of the remote. [$DESCRIPTION]
    --encoding value        The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --hostname value        Hostname to connect to. (default: "api.pcloud.com") [$HOSTNAME]

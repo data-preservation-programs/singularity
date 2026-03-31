@@ -32,6 +32,13 @@ DESCRIPTION:
       
       Leave blank to use the provider defaults.
 
+   --client-credentials
+      Use client credentials OAuth flow.
+      
+      This will use the OAUTH2 client Credentials Flow as described in RFC 6749.
+      
+      Note that this option is NOT supported by all backends.
+
    --chunk-size
       Upload chunk size (< 150Mi).
       
@@ -95,6 +102,32 @@ DESCRIPTION:
    --root-namespace
       Specify a different Dropbox namespace ID to use as the root for all paths.
 
+   --export-formats
+      Comma separated list of preferred formats for exporting files
+      
+      Certain Dropbox files can only be accessed by exporting them to another format.
+      These include Dropbox Paper documents.
+      
+      For each such file, rclone will choose the first format on this list that Dropbox
+      considers valid. If none is valid, it will choose Dropbox's default format.
+      
+      Known formats include: "html", "md" (markdown)
+
+   --skip-exports
+      Skip exportable files in all listings.
+      
+      If given, exportable files practically become invisible to rclone.
+
+   --show-all-exports
+      Show all exportable files in listings.
+      
+      Adding this flag will allow all exportable files to be server side copied.
+      Note that rclone doesn't add extensions to the exportable file names in this mode.
+      
+      Do **not** use this flag when trying to download exportable files - rclone
+      will fail to download them.
+      
+
    --batch-mode
       Upload file batching sync|async|off.
       
@@ -147,7 +180,7 @@ DESCRIPTION:
       
 
    --batch-commit-timeout
-      Max time to wait for a batch to finish committing
+      Max time to wait for a batch to finish committing. (no longer used)
 
    --description
       Description of the remote.
@@ -161,18 +194,22 @@ OPTIONS:
    Advanced
 
    --auth-url value              Auth server URL. [$AUTH_URL]
-   --batch-commit-timeout value  Max time to wait for a batch to finish committing (default: "10m0s") [$BATCH_COMMIT_TIMEOUT]
+   --batch-commit-timeout value  Max time to wait for a batch to finish committing. (no longer used) (default: "10m0s") [$BATCH_COMMIT_TIMEOUT]
    --batch-mode value            Upload file batching sync|async|off. (default: "sync") [$BATCH_MODE]
    --batch-size value            Max number of files in upload batch. (default: 0) [$BATCH_SIZE]
    --batch-timeout value         Max time to allow an idle upload batch before uploading. (default: "0s") [$BATCH_TIMEOUT]
    --chunk-size value            Upload chunk size (< 150Mi). (default: "48Mi") [$CHUNK_SIZE]
+   --client-credentials          Use client credentials OAuth flow. (default: false) [$CLIENT_CREDENTIALS]
    --description value           Description of the remote. [$DESCRIPTION]
    --encoding value              The encoding for the backend. (default: "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot") [$ENCODING]
+   --export-formats value        Comma separated list of preferred formats for exporting files (default: "html,md") [$EXPORT_FORMATS]
    --impersonate value           Impersonate this user when using a business account. [$IMPERSONATE]
    --pacer-min-sleep value       Minimum time to sleep between API calls. (default: "10ms") [$PACER_MIN_SLEEP]
    --root-namespace value        Specify a different Dropbox namespace ID to use as the root for all paths. [$ROOT_NAMESPACE]
    --shared-files                Instructs rclone to work on individual shared files. (default: false) [$SHARED_FILES]
    --shared-folders              Instructs rclone to work on shared folders. (default: false) [$SHARED_FOLDERS]
+   --show-all-exports            Show all exportable files in listings. (default: false) [$SHOW_ALL_EXPORTS]
+   --skip-exports                Skip exportable files in all listings. (default: false) [$SKIP_EXPORTS]
    --token value                 OAuth Access Token as a JSON blob. [$TOKEN]
    --token-url value             Token server url. [$TOKEN_URL]
 

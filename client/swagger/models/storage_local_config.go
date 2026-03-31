@@ -32,7 +32,10 @@ type StorageLocalConfig struct {
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
 
-	// Translate symlinks to/from regular files with a '.rclonelink' extension.
+	// Comma separated list of supported checksum types.
+	Hashes string `json:"hashes,omitempty"`
+
+	// Translate symlinks to/from regular files with a '.rclonelink' extension for the local backend.
 	Links *bool `json:"links,omitempty"`
 
 	// Don't check to see if the files change during upload.
@@ -59,6 +62,9 @@ type StorageLocalConfig struct {
 
 	// Don't warn about skipped symlinks.
 	SkipLinks *bool `json:"skipLinks,omitempty"`
+
+	// Don't warn about skipped pipes, sockets and device objects.
+	SkipSpecials *bool `json:"skipSpecials,omitempty"`
 
 	// Set what kind of time is returned.
 	// Example: mtime

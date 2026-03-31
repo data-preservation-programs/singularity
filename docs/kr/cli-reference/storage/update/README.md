@@ -46,7 +46,6 @@
    storj            Storj 분산 클라우드 저장소
    sugarsync        Sugarsync
    swift            OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
-   uptobox          Uptobox
    webdav           WebDAV
    yandex           Yandex Disk
    zoho             Zoho

@@ -17,6 +17,9 @@ import (
 // swagger:model storage.megaConfig
 type StorageMegaConfig struct {
 
+	// The 2FA code of your MEGA account if the account is set up with one
+	Nr2fa string `json:"2fa,omitempty"`
+
 	// Output more debug from Mega.
 	Debug *bool `json:"debug,omitempty"`
 
@@ -29,8 +32,14 @@ type StorageMegaConfig struct {
 	// Delete files permanently rather than putting them into the trash.
 	HardDelete *bool `json:"hardDelete,omitempty"`
 
+	// Master key (internal use only)
+	MasterKey string `json:"masterKey,omitempty"`
+
 	// Password.
 	Pass string `json:"pass,omitempty"`
+
+	// Session (internal use only)
+	SessionID string `json:"sessionId,omitempty"`
 
 	// Use HTTPS for transfers.
 	UseHTTPS *bool `json:"useHttps,omitempty"`

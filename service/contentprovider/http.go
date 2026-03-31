@@ -15,6 +15,10 @@ import (
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/fxamacker/cbor/v2"
+	"github.com/ipfs/boxo/blockservice"
+	"github.com/ipfs/boxo/exchange/offline"
+	"github.com/ipfs/boxo/gateway"
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -26,6 +30,7 @@ type HTTPServer struct {
 	bind                string
 	enablePiece         bool
 	enablePieceMetadata bool
+	enableIPFS          bool
 }
 
 func (*HTTPServer) Name() string {
@@ -100,6 +105,22 @@ func (s *HTTPServer) Start(ctx context.Context, exitErr chan<- error) error {
 		e.GET("/piece/:id", s.handleGetPiece)
 		e.HEAD("/piece/:id", s.handleGetPiece)
 	}
+	var bs *store.StorageBlockStore
+	if s.enableIPFS {
+		bs = &store.StorageBlockStore{DBNoContext: s.dbNoContext}
+		wrapped := &errorMappingBlockStore{inner: bs}
+		exch := offline.Exchange(wrapped)
+		bsvc := blockservice.New(wrapped, exch)
+		backend, err := gateway.NewBlocksBackend(bsvc)
+		if err != nil {
+			return err
+		}
+		gwHandler := gateway.NewHandler(gateway.Config{
+			DeserializedResponses: false,
+			NoDNSLink:             true,
+		}, backend)
+		e.Any("/ipfs/*", echo.WrapHandler(gwHandler))
+	}
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")
 	})
@@ -126,6 +147,9 @@ func (s *HTTPServer) Start(ctx context.Context, exitErr chan<- error) error {
 		select {
 		case <-ctx.Done():
 		case <-forceShutdown:
+		}
+		if bs != nil {
+			bs.Close()
 		}
 		//nolint:contextcheck
 		shutdownErr <- e.Shutdown(context.Background())
@@ -386,4 +410,46 @@ func (s *HTTPServer) handleGetPiece(c echo.Context) error {
 	)
 
 	return nil
+}
+
+// errorMappingBlockStore wraps a blockstore and maps specific errors to
+// HTTP status codes via boxo/gateway's error mechanism.
+type errorMappingBlockStore struct {
+	inner *store.StorageBlockStore
+}
+
+func (e *errorMappingBlockStore) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
+	blk, err := e.inner.Get(ctx, c)
+	if err != nil && errors.Is(err, store.ErrFileHasChanged) {
+		return nil, gateway.NewErrorStatusCode(err, http.StatusConflict)
+	}
+	return blk, err
+}
+
+func (e *errorMappingBlockStore) Has(ctx context.Context, c cid.Cid) (bool, error) {
+	return e.inner.Has(ctx, c)
+}
+
+func (e *errorMappingBlockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
+	return e.inner.GetSize(ctx, c)
+}
+
+func (e *errorMappingBlockStore) Put(ctx context.Context, block blocks.Block) error {
+	return e.inner.Put(ctx, block)
+}
+
+func (e *errorMappingBlockStore) PutMany(ctx context.Context, blks []blocks.Block) error {
+	return e.inner.PutMany(ctx, blks)
+}
+
+func (e *errorMappingBlockStore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
+	return e.inner.AllKeysChan(ctx)
+}
+
+func (e *errorMappingBlockStore) HashOnRead(enabled bool) {
+	e.inner.HashOnRead(enabled)
+}
+
+func (e *errorMappingBlockStore) DeleteBlock(ctx context.Context, c cid.Cid) error {
+	return e.inner.DeleteBlock(ctx, c)
 }

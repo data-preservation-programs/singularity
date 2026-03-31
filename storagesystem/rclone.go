@@ -314,13 +314,13 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
 	config.UseServerModTime = true
 	if s.ClientConfig.ConnectTimeout != nil {
-		config.ConnectTimeout = *s.ClientConfig.ConnectTimeout
+		config.ConnectTimeout = fs.Duration(*s.ClientConfig.ConnectTimeout)
 	}
 	if s.ClientConfig.Timeout != nil {
-		config.Timeout = *s.ClientConfig.Timeout
+		config.Timeout = fs.Duration(*s.ClientConfig.Timeout)
 	}
 	if s.ClientConfig.ExpectContinueTimeout != nil {
-		config.ExpectContinueTimeout = *s.ClientConfig.ExpectContinueTimeout
+		config.ExpectContinueTimeout = fs.Duration(*s.ClientConfig.ExpectContinueTimeout)
 	}
 	if s.ClientConfig.InsecureSkipVerify != nil {
 		config.InsecureSkipVerify = true

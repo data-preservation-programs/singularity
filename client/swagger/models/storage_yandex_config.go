@@ -20,6 +20,9 @@ type StorageYandexConfig struct {
 	// Auth server URL.
 	AuthURL string `json:"authUrl,omitempty"`
 
+	// Use client credentials OAuth flow.
+	ClientCredentials *bool `json:"clientCredentials,omitempty"`
+
 	// OAuth Client Id.
 	ClientID string `json:"clientId,omitempty"`
 

@@ -11,11 +11,9 @@
 옵션:
    --help, -h  도움말 표시
 
-   Bitswap 검색
+   HTTP IPFS Gateway
 
-   --enable-bitswap                                 Bitswap 검색 활성화 (기본값: false)
-   --libp2p-identity-key value                      libp2p 피어의 base64로 인코딩된 개인 키 (기본값: 자동생성)
-   --libp2p-listen value [ --libp2p-listen value ]  libp2p 연결을 위해 듣기 대기할 주소
+   --enable-http-ipfs  Enable trustless IPFS gateway on /ipfs/ (default: true)
 
    HTTP 검색
 

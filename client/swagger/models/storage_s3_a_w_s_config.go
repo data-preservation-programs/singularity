@@ -39,6 +39,9 @@ type StorageS3AWSConfig struct {
 	// Description of the remote.
 	Description string `json:"description,omitempty"`
 
+	// Set to use AWS Directory Buckets
+	DirectoryBucket *bool `json:"directoryBucket,omitempty"`
+
 	// Upload an empty object with a trailing slash when a new directory is created
 	DirectoryMarkers *bool `json:"directoryMarkers,omitempty"`
 
@@ -113,6 +116,18 @@ type StorageS3AWSConfig struct {
 	// Enables requester pays option when interacting with S3 bucket.
 	RequesterPays *bool `json:"requesterPays,omitempty"`
 
+	// ARN of the IAM role to assume.
+	RoleArn string `json:"roleArn,omitempty"`
+
+	// External ID for assumed role.
+	RoleExternalID string `json:"roleExternalId,omitempty"`
+
+	// Session duration for assumed role.
+	RoleSessionDuration string `json:"roleSessionDuration,omitempty"`
+
+	// Session name for assumed role.
+	RoleSessionName string `json:"roleSessionName,omitempty"`
+
 	// Set to debug the SDK
 	SdkLogMode *string `json:"sdkLogMode,omitempty"`
 
@@ -127,6 +142,9 @@ type StorageS3AWSConfig struct {
 
 	// Path to the shared credentials file.
 	SharedCredentialsFile string `json:"sharedCredentialsFile,omitempty"`
+
+	// Set if rclone should include Accept-Encoding as part of the signature.
+	SignAcceptEncoding *string `json:"signAcceptEncoding,omitempty"`
 
 	// If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
 	SseCustomerAlgorithm string `json:"sseCustomerAlgorithm,omitempty"`
@@ -144,6 +162,7 @@ type StorageS3AWSConfig struct {
 	SseKmsKeyID string `json:"sseKmsKeyId,omitempty"`
 
 	// The storage class to use when storing new objects in S3.
+	// Example: REDUCED_REDUNDANCY
 	StorageClass string `json:"storageClass,omitempty"`
 
 	// Endpoint for STS (deprecated).
@@ -164,6 +183,12 @@ type StorageS3AWSConfig struct {
 	// Set if rclone should report BucketAlreadyExists errors on bucket creation.
 	UseAlreadyExists *string `json:"useAlreadyExists,omitempty"`
 
+	// If true, enables arn region support for the service.
+	UseArnRegion *bool `json:"useArnRegion,omitempty"`
+
+	// If true use AWS S3 data integrity protections.
+	UseDataIntegrityProtections *string `json:"useDataIntegrityProtections,omitempty"`
+
 	// If true use AWS S3 dual-stack endpoint (IPv6 support).
 	UseDualStack *bool `json:"useDualStack,omitempty"`
 
@@ -178,6 +203,9 @@ type StorageS3AWSConfig struct {
 
 	// Whether to use an unsigned payload in PutObject
 	UseUnsignedPayload *string `json:"useUnsignedPayload,omitempty"`
+
+	// Set if rclone should add x-id URL parameters.
+	UseXID *string `json:"useXId,omitempty"`
 
 	// If true use v2 authentication.
 	V2Auth *bool `json:"v2Auth,omitempty"`

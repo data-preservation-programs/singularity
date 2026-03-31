@@ -59,6 +59,18 @@ type StorageB2Config struct {
 	// Whether to use mmap buffers in internal memory pool. (no longer used)
 	MemoryPoolUseMmap *bool `json:"memoryPoolUseMmap,omitempty"`
 
+	// If using SSE-C, the server-side encryption algorithm used when storing this object in B2.
+	SseCustomerAlgorithm string `json:"sseCustomerAlgorithm,omitempty"`
+
+	// To use SSE-C, you may provide the secret encryption key encoded in a UTF-8 compatible string to encrypt/decrypt your data
+	SseCustomerKey string `json:"sseCustomerKey,omitempty"`
+
+	// To use SSE-C, you may provide the secret encryption key encoded in Base64 format to encrypt/decrypt your data
+	SseCustomerKeyBase64 string `json:"sseCustomerKeyBase64,omitempty"`
+
+	// If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+	SseCustomerKeyMd5 string `json:"sseCustomerKeyMd5,omitempty"`
+
 	// A flag string for X-Bz-Test-Mode header for debugging.
 	TestMode string `json:"testMode,omitempty"`
 

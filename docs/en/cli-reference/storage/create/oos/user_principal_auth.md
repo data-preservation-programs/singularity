@@ -17,7 +17,9 @@ DESCRIPTION:
       Object storage namespace
 
    --compartment
-      Object storage compartment OCID
+      Specify compartment OCID, if you need to list buckets.
+      
+      List objects works without compartment OCID.
 
    --region
       Object storage Region
@@ -204,7 +206,7 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --compartment value     Object storage compartment OCID [$COMPARTMENT]
+   --compartment value     Specify compartment OCID, if you need to list buckets. [$COMPARTMENT]
    --config-file value     Path to OCI config file (default: "~/.oci/config") [$CONFIG_FILE]
    --config-profile value  Profile name inside the oci config file (default: "Default") [$CONFIG_PROFILE]
    --endpoint value        Endpoint for Object storage API. [$ENDPOINT]

@@ -32,6 +32,13 @@ DESCRIPTION:
       
       Leave blank to use the provider defaults.
 
+   --client-credentials
+      Use client credentials OAuth flow.
+      
+      This will use the OAUTH2 client Credentials Flow as described in RFC 6749.
+      
+      Note that this option is NOT supported by all backends.
+
    --root-folder-id
       Fill in for rclone to use a non root folder as its starting point.
 
@@ -41,6 +48,11 @@ DESCRIPTION:
       Leave blank normally.
       
       Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
+
+   --config-credentials
+      Box App config.json contents.
+      
+      Leave blank normally.
 
    --access-token
       Box App Primary Access Token
@@ -90,16 +102,18 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --access-token value     Box App Primary Access Token [$ACCESS_TOKEN]
-   --box-config-file value  Box App config.json location [$BOX_CONFIG_FILE]
-   --box-sub-type value     (default: "user") [$BOX_SUB_TYPE]
-   --client-id value        OAuth Client Id. [$CLIENT_ID]
-   --client-secret value    OAuth Client Secret. [$CLIENT_SECRET]
-   --help, -h               show help
+   --access-token value        Box App Primary Access Token [$ACCESS_TOKEN]
+   --box-config-file value     Box App config.json location [$BOX_CONFIG_FILE]
+   --box-sub-type value        (default: "user") [$BOX_SUB_TYPE]
+   --client-id value           OAuth Client Id. [$CLIENT_ID]
+   --client-secret value       OAuth Client Secret. [$CLIENT_SECRET]
+   --config-credentials value  Box App config.json contents. [$CONFIG_CREDENTIALS]
+   --help, -h                  show help
 
    Advanced
 
    --auth-url value        Auth server URL. [$AUTH_URL]
+   --client-credentials    Use client credentials OAuth flow. (default: false) [$CLIENT_CREDENTIALS]
    --commit-retries value  Max number of times to try committing a multipart file. (default: 100) [$COMMIT_RETRIES]
    --description value     Description of the remote. [$DESCRIPTION]
    --encoding value        The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot") [$ENCODING]

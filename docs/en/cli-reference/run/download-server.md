@@ -25,9 +25,10 @@ OPTIONS:
 
    --netstorage-secret value  Set the NetStorage account secret/G2O key for authentication. [$NETSTORAGE_SECRET]
 
-   Amazon S3 Compliant Storage Providers including AWS, Alibaba, ArvanCloud, Ceph, ChinaMobile, Cloudflare, DigitalOcean, Dreamhost, GCS, HuaweiOBS, IBMCOS, IDrive, IONOS, LyveCloud, Leviia, Liara, Linode, Magalu, Minio, Netease, Petabox, RackCorp, Rclone, Scaleway, SeaweedFS, StackPath, Storj, Synology, TencentCOS, Wasabi, Qiniu and others
+   Amazon S3 Compliant Storage Providers including AWS, Alibaba, ArvanCloud, BizflyCloud, Ceph, ChinaMobile, Cloudflare, Cubbit, DigitalOcean, Dreamhost, Exaba, FileLu, FlashBlade, GCS, Hetzner, HuaweiOBS, IBMCOS, IDrive, Intercolo, IONOS, Leviia, Liara, Linode, LyveCloud, Magalu, Mega, Minio, Netease, Outscale, OVHcloud, Petabox, Qiniu, Rabata, RackCorp, Rclone, Scaleway, SeaweedFS, Selectel, Servercore, SpectraLogic, StackPath, Storj, Synology, TencentCOS, Wasabi, Zata, Other
 
    --s3-access-key-id value            AWS Access Key ID. [$S3_ACCESS_KEY_ID]
+   --s3-ibm-api-key value              IBM API Key to be used to obtain IAM token [$S3_IBM_API_KEY]
    --s3-secret-access-key value        AWS Secret Access Key (password). [$S3_SECRET_ACCESS_KEY]
    --s3-session-token value            An AWS session token. [$S3_SESSION_TOKEN]
    --s3-sse-customer-key value         To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data. [$S3_SSE_CUSTOMER_KEY]
@@ -37,7 +38,10 @@ OPTIONS:
 
    Backblaze B2
 
-   --b2-key value  Application Key. [$B2_KEY]
+   --b2-key value                      Application Key. [$B2_KEY]
+   --b2-sse-customer-key value         To use SSE-C, you may provide the secret encryption key encoded in a UTF-8 compatible string to encrypt/decrypt your data [$B2_SSE_CUSTOMER_KEY]
+   --b2-sse-customer-key-base64 value  To use SSE-C, you may provide the secret encryption key encoded in Base64 format to encrypt/decrypt your data [$B2_SSE_CUSTOMER_KEY_BASE64]
+   --b2-sse-customer-key-md5 value     If using SSE-C you may provide the secret encryption key MD5 checksum (optional). [$B2_SSE_CUSTOMER_KEY_MD5]
 
    Box
 
@@ -91,6 +95,7 @@ OPTIONS:
 
    Google Cloud Storage (this is not Google Drive)
 
+   --gcs-access-token value   Short-lived access token. [$GCS_ACCESS_TOKEN]
    --gcs-client-secret value  OAuth Client Secret. [$GCS_CLIENT_SECRET]
    --gcs-token value          OAuth Access Token as a JSON blob. [$GCS_TOKEN]
    --gcs-token-url value      Token server url. [$GCS_TOKEN_URL]
@@ -138,7 +143,8 @@ OPTIONS:
 
    Mega
 
-   --mega-pass value  Password. [$MEGA_PASS]
+   --mega-master-key value  Master key (internal use only) [$MEGA_MASTER_KEY]
+   --mega-pass value        Password. [$MEGA_PASS]
 
    Microsoft Azure Blob Storage
 
@@ -212,6 +218,7 @@ OPTIONS:
    --sftp-key-pem value              Raw PEM-encoded private key. [$SFTP_KEY_PEM]
    --sftp-key-use-agent              When set forces the usage of the ssh-agent. (default: false) [$SFTP_KEY_USE_AGENT]
    --sftp-pass value                 SSH password, leave blank to use ssh-agent. [$SFTP_PASS]
+   --sftp-pubkey value               SSH public certificate for public certificate based authentication. [$SFTP_PUBKEY]
    --sftp-pubkey-file value          Optional path to public key file. [$SFTP_PUBKEY_FILE]
 
    Sia Decentralized Cloud
@@ -228,10 +235,6 @@ OPTIONS:
    --sugarsync-access-key-id value       Sugarsync Access Key ID. [$SUGARSYNC_ACCESS_KEY_ID]
    --sugarsync-private-access-key value  Sugarsync Private Access Key. [$SUGARSYNC_PRIVATE_ACCESS_KEY]
    --sugarsync-refresh-token value       Sugarsync refresh token. [$SUGARSYNC_REFRESH_TOKEN]
-
-   Uptobox
-
-   --uptobox-access-token value  Your access token. [$UPTOBOX_ACCESS_TOKEN]
 
    WebDAV
 

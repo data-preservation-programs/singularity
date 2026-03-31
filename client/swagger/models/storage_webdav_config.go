@@ -17,6 +17,9 @@ import (
 // swagger:model storage.webdavConfig
 type StorageWebdavConfig struct {
 
+	// Preserve authentication on redirect.
+	AuthRedirect *bool `json:"authRedirect,omitempty"`
+
 	// Bearer token instead of user/pass (e.g. a Macaroon).
 	BearerToken string `json:"bearerToken,omitempty"`
 

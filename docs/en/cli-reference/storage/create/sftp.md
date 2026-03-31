@@ -49,6 +49,11 @@ DESCRIPTION:
       Only PEM encrypted key files (old OpenSSH format) are supported. Encrypted keys
       in the new OpenSSH format can't be used.
 
+   --pubkey
+      SSH public certificate for public certificate based authentication.
+      Set this if you have a signed certificate you want to use for authentication.
+      If specified will override pubkey_file.
+
    --pubkey-file
       Optional path to public key file.
       
@@ -147,13 +152,41 @@ DESCRIPTION:
          | powershell | PowerShell
          | cmd        | Windows Command Prompt
 
+   --hashes
+      Comma separated list of supported checksum types.
+
    --md5sum-command
-      The command used to read md5 hashes.
+      The command used to read MD5 hashes.
       
       Leave blank for autodetect.
 
    --sha1sum-command
-      The command used to read sha1 hashes.
+      The command used to read SHA-1 hashes.
+      
+      Leave blank for autodetect.
+
+   --crc32sum-command
+      The command used to read CRC-32 hashes.
+      
+      Leave blank for autodetect.
+
+   --sha256sum-command
+      The command used to read SHA-256 hashes.
+      
+      Leave blank for autodetect.
+
+   --blake3sum-command
+      The command used to read BLAKE3 hashes.
+      
+      Leave blank for autodetect.
+
+   --xxh3sum-command
+      The command used to read XXH3 hashes.
+      
+      Leave blank for autodetect.
+
+   --xxh128sum-command
+      The command used to read XXH128 hashes.
       
       Leave blank for autodetect.
 
@@ -375,6 +408,18 @@ DESCRIPTION:
         myUser:myPass@localhost:9005
         
 
+   --http-proxy
+      URL for HTTP CONNECT proxy
+      
+      Set this to a URL for an HTTP proxy which supports the HTTP CONNECT verb.
+      
+      Supports the format http://user:pass@host:port, http://host:port, http://host.
+      
+      Example:
+      
+          http://myUser:myPass@proxyhostname.example.com:8000
+      
+
    --copy-is-hardlink
       Set to enable server side copies using hardlinks.
       
@@ -407,6 +452,7 @@ OPTIONS:
    --key-use-agent        When set forces the usage of the ssh-agent. (default: false) [$KEY_USE_AGENT]
    --pass value           SSH password, leave blank to use ssh-agent. [$PASS]
    --port value           SSH port number. (default: 22) [$PORT]
+   --pubkey value         SSH public certificate for public certificate based authentication. [$PUBKEY]
    --pubkey-file value    Optional path to public key file. [$PUBKEY_FILE]
    --ssh value            Path and arguments to external ssh binary. [$SSH]
    --use-insecure-cipher  Enable the use of insecure ciphers and key exchange methods. (default: false) [$USE_INSECURE_CIPHER]
@@ -415,30 +461,37 @@ OPTIONS:
    Advanced
 
    --ask-password               Allow asking for SFTP password when needed. (default: false) [$ASK_PASSWORD]
+   --blake3sum-command value    The command used to read BLAKE3 hashes. [$BLAKE3SUM_COMMAND]
    --chunk-size value           Upload and download chunk size. (default: "32Ki") [$CHUNK_SIZE]
    --ciphers value              Space separated list of ciphers to be used for session encryption, ordered by preference. [$CIPHERS]
    --concurrency value          The maximum number of outstanding requests for one file (default: 64) [$CONCURRENCY]
    --connections value          Maximum number of SFTP simultaneous connections, 0 for unlimited. (default: 0) [$CONNECTIONS]
    --copy-is-hardlink           Set to enable server side copies using hardlinks. (default: false) [$COPY_IS_HARDLINK]
+   --crc32sum-command value     The command used to read CRC-32 hashes. [$CRC32SUM_COMMAND]
    --description value          Description of the remote. [$DESCRIPTION]
    --disable-concurrent-reads   If set don't use concurrent reads. (default: false) [$DISABLE_CONCURRENT_READS]
    --disable-concurrent-writes  If set don't use concurrent writes. (default: false) [$DISABLE_CONCURRENT_WRITES]
+   --hashes value               Comma separated list of supported checksum types. [$HASHES]
    --host-key-algorithms value  Space separated list of host key algorithms, ordered by preference. [$HOST_KEY_ALGORITHMS]
+   --http-proxy value           URL for HTTP CONNECT proxy [$HTTP_PROXY]
    --idle-timeout value         Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
    --key-exchange value         Space separated list of key exchange algorithms, ordered by preference. [$KEY_EXCHANGE]
    --known-hosts-file value     Optional path to known_hosts file. [$KNOWN_HOSTS_FILE]
    --macs value                 Space separated list of MACs (message authentication code) algorithms, ordered by preference. [$MACS]
-   --md5sum-command value       The command used to read md5 hashes. [$MD5SUM_COMMAND]
+   --md5sum-command value       The command used to read MD5 hashes. [$MD5SUM_COMMAND]
    --path-override value        Override path used by SSH shell commands. [$PATH_OVERRIDE]
    --server-command value       Specifies the path or command to run a sftp server on the remote host. [$SERVER_COMMAND]
    --set-env value              Environment variables to pass to sftp and commands [$SET_ENV]
    --set-modtime                Set the modified time on the remote if set. (default: true) [$SET_MODTIME]
-   --sha1sum-command value      The command used to read sha1 hashes. [$SHA1SUM_COMMAND]
+   --sha1sum-command value      The command used to read SHA-1 hashes. [$SHA1SUM_COMMAND]
+   --sha256sum-command value    The command used to read SHA-256 hashes. [$SHA256SUM_COMMAND]
    --shell-type value           The type of SSH shell on remote server, if any. [$SHELL_TYPE]
    --skip-links                 Set to skip any symlinks and any other non regular files. (default: false) [$SKIP_LINKS]
    --socks-proxy value          Socks 5 proxy host. [$SOCKS_PROXY]
    --subsystem value            Specifies the SSH2 subsystem on the remote host. (default: "sftp") [$SUBSYSTEM]
    --use-fstat                  If set use fstat instead of stat. (default: false) [$USE_FSTAT]
+   --xxh128sum-command value    The command used to read XXH128 hashes. [$XXH128SUM_COMMAND]
+   --xxh3sum-command value      The command used to read XXH3 hashes. [$XXH3SUM_COMMAND]
 
    Client Config
 

@@ -213,10 +213,6 @@ NAME:
    --sugarsync-private-access-key value  Sugarsync 개인 액세스 키. [$SUGARSYNC_PRIVATE_ACCESS_KEY]
    --sugarsync-refresh-token value       Sugarsync 갱신 토큰. [$SUGARSYNC_REFRESH_TOKEN]
 
-   Uptobox
-
-   --uptobox-access-token value  액세스 토큰. [$UPTOBOX_ACCESS_TOKEN]
-
    WebDAV
 
    --webdav-bearer-token value          사용자/암호 대신 Bearer 토큰을 지정하십시오 (예: Macaroon). [$WEBDAV_BEARER_TOKEN]

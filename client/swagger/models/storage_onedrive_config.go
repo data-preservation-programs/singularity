@@ -30,6 +30,9 @@ type StorageOnedriveConfig struct {
 	// Chunk size to upload files with - must be multiple of 320k (327,680 bytes).
 	ChunkSize *string `json:"chunkSize,omitempty"`
 
+	// Use client credentials OAuth flow.
+	ClientCredentials *bool `json:"clientCredentials,omitempty"`
+
 	// OAuth Client Id.
 	ClientID string `json:"clientId,omitempty"`
 
@@ -95,11 +98,17 @@ type StorageOnedriveConfig struct {
 	// Deprecated: use --server-side-across-configs instead.
 	ServerSideAcrossConfigs *bool `json:"serverSideAcrossConfigs,omitempty"`
 
+	// ID of the service principal's tenant. Also called its directory ID.
+	Tenant string `json:"tenant,omitempty"`
+
 	// OAuth Access Token as a JSON blob.
 	Token string `json:"token,omitempty"`
 
 	// Token server url.
 	TokenURL string `json:"tokenUrl,omitempty"`
+
+	// Cutoff for switching to chunked upload.
+	UploadCutoff *string `json:"uploadCutoff,omitempty"`
 }
 
 // Validate validates this storage onedrive config

@@ -95,6 +95,14 @@ DESCRIPTION:
    --disable-tls13
       Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
 
+   --allow-insecure-tls-ciphers
+      Allow insecure TLS ciphers
+      
+      Setting this flag will allow the usage of the following TLS ciphers in addition to the secure defaults:
+      
+      - TLS_RSA_WITH_AES_128_GCM_SHA256
+      
+
    --shut-timeout
       Maximum time to wait for data connection closing status.
 
@@ -107,12 +115,38 @@ DESCRIPTION:
    --socks-proxy
       Socks 5 proxy host.
           
-          Supports the format user:pass@host:port, user@host:port, host:port.
+      Supports the format user:pass@host:port, user@host:port, host:port.
           
-          Example:
+      Example:
           
-            myUser:myPass@localhost:9005
-          
+          myUser:myPass@localhost:9005
+      
+
+   --http-proxy
+      URL for HTTP CONNECT proxy
+      
+      Set this to a URL for an HTTP proxy which supports the HTTP CONNECT verb.
+      
+      Supports the format http://user:pass@host:port, http://host:port, http://host.
+      
+      Example:
+      
+          http://myUser:myPass@proxyhostname.example.com:8000
+      
+
+   --no-check-upload
+      Don't check the upload is OK
+      
+      Normally rclone will try to check the upload exists after it has
+      uploaded a file to make sure the size and modification time are as
+      expected.
+      
+      This flag stops rclone doing these checks. This enables uploading to
+      folders which are write only.
+      
+      You will likely need to use the --inplace flag also if uploading to
+      a write only folder.
+      
 
    --encoding
       The encoding for the backend.
@@ -139,22 +173,25 @@ OPTIONS:
 
    Advanced
 
-   --ask-password          Allow asking for FTP password when needed. (default: false) [$ASK_PASSWORD]
-   --close-timeout value   Maximum time to wait for a response to close. (default: "1m0s") [$CLOSE_TIMEOUT]
-   --concurrency value     Maximum number of FTP simultaneous connections, 0 for unlimited. (default: 0) [$CONCURRENCY]
-   --description value     Description of the remote. [$DESCRIPTION]
-   --disable-epsv          Disable using EPSV even if server advertises support. (default: false) [$DISABLE_EPSV]
-   --disable-mlsd          Disable using MLSD even if server advertises support. (default: false) [$DISABLE_MLSD]
-   --disable-tls13         Disable TLS 1.3 (workaround for FTP servers with buggy TLS) (default: false) [$DISABLE_TLS13]
-   --disable-utf8          Disable using UTF-8 even if server advertises support. (default: false) [$DISABLE_UTF8]
-   --encoding value        The encoding for the backend. (default: "Slash,Del,Ctl,RightSpace,Dot") [$ENCODING]
-   --force-list-hidden     Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD. (default: false) [$FORCE_LIST_HIDDEN]
-   --idle-timeout value    Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
-   --no-check-certificate  Do not verify the TLS certificate of the server. (default: false) [$NO_CHECK_CERTIFICATE]
-   --shut-timeout value    Maximum time to wait for data connection closing status. (default: "1m0s") [$SHUT_TIMEOUT]
-   --socks-proxy value     Socks 5 proxy host. [$SOCKS_PROXY]
-   --tls-cache-size value  Size of TLS session cache for all control and data connections. (default: 32) [$TLS_CACHE_SIZE]
-   --writing-mdtm          Use MDTM to set modification time (VsFtpd quirk) (default: false) [$WRITING_MDTM]
+   --allow-insecure-tls-ciphers  Allow insecure TLS ciphers (default: false) [$ALLOW_INSECURE_TLS_CIPHERS]
+   --ask-password                Allow asking for FTP password when needed. (default: false) [$ASK_PASSWORD]
+   --close-timeout value         Maximum time to wait for a response to close. (default: "1m0s") [$CLOSE_TIMEOUT]
+   --concurrency value           Maximum number of FTP simultaneous connections, 0 for unlimited. (default: 0) [$CONCURRENCY]
+   --description value           Description of the remote. [$DESCRIPTION]
+   --disable-epsv                Disable using EPSV even if server advertises support. (default: false) [$DISABLE_EPSV]
+   --disable-mlsd                Disable using MLSD even if server advertises support. (default: false) [$DISABLE_MLSD]
+   --disable-tls13               Disable TLS 1.3 (workaround for FTP servers with buggy TLS) (default: false) [$DISABLE_TLS13]
+   --disable-utf8                Disable using UTF-8 even if server advertises support. (default: false) [$DISABLE_UTF8]
+   --encoding value              The encoding for the backend. (default: "Slash,Del,Ctl,RightSpace,Dot") [$ENCODING]
+   --force-list-hidden           Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD. (default: false) [$FORCE_LIST_HIDDEN]
+   --http-proxy value            URL for HTTP CONNECT proxy [$HTTP_PROXY]
+   --idle-timeout value          Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
+   --no-check-certificate        Do not verify the TLS certificate of the server. (default: false) [$NO_CHECK_CERTIFICATE]
+   --no-check-upload             Don't check the upload is OK (default: false) [$NO_CHECK_UPLOAD]
+   --shut-timeout value          Maximum time to wait for data connection closing status. (default: "1m0s") [$SHUT_TIMEOUT]
+   --socks-proxy value           Socks 5 proxy host. [$SOCKS_PROXY]
+   --tls-cache-size value        Size of TLS session cache for all control and data connections. (default: 32) [$TLS_CACHE_SIZE]
+   --writing-mdtm                Use MDTM to set modification time (VsFtpd quirk) (default: false) [$WRITING_MDTM]
 
    Client Config
 

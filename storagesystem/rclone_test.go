@@ -165,6 +165,7 @@ func TestRCloneHandler_ReadS3Files(t *testing.T) {
 			"force_path_style": "true",
 			"region":           "us-east-1",
 			"chunk_size":       "5Mi",
+			"copy_cutoff":      "5Mi",
 			"endpoint":         fmt.Sprint("http://", localS3.Address(localstack.APIPort)),
 			"env_auth":         "false",
 		},

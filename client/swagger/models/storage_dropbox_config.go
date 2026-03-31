@@ -20,7 +20,7 @@ type StorageDropboxConfig struct {
 	// Auth server URL.
 	AuthURL string `json:"authUrl,omitempty"`
 
-	// Max time to wait for a batch to finish committing
+	// Max time to wait for a batch to finish committing. (no longer used)
 	BatchCommitTimeout *string `json:"batchCommitTimeout,omitempty"`
 
 	// Upload file batching sync|async|off.
@@ -35,6 +35,9 @@ type StorageDropboxConfig struct {
 	// Upload chunk size (< 150Mi).
 	ChunkSize *string `json:"chunkSize,omitempty"`
 
+	// Use client credentials OAuth flow.
+	ClientCredentials *bool `json:"clientCredentials,omitempty"`
+
 	// OAuth Client Id.
 	ClientID string `json:"clientId,omitempty"`
 
@@ -46,6 +49,9 @@ type StorageDropboxConfig struct {
 
 	// The encoding for the backend.
 	Encoding *string `json:"encoding,omitempty"`
+
+	// Comma separated list of preferred formats for exporting files
+	ExportFormats *string `json:"exportFormats,omitempty"`
 
 	// Impersonate this user when using a business account.
 	Impersonate string `json:"impersonate,omitempty"`
@@ -61,6 +67,12 @@ type StorageDropboxConfig struct {
 
 	// Instructs rclone to work on shared folders.
 	SharedFolders *bool `json:"sharedFolders,omitempty"`
+
+	// Show all exportable files in listings.
+	ShowAllExports *bool `json:"showAllExports,omitempty"`
+
+	// Skip exportable files in all listings.
+	SkipExports *bool `json:"skipExports,omitempty"`
 
 	// OAuth Access Token as a JSON blob.
 	Token string `json:"token,omitempty"`

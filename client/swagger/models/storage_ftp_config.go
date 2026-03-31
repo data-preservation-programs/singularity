@@ -17,6 +17,9 @@ import (
 // swagger:model storage.ftpConfig
 type StorageFtpConfig struct {
 
+	// Allow insecure TLS ciphers
+	AllowInsecureTLSCiphers *bool `json:"allowInsecureTlsCiphers,omitempty"`
+
 	// Allow asking for FTP password when needed.
 	AskPassword *bool `json:"askPassword,omitempty"`
 
@@ -54,11 +57,17 @@ type StorageFtpConfig struct {
 	// FTP host to connect to.
 	Host string `json:"host,omitempty"`
 
+	// URL for HTTP CONNECT proxy
+	HTTPProxy string `json:"httpProxy,omitempty"`
+
 	// Max time before closing idle connections.
 	IdleTimeout *string `json:"idleTimeout,omitempty"`
 
 	// Do not verify the TLS certificate of the server.
 	NoCheckCertificate *bool `json:"noCheckCertificate,omitempty"`
+
+	// Don't check the upload is OK
+	NoCheckUpload *bool `json:"noCheckUpload,omitempty"`
 
 	// FTP password.
 	Pass string `json:"pass,omitempty"`

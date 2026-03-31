@@ -20,6 +20,9 @@ type StorageZohoConfig struct {
 	// Auth server URL.
 	AuthURL string `json:"authUrl,omitempty"`
 
+	// Use client credentials OAuth flow.
+	ClientCredentials *bool `json:"clientCredentials,omitempty"`
+
 	// OAuth Client Id.
 	ClientID string `json:"clientId,omitempty"`
 
@@ -41,6 +44,9 @@ type StorageZohoConfig struct {
 
 	// Token server url.
 	TokenURL string `json:"tokenUrl,omitempty"`
+
+	// Cutoff for switching to large file upload api (>= 10 MiB).
+	UploadCutoff *string `json:"uploadCutoff,omitempty"`
 }
 
 // Validate validates this storage zoho config
