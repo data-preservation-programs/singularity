@@ -9,24 +9,29 @@ USAGE:
    singularity deal schedule create-batch [command options]
 
 DESCRIPTION:
-   Create all schedules for preparations x providers x replication policy.
+   Create all schedules for preparations x providers x deal types.
 
    Examples:
+     # Cold DDO copies to 2 providers
      singularity deal schedule create-batch \
-       --group dataset-a \
+       --group dataset-a-cold \
        --preparation prep-a --preparation prep-b \
        --provider f01000 --provider f02000 \
-       --replication market=1 --replication pdp=1
+       --deal-type ddo
+
+     # Warm + cold to 1 provider
+     singularity deal schedule create-batch \
+       --group dataset-a-warm \
+       --preparation prep-a \
+       --provider f03000 \
+       --deal-type ddo --deal-type pdp
 
 
 OPTIONS:
    --help, -h                                   show help
+   --deal-type value [ --deal-type value ]      Deal types to create schedules for: market, pdp, or ddo. Repeat for multiple types. (default: "market")
    --preparation value [ --preparation value ]  Preparation IDs or names to include. Repeat this flag.
    --provider value [ --provider value ]        Storage provider IDs to include. Repeat this flag.
-
-   Batching
-
-   --replication value [ --replication value ]  Replication policy entry in dealType=count form, e.g. market=1 or pdp=2. Repeat this flag. (default: "market=1")
 
    Boost Only
 
