@@ -93,7 +93,7 @@ OPTIONS:
    --port value    SMB port number. (default: 445) [$PORT]
    --spn value     Service principal name. [$SPN]
    --use-kerberos  Use Kerberos authentication. (default: false) [$USE_KERBEROS]
-   --user value    SMB username. (default: "anjor") [$USER]
+   --user value    SMB username. (default: "$USER") [$USER]
 
    Advanced
 
