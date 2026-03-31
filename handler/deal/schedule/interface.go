@@ -26,6 +26,7 @@ type Handler interface {
 	ListHandler(
 		ctx context.Context,
 		db *gorm.DB,
+		request ListRequest,
 	) ([]model.Schedule, error)
 	PauseHandler(
 		ctx context.Context,
@@ -69,8 +70,8 @@ func (m *MockSchedule) CreateHandler(ctx context.Context, db *gorm.DB, lotusClie
 	return args.Get(0).(*model.Schedule), args.Error(1)
 }
 
-func (m *MockSchedule) ListHandler(ctx context.Context, db *gorm.DB) ([]model.Schedule, error) {
-	args := m.Called(ctx, db)
+func (m *MockSchedule) ListHandler(ctx context.Context, db *gorm.DB, request ListRequest) ([]model.Schedule, error) {
+	args := m.Called(ctx, db, request)
 	return args.Get(0).([]model.Schedule), args.Error(1)
 }
 

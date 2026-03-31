@@ -88,7 +88,7 @@ func TestScheduleListHandler(t *testing.T) {
 		defer runner.Save(t)
 		mockHandler := new(schedule.MockSchedule)
 		defer swapScheduleHandler(mockHandler)()
-		mockHandler.On("ListHandler", mock.Anything, mock.Anything).Return([]model.Schedule{testSchedule}, nil)
+		mockHandler.On("ListHandler", mock.Anything, mock.Anything, mock.Anything).Return([]model.Schedule{testSchedule}, nil)
 		_, _, err := runner.Run(ctx, "singularity deal schedule list")
 		require.NoError(t, err)
 

@@ -11,13 +11,22 @@ import (
 var ListCmd = &cli.Command{
 	Name:  "list",
 	Usage: "List all deal making schedules",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "group",
+			Category: "Filtering",
+			Usage:    "Filter schedules by group label",
+		},
+	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		schedules, err := schedule.Default.ListHandler(c.Context, db)
+		schedules, err := schedule.Default.ListHandler(c.Context, db, schedule.ListRequest{
+			Group: c.String("group"),
+		})
 		if err != nil {
 			return errors.WithStack(err)
 		}

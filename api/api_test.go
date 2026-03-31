@@ -107,7 +107,7 @@ func setupMockSchedule() schedule.Handler {
 	m := new(schedule.MockSchedule)
 	m.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&model.Schedule{}, nil)
-	m.On("ListHandler", mock.Anything, mock.Anything).
+	m.On("ListHandler", mock.Anything, mock.Anything, mock.Anything).
 		Return([]model.Schedule{{}}, nil)
 	m.On("PauseHandler", mock.Anything, mock.Anything, uint32(1)).
 		Return(&model.Schedule{}, nil)
