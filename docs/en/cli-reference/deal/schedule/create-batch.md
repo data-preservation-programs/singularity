@@ -28,8 +28,8 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --help, -h                                   show help
    --deal-type value [ --deal-type value ]      Deal types to create schedules for: market, pdp, or ddo. Repeat for multiple types. (default: "market")
+   --help, -h                                   show help
    --preparation value [ --preparation value ]  Preparation IDs or names to include. Repeat this flag.
    --provider value [ --provider value ]        Storage provider IDs to include. Repeat this flag.
 
