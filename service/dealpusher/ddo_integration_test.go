@@ -194,23 +194,14 @@ func TestIntegration_DDOFullDealFlow(t *testing.T) {
 	t.Logf("SP config: minPiece=%d, maxPiece=%d, minTerm=%d, maxTerm=%d",
 		spCfg.MinPieceSize, spCfg.MaxPieceSize, spCfg.MinTermLen, spCfg.MaxTermLen)
 
-	// --- Step 3: Create and fund test wallet ---
-	testKey, testAddr := testutil.GenerateTestKey(t)
-	testutil.FundEVMWallet(t, rpcURL, testAddr, new(big.Int).Mul(testutil.OneEther, big.NewInt(100)))
-	t.Logf("Test wallet: %s", testAddr.Hex())
-
-	// Transfer USDFC from Anvil's pre-funded account 0 (which holds tokens
-	// on the calibnet fork) to the test wallet.
-	usdfcAmount := new(big.Int).Mul(big.NewInt(10), new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)) // 10 USDFC
-	testutil.TransferERC20(t, rpcURL, usdfcAddr, testAddr, usdfcAmount)
-	t.Log("Funded test wallet with USDFC")
-
-	// Create EVM signer from test key
-	secp256k1Signer, err := signer.NewSecp256k1SignerFromECDSA(testKey)
+	// --- Step 3: Use Anvil's pre-funded account 0 as client ---
+	// Account 0 already has USDFC tokens and deposited funds on calibnet.
+	clientKey := testutil.AnvilFunderKey(t)
+	clientSigner, err := signer.NewSecp256k1SignerFromECDSA(clientKey)
 	require.NoError(t, err)
-	evmSigner, ok := signer.AsEVM(secp256k1Signer)
+	evmSigner, ok := signer.AsEVM(clientSigner)
 	require.True(t, ok)
-	require.Equal(t, testAddr, evmSigner.EVMAddress())
+	t.Logf("Client wallet (Anvil account 0): %s", evmSigner.EVMAddress().Hex())
 
 	// --- Step 4: Build test pieces ---
 	// Use a valid piece CID (commp)
@@ -237,20 +228,19 @@ func TestIntegration_DDOFullDealFlow(t *testing.T) {
 	t.Log("EnsurePayments succeeded — deposit and operator approval completed on-chain")
 
 	// --- Step 6: CreateAllocations ---
-	// NOTE: CreateAllocations calls into Filecoin's built-in actor system to
-	// resolve the caller's actor ID. On an Anvil fork, a freshly generated
-	// key has no actor entry, so the contract reverts with ActorNotFound.
-	// This limitation means the full allocation flow can only be tested with
-	// an address that has a real calibnet actor ID, or on a live calibnet node.
+	// NOTE: CreateAllocations calls into Filecoin's resolve_address precompile
+	// (0xFe00...0001) to resolve the caller's actor ID. Anvil forks don't have
+	// Filecoin precompiles — they're a standard EVM, not FEVM — so this call
+	// always reverts with ActorNotFound regardless of which account is used.
+	// Full allocation testing requires a real Filecoin node (calibnet or mainnet).
 	queuedTx, err := ddo.CreateAllocations(ctx, evmSigner, pieces, cfg)
 	if err != nil {
-		t.Logf("CreateAllocations reverted (expected on Anvil fork with fresh key): %v", err)
-		t.Log("The payment setup path (deposit, approval, operator) was validated successfully.")
-		t.Log("Full allocation creation requires a calibnet actor ID for the sender.")
+		t.Logf("CreateAllocations reverted (expected — Anvil lacks Filecoin precompiles): %v", err)
+		t.Log("Payment setup (deposit, approval, operator) validated successfully.")
+		t.Log("Allocation creation requires a real FEVM node, not an Anvil fork.")
 		return
 	}
 
-	// If we get here (e.g., running with a real calibnet actor), verify the rest.
 	require.NotEmpty(t, queuedTx.Hash)
 	t.Logf("CreateAllocations tx: %s", queuedTx.Hash)
 
