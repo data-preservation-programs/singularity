@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	ddocontract "github.com/Eastore-project/ddo-client/pkg/contract/ddo"
+	ddotypes "github.com/Eastore-project/ddo-client/pkg/types"
 	"github.com/data-preservation-programs/go-synapse/signer"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -274,11 +275,6 @@ func registerSPViaImpersonation(
 	parsedABI, err := abi.JSON(strings.NewReader(abiJSON))
 	require.NoError(t, err)
 
-	type tokenConfig struct {
-		Token                common.Address
-		PricePerBytePerEpoch *big.Int
-		IsActive             bool
-	}
 	callData, err := parsedABI.Pack("registerSP",
 		actorID,
 		owner,          // payment address
@@ -286,7 +282,7 @@ func registerSPViaImpersonation(
 		uint64(1<<35),  // max piece size (32 GiB)
 		int64(172800),  // min term (~60 days)
 		int64(5256000), // max term (~5 years)
-		[]tokenConfig{{
+		[]ddotypes.TokenConfig{{
 			Token:                paymentToken,
 			PricePerBytePerEpoch: big.NewInt(1),
 			IsActive:             true,
