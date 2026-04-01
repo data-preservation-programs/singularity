@@ -2,6 +2,7 @@ package dealpusher
 
 import (
 	"context"
+	"math/big"
 	"testing"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
@@ -24,6 +26,16 @@ type ddoDealManagerMock struct {
 
 func (m *ddoDealManagerMock) ValidateSP(_ context.Context, _ uint64) (*DDOSPConfig, error) {
 	return m.spConfig, nil
+}
+
+func (m *ddoDealManagerMock) CheckBalance(_ context.Context, _ common.Address) (*DDOBalanceStatus, error) {
+	return &DDOBalanceStatus{
+		NativeFIL:      new(big.Int).Mul(big.NewInt(10), big.NewInt(1e18)),
+		TokenBalance:   new(big.Int).Mul(big.NewInt(1000), big.NewInt(1e18)),
+		DepositedFunds: big.NewInt(0),
+		LockupCurrent:  big.NewInt(0),
+		Available:      big.NewInt(0),
+	}, nil
 }
 
 func (m *ddoDealManagerMock) EnsurePayments(_ context.Context, _ signer.EVMSigner, _ []DDOPieceSubmission, _ DDOSchedulingConfig) error {

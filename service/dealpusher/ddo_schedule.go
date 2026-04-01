@@ -3,6 +3,7 @@ package dealpusher
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,10 @@ import (
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 )
+
+// minGasBalance is the minimum native FIL balance before a low-gas warning
+// is emitted. 0.1 FIL = 10^17 attoFIL.
+var minGasBalance = new(big.Int).Exp(big.NewInt(10), big.NewInt(17), nil)
 
 func defaultDDOSchedulingConfig() DDOSchedulingConfig {
 	return DDOSchedulingConfig{
@@ -96,6 +101,36 @@ func (d *DealPusher) runDDOSchedule(ctx context.Context, schedule *model.Schedul
 	}
 	if !spConfig.IsActive {
 		return model.ScheduleError, fmt.Errorf("provider %s (actor %d) is not active in the DDO contract", schedule.Provider, providerActorID)
+	}
+
+	// Pre-flight balance check — log wallet state for observability
+	// and warn if gas balance is dangerously low.
+	if balStatus, balErr := d.ddoDealManager.CheckBalance(ctx, evmSigner.EVMAddress()); balErr != nil {
+		Logger.Warnw("failed to check wallet balance before DDO scheduling",
+			"schedule", schedule.ID, "wallet", evmSigner.EVMAddress().Hex(), "error", balErr)
+	} else {
+		Logger.Infow("DDO wallet balance",
+			"schedule", schedule.ID,
+			"wallet", evmSigner.EVMAddress().Hex(),
+			"nativeFIL", balStatus.NativeFIL.String(),
+			"paymentToken", balStatus.TokenBalance.String(),
+			"deposited", balStatus.DepositedFunds.String(),
+			"available", balStatus.Available.String(),
+		)
+		if balStatus.NativeFIL.Cmp(minGasBalance) < 0 {
+			Logger.Warnw("wallet FIL balance low — may not have enough gas for DDO transactions",
+				"schedule", schedule.ID,
+				"wallet", evmSigner.EVMAddress().Hex(),
+				"balance", balStatus.NativeFIL.String(),
+				"threshold", minGasBalance.String(),
+			)
+		}
+		if balStatus.TokenBalance.Sign() == 0 && balStatus.Available.Sign() == 0 {
+			Logger.Warnw("wallet has no payment tokens and no deposited funds — EnsurePayments will fail",
+				"schedule", schedule.ID,
+				"wallet", evmSigner.EVMAddress().Hex(),
+			)
+		}
 	}
 
 	var timer *time.Timer
