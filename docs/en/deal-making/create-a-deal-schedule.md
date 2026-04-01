@@ -45,25 +45,35 @@ singularity deal schedule create -h
 
 ## Batch schedule creation
 
-When you need to replicate multiple preparations across multiple storage providers with a defined replication policy, use `create-batch` to generate all schedules in one command:
+When you need to replicate multiple preparations across multiple storage providers, use `create-batch` to generate all schedules in one command:
 
 ```sh
+# Cold DDO copies to 2 providers
 singularity deal schedule create-batch \
-  --group my-dataset \
+  --group dataset-a-cold \
   --preparation prep-a --preparation prep-b \
   --provider f01000 --provider f02000 \
-  --replication market=1 --replication pdp=1
+  --deal-type ddo
+
+# Warm + cold to 1 provider
+singularity deal schedule create-batch \
+  --group dataset-a-warm \
+  --preparation prep-a \
+  --provider f03000 \
+  --deal-type ddo --deal-type pdp
 ```
 
-This creates the full cross-product: for each preparation, for each deal type in the replication policy, a schedule is created for every provider. The example above produces 8 schedules (2 preparations x 2 deal types x 2 providers).
+This creates the full cross-product: for each preparation, for each deal type, a schedule is created for every provider. The first example produces 4 schedules (2 preparations x 1 deal type x 2 providers). The second produces 2 schedules (1 preparation x 2 deal types x 1 provider).
 
-### Replication policy
+### Deal types
 
-The `--replication` flag specifies deal types and how many schedules of that type to create per provider per preparation:
+The `--deal-type` flag specifies which deal types to create. Repeat for multiple types:
 
-- `market=1` — one legacy market deal schedule
-- `pdp=2` — two PDP deal schedules
-- `ddo=1` — one DDO allocation schedule
+- `market` — legacy f05 market deal (default)
+- `pdp` — PDP (Proof of Data Possession) deal
+- `ddo` — DDO (Decentralized Data Onboarding) allocation
+
+To express per-provider differentiation (e.g., some providers get cold copies only, one gets warm + cold), run separate `create-batch` commands with different groups.
 
 ### Group labels
 
