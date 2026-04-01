@@ -123,14 +123,14 @@ Expected state flow:
 
 ## Batch DDO schedules
 
-To schedule DDO deals across multiple preparations and providers in one command, use `create-batch` with `--replication ddo=1`:
+To schedule DDO deals across multiple preparations and providers in one command, use `create-batch` with `--deal-type ddo`:
 
 ```bash
 singularity deal schedule create-batch \
   --group my-ddo-dataset \
   --preparation prep-a --preparation prep-b \
   --provider t01000 --provider t02000 \
-  --replication ddo=1 \
+  --deal-type ddo \
   --url-template "https://downloads.example.com/piece/{PIECE_CID}.car"
 ```
 

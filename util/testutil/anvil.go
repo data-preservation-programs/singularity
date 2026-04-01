@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/require"
 )
 
 type AnvilInstance struct {
@@ -41,7 +44,6 @@ func StartAnvil(t *testing.T, upstreamRPC string) *AnvilInstance {
 	cmd := exec.Command("anvil",
 		"--fork-url", upstreamRPC,
 		"--port", fmt.Sprintf("%d", port),
-		"--block-time", "1",
 		"--silent",
 	)
 	cmd.Stdout = os.Stderr
@@ -59,6 +61,18 @@ func StartAnvil(t *testing.T, upstreamRPC string) *AnvilInstance {
 	}
 
 	return inst
+}
+
+// MineBlock forces anvil to produce a block. In automine mode (default),
+// blocks are mined on tx submission, but consumers that only read (e.g.
+// Shovel) need an explicit nudge to see chain progress.
+func (a *AnvilInstance) MineBlock(t *testing.T) {
+	t.Helper()
+	resp, err := http.Post(a.RPCURL, "application/json",
+		strings.NewReader(`{"jsonrpc":"2.0","method":"evm_mine","params":[],"id":1}`))
+	require.NoError(t, err)
+	resp.Body.Close()
+	require.Equal(t, 200, resp.StatusCode)
 }
 
 func freePort() (int, error) {
