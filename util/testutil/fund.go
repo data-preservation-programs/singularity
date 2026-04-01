@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 	"testing"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -28,7 +27,7 @@ func AnvilFunderKey(t *testing.T) *ecdsa.PrivateKey {
 }
 
 // FundEVMWallet sends ETH from Anvil's pre-funded account 0 to the given address.
-// amount is in wei. Returns the transaction hash.
+// amount is in wei. Anvil automines the tx immediately.
 func FundEVMWallet(t *testing.T, rpcURL string, to common.Address, amount *big.Int) common.Hash {
 	t.Helper()
 
@@ -63,18 +62,11 @@ func FundEVMWallet(t *testing.T, rpcURL string, to common.Address, amount *big.I
 	err = client.SendTransaction(ctx, signedTx)
 	require.NoError(t, err)
 
-	// Wait for the transaction to be mined (Anvil uses --block-time 1).
-	deadline := time.Now().Add(10 * time.Second)
-	for time.Now().Before(deadline) {
-		receipt, err := client.TransactionReceipt(ctx, signedTx.Hash())
-		if err == nil && receipt != nil {
-			require.EqualValues(t, 1, receipt.Status, "funding transaction failed")
-			return signedTx.Hash()
-		}
-		time.Sleep(500 * time.Millisecond)
-	}
-	t.Fatal("funding transaction not mined within 10s")
-	return common.Hash{}
+	receipt, err := client.TransactionReceipt(ctx, signedTx.Hash())
+	require.NoError(t, err)
+	require.EqualValues(t, 1, receipt.Status, "funding transaction failed")
+
+	return signedTx.Hash()
 }
 
 // GenerateTestKey creates a fresh ECDSA key pair for testing and returns

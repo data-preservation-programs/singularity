@@ -20,16 +20,16 @@ const (
 	calibnetChainID          = 314159
 )
 
-func startCalibnetFork(t *testing.T) string {
+func startCalibnetFork(t *testing.T) *testutil.AnvilInstance {
 	t.Helper()
-	anvil := testutil.StartAnvil(t, calibnetRPC)
-	return anvil.RPCURL
+	return testutil.StartAnvil(t, calibnetRPC)
 }
 
 // TestIntegration_DDOClientConnectivity verifies that OnChainDDO can connect
 // to a calibnet fork and detect the correct chain ID.
 func TestIntegration_DDOClientConnectivity(t *testing.T) {
-	rpcURL := startCalibnetFork(t)
+	anvil := startCalibnetFork(t)
+	rpcURL := anvil.RPCURL
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -60,7 +60,8 @@ func TestIntegration_DDOClientConnectivity(t *testing.T) {
 // TestIntegration_DDOWalletFunding verifies the testutil wallet funding helper
 // works against an Anvil fork.
 func TestIntegration_DDOWalletFunding(t *testing.T) {
-	rpcURL := startCalibnetFork(t)
+	anvil := startCalibnetFork(t)
+	rpcURL := anvil.RPCURL
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -87,7 +88,8 @@ func TestIntegration_DDOWalletFunding(t *testing.T) {
 // ValidateSP returns an empty (inactive) config — we verify the call
 // succeeds and returns a well-formed response.
 func TestIntegration_DDOValidateSP(t *testing.T) {
-	rpcURL := startCalibnetFork(t)
+	anvil := startCalibnetFork(t)
+	rpcURL := anvil.RPCURL
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

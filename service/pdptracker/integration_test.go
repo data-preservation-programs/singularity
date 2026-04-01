@@ -18,14 +18,14 @@ import (
 
 const calibnetRPC = "https://api.calibration.node.glif.io/rpc/v1"
 
-func startCalibnetFork(t *testing.T) string {
+func startCalibnetFork(t *testing.T) *testutil.AnvilInstance {
 	t.Helper()
-	anvil := testutil.StartAnvil(t, calibnetRPC)
-	return anvil.RPCURL
+	return testutil.StartAnvil(t, calibnetRPC)
 }
 
 func TestIntegration_NetworkDetection(t *testing.T) {
-	rpcURL := startCalibnetFork(t)
+	anvil := startCalibnetFork(t)
+	rpcURL := anvil.RPCURL
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -60,7 +60,8 @@ func TestIntegration_ShovelConfig(t *testing.T) {
 }
 
 func TestIntegration_ShovelIndexer(t *testing.T) {
-	rpcURL := startCalibnetFork(t)
+	anvil := startCalibnetFork(t)
+	rpcURL := anvil.RPCURL
 
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		if db.Dialector.Name() != "postgres" {
@@ -83,7 +84,7 @@ func TestIntegration_ShovelIndexer(t *testing.T) {
 		err = indexer.Start(indexCtx, exitErr)
 		require.NoError(t, err)
 
-		time.Sleep(10 * time.Second)
+		anvil.MineBlock(t)
 
 		var schemaExists bool
 		err = db.Raw("SELECT EXISTS(SELECT 1 FROM information_schema.schemata WHERE schema_name = 'shovel')").Scan(&schemaExists).Error
@@ -117,7 +118,8 @@ func TestIntegration_ShovelIndexer(t *testing.T) {
 }
 
 func TestIntegration_FullResync(t *testing.T) {
-	rpcURL := startCalibnetFork(t)
+	anvil := startCalibnetFork(t)
+	rpcURL := anvil.RPCURL
 
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		if db.Dialector.Name() != "postgres" {
@@ -138,6 +140,9 @@ func TestIntegration_FullResync(t *testing.T) {
 		indexCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
 		exitErr := make(chan error, 1)
 		require.NoError(t, indexer.Start(indexCtx, exitErr))
+
+		// produce a block so shovel has something to index
+		anvil.MineBlock(t)
 
 		// poll until shovel has indexed at least one block
 		require.Eventually(t, func() bool {
@@ -210,7 +215,8 @@ func TestIntegration_FullResync(t *testing.T) {
 }
 
 func TestIntegration_RPCClient(t *testing.T) {
-	rpcURL := startCalibnetFork(t)
+	anvil := startCalibnetFork(t)
+	rpcURL := anvil.RPCURL
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

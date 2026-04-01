@@ -14,16 +14,16 @@ const (
 	calibnetDDOContract = "0x889fD50196BE300D06dc4b8F0F17fdB0af587095"
 )
 
-func startCalibnetFork(t *testing.T) string {
+func startCalibnetFork(t *testing.T) *testutil.AnvilInstance {
 	t.Helper()
-	anvil := testutil.StartAnvil(t, calibnetRPC)
-	return anvil.RPCURL
+	return testutil.StartAnvil(t, calibnetRPC)
 }
 
 // TestIntegration_DDOTrackingClientConnectivity verifies that the DDO tracking
 // client can connect to a calibnet fork and query allocation info.
 func TestIntegration_DDOTrackingClientConnectivity(t *testing.T) {
-	rpcURL := startCalibnetFork(t)
+	anvil := startCalibnetFork(t)
+	rpcURL := anvil.RPCURL
 
 	client, err := NewDDOTrackingClient(rpcURL, calibnetDDOContract)
 	require.NoError(t, err)
