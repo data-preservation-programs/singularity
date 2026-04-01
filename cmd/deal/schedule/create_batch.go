@@ -1,7 +1,10 @@
 package schedule
 
 import (
+	"fmt"
 	"slices"
+	"strconv"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
@@ -15,22 +18,14 @@ import (
 var CreateBatchCmd = &cli.Command{
 	Name:  "create-batch",
 	Usage: "Create the cross-product of schedules for multiple preparations and providers",
-	Description: `Create all schedules for preparations x providers x deal types.
+	Description: `Create all schedules for preparations x providers x replication policy.
 
 Examples:
-  # Cold DDO copies to 2 providers
   singularity deal schedule create-batch \
-    --group dataset-a-cold \
+    --group dataset-a \
     --preparation prep-a --preparation prep-b \
     --provider f01000 --provider f02000 \
-    --deal-type ddo
-
-  # Warm + cold to 1 provider
-  singularity deal schedule create-batch \
-    --group dataset-a-warm \
-    --preparation prep-a \
-    --provider f03000 \
-    --deal-type ddo --deal-type pdp
+    --replication market=1 --replication pdp=1
 `,
 	Flags: append([]cli.Flag{
 		&cli.StringSliceFlag{
@@ -44,9 +39,10 @@ Examples:
 			Required: true,
 		},
 		&cli.StringSliceFlag{
-			Name:  "deal-type",
-			Usage: "Deal types to create schedules for: market, pdp, or ddo. Repeat for multiple types.",
-			Value: cli.NewStringSlice(string(model.DealTypeMarket)),
+			Name:     "replication",
+			Category: "Batching",
+			Usage:    "Replication policy entry in dealType=count form, e.g. market=1 or pdp=2. Repeat this flag.",
+			Value:    cli.NewStringSlice(fmt.Sprintf("%s=1", model.DealTypeMarket)),
 		},
 	}, scheduleCreateFlags(false)...),
 	Action: func(c *cli.Context) error {
@@ -63,9 +59,9 @@ Examples:
 			return errors.New("at least one provider is required")
 		}
 
-		dealTypes, err := parseDealTypes(c.StringSlice("deal-type"))
+		replicationPolicy, err := parseReplicationPolicy(c.StringSlice("replication"))
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		db, closer, err := database.OpenFromCLI(c)
@@ -80,10 +76,10 @@ Examples:
 		}
 
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
-		created := make([]model.Schedule, 0, len(preparations)*len(dealTypes)*len(providers))
+		created := make([]model.Schedule, 0, len(preparations)*len(providers)*len(replicationPolicy))
 
 		for _, preparation := range preparations {
-			for _, dealType := range dealTypes {
+			for _, dealType := range replicationPolicy {
 				for _, provider := range providers {
 					request := createRequest(c, preparation, provider, string(dealType), allowedPieceCIDs)
 					schedule, err := handlerschedule.Default.CreateHandler(c.Context, db, lotusClient, request)
@@ -101,17 +97,28 @@ Examples:
 	},
 }
 
-func parseDealTypes(values []string) ([]model.DealType, error) {
-	dealTypes := make([]model.DealType, 0, len(values))
-	for _, v := range values {
-		dt := model.DealType(v)
-		if !slices.Contains(model.DealTypes, dt) {
-			return nil, errors.Newf("invalid deal type %q: must be one of market, pdp, ddo", v)
+func parseReplicationPolicy(values []string) ([]model.DealType, error) {
+	policy := make([]model.DealType, 0)
+	for _, value := range values {
+		parts := strings.SplitN(strings.TrimSpace(value), "=", 2)
+		if len(parts) != 2 {
+			return nil, errors.Newf("invalid replication policy entry %q: expected dealType=count", value)
 		}
-		dealTypes = append(dealTypes, dt)
+
+		dealType := model.DealType(strings.TrimSpace(parts[0]))
+		if !slices.Contains(model.DealTypes, dealType) {
+			return nil, errors.Newf("invalid replication deal type %q", dealType)
+		}
+
+		count, err := strconv.Atoi(strings.TrimSpace(parts[1]))
+		if err != nil || count < 1 {
+			return nil, errors.Newf("invalid replication count %q", parts[1])
+		}
+
+		for i := 0; i < count; i++ {
+			policy = append(policy, dealType)
+		}
 	}
-	if len(dealTypes) == 0 {
-		return nil, errors.New("at least one deal type is required")
-	}
-	return dealTypes, nil
+
+	return policy, nil
 }
