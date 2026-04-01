@@ -16,11 +16,9 @@ import (
 	"gorm.io/gorm"
 )
 
-const calibnetRPC = "https://api.calibration.node.glif.io/rpc/v1"
-
 func startCalibnetFork(t *testing.T) *testutil.AnvilInstance {
 	t.Helper()
-	return testutil.StartAnvil(t, calibnetRPC)
+	return testutil.StartAnvil(t, testutil.CalibnetRPC)
 }
 
 func TestIntegration_NetworkDetection(t *testing.T) {
@@ -48,7 +46,7 @@ func TestIntegration_ShovelConfig(t *testing.T) {
 	contractAddr := constants.GetPDPVerifierAddress(constants.NetworkCalibration)
 	conf := buildShovelConfig(
 		"postgres://localhost/test",
-		calibnetRPC,
+		testutil.CalibnetRPC,
 		uint64(constants.ChainIDCalibration),
 		contractAddr,
 		0,

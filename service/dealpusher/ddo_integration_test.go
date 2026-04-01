@@ -10,19 +10,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Calibnet DDO contract addresses from
-// https://github.com/Eastore-project/ddo-client#filecoin-calibration-testnet
-const (
-	calibnetRPC              = "https://api.calibration.node.glif.io/rpc/v1"
-	calibnetDDOContract      = "0x889fD50196BE300D06dc4b8F0F17fdB0af587095"
-	calibnetPaymentsContract = "0x09a0fDc2723fAd1A7b8e3e00eE5DF73841df55a0"
-	calibnetUSDFC            = "0xb3042734b608a1B16e9e86B374A3f3e389B4cDf0"
-	calibnetChainID          = 314159
-)
-
 func startCalibnetFork(t *testing.T) *testutil.AnvilInstance {
 	t.Helper()
-	return testutil.StartAnvil(t, calibnetRPC)
+	return testutil.StartAnvil(t, testutil.CalibnetRPC)
 }
 
 // TestIntegration_DDOClientConnectivity verifies that OnChainDDO can connect
@@ -41,18 +31,18 @@ func TestIntegration_DDOClientConnectivity(t *testing.T) {
 
 	chainID, err := ethClient.ChainID(ctx)
 	require.NoError(t, err)
-	require.EqualValues(t, calibnetChainID, chainID.Int64())
+	require.EqualValues(t, testutil.CalibnetChainID, chainID.Int64())
 
 	// Initialize OnChainDDO client with calibnet contract addresses
 	ddo, err := NewOnChainDDO(ctx, rpcURL,
-		calibnetDDOContract,
-		calibnetPaymentsContract,
-		calibnetUSDFC,
+		testutil.CalibnetDDOContract,
+		testutil.CalibnetPaymentsContract,
+		testutil.CalibnetUSDFC,
 	)
 	require.NoError(t, err)
 	defer ddo.Close()
 
-	require.EqualValues(t, calibnetChainID, ddo.chainID.Int64())
+	require.EqualValues(t, testutil.CalibnetChainID, ddo.chainID.Int64())
 	t.Logf("DDO client connected: chainID=%d, ddo=%s, payments=%s",
 		ddo.chainID, ddo.ddoContractAddr.Hex(), ddo.paymentsContractAddr.Hex())
 }
@@ -95,9 +85,9 @@ func TestIntegration_DDOValidateSP(t *testing.T) {
 	defer cancel()
 
 	ddo, err := NewOnChainDDO(ctx, rpcURL,
-		calibnetDDOContract,
-		calibnetPaymentsContract,
-		calibnetUSDFC,
+		testutil.CalibnetDDOContract,
+		testutil.CalibnetPaymentsContract,
+		testutil.CalibnetUSDFC,
 	)
 	require.NoError(t, err)
 	defer ddo.Close()

@@ -9,14 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	calibnetRPC         = "https://api.calibration.node.glif.io/rpc/v1"
-	calibnetDDOContract = "0x889fD50196BE300D06dc4b8F0F17fdB0af587095"
-)
-
 func startCalibnetFork(t *testing.T) *testutil.AnvilInstance {
 	t.Helper()
-	return testutil.StartAnvil(t, calibnetRPC)
+	return testutil.StartAnvil(t, testutil.CalibnetRPC)
 }
 
 // TestIntegration_DDOTrackingClientConnectivity verifies that the DDO tracking
@@ -25,7 +20,7 @@ func TestIntegration_DDOTrackingClientConnectivity(t *testing.T) {
 	anvil := startCalibnetFork(t)
 	rpcURL := anvil.RPCURL
 
-	client, err := NewDDOTrackingClient(rpcURL, calibnetDDOContract)
+	client, err := NewDDOTrackingClient(rpcURL, testutil.CalibnetDDOContract)
 	require.NoError(t, err)
 	defer client.Close()
 
