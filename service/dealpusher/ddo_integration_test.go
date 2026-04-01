@@ -228,34 +228,42 @@ func TestIntegration_DDOFullDealFlow(t *testing.T) {
 	require.NoError(t, err)
 	t.Log("EnsurePayments succeeded — deposit and operator approval completed on-chain")
 
-	// --- Step 6: CreateAllocations ---
-	// NOTE: CreateAllocations calls into Filecoin's resolve_address precompile
-	// (0xFe00...0001) to resolve the caller's actor ID. Anvil forks don't have
-	// Filecoin precompiles — they're a standard EVM, not FEVM — so this call
-	// always reverts with ActorNotFound regardless of which account is used.
-	// Full allocation testing requires a real Filecoin node (calibnet or mainnet).
-	queuedTx, err := ddo.CreateAllocations(ctx, evmSigner, pieces, cfg)
-	if err != nil {
-		t.Logf("CreateAllocations reverted (expected — Anvil lacks Filecoin precompiles): %v", err)
-		t.Log("Payment setup (deposit, approval, operator) validated successfully.")
-		t.Log("Allocation creation requires a real FEVM node, not an Anvil fork.")
-		return
-	}
+	// --- Step 6: Deploy MockAllocationFacet ---
+	// The real createAllocationRequests calls DataCapAPI.transfer() which
+	// requires Filecoin built-in actors (CALL_ACTOR_ID precompile). Anvil
+	// doesn't have those, so we deploy the MockAllocationFacet which skips
+	// the DataCap path and generates mock allocation IDs.
+	mockFacet := testutil.DeployMockAllocationFacet(t, rpcURL, ddoAddr, owner)
 
-	require.NotEmpty(t, queuedTx.Hash)
-	t.Logf("CreateAllocations tx: %s", queuedTx.Hash)
-
-	// --- Step 7: WaitForConfirmations ---
-	receipt, err := ddo.WaitForConfirmations(ctx, queuedTx.Hash, 1, 100*time.Millisecond)
+	// --- Step 7: Call mockCreateAllocationRequests ---
+	// ABI-encode the pieceInfos for the mock function call.
+	pieceInfos, err := ddo.buildPieceInfos(pieces, cfg)
 	require.NoError(t, err)
-	require.EqualValues(t, 1, receipt.Status, "allocation tx should succeed")
-	t.Logf("Allocation tx confirmed: block=%d, gas=%d", receipt.BlockNumber, receipt.GasUsed)
 
-	// --- Step 8: ParseAllocationIDs ---
-	allocationIDs, err := ddo.ParseAllocationIDs(ctx, queuedTx.Hash)
+	parsedABI, err := abi.JSON(strings.NewReader(ddocontract.DDOClientABI))
+	require.NoError(t, err)
+
+	// Use mockCreateRawAllocationRequests which skips DataCap AND payment
+	// rails — it only emits AllocationCreated events with mock IDs.
+	// Same parameter type as createAllocationRequests.
+	realCallData, err := parsedABI.Pack("createAllocationRequests", pieceInfos)
+	require.NoError(t, err)
+	// Replace selector: createAllocationRequests -> mockCreateRawAllocationRequests (0x76e92deb)
+	mockSelector := common.FromHex("0x76e92deb")
+	copy(realCallData[0:4], mockSelector)
+
+	clientAddr := evmSigner.EVMAddress()
+	testutil.AnvilImpersonate(t, rpcURL, clientAddr)
+	mockTxHash := testutil.SendImpersonatedTx(t, rpcURL, clientAddr, ddoAddr, realCallData)
+	t.Logf("mockCreateAllocationRequests tx: %s", mockTxHash.Hex())
+
+	// --- Step 8: Parse AllocationCreated events ---
+	allocationIDs, err := ddo.ParseAllocationIDs(ctx, mockTxHash.Hex())
 	require.NoError(t, err)
 	require.Len(t, allocationIDs, 1, "should get exactly 1 allocation ID for 1 piece")
-	t.Logf("Allocation ID: %d", allocationIDs[0])
+	t.Logf("Mock allocation ID: %d", allocationIDs[0])
+
+	_ = mockFacet
 }
 
 // registerSPViaImpersonation registers an SP in the DDO contract using
