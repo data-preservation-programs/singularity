@@ -3,9 +3,11 @@ package dealpusher
 import (
 	"context"
 	"errors"
+	"math/big"
 	"time"
 
 	"github.com/data-preservation-programs/go-synapse/signer"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ipfs/go-cid"
 )
 
@@ -52,6 +54,11 @@ type DDODealManager interface {
 	// DDO contract, and returns its on-chain config.
 	ValidateSP(ctx context.Context, providerActorID uint64) (*DDOSPConfig, error)
 
+	// CheckBalance queries the wallet's native FIL and payment token balances,
+	// as well as the payments contract account status. Returns a summary that
+	// the scheduler uses for pre-flight logging and low-balance warnings.
+	CheckBalance(ctx context.Context, walletAddr common.Address) (*DDOBalanceStatus, error)
+
 	// EnsurePayments checks account balance and operator approval, deposits
 	// and approves if needed. Takes the actual pieces (not aggregated totals)
 	// because the SDK computes per-piece lockup: allocationLockupAmount * len(pieces).
@@ -94,4 +101,14 @@ type DDOTransactionReceipt struct {
 	BlockNumber uint64
 	GasUsed     uint64
 	Status      uint64
+}
+
+// DDOBalanceStatus summarizes a wallet's balance state for DDO deal-making.
+type DDOBalanceStatus struct {
+	WalletAddr     common.Address
+	NativeFIL      *big.Int // native FIL balance (for gas)
+	TokenBalance   *big.Int // payment token balance held in wallet
+	DepositedFunds *big.Int // funds already deposited in payments contract
+	LockupCurrent  *big.Int // current lockup in payments contract
+	Available      *big.Int // deposited - lockup (spendable for new deals)
 }
