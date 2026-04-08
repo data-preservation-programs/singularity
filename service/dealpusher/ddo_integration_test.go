@@ -14,6 +14,7 @@ import (
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
@@ -245,11 +246,15 @@ func TestIntegration_DDOFullDealFlow(t *testing.T) {
 
 	// Use mockCreateRawAllocationRequests which skips DataCap AND payment
 	// rails — it only emits AllocationCreated events with mock IDs.
-	// Same parameter type as createAllocationRequests.
+	// It takes the same parameter shape as createAllocationRequests, so we
+	// pack the real method and derive the mock selector by replacing the
+	// function name in the canonical signature. This stays in sync if the
+	// pieceInfos struct ever changes.
 	realCallData, err := parsedABI.Pack("createAllocationRequests", pieceInfos)
 	require.NoError(t, err)
-	// Replace selector: createAllocationRequests -> mockCreateRawAllocationRequests (0x76e92deb)
-	mockSelector := common.FromHex("0x76e92deb")
+	realMethod := parsedABI.Methods["createAllocationRequests"]
+	mockSig := strings.Replace(realMethod.Sig, "createAllocationRequests", "mockCreateRawAllocationRequests", 1)
+	mockSelector := crypto.Keccak256([]byte(mockSig))[:4]
 	copy(realCallData[0:4], mockSelector)
 
 	clientAddr := evmSigner.EVMAddress()

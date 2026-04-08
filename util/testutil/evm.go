@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"net/http"
@@ -17,6 +18,25 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/require"
 )
+
+// waitForReceipt polls TransactionReceipt for up to ~3s, tolerating ethereum.NotFound
+// for the brief window before automine completes. Returns the receipt or fails the test.
+func waitForReceipt(t *testing.T, client *ethclient.Client, hash common.Hash) *types.Receipt {
+	t.Helper()
+	ctx := context.Background()
+	for range 30 {
+		receipt, err := client.TransactionReceipt(ctx, hash)
+		if err == nil {
+			return receipt
+		}
+		if !errors.Is(err, ethereum.NotFound) {
+			require.NoError(t, err)
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	t.Fatalf("transaction %s not mined after 3s", hash.Hex())
+	return nil
+}
 
 // AnvilImpersonate enables Anvil's impersonation for the given address,
 // allowing transactions to be sent from it without a private key.
@@ -89,15 +109,8 @@ func TransferERC20(t *testing.T, rpcURL string, tokenAddr, recipient common.Addr
 	err = client.SendTransaction(ctx, signedTx)
 	require.NoError(t, err)
 
-	for range 30 {
-		receipt, err := client.TransactionReceipt(ctx, signedTx.Hash())
-		if err == nil {
-			require.EqualValues(t, 1, receipt.Status, "ERC20 transfer failed")
-			return
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-	t.Fatal("ERC20 transfer not mined after 3s")
+	receipt := waitForReceipt(t, client, signedTx.Hash())
+	require.EqualValues(t, 1, receipt.Status, "ERC20 transfer failed")
 }
 
 // SendImpersonatedTx sends a transaction from an impersonated account via
@@ -140,15 +153,8 @@ func SendImpersonatedTx(t *testing.T, rpcURL string, from, to common.Address, da
 	require.NoError(t, err, "failed to parse tx hash: %s", string(result))
 
 	hash := common.HexToHash(txHash)
-	for range 30 {
-		receipt, err := client.TransactionReceipt(ctx, hash)
-		if err == nil {
-			require.EqualValues(t, 1, receipt.Status, "impersonated tx %s failed", txHash)
-			return hash
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-	t.Fatalf("impersonated tx %s not mined after 3s", txHash)
+	receipt := waitForReceipt(t, client, hash)
+	require.EqualValues(t, 1, receipt.Status, "impersonated tx %s failed", txHash)
 	return hash
 }
 
