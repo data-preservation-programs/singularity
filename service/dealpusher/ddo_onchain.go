@@ -88,6 +88,73 @@ func (o *OnChainDDO) Close() {
 	}
 }
 
+func (o *OnChainDDO) CheckBalance(ctx context.Context, walletAddr common.Address) (*DDOBalanceStatus, error) {
+	ethClient := o.ddoClient.GetEthClient()
+
+	// Native FIL balance (for gas)
+	nativeBal, err := ethClient.BalanceAt(ctx, walletAddr, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to query native FIL balance")
+	}
+
+	// Payment token (USDFC) balance via balanceOf call
+	tokenBal, err := o.queryERC20Balance(ctx, o.paymentToken, walletAddr)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to query payment token balance")
+	}
+
+	// Payments contract account status — use transactor constructor with
+	// read-only auth (we only call GetAccount, no writes).
+	paymentsClient, err := paymentscontract.NewClientWithTransactor(
+		ethClient,
+		o.paymentsContractAddr.Hex(),
+		&bind.TransactOpts{From: walletAddr},
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create payments client for balance query")
+	}
+
+	account, err := paymentsClient.GetAccount(o.paymentToken, walletAddr)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to query payments contract account")
+	}
+
+	available := new(big.Int).Sub(account.Funds, account.LockupCurrent)
+	if available.Sign() < 0 {
+		available = big.NewInt(0)
+	}
+
+	return &DDOBalanceStatus{
+		WalletAddr:     walletAddr,
+		NativeFIL:      nativeBal,
+		TokenBalance:   tokenBal,
+		DepositedFunds: account.Funds,
+		LockupCurrent:  account.LockupCurrent,
+		Available:      available,
+	}, nil
+}
+
+// queryERC20Balance calls balanceOf on an ERC20 token contract.
+func (o *OnChainDDO) queryERC20Balance(ctx context.Context, tokenAddr, account common.Address) (*big.Int, error) {
+	// balanceOf(address) selector = 0x70a08231
+	selector := common.FromHex("0x70a08231")
+	data := make([]byte, 4+32)
+	copy(data[0:4], selector)
+	copy(data[4+12:4+32], account.Bytes())
+
+	result, err := o.ddoClient.GetEthClient().CallContract(ctx, ethereum.CallMsg{
+		To:   &tokenAddr,
+		Data: data,
+	}, nil)
+	if err != nil {
+		return nil, err
+	}
+	if len(result) < 32 {
+		return big.NewInt(0), nil
+	}
+	return new(big.Int).SetBytes(result), nil
+}
+
 func (o *OnChainDDO) ValidateSP(ctx context.Context, providerActorID uint64) (*DDOSPConfig, error) {
 	cfg, err := o.ddoClient.GetSPConfig(providerActorID)
 	if err != nil {
