@@ -216,3 +216,46 @@ func TestResolveDirectoryTree(t *testing.T) {
 	require.Equal(t, "name", node.Links()[0].Name)
 	require.Equal(t, "test", node.Links()[1].Name)
 }
+
+// TestUnmarshalToBlocksDeterministic verifies that UnmarshalToBlocks returns
+// blocks in a stable, content-derived order across calls. Without this, Go's
+// randomized map iteration leaks into the CAR layout, producing a different
+// piece CID on every regeneration even when the underlying DAG is identical.
+func TestUnmarshalToBlocksDeterministic(t *testing.T) {
+	ctx := context.Background()
+
+	// Build a directoryData with many real blocks. We populate Additional
+	// directly via AddBlocks because AddFile creates dummy nodes that get
+	// filtered out by UnmarshalToBlocks.
+	dirData := NewDirectoryData()
+	const blockCount = 50
+	for i := 0; i < blockCount; i++ {
+		c := cid.NewCidV1(cid.Raw, util.Hash([]byte(strconv.Itoa(i))))
+		dirData.additional[c] = []byte("block-data-" + strconv.Itoa(i))
+	}
+
+	marshaled, err := dirData.MarshalBinary(ctx)
+	require.NoError(t, err)
+
+	// Unmarshal multiple times and compare the block CID sequences. Each
+	// call must produce the same ordering or the resulting CAR file will
+	// be byte-different and the piece CID will drift.
+	first, err := UnmarshalToBlocks(marshaled)
+	require.NoError(t, err)
+	require.GreaterOrEqual(t, len(first), blockCount, "expected at least %d blocks", blockCount)
+
+	firstCids := make([]string, len(first))
+	for i, blk := range first {
+		firstCids[i] = blk.Cid().String()
+	}
+
+	for run := 0; run < 20; run++ {
+		blks, err := UnmarshalToBlocks(marshaled)
+		require.NoError(t, err)
+		require.Len(t, blks, len(first))
+		for i, blk := range blks {
+			require.Equal(t, firstCids[i], blk.Cid().String(),
+				"block order must be deterministic across UnmarshalToBlocks calls (run %d, position %d)", run, i)
+		}
+	}
+}
