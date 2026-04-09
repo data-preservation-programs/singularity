@@ -9,8 +9,10 @@ import (
 )
 
 // ListRequest holds optional filters for listing schedules.
+// The `query` tag is required for Echo's binder to populate the field
+// from query parameters on GET /api/schedule?group=...
 type ListRequest struct {
-	Group string `json:"group"` // Filter by group label (empty = all)
+	Group string `json:"group" query:"group"` // Filter by group label (empty = all)
 }
 
 // @ID ListSchedules

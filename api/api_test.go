@@ -107,8 +107,13 @@ func setupMockSchedule() schedule.Handler {
 	m := new(schedule.MockSchedule)
 	m.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&model.Schedule{}, nil)
-	m.On("ListHandler", mock.Anything, mock.Anything, mock.Anything).
+	// Match a request with no group filter (empty string)
+	m.On("ListHandler", mock.Anything, mock.Anything, schedule.ListRequest{}).
 		Return([]model.Schedule{{}}, nil)
+	// Match a request with the specific test group filter -- proves that
+	// the query param actually binds through to the handler.
+	m.On("ListHandler", mock.Anything, mock.Anything, schedule.ListRequest{Group: "test-group"}).
+		Return([]model.Schedule{{}, {}}, nil)
 	m.On("PauseHandler", mock.Anything, mock.Anything, uint32(1)).
 		Return(&model.Schedule{}, nil)
 	m.On("ResumeHandler", mock.Anything, mock.Anything, uint32(1)).
@@ -501,6 +506,18 @@ func TestAllAPIs(t *testing.T) {
 				require.NoError(t, err)
 				require.True(t, resp.IsSuccess())
 				require.Len(t, resp.Payload, 1)
+			})
+			t.Run("ListSchedulesWithGroupFilter", func(t *testing.T) {
+				// Verify the ?group=... query param actually binds to ListRequest.Group.
+				// The mock returns 2 schedules only when Group == "test-group".
+				group := "test-group"
+				resp, err := client.DealSchedule.ListSchedules(&deal_schedule.ListSchedulesParams{
+					Context: ctx,
+					Group:   &group,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.Len(t, resp.Payload, 2, "group filter must bind from query param")
 			})
 			t.Run("PauseHandler", func(t *testing.T) {
 				resp, err := client.DealSchedule.PauseSchedule(&deal_schedule.PauseScheduleParams{

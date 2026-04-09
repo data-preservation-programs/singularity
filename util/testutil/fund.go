@@ -3,12 +3,9 @@ package testutil
 import (
 	"context"
 	"crypto/ecdsa"
-	"errors"
 	"math/big"
 	"testing"
-	"time"
 
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -65,19 +62,7 @@ func FundEVMWallet(t *testing.T, rpcURL string, to common.Address, amount *big.I
 	err = client.SendTransaction(ctx, signedTx)
 	require.NoError(t, err)
 
-	// automine should be instant but some anvil versions need a moment
-	var receipt *types.Receipt
-	for range 20 {
-		receipt, err = client.TransactionReceipt(ctx, signedTx.Hash())
-		if err == nil {
-			break
-		}
-		if !errors.Is(err, ethereum.NotFound) {
-			require.NoError(t, err)
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-	require.NoError(t, err, "receipt not available after automine")
+	receipt := waitForReceipt(t, client, signedTx.Hash())
 	require.EqualValues(t, 1, receipt.Status, "funding transaction failed")
 
 	return signedTx.Hash()
