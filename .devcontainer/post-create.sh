@@ -6,11 +6,9 @@ go mod download
 
 chmod +x .devcontainer/*.sh || true
 
-# Initialize database systems
 echo "Setting up databases..."
 
-# Create data directories
-mkdir -p /home/vscode/.local/share/pg/pgdata /home/vscode/.local/share/pg /home/vscode/.local/share/mysql/data /home/vscode/.local/share/mysql/tmp /home/vscode/.local/share/mysql /home/vscode/.local/share/tmp
+mkdir -p /home/vscode/.local/share/pg/pgdata /home/vscode/.local/share/pg /home/vscode/.local/share/tmp
 
 # Initialize Postgres
 if [ ! -f "/home/vscode/.local/share/pg/pgdata/PG_VERSION" ]; then
@@ -24,35 +22,10 @@ if [ ! -f "/home/vscode/.local/share/pg/pgdata/PG_VERSION" ]; then
   } >> /home/vscode/.local/share/pg/pgdata/pg_hba.conf
 fi
 
-# Initialize MariaDB
-if [ ! -d "/home/vscode/.local/share/mysql/data/mysql" ]; then
-  echo "Initializing MariaDB..."
-  export TMPDIR=/home/vscode/.local/share/mysql/tmp
-  mariadb-install-db \
-    --datadir=/home/vscode/.local/share/mysql/data \
-    --tmpdir=/home/vscode/.local/share/mysql/tmp \
-    --auth-root-authentication-method=normal \
-    --skip-test-db >/dev/null
-fi
-
-# Start both servers
-echo "Starting database servers..."
+echo "Starting database server..."
 .devcontainer/start-postgres.sh
-.devcontainer/start-mysql.sh
 
-# Create users (databases will be created during testing as needed)
 echo "Creating database users..."
-
-# Postgres setup
 psql -h localhost -p 55432 -d postgres -c "CREATE USER singularity WITH SUPERUSER CREATEDB CREATEROLE LOGIN;"
-
-# MySQL setup  
-mariadb --socket=/home/vscode/.local/share/mysql/mysql.sock -uroot <<SQL
-CREATE USER 'singularity'@'localhost' IDENTIFIED BY 'singularity';
-CREATE USER 'singularity'@'%' IDENTIFIED BY 'singularity';
-GRANT ALL PRIVILEGES ON *.* TO 'singularity'@'localhost' WITH GRANT OPTION;
-GRANT ALL PRIVILEGES ON *.* TO 'singularity'@'%' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
-SQL
 
 echo "Database setup completed successfully"

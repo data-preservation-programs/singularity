@@ -8,10 +8,6 @@ Singularity uses `sqlite3` as its default database backend due to its ease of se
   Connection String Example:  
   `postgres://user:pass@example.com:5432/dbname`
 
-- **MySQL**:  
-  Connection String Example:  
-  `mysql://user:pass@tcp(localhost:3306)/dbname?parseTime=true`
-
 ## Using Docker Compose for Deployment
 
 If you'd like to quickly deploy Singularity along with a PostgreSQL backend, consider using the provided Docker Compose template:

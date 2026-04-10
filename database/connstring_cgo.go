@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/cockroachdb/errors"
-	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -42,13 +41,7 @@ func open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
 	}
 
 	if strings.HasPrefix(connString, "mysql://") {
-		logger.Info("Opening mysql database")
-		db, err = gorm.Open(mysql.Open(connString[8:]), config)
-		if err != nil {
-			return nil, nil, errors.WithStack(err)
-		}
-		closer, err = db.DB()
-		return db, closer, errors.WithStack(err)
+		return nil, nil, errors.New("MySQL is no longer supported as of v0.8. Migrate to PostgreSQL -- see docs/installation/upgrade.md")
 	}
 
 	return nil, nil, ErrDatabaseNotSupported

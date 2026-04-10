@@ -184,17 +184,10 @@ func reapPhase(db *gorm.DB, dialect, table, column string, limit int) {
 const reapStatementTimeout = "2min"
 
 // execBatchDelete deletes rows where column IS NULL with a batch limit.
-// Uses dialect-specific SQL because MariaDB doesn't support LIMIT in IN subqueries.
 // On postgres the delete runs under SET LOCAL statement_timeout so a wedged
 // query errors out instead of hanging.
 func execBatchDelete(db *gorm.DB, dialect, table, column string, limit int) *gorm.DB {
-	var sqlStr string
-	switch dialect {
-	case "mysql":
-		sqlStr = "DELETE FROM " + table + " WHERE " + column + " IS NULL LIMIT ?"
-	default:
-		sqlStr = "DELETE FROM " + table + " WHERE id IN (SELECT id FROM " + table + " WHERE " + column + " IS NULL LIMIT ?)"
-	}
+	sqlStr := "DELETE FROM " + table + " WHERE id IN (SELECT id FROM " + table + " WHERE " + column + " IS NULL LIMIT ?)"
 
 	if dialect != "postgres" {
 		return db.Exec(sqlStr, limit)

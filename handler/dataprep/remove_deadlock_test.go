@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/google/uuid"
@@ -22,7 +21,6 @@ import (
 func TestRemovePreparationNoDeadlock(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		req := require.New(t)
-		testutil.EnableDeadlockLogging(t, db)
 
 		// Create test data: multiple preparations sharing one storage
 		const numPreparations = 3
@@ -214,12 +212,6 @@ func TestRemovePreparationNoDeadlock(t *testing.T) {
 				})
 
 				if err != nil && updateCtx.Err() == nil {
-					// If it's a deadlock error, get InnoDB status
-					if strings.Contains(err.Error(), "Deadlock") {
-						if deadlockInfo := database.PrintDeadlockInfo(db); deadlockInfo != "" {
-							t.Logf("\n%s", deadlockInfo)
-						}
-					}
 					errChan <- err
 				}
 			}(i)
