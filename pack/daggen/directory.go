@@ -3,6 +3,7 @@ package daggen
 import (
 	"bytes"
 	"context"
+	"sort"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
@@ -356,16 +357,33 @@ func UnmarshalToBlocks(in []byte) ([]blocks.Block, error) {
 		return nil, errors.WithStack(err)
 	}
 
+	// Iterate Reals and Additional in CID-sorted order so the resulting
+	// CAR layout is deterministic across runs. Go map iteration is
+	// randomized; without a sort, the same DAG produces a different piece
+	// CID on every regeneration even though the root CID is stable.
 	blks := make([]blocks.Block, 0, len(data.Reals)+len(data.Additional))
-	for c, d := range data.Reals {
-		blk, _ := blocks.NewBlockWithCid(d, c)
+	for _, c := range sortedCids(data.Reals) {
+		blk, _ := blocks.NewBlockWithCid(data.Reals[c], c)
 		blks = append(blks, blk)
 	}
-	for c, d := range data.Additional {
-		blk, _ := blocks.NewBlockWithCid(d, c)
+	for _, c := range sortedCids(data.Additional) {
+		blk, _ := blocks.NewBlockWithCid(data.Additional[c], c)
 		blks = append(blks, blk)
 	}
 	return blks, nil
+}
+
+// sortedCids returns the keys of a cid→bytes map in lexicographic order
+// (by CID bytes). Used to make CAR layouts deterministic.
+func sortedCids(m map[cid.Cid][]byte) []cid.Cid {
+	keys := make([]cid.Cid, 0, len(m))
+	for c := range m {
+		keys = append(keys, c)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return bytes.Compare(keys[i].Bytes(), keys[j].Bytes()) < 0
+	})
+	return keys
 }
 
 // UnmarshalBinary deserializes binary data into the current DirectoryData object.
