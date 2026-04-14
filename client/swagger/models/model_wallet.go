@@ -26,7 +26,7 @@ type ModelWallet struct {
 	// id
 	ID int64 `json:"id,omitempty"`
 
-	// absolute path to key file
+	// keystore-relative name (typically the address)
 	KeyPath string `json:"keyPath,omitempty"`
 
 	// local, yubikey, aws-kms, etc
