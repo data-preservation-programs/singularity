@@ -195,7 +195,7 @@ func TestExportKeysHandler_MissingKeyFile(t *testing.T) {
 
 		// create wallet record pointing to a nonexistent key file
 		require.NoError(t, db.Create(&model.Wallet{
-			KeyPath:  "/nonexistent/key",
+			KeyPath:  "nonexistent",
 			KeyStore: "local",
 			Address:  testutil.TestWalletAddr,
 		}).Error)
@@ -218,12 +218,11 @@ func TestExportKeysHandler_CorruptKeyFile(t *testing.T) {
 		addLegacyColumn(t, db)
 		createLegacyActor(t, db, "f01234", testutil.TestWalletAddr, testutil.TestPrivateKeyHex)
 
-		// write garbage to the key file path
-		corruptPath := dir + "/corrupt"
-		require.NoError(t, os.WriteFile(corruptPath, []byte("garbage"), 0600))
+		// write garbage as a key file inside the keystore dir
+		require.NoError(t, os.WriteFile(dir+"/corrupt", []byte("garbage"), 0600))
 
 		require.NoError(t, db.Create(&model.Wallet{
-			KeyPath:  corruptPath,
+			KeyPath:  "corrupt",
 			KeyStore: "local",
 			Address:  testutil.TestWalletAddr,
 		}).Error)

@@ -148,22 +148,19 @@ func exportOneKey(db *gorm.DB, ks keystore.KeyStore, actor legacyActorRow) (expo
 		return false, fmt.Sprintf("actor %s: db query failed: %v", actor.ID, err)
 	}
 
-	// save key to keystore
-	keyPath, _, err := ks.Put(actor.PrivateKey)
+	keyName, _, err := ks.Put(actor.PrivateKey)
 	if err != nil {
 		return false, fmt.Sprintf("actor %s: keystore write failed: %v", actor.ID, err)
 	}
 
-	// create wallet record
 	w := model.Wallet{
-		KeyPath:  keyPath,
+		KeyPath:  keyName,
 		KeyStore: "local",
 		Address:  addr.String(),
 		ActorID:  &actor.ID,
 	}
 	if err := db.Create(&w).Error; err != nil {
-		// cleanup keystore file on db failure
-		ks.Delete(keyPath)
+		ks.Delete(keyName)
 		return false, fmt.Sprintf("actor %s: wallet create failed: %v", actor.ID, err)
 	}
 

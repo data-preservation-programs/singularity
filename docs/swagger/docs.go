@@ -7625,7 +7625,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "keyPath": {
-                    "description": "absolute path to key file",
+                    "description": "keystore-relative name (typically the address)",
                     "type": "string"
                 },
                 "keyStore": {

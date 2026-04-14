@@ -32,23 +32,14 @@ func TestLocalKeyStore_PutAndGet(t *testing.T) {
 	// Use test key
 	privateKey := getTestKey(0)
 
-	// Put the key
-	path, addr, err := ks.Put(privateKey)
+	name, addr, err := ks.Put(privateKey)
 	require.NoError(t, err)
-	require.NotEmpty(t, path)
 	require.NotEqual(t, address.Undef, addr)
 
-	// Verify file exists
-	require.FileExists(t, path)
+	require.Equal(t, addr.String(), name)
+	require.FileExists(t, filepath.Join(tmpdir, name))
 
-	// Verify path is in the keystore directory
-	require.Contains(t, path, tmpdir)
-
-	// Verify filename matches address
-	require.Equal(t, filepath.Join(tmpdir, addr.String()), path)
-
-	// Get the key back
-	loadedKey, err := ks.Get(path)
+	loadedKey, err := ks.Get(name)
 	require.NoError(t, err)
 	require.Equal(t, privateKey, loadedKey)
 }
@@ -66,19 +57,15 @@ func TestLocalKeyStore_List(t *testing.T) {
 	// Add a key (we only have one unique test key, so add it once)
 	key1 := getTestKey(0)
 
-	path1, addr1, err := ks.Put(key1)
+	name1, addr1, err := ks.Put(key1)
 	require.NoError(t, err)
 
-	// List should return it
 	keys, err = ks.List()
 	require.NoError(t, err)
 	require.Len(t, keys, 1)
 
-	// Verify address matches
 	require.Equal(t, addr1, keys[0].Address)
-
-	// Verify path is correct
-	require.Equal(t, path1, keys[0].Path)
+	require.Equal(t, name1, keys[0].Name)
 }
 
 func TestLocalKeyStore_Delete(t *testing.T) {
@@ -86,22 +73,17 @@ func TestLocalKeyStore_Delete(t *testing.T) {
 	ks, err := NewLocalKeyStore(tmpdir)
 	require.NoError(t, err)
 
-	// Add a key
 	privateKey := getTestKey(0)
-	path, _, err := ks.Put(privateKey)
+	name, _, err := ks.Put(privateKey)
 	require.NoError(t, err)
 
-	// Verify it exists
-	require.True(t, ks.Has(path))
+	require.True(t, ks.Has(name))
 
-	// Delete it
-	err = ks.Delete(path)
+	err = ks.Delete(name)
 	require.NoError(t, err)
 
-	// Verify it's gone
-	require.False(t, ks.Has(path))
+	require.False(t, ks.Has(name))
 
-	// List should be empty
 	keys, err := ks.List()
 	require.NoError(t, err)
 	require.Empty(t, keys)
@@ -112,16 +94,17 @@ func TestLocalKeyStore_Has(t *testing.T) {
 	ks, err := NewLocalKeyStore(tmpdir)
 	require.NoError(t, err)
 
-	// Non-existent key
-	require.False(t, ks.Has(filepath.Join(tmpdir, "nonexistent")))
+	require.False(t, ks.Has("nonexistent"))
 
-	// Add a key
 	privateKey := getTestKey(0)
-	path, _, err := ks.Put(privateKey)
+	name, _, err := ks.Put(privateKey)
 	require.NoError(t, err)
 
-	// Should exist
-	require.True(t, ks.Has(path))
+	require.True(t, ks.Has(name))
+
+	// paths with separators are rejected
+	require.False(t, ks.Has(filepath.Join(tmpdir, name)))
+	require.False(t, ks.Has("../escape"))
 }
 
 func TestLocalKeyStore_InvalidKey(t *testing.T) {
@@ -166,20 +149,17 @@ func TestLocalKeyStore_PutSameKeyTwice(t *testing.T) {
 	ks, err := NewLocalKeyStore(tmpdir)
 	require.NoError(t, err)
 
-	// Add a key
 	privateKey := getTestKey(0)
-	path1, addr1, err := ks.Put(privateKey)
+	name1, addr1, err := ks.Put(privateKey)
 	require.NoError(t, err)
 
-	// Add the same key again (should overwrite)
-	path2, addr2, err := ks.Put(privateKey)
+	// same key again should overwrite
+	name2, addr2, err := ks.Put(privateKey)
 	require.NoError(t, err)
 
-	// Paths and addresses should be the same
-	require.Equal(t, path1, path2)
+	require.Equal(t, name1, name2)
 	require.Equal(t, addr1, addr2)
 
-	// Should only have one key in the list
 	keys, err := ks.List()
 	require.NoError(t, err)
 	require.Len(t, keys, 1)

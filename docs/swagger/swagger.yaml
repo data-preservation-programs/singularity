@@ -739,7 +739,7 @@ definitions:
       id:
         type: integer
       keyPath:
-        description: absolute path to key file
+        description: keystore-relative name (typically the address)
         type: string
       keyStore:
         description: local, yubikey, aws-kms, etc
