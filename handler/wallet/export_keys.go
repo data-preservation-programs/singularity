@@ -81,6 +81,10 @@ func migrateWalletAssignments(db *gorm.DB) error {
 		return errors.Wrap(err, "failed to read wallet_assignments")
 	}
 
+	if len(rows) > 0 {
+		logger.Infow("migrating wallet_assignments to preparation.wallet_id", "count", len(rows))
+	}
+
 	migrated := 0
 	for _, r := range rows {
 		// find the new wallet by actor_id
