@@ -4,22 +4,26 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/data-preservation-programs/go-synapse/signer"
 	"github.com/filecoin-project/go-address"
 )
 
+// KeyStore stores keys by a short name (typically the filecoin address).
+// The name is a relative identifier -- implementations resolve it against
+// their own storage root. Callers must pass back the name returned by Put.
 type KeyStore interface {
-	Put(privateKey string) (path string, addr address.Address, err error) // saves key, returns path and address
-	Get(path string) (privateKey string, err error)                       // loads key from path
-	List() ([]KeyInfo, error)                                             // lists all keys
-	Delete(path string) error                                             // removes key
-	Has(path string) bool                                                 // checks if key exists
+	Put(privateKey string) (name string, addr address.Address, err error)
+	Get(name string) (privateKey string, err error)
+	List() ([]KeyInfo, error)
+	Delete(name string) error
+	Has(name string) bool
 }
 
 type KeyInfo struct {
 	Address address.Address
-	Path    string
+	Name    string // relative identifier within the keystore
 }
 
 // filesystem keystore implementation
@@ -34,6 +38,17 @@ func NewLocalKeyStore(dir string) (*LocalKeyStore, error) {
 	return &LocalKeyStore{dir: dir}, nil
 }
 
+// reject names that would escape the keystore dir or address another directory
+func validateName(name string) error {
+	if name == "" {
+		return fmt.Errorf("empty key name")
+	}
+	if strings.ContainsRune(name, os.PathSeparator) || name == "." || name == ".." {
+		return fmt.Errorf("invalid key name %q: must be a basename", name)
+	}
+	return nil
+}
+
 // lotus wallet export format expected (hex-encoded JSON with Type and PrivateKey)
 func (ks *LocalKeyStore) Put(privateKey string) (string, address.Address, error) {
 	addr, err := AddressFromExport(privateKey)
@@ -41,19 +56,21 @@ func (ks *LocalKeyStore) Put(privateKey string) (string, address.Address, error)
 		return "", address.Undef, fmt.Errorf("failed to derive address from private key: %w", err)
 	}
 
-	// file named by address (f1.../f3...)
-	filename := addr.String()
-	path := filepath.Join(ks.dir, filename)
+	name := addr.String()
+	path := filepath.Join(ks.dir, name)
 
 	if err := os.WriteFile(path, []byte(privateKey), 0600); err != nil {
 		return "", address.Undef, fmt.Errorf("failed to write key file: %w", err)
 	}
 
-	return path, addr, nil
+	return name, addr, nil
 }
 
-func (ks *LocalKeyStore) Get(path string) (string, error) {
-	data, err := os.ReadFile(path)
+func (ks *LocalKeyStore) Get(name string) (string, error) {
+	if err := validateName(name); err != nil {
+		return "", err
+	}
+	data, err := os.ReadFile(filepath.Join(ks.dir, name))
 	if err != nil {
 		return "", fmt.Errorf("failed to read key file: %w", err)
 	}
@@ -72,8 +89,8 @@ func (ks *LocalKeyStore) List() ([]KeyInfo, error) {
 			continue
 		}
 
-		path := filepath.Join(ks.dir, entry.Name())
-		data, err := os.ReadFile(path)
+		name := entry.Name()
+		data, err := os.ReadFile(filepath.Join(ks.dir, name))
 		if err != nil {
 			continue // skip unreadable
 		}
@@ -85,22 +102,28 @@ func (ks *LocalKeyStore) List() ([]KeyInfo, error) {
 
 		keys = append(keys, KeyInfo{
 			Address: addr,
-			Path:    path,
+			Name:    name,
 		})
 	}
 
 	return keys, nil
 }
 
-func (ks *LocalKeyStore) Delete(path string) error {
-	if err := os.Remove(path); err != nil {
+func (ks *LocalKeyStore) Delete(name string) error {
+	if err := validateName(name); err != nil {
+		return err
+	}
+	if err := os.Remove(filepath.Join(ks.dir, name)); err != nil {
 		return fmt.Errorf("failed to delete key file: %w", err)
 	}
 	return nil
 }
 
-func (ks *LocalKeyStore) Has(path string) bool {
-	_, err := os.Stat(path)
+func (ks *LocalKeyStore) Has(name string) bool {
+	if err := validateName(name); err != nil {
+		return false
+	}
+	_, err := os.Stat(filepath.Join(ks.dir, name))
 	return err == nil
 }
 
