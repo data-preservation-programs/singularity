@@ -164,6 +164,71 @@ func TestHTTPServerHandler(t *testing.T) {
 			})
 		}
 
+		// orphan car (attachment_id NULL from ON DELETE SET NULL) coexists with a
+		// valid car for the same piece_cid. metadata must pick the valid one.
+		t.Run("orphan_car_skipped", func(t *testing.T) {
+			orphanPieceCID := cid.NewCidV1(cid.FilCommitmentUnsealed, util.Hash([]byte("orphan_test")))
+
+			// orphan car created first (lower PK), no associations
+			err := db.Create(&model.Car{
+				PieceCID:  model.CID(orphanPieceCID),
+				PieceSize: 128,
+				PieceType: model.DataPiece,
+				RootCID:   model.CID(testutil.TestCid),
+			}).Error
+			require.NoError(t, err)
+
+			// valid car with attachment, created second
+			prep := &model.Preparation{Name: "orphan_prep"}
+			require.NoError(t, db.Create(prep).Error)
+			storage := &model.Storage{Name: "orphan_storage", Type: "local"}
+			require.NoError(t, db.Create(storage).Error)
+			attachment := &model.SourceAttachment{
+				PreparationID: prep.ID,
+				StorageID:     storage.ID,
+			}
+			require.NoError(t, db.Create(attachment).Error)
+			require.NoError(t, db.Create(&model.Car{
+				PieceCID:      model.CID(orphanPieceCID),
+				PieceSize:     128,
+				PreparationID: &prep.ID,
+				AttachmentID:  &attachment.ID,
+				PieceType:     model.DataPiece,
+				RootCID:       model.CID(testutil.TestCid),
+			}).Error)
+
+			req := httptest.NewRequest(http.MethodGet, "/piece/metadata/:id", nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+			c.SetPath("/piece/metadata/:id")
+			c.SetParamNames("id")
+			c.SetParamValues(orphanPieceCID.String())
+			err = s.getMetadataHandler(c)
+			require.NoError(t, err)
+			require.Equal(t, http.StatusOK, rec.Code)
+		})
+
+		// only an orphan exists -- 404
+		t.Run("orphan_only_returns_404", func(t *testing.T) {
+			onlyOrphanCID := cid.NewCidV1(cid.FilCommitmentUnsealed, util.Hash([]byte("only_orphan")))
+			require.NoError(t, db.Create(&model.Car{
+				PieceCID:  model.CID(onlyOrphanCID),
+				PieceSize: 128,
+				PieceType: model.DataPiece,
+				RootCID:   model.CID(testutil.TestCid),
+			}).Error)
+
+			req := httptest.NewRequest(http.MethodGet, "/piece/metadata/:id", nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+			c.SetPath("/piece/metadata/:id")
+			c.SetParamNames("id")
+			c.SetParamValues(onlyOrphanCID.String())
+			err := s.getMetadataHandler(c)
+			require.NoError(t, err)
+			require.Equal(t, http.StatusNotFound, rec.Code)
+		})
+
 		// Test DAG piece type
 		t.Run("dag_piece_metadata", func(t *testing.T) {
 			preparation := &model.Preparation{Name: "test_prep_dag"}
