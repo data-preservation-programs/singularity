@@ -211,15 +211,14 @@ func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
 	}
 
+	// filter to rows with an attachment -- orphaned cars (attachment_id NULL
+	// after ON DELETE SET NULL from a prior prep) share piece_cid but have
+	// no metadata to serve.
 	var car model.Car
 	ctx := c.Request().Context()
-	err = db.WithContext(ctx).Where("piece_cid = ?", model.CID(pieceCid)).First(&car).Error
+	err = db.WithContext(ctx).Where("piece_cid = ? AND attachment_id IS NOT NULL", model.CID(pieceCid)).First(&car).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return c.String(http.StatusNotFound, "piece not found")
-	}
-
-	if car.AttachmentID == nil {
-		return c.String(http.StatusNotFound, "piece metadata not found")
 	}
 
 	metadata, err := getPieceMetadata(ctx, db, car)
