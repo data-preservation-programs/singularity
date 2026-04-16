@@ -182,17 +182,43 @@ func reapPhase(db *gorm.DB, dialect, table, column string, limit int) {
 	logger.Infow("reaped orphans", "table", table, "count", result.RowsAffected, "elapsed_ms", elapsed.Milliseconds())
 }
 
+// reapStatementTimeout bounds how long a single orphan-delete query may run.
+// prod has gone ~5 months with a silently-wedged cleanup loop; with a timeout
+// a hang surfaces as a logged error instead of an indefinite stall.
+const reapStatementTimeout = "30s"
+
 // execBatchDelete deletes rows where column IS NULL with a batch limit.
 // Uses dialect-specific SQL because MariaDB doesn't support LIMIT in IN subqueries.
+// On postgres the delete is wrapped in a transaction with SET LOCAL
+// statement_timeout so a wedged query errors out instead of hanging.
 func execBatchDelete(db *gorm.DB, dialect, table, column string, limit int) *gorm.DB {
+	var sqlStr string
 	switch dialect {
 	case "mysql":
-		// MySQL/MariaDB support DELETE ... LIMIT directly
-		return db.Exec("DELETE FROM "+table+" WHERE "+column+" IS NULL LIMIT ?", limit)
+		sqlStr = "DELETE FROM " + table + " WHERE " + column + " IS NULL LIMIT ?"
 	default:
-		// PostgreSQL and SQLite support LIMIT in subqueries
-		return db.Exec("DELETE FROM "+table+" WHERE id IN (SELECT id FROM "+table+" WHERE "+column+" IS NULL LIMIT ?)", limit)
+		sqlStr = "DELETE FROM " + table + " WHERE id IN (SELECT id FROM " + table + " WHERE " + column + " IS NULL LIMIT ?)"
 	}
+
+	if dialect != "postgres" {
+		return db.Exec(sqlStr, limit)
+	}
+
+	// SET LOCAL scopes the timeout to this transaction only -- on commit or
+	// rollback it reverts, so the connection pool can't leak it to siblings.
+	var result *gorm.DB
+	txErr := db.Transaction(func(tx *gorm.DB) error {
+		// postgres SET doesn't accept parameters; interpolate a const.
+		if err := tx.Exec("SET LOCAL statement_timeout = '" + reapStatementTimeout + "'").Error; err != nil {
+			return err
+		}
+		result = tx.Exec(sqlStr, limit)
+		return result.Error
+	})
+	if result == nil {
+		return &gorm.DB{Error: txErr}
+	}
+	return result
 }
 
 // Register registers a new worker in the database. It uses the provided context and database connection.
