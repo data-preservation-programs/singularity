@@ -71,8 +71,6 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 //   - db: The Gorm DBNoContext connection to use for database queries.
 func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	db = db.WithContext(ctx)
-	// info, not debug -- silence here has been used as a false signal that the
-	// cleanup loop is running. make each cycle boundary visible in the log.
 	logger.Infow("healthcheck cleanup cycle start")
 
 	// Find stale workers
@@ -161,10 +159,10 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 func cleanupOrphanedRecords(ctx context.Context, db *gorm.DB) {
 	dialect := db.Dialector.Name()
 
-	// log before + after each phase, always include count (even 0). if the loop
-	// wedges we want to see which phase the last log line names.
+	// files batch is smaller because each file deletion cascades SET NULL to
+	// car_blocks.file_id (write amplification ~= avg blocks per file).
 	reapPhase(db, dialect, "car_blocks", "car_id", 10000)
-	reapPhase(db, dialect, "files", "attachment_id", 1000)
+	reapPhase(db, dialect, "files", "attachment_id", 200)
 	reapPhase(db, dialect, "cars", "preparation_id", 100)
 	reapPhase(db, dialect, "directories", "attachment_id", 100)
 	reapPhase(db, dialect, "jobs", "attachment_id", 100)
@@ -182,15 +180,13 @@ func reapPhase(db *gorm.DB, dialect, table, column string, limit int) {
 	logger.Infow("reaped orphans", "table", table, "count", result.RowsAffected, "elapsed_ms", elapsed.Milliseconds())
 }
 
-// reapStatementTimeout bounds how long a single orphan-delete query may run.
-// prod has gone ~5 months with a silently-wedged cleanup loop; with a timeout
-// a hang surfaces as a logged error instead of an indefinite stall.
-const reapStatementTimeout = "30s"
+// kept under cleanupInterval/2 so a wedged cycle can't overlap the next.
+const reapStatementTimeout = "2min"
 
 // execBatchDelete deletes rows where column IS NULL with a batch limit.
 // Uses dialect-specific SQL because MariaDB doesn't support LIMIT in IN subqueries.
-// On postgres the delete is wrapped in a transaction with SET LOCAL
-// statement_timeout so a wedged query errors out instead of hanging.
+// On postgres the delete runs under SET LOCAL statement_timeout so a wedged
+// query errors out instead of hanging.
 func execBatchDelete(db *gorm.DB, dialect, table, column string, limit int) *gorm.DB {
 	var sqlStr string
 	switch dialect {
@@ -204,8 +200,7 @@ func execBatchDelete(db *gorm.DB, dialect, table, column string, limit int) *gor
 		return db.Exec(sqlStr, limit)
 	}
 
-	// SET LOCAL scopes the timeout to this transaction only -- on commit or
-	// rollback it reverts, so the connection pool can't leak it to siblings.
+	// SET LOCAL scopes the timeout to this transaction so it doesn't leak.
 	var result *gorm.DB
 	txErr := db.Transaction(func(tx *gorm.DB) error {
 		// postgres SET doesn't accept parameters; interpolate a const.
