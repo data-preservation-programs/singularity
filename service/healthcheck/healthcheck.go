@@ -43,12 +43,14 @@ var logger = log.Logger("healthcheck")
 //   - db *gorm.DB: The database connection object used by HealthCheckCleanup to interact with
 //     the database.
 func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
+	logger.Infow("healthcheck cleanup loop started", "interval", cleanupInterval)
 	timer := time.NewTimer(cleanupInterval)
 	defer timer.Stop()
 	for {
 		HealthCheckCleanup(ctx, db)
 		select {
 		case <-ctx.Done():
+			logger.Infow("healthcheck cleanup loop exiting", "reason", ctx.Err())
 			return
 		case <-timer.C:
 			timer.Reset(cleanupInterval)
@@ -69,7 +71,9 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 //   - db: The Gorm DBNoContext connection to use for database queries.
 func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	db = db.WithContext(ctx)
-	logger.Debugw("running healthcheck cleanup")
+	// info, not debug -- silence here has been used as a false signal that the
+	// cleanup loop is running. make each cycle boundary visible in the log.
+	logger.Infow("healthcheck cleanup cycle start")
 
 	// Find stale workers
 	var staleWorkers []model.Worker
@@ -78,10 +82,12 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 		logger.Errorw("failed to find stale workers", "error", err)
 		return
 	}
+	logger.Infow("found stale workers", "count", len(staleWorkers))
 
 	if len(staleWorkers) == 0 {
 		// Clean up orphaned records even if no stale workers
 		cleanupOrphanedRecords(ctx, db)
+		logger.Infow("healthcheck cleanup cycle end")
 		return
 	}
 
@@ -146,6 +152,7 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 
 	// Clean up orphaned records from deleted preparations (SET NULL cascades)
 	cleanupOrphanedRecords(ctx, db)
+	logger.Infow("healthcheck cleanup cycle end")
 }
 
 // cleanupOrphanedRecords deletes orphaned records in batches.
@@ -154,45 +161,25 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 func cleanupOrphanedRecords(ctx context.Context, db *gorm.DB) {
 	dialect := db.Dialector.Name()
 
-	// Delete orphaned car_blocks - largest table, 10K per cycle
-	result := execBatchDelete(db, dialect, "car_blocks", "car_id", 10000)
-	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
-		logger.Errorw("failed to clean up orphaned car_blocks", "error", result.Error)
-	} else if result.RowsAffected > 0 {
-		logger.Infow("cleaned up orphaned car_blocks", "count", result.RowsAffected)
-	}
+	// log before + after each phase, always include count (even 0). if the loop
+	// wedges we want to see which phase the last log line names.
+	reapPhase(db, dialect, "car_blocks", "car_id", 10000)
+	reapPhase(db, dialect, "files", "attachment_id", 1000)
+	reapPhase(db, dialect, "cars", "preparation_id", 100)
+	reapPhase(db, dialect, "directories", "attachment_id", 100)
+	reapPhase(db, dialect, "jobs", "attachment_id", 100)
+}
 
-	// Delete orphaned files - large table, 1000 per cycle
-	result = execBatchDelete(db, dialect, "files", "attachment_id", 1000)
+func reapPhase(db *gorm.DB, dialect, table, column string, limit int) {
+	logger.Infow("reaping orphans", "table", table, "column", column, "limit", limit)
+	start := time.Now()
+	result := execBatchDelete(db, dialect, table, column, limit)
+	elapsed := time.Since(start)
 	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
-		logger.Errorw("failed to clean up orphaned files", "error", result.Error)
-	} else if result.RowsAffected > 0 {
-		logger.Infow("cleaned up orphaned files", "count", result.RowsAffected)
+		logger.Errorw("reap failed", "table", table, "error", result.Error, "elapsed_ms", elapsed.Milliseconds())
+		return
 	}
-
-	// Delete orphaned cars - 100 per cycle
-	result = execBatchDelete(db, dialect, "cars", "preparation_id", 100)
-	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
-		logger.Errorw("failed to clean up orphaned cars", "error", result.Error)
-	} else if result.RowsAffected > 0 {
-		logger.Infow("cleaned up orphaned cars", "count", result.RowsAffected)
-	}
-
-	// Delete orphaned directories - 100 per cycle
-	result = execBatchDelete(db, dialect, "directories", "attachment_id", 100)
-	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
-		logger.Errorw("failed to clean up orphaned directories", "error", result.Error)
-	} else if result.RowsAffected > 0 {
-		logger.Infow("cleaned up orphaned directories", "count", result.RowsAffected)
-	}
-
-	// Delete orphaned jobs - 100 per cycle
-	result = execBatchDelete(db, dialect, "jobs", "attachment_id", 100)
-	if result.Error != nil && !errors.Is(result.Error, context.Canceled) {
-		logger.Errorw("failed to clean up orphaned jobs", "error", result.Error)
-	} else if result.RowsAffected > 0 {
-		logger.Infow("cleaned up orphaned jobs", "count", result.RowsAffected)
-	}
+	logger.Infow("reaped orphans", "table", table, "count", result.RowsAffected, "elapsed_ms", elapsed.Milliseconds())
 }
 
 // execBatchDelete deletes rows where column IS NULL with a batch limit.
