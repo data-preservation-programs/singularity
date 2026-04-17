@@ -34,6 +34,11 @@ var DatasetWorkerCmd = &cli.Command{
 			Value: true,
 		},
 		&cli.BoolFlag{
+			Name:  "enable-reaper",
+			Usage: "Enable the orphan-record reaper. Exactly one dataset-worker process per deployment should enable this; running multiple reapers contends on the same rows and can livelock.",
+			Value: true,
+		},
+		&cli.BoolFlag{
 			Name:  "exit-on-complete",
 			Usage: "Exit the worker when there is no more work to do",
 			Value: false,
@@ -67,6 +72,7 @@ var DatasetWorkerCmd = &cli.Command{
 				EnableScan:     c.Bool("enable-scan"),
 				EnablePack:     c.Bool("enable-pack"),
 				EnableDag:      c.Bool("enable-dag"),
+				EnableReaper:   c.Bool("enable-reaper"),
 				ExitOnComplete: c.Bool("exit-on-complete"),
 				ExitOnError:    c.Bool("exit-on-error"),
 				MinInterval:    c.Duration("min-interval"),

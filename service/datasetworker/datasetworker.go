@@ -37,9 +37,12 @@ type Config struct {
 	EnableScan     bool
 	EnablePack     bool
 	EnableDag      bool
-	ExitOnError    bool
-	MinInterval    time.Duration
-	MaxInterval    time.Duration
+	// exactly one dataset-worker process per deployment should enable this;
+	// concurrent reapers contend on the same rows.
+	EnableReaper bool
+	ExitOnError  bool
+	MinInterval  time.Duration
+	MaxInterval  time.Duration
 }
 
 func NewWorker(db *gorm.DB, config Config) *Worker {
@@ -100,13 +103,6 @@ func (w *Thread) Start(ctx context.Context, exitErr chan<- error) error {
 		w.logger.Info("health report stopped")
 	}()
 
-	healthcheckCleanupDone := make(chan struct{})
-	go func() {
-		defer close(healthcheckCleanupDone)
-		healthcheck.StartHealthCheckCleanup(ctx, w.dbNoContext)
-		w.logger.Info("healthcheck cleanup stopped")
-	}()
-
 	go func() {
 		err := w.run(ctx)
 		if exitErr != nil {
@@ -129,7 +125,6 @@ func (w *Thread) Start(ctx context.Context, exitErr chan<- error) error {
 
 		// Wait for components to end.
 		<-healthcheckDone
-		<-healthcheckCleanupDone
 
 		w.logger.Info("worker thread finished")
 	}()
@@ -176,6 +171,19 @@ func (w Worker) Run(ctx context.Context) error {
 		analytics.Default.Flush()
 	}()
 
+	// one reaper per process; concurrent reapers contend on the same rows.
+	reaperDone := make(chan struct{})
+	if w.config.EnableReaper {
+		go func() {
+			defer close(reaperDone)
+			healthcheck.StartHealthCheckCleanup(ctx, w.dbNoContext)
+			logger.Info("healthcheck cleanup stopped")
+		}()
+	} else {
+		close(reaperDone)
+		logger.Info("reaper disabled for this process")
+	}
+
 	threads := make([]service.Server, w.config.Concurrency)
 	for i := range w.config.Concurrency {
 		id := uuid.New()
@@ -193,6 +201,7 @@ func (w Worker) Run(ctx context.Context) error {
 	cancel()
 	<-w.stateMonitor.Done()
 	<-eventsFlushed
+	<-reaperDone
 	return errors.WithStack(err)
 }
 
