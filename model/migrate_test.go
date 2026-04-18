@@ -77,9 +77,6 @@ func TestFKSetNullOnDelete(t *testing.T) {
 	})
 }
 
-// indexes on CarBlock FK columns must exist or SET NULL cascades from parent
-// deletion fall back to seq scans of the entire car_blocks table. this has bit
-// us before -- the reaper wedged for months because file_id was unindexed.
 func TestCarBlockFKIndexes(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		require.True(t, db.Migrator().HasIndex(&model.CarBlock{}, "CarID"),
