@@ -77,6 +77,20 @@ func TestFKSetNullOnDelete(t *testing.T) {
 	})
 }
 
+// indexes on CarBlock FK columns must exist or SET NULL cascades from parent
+// deletion fall back to seq scans of the entire car_blocks table. this has bit
+// us before -- the reaper wedged for months because file_id was unindexed.
+func TestCarBlockFKIndexes(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		require.True(t, db.Migrator().HasIndex(&model.CarBlock{}, "CarID"),
+			"car_blocks.car_id must be indexed for FK cascade performance")
+		require.True(t, db.Migrator().HasIndex(&model.CarBlock{}, "FileID"),
+			"car_blocks.file_id must be indexed for FK cascade performance")
+		require.True(t, db.Migrator().HasIndex(&model.CarBlock{}, "CID"),
+			"car_blocks.cid must be indexed for gateway lookups")
+	})
+}
+
 func TestInferPieceTypes(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		prep := model.Preparation{Name: "test", MaxSize: 1024, PieceSize: 1024}
