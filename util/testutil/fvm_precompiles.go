@@ -22,18 +22,16 @@ var fvmCallActorByIDBytecode string
 var fvmCallActorByAddressBytecode string
 
 var (
-	// canonical Filecoin precompile addresses
-	FVMResolveAddress     = common.HexToAddress("0xFE00000000000000000000000000000000000001")
+	FVMResolveAddress     = common.HexToAddress("0xfe00000000000000000000000000000000000001")
 	FVMCallActorByAddress = common.HexToAddress("0xfe00000000000000000000000000000000000003")
 	FVMCallActorByID      = common.HexToAddress("0xfe00000000000000000000000000000000000005")
 )
 
-// SetupFVMPrecompiles deploys mock Filecoin precompiles on an Anvil fork
-// using anvil_setCode. Contracts that call RESOLVE_ADDRESS, CALL_ACTOR_BY_ID,
-// etc. get working mock responses instead of reverting on empty addresses.
+// SetupFVMPrecompiles deploys narrow Filecoin precompile mocks on an Anvil fork.
 //
-// Mock bytecodes are from github.com/filecoin-project/fvm-solidity/src/mocks/.
-// After calling this, use RegisterActorID to map EVM addresses to f0 actor IDs.
+// These mocks are useful for tests that would otherwise revert on empty Filecoin
+// precompile addresses. They cover address resolution plus minimal actor-call
+// happy paths, but they do not emulate DataCap / VerifReg flows end-to-end.
 func SetupFVMPrecompiles(t *testing.T, rpcURL string) {
 	t.Helper()
 	anvilSetCode(t, rpcURL, FVMResolveAddress, mustDecodeHex(t, fvmResolveAddressBytecode))
@@ -42,31 +40,34 @@ func SetupFVMPrecompiles(t *testing.T, rpcURL string) {
 	t.Log("FVM mock precompiles deployed")
 }
 
-// RegisterActorID maps an EVM address to a Filecoin actor ID in the mock
-// RESOLVE_ADDRESS precompile. The EVM address is encoded as an f410
-// delegated address (protocol 0x04, namespace 0x0a = EAM, 20-byte addr).
+// RegisterActorID adds an EVM address -> actor ID mapping to the mocked
+// RESOLVE_ADDRESS precompile using the Filecoin delegated-address encoding.
 func RegisterActorID(t *testing.T, rpcURL string, evmAddr common.Address, actorID uint64) {
 	t.Helper()
 
-	// f410 encoding: 0x04 (protocol 4, delegated) + 0x0a (namespace 10, EAM) + 20 bytes
+	filAddr := encodeEAMDelegatedAddress(evmAddr)
+
+	// ABI encode mockResolveAddress(bytes,uint64)
+	selector := crypto.Keccak256([]byte("mockResolveAddress(bytes,uint64)"))[:4]
+	data := make([]byte, 4+32+32+32+32)
+	copy(data[0:4], selector)
+	data[4+31] = 64
+	binary.BigEndian.PutUint64(data[4+32+24:4+32+32], actorID)
+	data[4+64+31] = byte(len(filAddr))
+	copy(data[4+96:4+96+len(filAddr)], filAddr)
+
+	funderAddr := crypto.PubkeyToAddress(AnvilFunderKey(t).PublicKey)
+	AnvilImpersonate(t, rpcURL, funderAddr)
+	SendImpersonatedTx(t, rpcURL, funderAddr, FVMResolveAddress, data)
+	t.Logf("registered actor ID %d for %s", actorID, evmAddr.Hex())
+}
+
+func encodeEAMDelegatedAddress(evmAddr common.Address) []byte {
 	filAddr := make([]byte, 22)
 	filAddr[0] = 0x04
 	filAddr[1] = 0x0a
 	copy(filAddr[2:], evmAddr.Bytes())
-
-	// ABI encode mockResolveAddress(bytes,uint64)
-	selector := crypto.Keccak256([]byte("mockResolveAddress(bytes,uint64)"))[:4]
-	data := make([]byte, 4+32+32+32+32) // selector + offset + actorID + len + data
-	copy(data[0:4], selector)
-	data[4+31] = 64                                            // offset to bytes param
-	binary.BigEndian.PutUint64(data[4+32+24:4+32+32], actorID) // uint64 actorID
-	data[4+64+31] = 22                                         // bytes length
-	copy(data[4+96:4+96+22], filAddr)                          // bytes data
-
-	funderAddr := common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-	AnvilImpersonate(t, rpcURL, funderAddr)
-	SendImpersonatedTx(t, rpcURL, funderAddr, FVMResolveAddress, data)
-	t.Logf("registered actor ID %d for %s", actorID, evmAddr.Hex())
+	return filAddr
 }
 
 func anvilSetCode(t *testing.T, rpcURL string, addr common.Address, code []byte) {

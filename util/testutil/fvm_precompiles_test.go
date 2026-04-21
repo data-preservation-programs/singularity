@@ -2,29 +2,26 @@ package testutil
 
 import (
 	"context"
+	"math/big"
 	"testing"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/require"
 )
 
-// TestIntegration_FVMPrecompiles verifies that mock precompiles can be
-// deployed via anvil_setCode and that RESOLVE_ADDRESS responds to
-// registered actor IDs.
-func TestIntegration_FVMPrecompiles(t *testing.T) {
+func TestIntegration_FVMPrecompilesResolveRegisteredAddress(t *testing.T) {
 	anvil := StartAnvil(t, CalibnetRPC)
 
 	SetupFVMPrecompiles(t, anvil.RPCURL)
 
-	// register anvil account 0 as actor t05103 (its real calibnet actor ID)
-	account0 := common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
+	account0 := crypto.PubkeyToAddress(AnvilFunderKey(t).PublicKey)
 	RegisterActorID(t, anvil.RPCURL, account0, 5103)
 
-	// verify the precompile resolves the address
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -32,22 +29,14 @@ func TestIntegration_FVMPrecompiles(t *testing.T) {
 	require.NoError(t, err)
 	defer client.Close()
 
-	// call RESOLVE_ADDRESS with account0's f410 encoding
-	filAddr := make([]byte, 22)
-	filAddr[0] = 0x04
-	filAddr[1] = 0x0a
-	copy(filAddr[2:], account0.Bytes())
-
-	// the precompile's fallback expects raw bytes (the filecoin address)
 	result, err := client.CallContract(ctx, ethereum.CallMsg{
 		To:   &FVMResolveAddress,
-		Data: filAddr,
+		Data: encodeEAMDelegatedAddress(account0),
 	}, nil)
 	require.NoError(t, err)
-	require.GreaterOrEqual(t, len(result), 8, "expected at least 8 bytes for uint64 actor ID")
-	t.Logf("RESOLVE_ADDRESS returned %d bytes: 0x%x", len(result), result)
+	require.Len(t, result, 32, "resolve precompile should return a single ABI word")
+	require.EqualValues(t, 5103, decodeUint64Word(result))
 
-	// also verify code exists at the precompile addresses
 	for name, addr := range map[string]common.Address{
 		"RESOLVE_ADDRESS":       FVMResolveAddress,
 		"CALL_ACTOR_BY_ID":      FVMCallActorByID,
@@ -56,14 +45,10 @@ func TestIntegration_FVMPrecompiles(t *testing.T) {
 		code, err := client.CodeAt(ctx, addr, nil)
 		require.NoError(t, err)
 		require.NotEmpty(t, code, "%s should have code deployed", name)
-		t.Logf("%s: %d bytes of code", name, len(code))
 	}
 }
 
-// TestIntegration_FVMPrecompileUnregisteredAddress verifies that the mock
-// RESOLVE_ADDRESS precompile reverts for addresses that haven't been
-// registered, matching the real precompile behavior.
-func TestIntegration_FVMPrecompileUnregisteredAddress(t *testing.T) {
+func TestIntegration_FVMActorCallPrecompilesAcceptMinimalSupportedRequests(t *testing.T) {
 	anvil := StartAnvil(t, CalibnetRPC)
 
 	SetupFVMPrecompiles(t, anvil.RPCURL)
@@ -75,30 +60,102 @@ func TestIntegration_FVMPrecompileUnregisteredAddress(t *testing.T) {
 	require.NoError(t, err)
 	defer client.Close()
 
-	// generate a random address that hasn't been registered
+	result, err := client.CallContract(ctx, ethereum.CallMsg{
+		To:   &FVMCallActorByID,
+		Data: packCallActorByIDInput(t, 0, 99),
+	}, nil)
+	require.NoError(t, err)
+	exitCode, returnCodec, returnValue := decodeActorCallResponse(t, result)
+	require.Zero(t, exitCode)
+	require.Zero(t, returnCodec)
+	require.Empty(t, returnValue)
+
+	account0 := crypto.PubkeyToAddress(AnvilFunderKey(t).PublicKey)
+	result, err = client.CallContract(ctx, ethereum.CallMsg{
+		To:   &FVMCallActorByAddress,
+		Data: packCallActorByAddressInput(t, 0, encodeEAMDelegatedAddress(account0)),
+	}, nil)
+	require.NoError(t, err)
+	exitCode, returnCodec, returnValue = decodeActorCallResponse(t, result)
+	require.Zero(t, exitCode)
+	require.Zero(t, returnCodec)
+	require.Empty(t, returnValue)
+}
+
+func TestIntegration_FVMResolveUnregisteredAddressReturnsEmpty(t *testing.T) {
+	anvil := StartAnvil(t, CalibnetRPC)
+
+	SetupFVMPrecompiles(t, anvil.RPCURL)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := ethclient.DialContext(ctx, anvil.RPCURL)
+	require.NoError(t, err)
+	defer client.Close()
+
 	key, err := crypto.GenerateKey()
 	require.NoError(t, err)
 	unregistered := crypto.PubkeyToAddress(key.PublicKey)
 
-	filAddr := make([]byte, 22)
-	filAddr[0] = 0x04
-	filAddr[1] = 0x0a
-	copy(filAddr[2:], unregistered.Bytes())
-
-	// the mock returns 0 for unregistered addresses (no revert)
 	result, err := client.CallContract(ctx, ethereum.CallMsg{
 		To:   &FVMResolveAddress,
-		Data: filAddr,
+		Data: encodeEAMDelegatedAddress(unregistered),
 	}, nil)
 	require.NoError(t, err)
-	// all bytes should be zero (actor ID 0 = not found)
-	allZero := true
-	for _, b := range result {
-		if b != 0 {
-			allZero = false
-			break
-		}
+	require.Empty(t, result, "vendored resolve-address mock returns no data for unknown addresses")
+}
+
+func decodeUint64Word(result []byte) uint64 {
+	return new(big.Int).SetBytes(result).Uint64()
+}
+
+func packCallActorByIDInput(t *testing.T, methodNum uint64, target uint64) []byte {
+	t.Helper()
+	args := abi.Arguments{
+		{Type: mustABIType(t, "uint64")},
+		{Type: mustABIType(t, "uint256")},
+		{Type: mustABIType(t, "uint64")},
+		{Type: mustABIType(t, "uint64")},
+		{Type: mustABIType(t, "bytes")},
+		{Type: mustABIType(t, "uint64")},
 	}
-	require.True(t, allZero, "unregistered address should resolve to actor ID 0")
-	t.Logf("unregistered address correctly resolved to 0")
+	data, err := args.Pack(methodNum, big.NewInt(0), uint64(0), uint64(0), []byte{}, target)
+	require.NoError(t, err)
+	return data
+}
+
+func packCallActorByAddressInput(t *testing.T, methodNum uint64, actorAddress []byte) []byte {
+	t.Helper()
+	args := abi.Arguments{
+		{Type: mustABIType(t, "uint64")},
+		{Type: mustABIType(t, "uint256")},
+		{Type: mustABIType(t, "uint64")},
+		{Type: mustABIType(t, "uint64")},
+		{Type: mustABIType(t, "bytes")},
+		{Type: mustABIType(t, "bytes")},
+	}
+	data, err := args.Pack(methodNum, big.NewInt(0), uint64(0), uint64(0), []byte{}, actorAddress)
+	require.NoError(t, err)
+	return data
+}
+
+func decodeActorCallResponse(t *testing.T, result []byte) (int64, uint64, []byte) {
+	t.Helper()
+	args := abi.Arguments{
+		{Type: mustABIType(t, "int256")},
+		{Type: mustABIType(t, "uint64")},
+		{Type: mustABIType(t, "bytes")},
+	}
+	values, err := args.Unpack(result)
+	require.NoError(t, err)
+	require.Len(t, values, 3)
+	return values[0].(*big.Int).Int64(), values[1].(uint64), values[2].([]byte)
+}
+
+func mustABIType(t *testing.T, typ string) abi.Type {
+	t.Helper()
+	parsed, err := abi.NewType(typ, "", nil)
+	require.NoError(t, err)
+	return parsed
 }
