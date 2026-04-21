@@ -226,6 +226,45 @@ func TestCreateHandler_InvalidProvider(t *testing.T) {
 	})
 }
 
+func TestCreateHandler_DDORejectsPricePerGBEpoch(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		createPrepWithWallet(t, db, "")
+		req := createRequest
+		req.DealType = string(model.DealTypeDDO)
+		req.URLTemplate = "http://example.com/piece/{PIECE_CID}"
+		req.PricePerGBEpoch = 1e-18
+		_, err := Default.CreateHandler(ctx, db, getMockLotusClient(), req)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "DDO schedules do not accept")
+	})
+}
+
+func TestCreateHandler_DDORejectsPricePerGB(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		createPrepWithWallet(t, db, "")
+		req := createRequest
+		req.DealType = string(model.DealTypeDDO)
+		req.URLTemplate = "http://example.com/piece/{PIECE_CID}"
+		req.PricePerGB = 0.01
+		_, err := Default.CreateHandler(ctx, db, getMockLotusClient(), req)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "DDO schedules do not accept")
+	})
+}
+
+func TestCreateHandler_DDORejectsPricePerDeal(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		createPrepWithWallet(t, db, "")
+		req := createRequest
+		req.DealType = string(model.DealTypeDDO)
+		req.URLTemplate = "http://example.com/piece/{PIECE_CID}"
+		req.PricePerDeal = 0.1
+		_, err := Default.CreateHandler(ctx, db, getMockLotusClient(), req)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "DDO schedules do not accept")
+	})
+}
+
 func TestCreateHandler_PDPRejectsPreparationWithOversizedPiece(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		prep := createPrepWithWallet(t, db, "")

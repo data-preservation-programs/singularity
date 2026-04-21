@@ -229,6 +229,16 @@ func buildSchedule(
 			return nil, errors.Wrap(handlererror.ErrInvalidParameter,
 				"DDO schedules require a URL template for piece download")
 		}
+		// DDO payment comes from the SP's on-chain registered price in the
+		// DDO contract -- the deal-pusher's EnsurePayments reads that and
+		// deposits USDFC accordingly. The price-per-* flags were for legacy
+		// market deals and are silently ignored otherwise; rejecting here
+		// keeps the user from assuming they can override the SP's price.
+		if request.PricePerGBEpoch != 0 || request.PricePerGB != 0 || request.PricePerDeal != 0 {
+			return nil, errors.Wrap(handlererror.ErrInvalidParameter,
+				"DDO schedules do not accept --price-per-gb-epoch / --price-per-gb / --price-per-deal; "+
+					"payment is determined by the SP's on-chain registered price in the DDO contract")
+		}
 	}
 
 	headers := make(map[string]string)
