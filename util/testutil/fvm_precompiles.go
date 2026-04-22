@@ -29,6 +29,7 @@ var (
 )
 
 // decoded once at init so SetupFVMPrecompiles doesn't re-parse ~4KB hex per test
+// bytecode based on https://github.com/filecoin-project/fvm-solidity/tree/main/src/mocks
 var (
 	fvmResolveAddressBytecode     = mustDecodeBytecode(fvmResolveAddressBytecodeHex)
 	fvmCallActorByIDBytecode      = mustDecodeBytecode(fvmCallActorByIDBytecodeHex)
