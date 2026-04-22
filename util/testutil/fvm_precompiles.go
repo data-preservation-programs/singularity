@@ -1,5 +1,7 @@
 package testutil
 
+//go:generate make -C sol bytecode
+
 import (
 	_ "embed"
 	"encoding/binary"
