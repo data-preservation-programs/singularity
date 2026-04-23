@@ -315,6 +315,91 @@ func TestUpdateHandler_DDOClearURLTemplateRejected(t *testing.T) {
 	})
 }
 
+func TestUpdateHandler_DDORejectsPricePerGBEpoch(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Schedule{
+			Preparation: &model.Preparation{},
+			DealType:    model.DealTypeDDO,
+			URLTemplate: "https://example.com/{PIECE_CID}",
+		}).Error
+		require.NoError(t, err)
+		req := UpdateRequest{PricePerGBEpoch: ptr.Of(1e-18)}
+		_, err = Default.UpdateHandler(ctx, db, 1, req)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "DDO schedules do not accept")
+	})
+}
+
+func TestUpdateHandler_DDORejectsPricePerGB(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Schedule{
+			Preparation: &model.Preparation{},
+			DealType:    model.DealTypeDDO,
+			URLTemplate: "https://example.com/{PIECE_CID}",
+		}).Error
+		require.NoError(t, err)
+		req := UpdateRequest{PricePerGB: ptr.Of(0.01)}
+		_, err = Default.UpdateHandler(ctx, db, 1, req)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "DDO schedules do not accept")
+	})
+}
+
+func TestUpdateHandler_DDORejectsPricePerDeal(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Schedule{
+			Preparation: &model.Preparation{},
+			DealType:    model.DealTypeDDO,
+			URLTemplate: "https://example.com/{PIECE_CID}",
+		}).Error
+		require.NoError(t, err)
+		req := UpdateRequest{PricePerDeal: ptr.Of(0.1)}
+		_, err = Default.UpdateHandler(ctx, db, 1, req)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "DDO schedules do not accept")
+	})
+}
+
+// switching a market schedule to DDO with a non-zero price flag in the same
+// PATCH must be rejected -- effective deal type after the update is DDO.
+func TestUpdateHandler_DDOSwitchWithPriceRejected(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Schedule{
+			Preparation: &model.Preparation{},
+			DealType:    model.DealTypeMarket,
+			URLTemplate: "https://example.com/{PIECE_CID}",
+		}).Error
+		require.NoError(t, err)
+		req := UpdateRequest{
+			DealType:        ptr.Of(string(model.DealTypeDDO)),
+			PricePerGBEpoch: ptr.Of(1e-18),
+		}
+		_, err = Default.UpdateHandler(ctx, db, 1, req)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "DDO schedules do not accept")
+	})
+}
+
+// explicitly setting price flags to zero on a DDO schedule is allowed -- it
+// is a no-op write, not an attempt to override the SP price.
+func TestUpdateHandler_DDOZeroPriceAllowed(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Schedule{
+			Preparation: &model.Preparation{},
+			DealType:    model.DealTypeDDO,
+			URLTemplate: "https://example.com/{PIECE_CID}",
+		}).Error
+		require.NoError(t, err)
+		req := UpdateRequest{
+			PricePerGBEpoch: ptr.Of(0.0),
+			PricePerGB:      ptr.Of(0.0),
+			PricePerDeal:    ptr.Of(0.0),
+		}
+		_, err = Default.UpdateHandler(ctx, db, 1, req)
+		require.NoError(t, err)
+	})
+}
+
 func TestUpdateHandler_InvalidHeader(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Schedule{
