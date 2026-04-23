@@ -142,7 +142,7 @@ func SendImpersonatedTx(t *testing.T, rpcURL string, from, to common.Address, da
 		From:     from.Hex(),
 		To:       to.Hex(),
 		Data:     fmt.Sprintf("0x%x", data),
-		Gas:      fmt.Sprintf("0x%x", 500000),
+		Gas:      fmt.Sprintf("0x%x", 5000000),
 		GasPrice: fmt.Sprintf("0x%x", gasPrice),
 		Nonce:    fmt.Sprintf("0x%x", nonce),
 	}

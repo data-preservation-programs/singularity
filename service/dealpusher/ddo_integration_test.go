@@ -12,10 +12,8 @@ import (
 	ddotypes "github.com/Eastore-project/ddo-client/pkg/types"
 	"github.com/data-preservation-programs/go-synapse/signer"
 	"github.com/data-preservation-programs/singularity/util/testutil"
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
@@ -230,134 +228,32 @@ func TestIntegration_DDOFullDealFlow(t *testing.T) {
 	require.NoError(t, err)
 	t.Log("EnsurePayments succeeded — deposit and operator approval completed on-chain")
 
-	// --- Step 6: Deploy MockAllocationFacet ---
-	// The real createAllocationRequests calls DataCapAPI.transfer() which
-	// requires Filecoin built-in actors (CALL_ACTOR_ID precompile). Anvil
-	// doesn't have those, so we deploy the MockAllocationFacet which skips
-	// the DataCap path and generates mock allocation IDs.
-	mockFacet := testutil.DeployMockAllocationFacet(t, rpcURL, ddoAddr, owner)
-
-	// --- Step 7: Call mockCreateAllocationRequests ---
-	// ABI-encode the pieceInfos for the mock function call.
-	pieceInfos, err := ddo.buildPieceInfos(pieces, cfg)
-	require.NoError(t, err)
-
-	parsedABI, err := abi.JSON(strings.NewReader(ddocontract.DDOClientABI))
-	require.NoError(t, err)
-
-	// Use mockCreateRawAllocationRequests which skips DataCap AND payment
-	// rails — it only emits AllocationCreated events with mock IDs.
-	// It takes the same parameter shape as createAllocationRequests, so we
-	// pack the real method and derive the mock selector by replacing the
-	// function name in the canonical signature. This stays in sync if the
-	// pieceInfos struct ever changes.
-	realCallData, err := parsedABI.Pack("createAllocationRequests", pieceInfos)
-	require.NoError(t, err)
-	realMethod := parsedABI.Methods["createAllocationRequests"]
-	mockSig := strings.Replace(realMethod.Sig, "createAllocationRequests", "mockCreateRawAllocationRequests", 1)
-	mockSelector := crypto.Keccak256([]byte(mockSig))[:4]
-	copy(realCallData[0:4], mockSelector)
-
-	clientAddr := evmSigner.EVMAddress()
-	testutil.AnvilImpersonate(t, rpcURL, clientAddr)
-	mockTxHash := testutil.SendImpersonatedTx(t, rpcURL, clientAddr, ddoAddr, realCallData)
-	t.Logf("mockCreateAllocationRequests tx: %s", mockTxHash.Hex())
-
-	// --- Step 8: Parse AllocationCreated events ---
-	allocationIDs, err := ddo.ParseAllocationIDs(ctx, mockTxHash.Hex())
-	require.NoError(t, err)
-	require.Len(t, allocationIDs, 1, "should get exactly 1 allocation ID for 1 piece")
-	t.Logf("Mock allocation ID: %d", allocationIDs[0])
-
-	_ = mockFacet
-}
-
-// TestIntegration_DDOAllocationCallHitsDataCapPrecompile is a tripwire for the
-// FVM precompile mocks in util/testutil. It deploys the mocks and simulates
-// the real createAllocationRequests path -- which dispatches through
-// DataCapAPI.transfer() to CALL_ACTOR_BY_ID against actor ID 7 (DataCap).
-// Our mock only honors actor ID 99 (burn), so the call must revert.
-//
-// When/if a DataCap actor stub is added to the precompile mocks, this test
-// flips green and TestIntegration_DDOFullDealFlow's MockAllocationFacet
-// bypass can be retired.
-func TestIntegration_DDOAllocationCallHitsDataCapPrecompile(t *testing.T) {
-	anvil := startCalibnetFork(t)
-	rpcURL := anvil.RPCURL
-
-	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
-	defer cancel()
-
-	ddoAddr := common.HexToAddress(testutil.CalibnetDDOContract)
-	usdfcAddr := common.HexToAddress(testutil.CalibnetUSDFC)
-
-	// register SP, fund wallet, do payments setup -- mirrors DDOFullDealFlow
-	owner := testutil.ReadContractOwner(t, rpcURL, ddoAddr)
-	testutil.AnvilImpersonate(t, rpcURL, owner)
-	testutil.FundEVMWallet(t, rpcURL, owner, testutil.OneEther)
-	registerSPViaImpersonation(t, rpcURL, ddoAddr, owner, testutil.CalibnetDDOProviderActorID, usdfcAddr)
-
-	ddo, err := NewOnChainDDO(ctx, rpcURL,
-		testutil.CalibnetDDOContract,
-		testutil.CalibnetPaymentsContract,
-		testutil.CalibnetUSDFC,
-	)
-	require.NoError(t, err)
-	defer ddo.Close()
-
-	clientKey := testutil.AnvilFunderKey(t)
-	clientSigner, err := signer.NewSecp256k1SignerFromECDSA(clientKey)
-	require.NoError(t, err)
-	evmSigner, ok := signer.AsEVM(clientSigner)
-	require.True(t, ok)
-
-	pieceCID := calculateCommp(t, generateRandomBytes(1000), 2048)
-	pieces := []DDOPieceSubmission{{
-		PieceCID:    pieceCID,
-		PieceSize:   2048,
-		ProviderID:  testutil.CalibnetDDOProviderActorID,
-		DownloadURL: "https://example.test/piece/" + pieceCID.String(),
-	}}
-	cfg := DDOSchedulingConfig{
-		BatchSize:         10,
-		ConfirmationDepth: 1,
-		PollingInterval:   100 * time.Millisecond,
-		TermMin:           518400,
-		TermMax:           5256000,
-		ExpirationOffset:  172800,
-	}
-	require.NoError(t, ddo.EnsurePayments(ctx, evmSigner, pieces, cfg))
-
-	// install the FVM precompile mocks -- the bit being exercised
+	// --- Step 6: Install FVM precompile mocks ---
+	// createAllocationRequests routes through DataCapAPI.transfer() which
+	// invokes CALL_ACTOR_BY_ID against actor 7 (DataCap). The mock's burn-only
+	// path used to revert; the DataCap dispatch added in fvm-solidity now
+	// returns a canned empty TransferReturn so the contract proceeds.
 	testutil.SetupFVMPrecompiles(t, rpcURL)
 
+	// --- Step 7: Call the real createAllocationRequests ---
 	pieceInfos, err := ddo.buildPieceInfos(pieces, cfg)
 	require.NoError(t, err)
+
 	parsedABI, err := abi.JSON(strings.NewReader(ddocontract.DDOClientABI))
 	require.NoError(t, err)
 	callData, err := parsedABI.Pack("createAllocationRequests", pieceInfos)
 	require.NoError(t, err)
 
-	client, err := ethclient.DialContext(ctx, rpcURL)
-	require.NoError(t, err)
-	defer client.Close()
-
-	// eth_call simulation surfaces the revert reason directly in err
 	clientAddr := evmSigner.EVMAddress()
-	_, err = client.CallContract(ctx, ethereum.CallMsg{
-		From: clientAddr,
-		To:   &ddoAddr,
-		Data: callData,
-	}, nil)
-	require.Error(t, err, "createAllocationRequests should revert without DataCap actor emulation")
-	// 0x8a7db5bf = FailToCallActor() in DDOClientABI. filecoin-solidity wraps
-	// the precompile call as (success, data) = 0xfe..05.call(...) and re-raises
-	// this typed error when success == false. Our mock returns success only
-	// for actor ID 99; calling DataCap (ID 7) trips the wrapper. When DataCap
-	// emulation lands in the precompile mock, this assertion will fail and
-	// signal that TestIntegration_DDOFullDealFlow can drop MockAllocationFacet.
-	require.Contains(t, err.Error(), "0x8a7db5bf",
-		"expected FailToCallActor() from filecoin-solidity wrapper around our precompile mock; got: %v", err)
+	testutil.AnvilImpersonate(t, rpcURL, clientAddr)
+	txHash := testutil.SendImpersonatedTx(t, rpcURL, clientAddr, ddoAddr, callData)
+	t.Logf("createAllocationRequests tx: %s", txHash.Hex())
+
+	// --- Step 8: Parse AllocationCreated events ---
+	allocationIDs, err := ddo.ParseAllocationIDs(ctx, txHash.Hex())
+	require.NoError(t, err)
+	require.Len(t, allocationIDs, 1, "should get exactly 1 allocation ID for 1 piece")
+	t.Logf("Allocation ID: %d", allocationIDs[0])
 }
 
 // registerSPViaImpersonation registers an SP in the DDO contract using
