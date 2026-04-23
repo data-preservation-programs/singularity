@@ -304,7 +304,7 @@ type CarBlock struct {
 	// Associations - SET NULL for fast prep deletion, async cleanup
 	CarID  *CarID  `cbor:"-"                    gorm:"index"                                          json:"carId"`
 	Car    *Car    `cbor:"-"                    gorm:"foreignKey:CarID;constraint:OnDelete:SET NULL"  json:"car,omitempty"  swaggerignore:"true"`
-	FileID *FileID `cbor:"7,keyasint,omitempty" json:"fileId"`
+	FileID *FileID `cbor:"7,keyasint,omitempty" gorm:"index"                                         json:"fileId"`
 	File   *File   `cbor:"-"                    gorm:"foreignKey:FileID;constraint:OnDelete:SET NULL" json:"file,omitempty" swaggerignore:"true"`
 }
 
