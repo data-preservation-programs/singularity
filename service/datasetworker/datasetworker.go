@@ -52,7 +52,7 @@ func NewWorker(db *gorm.DB, config Config) *Worker {
 		config.MinInterval = defaultMinInterval
 	}
 	if config.MaxInterval == 0 {
-		config.MinInterval = defaultMaxInterval
+		config.MaxInterval = defaultMaxInterval
 	}
 	stateMonitor := NewStateMonitor(db)
 	return &Worker{
