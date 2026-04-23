@@ -83,6 +83,7 @@ Before creating a DDO schedule:
 - run `deal-pusher` with `--eth-rpc`, `--ddo-contract`, `--ddo-payments-contract`, and `--ddo-payment-token`
 - run `deal-tracker` with `--eth-rpc` and `--ddo-contract`
 - attach a wallet that can sign FEVM transactions
+- fund the wallet with FIL for gas and with the configured payment token for deals — `deal-pusher` logs a warning at schedule startup if the FIL balance is below the gas threshold or if there are no payment tokens and no deposited funds; in the latter case the on-chain deposit/approval step will fail at the first deal
 - make sure the provider is registered and active in the DDO contract
 - make sure the provider supports the payment token you configured
 - provide a non-empty `--url-template` so the storage provider can fetch each piece
