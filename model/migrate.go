@@ -484,20 +484,57 @@ func stripWalletAssignmentFKs(db *gorm.DB) error {
 	dialect := db.Dialector.Name()
 	switch dialect {
 	case "sqlite":
-		// sqlite can't drop constraints; recreate table without them
+		// sqlite can't drop constraints; recreate table without them.
+		// check every step: a silent INSERT failure followed by a
+		// successful DROP + RENAME would wipe wallet_assignments data
+		// that export-keys still needs to rebuild preparation.wallet_id.
 		if err := db.Exec(`CREATE TABLE wallet_assignments_tmp (preparation_id integer, wallet_id text, PRIMARY KEY (preparation_id, wallet_id))`).Error; err != nil {
-			return err
+			return errors.Wrap(err, "create wallet_assignments_tmp")
 		}
-		db.Exec(`INSERT INTO wallet_assignments_tmp SELECT * FROM wallet_assignments`)
-		db.Exec(`DROP TABLE wallet_assignments`)
-		return db.Exec(`ALTER TABLE wallet_assignments_tmp RENAME TO wallet_assignments`).Error
+		if err := db.Exec(`INSERT INTO wallet_assignments_tmp SELECT * FROM wallet_assignments`).Error; err != nil {
+			return errors.Wrap(err, "copy wallet_assignments rows")
+		}
+		if err := db.Exec(`DROP TABLE wallet_assignments`).Error; err != nil {
+			return errors.Wrap(err, "drop old wallet_assignments")
+		}
+		if err := db.Exec(`ALTER TABLE wallet_assignments_tmp RENAME TO wallet_assignments`).Error; err != nil {
+			return errors.Wrap(err, "rename wallet_assignments_tmp")
+		}
+		return nil
 	case "postgres":
-		db.Exec(`ALTER TABLE wallet_assignments DROP CONSTRAINT IF EXISTS fk_wallet_assignments_wallet`)
-		db.Exec(`ALTER TABLE wallet_assignments DROP CONSTRAINT IF EXISTS fk_wallet_assignments_preparation`)
+		if err := db.Exec(`ALTER TABLE wallet_assignments DROP CONSTRAINT IF EXISTS fk_wallet_assignments_wallet`).Error; err != nil {
+			return errors.Wrap(err, "drop fk_wallet_assignments_wallet")
+		}
+		if err := db.Exec(`ALTER TABLE wallet_assignments DROP CONSTRAINT IF EXISTS fk_wallet_assignments_preparation`).Error; err != nil {
+			return errors.Wrap(err, "drop fk_wallet_assignments_preparation")
+		}
 		return nil
 	case "mysql":
-		db.Exec(`ALTER TABLE wallet_assignments DROP FOREIGN KEY fk_wallet_assignments_wallet`)
-		db.Exec(`ALTER TABLE wallet_assignments DROP FOREIGN KEY fk_wallet_assignments_preparation`)
+		// mysql has no DROP FOREIGN KEY IF EXISTS pre-8.0.19; check
+		// existence first so a re-run doesn't fail on a missing FK.
+		var fkCount int64
+		if err := db.Raw(`SELECT COUNT(*) FROM information_schema.table_constraints
+			WHERE table_schema = DATABASE() AND table_name = 'wallet_assignments'
+			AND constraint_name = ? AND constraint_type = 'FOREIGN KEY'`,
+			"fk_wallet_assignments_wallet").Scan(&fkCount).Error; err != nil {
+			return errors.Wrap(err, "check fk_wallet_assignments_wallet")
+		}
+		if fkCount > 0 {
+			if err := db.Exec(`ALTER TABLE wallet_assignments DROP FOREIGN KEY fk_wallet_assignments_wallet`).Error; err != nil {
+				return errors.Wrap(err, "drop fk_wallet_assignments_wallet")
+			}
+		}
+		if err := db.Raw(`SELECT COUNT(*) FROM information_schema.table_constraints
+			WHERE table_schema = DATABASE() AND table_name = 'wallet_assignments'
+			AND constraint_name = ? AND constraint_type = 'FOREIGN KEY'`,
+			"fk_wallet_assignments_preparation").Scan(&fkCount).Error; err != nil {
+			return errors.Wrap(err, "check fk_wallet_assignments_preparation")
+		}
+		if fkCount > 0 {
+			if err := db.Exec(`ALTER TABLE wallet_assignments DROP FOREIGN KEY fk_wallet_assignments_preparation`).Error; err != nil {
+				return errors.Wrap(err, "drop fk_wallet_assignments_preparation")
+			}
+		}
 		return nil
 	}
 	return nil
