@@ -49,6 +49,15 @@ func (d *DealPusher) runDDOSchedule(ctx context.Context, schedule *model.Schedul
 		return model.ScheduleError, errors.New("ddo scheduling dependencies are not configured")
 	}
 	cfg := d.ddoSchedulingConfig
+	// Schedule-level duration can lower TermMax but is clamped by the
+	// daemon's --ddo-term-max ceiling. TermMin stays at the daemon default;
+	// Validate() below rejects if the resulting term is below TermMin.
+	if schedule.Duration > 0 {
+		requested := int64(schedule.Duration / (30 * time.Second))
+		if requested < cfg.TermMax {
+			cfg.TermMax = requested
+		}
+	}
 
 	db := d.dbNoContext.WithContext(ctx)
 	var attachments []model.SourceAttachment
