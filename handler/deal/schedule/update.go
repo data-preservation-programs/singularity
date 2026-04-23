@@ -251,8 +251,9 @@ func (DefaultHandler) UpdateHandler(
 		updates["deal_type"] = dealType
 	}
 
-	// check DDO invariant: url_template must be non-empty for DDO schedules.
-	// need to consider the effective state after applying updates.
+	// check DDO invariants against the effective state after applying updates:
+	// url_template must be non-empty, and the legacy price-per-* flags must be
+	// zero -- DDO payment is determined by the SP's on-chain registered price.
 	effectiveDealType := schedule.DealType
 	if dt, ok := updates["deal_type"]; ok {
 		effectiveDealType = dt.(model.DealType)
@@ -264,6 +265,15 @@ func (DefaultHandler) UpdateHandler(
 	if effectiveDealType == model.DealTypeDDO && effectiveURLTemplate == "" {
 		return nil, errors.Wrap(handlererror.ErrInvalidParameter,
 			"DDO schedules require a non-empty URL template for piece download")
+	}
+	if effectiveDealType == model.DealTypeDDO {
+		if (request.PricePerGBEpoch != nil && *request.PricePerGBEpoch != 0) ||
+			(request.PricePerGB != nil && *request.PricePerGB != 0) ||
+			(request.PricePerDeal != nil && *request.PricePerDeal != 0) {
+			return nil, errors.Wrap(handlererror.ErrInvalidParameter,
+				"DDO schedules do not accept --price-per-gb-epoch / --price-per-gb / --price-per-deal; "+
+					"payment is determined by the SP's on-chain registered price in the DDO contract")
+		}
 	}
 
 	err = db.Model(&schedule).Updates(updates).Error

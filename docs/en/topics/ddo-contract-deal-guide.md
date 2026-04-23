@@ -18,7 +18,7 @@ Unlike legacy market deals:
 You need:
 
 - a preparation with CAR files ready to schedule
-- a wallet attached to that preparation
+- a wallet attached to that preparation, funded with FIL for gas and with the configured payment token for deals
 - an FEVM RPC endpoint
 - the DDO Diamond proxy contract address
 - the DDO Payments contract address
