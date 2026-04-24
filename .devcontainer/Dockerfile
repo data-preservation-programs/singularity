@@ -25,6 +25,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/foundry-rs/foundry:latest /usr/local/bin/anvil /usr/local/bin/anvil
+# forge is needed by `go generate ./...` via util/testutil/sol/Makefile
+# (fvm_precompiles.go go:generate rebuilds the mock bytecode .txt files)
+COPY --from=ghcr.io/foundry-rs/foundry:latest /usr/local/bin/forge /usr/local/bin/forge
 
 # prepare user-owned data dirs for rootless startup
 RUN mkdir -p /home/vscode/.local/share/pg/pgdata \
