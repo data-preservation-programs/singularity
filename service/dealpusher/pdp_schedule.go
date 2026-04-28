@@ -65,32 +65,57 @@ func (d *DealPusher) validatePDPPreparationPieceSizes(ctx context.Context, sched
 	return errors.Wrap(err, "failed to validate preparation piece sizes for PDP")
 }
 
-// resolveProviderEVMAddress looks up the provider's Actor record and derives
-// the EVM address from its delegated (f410) filecoin address.
+// resolveProviderEVMAddress derives the SP's EVM address from its f410
+// delegated filecoin address. It first checks the local actors table
+// (populated for wallets we own); on miss it queries the chain via
+// StateLookupRobustAddress and caches the result so subsequent runs hit
+// the fast path.
 func (d *DealPusher) resolveProviderEVMAddress(ctx context.Context, provider string) (common.Address, error) {
 	db := d.dbNoContext.WithContext(ctx)
 
 	var actor model.Actor
 	err := db.Where("address = ? OR id = ?", provider, provider).First(&actor).Error
-	if err != nil {
-		return common.Address{}, errors.Wrapf(err, "failed to resolve actor for provider %s", provider)
+	if err == nil {
+		return delegatedToEVM(actor.Address)
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return common.Address{}, errors.Wrapf(err, "failed to query actor for provider %s", provider)
 	}
 
-	addr, err := address.NewFromString(actor.Address)
+	// cache miss -- resolve robust (f410) address on-chain
+	var robustAddr string
+	if err := d.lotusClient.CallFor(ctx, &robustAddr, "Filecoin.StateLookupRobustAddress", provider, nil); err != nil {
+		return common.Address{}, errors.Wrapf(err, "failed to resolve robust address for provider %s on-chain", provider)
+	}
+
+	evm, err := delegatedToEVM(robustAddr)
 	if err != nil {
-		return common.Address{}, errors.Wrapf(err, "failed to parse actor address %s", actor.Address)
+		return common.Address{}, err
+	}
+
+	// best-effort cache; another worker may have raced us, so a duplicate-key
+	// failure is fine to swallow
+	if cerr := db.Create(&model.Actor{ID: provider, Address: robustAddr}).Error; cerr != nil {
+		Logger.Debugw("provider actor cache write skipped", "provider", provider, "address", robustAddr, "err", cerr)
+	}
+	return evm, nil
+}
+
+// delegatedToEVM extracts the 20-byte EVM address from an f410 delegated
+// filecoin address string.
+func delegatedToEVM(addrStr string) (common.Address, error) {
+	addr, err := address.NewFromString(addrStr)
+	if err != nil {
+		return common.Address{}, errors.Wrapf(err, "failed to parse actor address %s", addrStr)
 	}
 	if addr.Protocol() != address.Delegated {
-		return common.Address{}, fmt.Errorf("provider actor address %s is not a delegated (f410) address", actor.Address)
+		return common.Address{}, fmt.Errorf("actor address %s is not a delegated (f410) address", addrStr)
 	}
-
 	payload := addr.Payload()
-	// delegated address payload: first varint byte(s) for namespace, then 20 bytes for EVM address
-	// for f410 (namespace 10), payload[0] is the namespace varint, rest is the subaddress
+	// delegated address payload: namespace varint (1 byte for namespace 10) + 20 bytes EVM
 	if len(payload) < 21 {
-		return common.Address{}, fmt.Errorf("provider delegated address payload too short: %d bytes", len(payload))
+		return common.Address{}, fmt.Errorf("delegated address payload too short: %d bytes", len(payload))
 	}
-	// skip namespace varint (1 byte for namespace 10)
 	return common.BytesToAddress(payload[1:21]), nil
 }
 
