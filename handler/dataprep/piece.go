@@ -63,11 +63,11 @@ func (DefaultHandler) ListPiecesHandler(
 	}
 	var sourceAttachments []model.SourceAttachment
 	err = db.Preload("Storage").Where("preparation_id = ?", preparation.ID).Find(&sourceAttachments).Error
-	if len(sourceAttachments) == 0 {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", id)
-	}
 	if err != nil {
 		return nil, errors.WithStack(err)
+	}
+	if len(sourceAttachments) == 0 {
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %s not found", id)
 	}
 
 	var pieceLists []PieceList
