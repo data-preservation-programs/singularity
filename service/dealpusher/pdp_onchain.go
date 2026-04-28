@@ -27,8 +27,11 @@ import (
 
 // defaultGasLimit is a fixed gas limit for FEVM transactions.
 // FEVM gas estimation (NoSend=true) is unreliable, so we use a fixed value.
-// EVM traces show ~200K gas but FEVM execution needs ~17M due to actor overhead.
-const defaultGasLimit = 30_000_000
+// EVM traces show ~200K gas but FEVM execution needs much more due to actor
+// overhead. PDPVerifier.createDataSet observed at ~79M used on calibnet, so
+// we leave a generous margin. Excess gas is refunded by the EVM, not
+// charged at limit, so over-allocating is cheap.
+const defaultGasLimit = 200_000_000
 
 type confirmationClient interface {
 	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
