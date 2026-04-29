@@ -219,14 +219,22 @@ const (
 // This is a materialized view built from Shovel-indexed events, replacing
 // the per-cycle RPC scans of GetProofSets/GetProofSetsForClient.
 type PDPProofSet struct {
-	SetID               uint64               `gorm:"primaryKey;autoIncrement:false" json:"setId"`
-	ClientAddress       string               `gorm:"not null;index"                 json:"clientAddress"`
-	Provider            string               `gorm:"not null"                       json:"provider"`
-	IsLive              bool                 `gorm:"default:false"                  json:"isLive"`
-	ChallengeEpoch      *int64               `                                      json:"challengeEpoch,omitempty"`
-	CreatedBlock        int64                `gorm:"not null"                       json:"createdBlock"`
-	Deleted             bool                 `gorm:"default:false"                  json:"deleted"`
-	HandoffState        ProofSetHandoffState `gorm:"default:'assembling'"           json:"handoffState"`
-	ProposedProviderEVM string               `                                      json:"proposedProviderEVM,omitempty"`
-	PieceCount          int                  `gorm:"default:0"                      json:"pieceCount"`
+	SetID          uint64               `gorm:"primaryKey;autoIncrement:false" json:"setId"`
+	ClientAddress  string               `gorm:"not null;index"                 json:"clientAddress"`
+	Provider       string               `gorm:"not null"                       json:"provider"`
+	IsLive         bool                 `gorm:"default:false"                  json:"isLive"`
+	ChallengeEpoch *int64               `                                      json:"challengeEpoch,omitempty"`
+	CreatedBlock   int64                `gorm:"not null"                       json:"createdBlock"`
+	Deleted        bool                 `gorm:"default:false"                  json:"deleted"`
+	HandoffState   ProofSetHandoffState `gorm:"default:'assembling'"           json:"handoffState"`
+	PieceCount     int                  `gorm:"default:0"                      json:"pieceCount"`
+	// ClientDataSetID is the per-(payer, set) nonce the client signs into
+	// CreateDataSet/AddPieces extraData. FWSS rejects reused IDs via its
+	// clientNonces[payer][id] check, so we persist before signing to make
+	// retries idempotent. Stored decimal because uint256 doesn't fit any
+	// native int.
+	ClientDataSetID string `                                      json:"clientDataSetId,omitempty"`
+	// ServiceURL caches the SP's PDP HTTP endpoint, fetched from
+	// ServiceProviderRegistry the first time we push to this provider.
+	ServiceURL string `                                      json:"serviceUrl,omitempty"`
 }

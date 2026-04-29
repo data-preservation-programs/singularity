@@ -29,23 +29,28 @@ var DealPusherCmd = &cli.Command{
 		},
 		&cli.IntFlag{
 			Name:  "pdp-batch-size",
-			Usage: "Number of roots to include in each PDP add-roots transaction",
+			Usage: "Number of pieces to include in each /pdp/piece/pull request",
 			Value: 128,
 		},
 		&cli.IntFlag{
 			Name:  "pdp-max-pieces-per-proofset",
-			Usage: "Maximum pieces per proof set before handing off to the storage provider",
+			Usage: "Maximum pieces per proof set before starting a new one",
 			Value: 1024,
 		},
-		&cli.Uint64Flag{
-			Name:  "pdp-confirmation-depth",
-			Usage: "Number of block confirmations required for PDP transactions",
-			Value: 5,
-		},
 		&cli.DurationFlag{
-			Name:  "pdp-poll-interval",
-			Usage: "Polling interval for PDP transaction confirmation checks",
-			Value: 30 * time.Second,
+			Name:  "pdp-pull-timeout",
+			Usage: "How long to wait for Curio to finish pulling a batch (per request)",
+			Value: 5 * time.Minute,
+		},
+		&cli.StringFlag{
+			Name:    "pdp-source-url-base",
+			Usage:   "HTTPS base URL where Curio fetches pieces from; sourceUrl is built as <base>/piece/<pieceCid>",
+			EnvVars: []string{"PDP_SOURCE_URL_BASE"},
+		},
+		&cli.StringFlag{
+			Name:    "pdp-record-keeper",
+			Usage:   "FWSS contract address (recordKeeper). Defaults to the network default from go-synapse.",
+			EnvVars: []string{"PDP_RECORD_KEEPER"},
 		},
 		&cli.StringFlag{
 			Name:    "eth-rpc",
@@ -114,8 +119,7 @@ var DealPusherCmd = &cli.Command{
 		pdpCfg := dealpusher.PDPSchedulingConfig{
 			BatchSize:            c.Int("pdp-batch-size"),
 			MaxPiecesPerProofSet: c.Int("pdp-max-pieces-per-proofset"),
-			ConfirmationDepth:    c.Uint64("pdp-confirmation-depth"),
-			PollingInterval:      c.Duration("pdp-poll-interval"),
+			PullTimeout:          c.Duration("pdp-pull-timeout"),
 		}
 		if err := pdpCfg.Validate(); err != nil {
 			return errors.WithStack(err)
@@ -125,16 +129,19 @@ var DealPusherCmd = &cli.Command{
 			dealpusher.WithPDPSchedulingConfig(pdpCfg),
 		}
 		if rpcURL := c.String("eth-rpc"); rpcURL != "" {
-			pdpAdapter, err := dealpusher.NewOnChainPDP(c.Context, db, rpcURL)
+			adapterCfg := dealpusher.OnChainPDPConfig{
+				DB:            db,
+				RPCURL:        rpcURL,
+				SourceURLBase: c.String("pdp-source-url-base"),
+				RecordKeeper:  c.String("pdp-record-keeper"),
+			}
+			pdpAdapter, err := dealpusher.NewOnChainPDP(c.Context, adapterCfg)
 			if err != nil {
 				return errors.Wrap(err, "failed to initialize PDP on-chain adapter")
 			}
 			defer pdpAdapter.Close()
 
-			opts = append(opts,
-				dealpusher.WithPDPProofSetManager(pdpAdapter),
-				dealpusher.WithPDPTransactionConfirmer(pdpAdapter),
-			)
+			opts = append(opts, dealpusher.WithPDPProofSetManager(pdpAdapter))
 		}
 
 		if ddoContract := c.String("ddo-contract"); ddoContract != "" {

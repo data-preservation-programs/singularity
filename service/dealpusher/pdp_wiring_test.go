@@ -3,55 +3,40 @@ package dealpusher
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/data-preservation-programs/go-synapse/signer"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/keystore"
 	"github.com/data-preservation-programs/singularity/util/testutil"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
 
+// proofSetManagerMock satisfies PDPProofSetManager. It records every batch
+// it receives so tests can assert on the pieces and provider that were
+// pushed.
 type proofSetManagerMock struct {
-	proofSetID        uint64
-	pieceCIDs         []cid.Cid
-	proposedTransfers []proposedTransfer
+	dataSetID uint64
+	calls     []proofSetManagerCall
+	err       error
 }
 
-type proposedTransfer struct {
-	proofSetID   uint64
-	spEVMAddress common.Address
+type proofSetManagerCall struct {
+	provider string
+	pieces   []PDPPieceInput
 }
 
-func (m *proofSetManagerMock) EnsureProofSet(_ context.Context, _ signer.EVMSigner, _ string, _ PDPSchedulingConfig) (uint64, error) {
-	return m.proofSetID, nil
-}
-
-func (m *proofSetManagerMock) QueueAddRoots(_ context.Context, _ signer.EVMSigner, _ uint64, pieceCIDs []cid.Cid, _ []int64, _ PDPSchedulingConfig) (*PDPQueuedTx, error) {
-	m.pieceCIDs = append([]cid.Cid(nil), pieceCIDs...)
-	return &PDPQueuedTx{Hash: "0xabc"}, nil
-}
-
-func (m *proofSetManagerMock) ProposeTransfer(_ context.Context, _ signer.EVMSigner, proofSetID uint64, spEVMAddress common.Address) error {
-	m.proposedTransfers = append(m.proposedTransfers, proposedTransfer{proofSetID, spEVMAddress})
-	return nil
-}
-
-func (m *proofSetManagerMock) IncrementPieceCount(_ context.Context, _ uint64, _ int) error {
-	return nil
-}
-
-type txConfirmerMock struct {
-	txHash string
-}
-
-func (m *txConfirmerMock) WaitForConfirmations(_ context.Context, txHash string, _ uint64, _ time.Duration) (*PDPTransactionReceipt, error) {
-	m.txHash = txHash
-	return &PDPTransactionReceipt{Hash: txHash}, nil
+func (m *proofSetManagerMock) PullPiecesToFWSS(_ context.Context, _ signer.EVMSigner, provider string, pieces []PDPPieceInput, _ PDPSchedulingConfig) (PDPPullResult, error) {
+	if m.err != nil {
+		return PDPPullResult{}, m.err
+	}
+	m.calls = append(m.calls, proofSetManagerCall{
+		provider: provider,
+		pieces:   append([]PDPPieceInput(nil), pieces...),
+	})
+	return PDPPullResult{DataSetID: m.dataSetID}, nil
 }
 
 func TestDealPusher_ResolveScheduleDealType_EmptyReturnsEmpty(t *testing.T) {
@@ -85,7 +70,7 @@ func TestDealPusher_RunSchedule_PDPWithoutDependenciesReturnsConfiguredError(t *
 	require.Contains(t, err.Error(), "pdp scheduling dependencies are not configured")
 }
 
-func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation(t *testing.T) {
+func TestDealPusher_RunSchedule_PDPPushesBatchAndCreatesDeals(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		clientSubaddr := make([]byte, 20)
 		clientSubaddr[19] = 10
@@ -107,22 +92,20 @@ func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation
 
 		actorID := "f01001"
 		require.NoError(t, db.Create(&model.Actor{ID: actorID, Address: clientAddr.String()}).Error)
-		// provider needs an actor record for EVM address resolution
-		providerActorID := "f01002"
-		require.NoError(t, db.Create(&model.Actor{ID: providerActorID, Address: providerAddr.String()}).Error)
+		require.NoError(t, db.Create(&model.Actor{ID: "f01002", Address: providerAddr.String()}).Error)
 
-		wallet := model.Wallet{
+		walletObj := model.Wallet{
 			Address:  clientAddr.String(),
 			KeyPath:  keyPath,
 			KeyStore: "local",
 			ActorID:  &actorID,
 		}
-		require.NoError(t, db.Create(&wallet).Error)
-		require.NoError(t, db.Model(&prep).Update("wallet_id", wallet.ID).Error)
-		storage := model.Storage{Name: "src-storage"}
-		require.NoError(t, db.Create(&storage).Error)
-		require.NotZero(t, storage.ID)
-		attachment := model.SourceAttachment{PreparationID: prep.ID, StorageID: storage.ID}
+		require.NoError(t, db.Create(&walletObj).Error)
+		require.NoError(t, db.Model(&prep).Update("wallet_id", walletObj.ID).Error)
+
+		storageRow := model.Storage{Name: "src-storage"}
+		require.NoError(t, db.Create(&storageRow).Error)
+		attachment := model.SourceAttachment{PreparationID: prep.ID, StorageID: storageRow.ID}
 		require.NoError(t, db.Create(&attachment).Error)
 		require.NotZero(t, attachment.ID)
 
@@ -143,42 +126,26 @@ func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation
 			TotalDealNumber: 1,
 		}
 		require.NoError(t, db.Create(&schedule).Error)
-		schedule.Preparation = &model.Preparation{Wallet: &wallet}
+		schedule.Preparation = &model.Preparation{Wallet: &walletObj}
 
-		psm := &proofSetManagerMock{proofSetID: 42}
-		conf := &txConfirmerMock{}
+		psm := &proofSetManagerMock{dataSetID: 42}
 		d := &DealPusher{
 			dbNoContext:              db,
 			keyStore:                 ks,
 			pdpProofSetManager:       psm,
-			pdpTxConfirmer:           conf,
 			pdpSchedulingConfig:      defaultPDPSchedulingConfig(),
 			scheduleDealTypeResolver: func(_ *model.Schedule) model.DealType { return model.DealTypePDP },
 		}
-		var attachments []model.SourceAttachment
-		require.NoError(t, db.Where("preparation_id = ?", schedule.PreparationID).Find(&attachments).Error)
-		require.Len(t, attachments, 1)
-		overReplicatedCIDs := db.
-			Table("deals").
-			Select("piece_cid").
-			Where("state in ?", []model.DealState{model.DealProposed, model.DealPublished, model.DealActive}).
-			Group("piece_cid").
-			Having("count(*) >= ?", d.maxReplicas)
-		cars, err := d.findPDPCars(ctx, &schedule, attachments, nil, overReplicatedCIDs, d.pdpSchedulingConfig.BatchSize)
-		require.NoError(t, err)
-		require.Len(t, cars, 1)
 
 		state, err := d.runSchedule(ctx, &schedule)
 		require.NoError(t, err)
 		require.Equal(t, model.ScheduleCompleted, state)
-		require.Equal(t, "0xabc", conf.txHash)
-		require.Len(t, psm.pieceCIDs, 1)
-		require.Equal(t, cid.Cid(pieceCID), psm.pieceCIDs[0])
 
-		// schedule completion should propose transfer for the partial proof set
-		require.Len(t, psm.proposedTransfers, 1)
-		require.Equal(t, uint64(42), psm.proposedTransfers[0].proofSetID)
-		require.Equal(t, common.BytesToAddress(providerSubaddr), psm.proposedTransfers[0].spEVMAddress)
+		require.Len(t, psm.calls, 1, "expected one batch push")
+		require.Equal(t, providerAddr.String(), psm.calls[0].provider)
+		require.Len(t, psm.calls[0].pieces, 1)
+		require.Equal(t, cid.Cid(pieceCID), psm.calls[0].pieces[0].PieceCID)
+		require.Equal(t, int64(1024), psm.calls[0].pieces[0].PieceSize)
 
 		var deals []model.Deal
 		require.NoError(t, db.Where("schedule_id = ?", schedule.ID).Find(&deals).Error)
@@ -190,7 +157,7 @@ func TestDealPusher_RunSchedule_PDPWithDependenciesCreatesDealsAfterConfirmation
 		require.NotNil(t, deals[0].ProofSetID)
 		require.Equal(t, uint64(42), *deals[0].ProofSetID)
 		require.NotNil(t, deals[0].WalletID)
-		require.Equal(t, wallet.ID, *deals[0].WalletID)
+		require.Equal(t, walletObj.ID, *deals[0].WalletID)
 	})
 }
 
@@ -216,18 +183,18 @@ func TestDealPusher_RunSchedule_PDPRejectsInvalidPieceSize(t *testing.T) {
 		actorID := "f01001"
 		require.NoError(t, db.Create(&model.Actor{ID: actorID, Address: clientAddr.String()}).Error)
 		require.NoError(t, db.Create(&model.Actor{ID: "f01002", Address: providerAddr.String()}).Error)
-		wallet := model.Wallet{
+		walletObj := model.Wallet{
 			Address:  clientAddr.String(),
 			KeyPath:  keyPath,
 			KeyStore: "local",
 			ActorID:  &actorID,
 		}
-		require.NoError(t, db.Create(&wallet).Error)
-		require.NoError(t, db.Model(&prep).Update("wallet_id", wallet.ID).Error)
+		require.NoError(t, db.Create(&walletObj).Error)
+		require.NoError(t, db.Model(&prep).Update("wallet_id", walletObj.ID).Error)
 
-		storage := model.Storage{Name: "src-storage"}
-		require.NoError(t, db.Create(&storage).Error)
-		attachment := model.SourceAttachment{PreparationID: prep.ID, StorageID: storage.ID}
+		storageRow := model.Storage{Name: "src-storage"}
+		require.NoError(t, db.Create(&storageRow).Error)
+		attachment := model.SourceAttachment{PreparationID: prep.ID, StorageID: storageRow.ID}
 		require.NoError(t, db.Create(&attachment).Error)
 
 		pieceCID := model.CID(calculateCommp(t, generateRandomBytes(1000), 1024))
@@ -235,7 +202,7 @@ func TestDealPusher_RunSchedule_PDPRejectsInvalidPieceSize(t *testing.T) {
 			AttachmentID:  &attachment.ID,
 			PreparationID: &prep.ID,
 			PieceCID:      pieceCID,
-			PieceSize:     1536, // Not a power of two.
+			PieceSize:     1536, // not a power of two
 			StoragePath:   "car-1",
 		}
 		require.NoError(t, db.Create(&car).Error)
@@ -247,15 +214,13 @@ func TestDealPusher_RunSchedule_PDPRejectsInvalidPieceSize(t *testing.T) {
 			TotalDealNumber: 1,
 		}
 		require.NoError(t, db.Create(&schedule).Error)
-		schedule.Preparation = &model.Preparation{Wallet: &wallet}
+		schedule.Preparation = &model.Preparation{Wallet: &walletObj}
 
-		psm := &proofSetManagerMock{proofSetID: 42}
-		conf := &txConfirmerMock{}
+		psm := &proofSetManagerMock{dataSetID: 42}
 		d := &DealPusher{
 			dbNoContext:              db,
 			keyStore:                 ks,
 			pdpProofSetManager:       psm,
-			pdpTxConfirmer:           conf,
 			pdpSchedulingConfig:      defaultPDPSchedulingConfig(),
 			scheduleDealTypeResolver: func(_ *model.Schedule) model.DealType { return model.DealTypePDP },
 		}
@@ -265,8 +230,7 @@ func TestDealPusher_RunSchedule_PDPRejectsInvalidPieceSize(t *testing.T) {
 		require.Equal(t, model.ScheduleError, state)
 		require.ErrorContains(t, err, "invalid piece size for piece")
 		require.ErrorContains(t, err, "must be a power of two")
-		require.Empty(t, conf.txHash)
-		require.Empty(t, psm.pieceCIDs)
+		require.Empty(t, psm.calls)
 
 		var deals []model.Deal
 		require.NoError(t, db.Where("schedule_id = ?", schedule.ID).Find(&deals).Error)
@@ -296,18 +260,18 @@ func TestDealPusher_RunSchedule_PDPRejectsPreparationWithOversizedPiece(t *testi
 		actorID := "f01001"
 		require.NoError(t, db.Create(&model.Actor{ID: actorID, Address: clientAddr.String()}).Error)
 		require.NoError(t, db.Create(&model.Actor{ID: "f01002", Address: providerAddr.String()}).Error)
-		wallet := model.Wallet{
+		walletObj := model.Wallet{
 			Address:  clientAddr.String(),
 			KeyPath:  keyPath,
 			KeyStore: "local",
 			ActorID:  &actorID,
 		}
-		require.NoError(t, db.Create(&wallet).Error)
-		require.NoError(t, db.Model(&prep).Update("wallet_id", wallet.ID).Error)
+		require.NoError(t, db.Create(&walletObj).Error)
+		require.NoError(t, db.Model(&prep).Update("wallet_id", walletObj.ID).Error)
 
-		storage := model.Storage{Name: "src-storage"}
-		require.NoError(t, db.Create(&storage).Error)
-		attachment := model.SourceAttachment{PreparationID: prep.ID, StorageID: storage.ID}
+		storageRow := model.Storage{Name: "src-storage"}
+		require.NoError(t, db.Create(&storageRow).Error)
+		attachment := model.SourceAttachment{PreparationID: prep.ID, StorageID: storageRow.ID}
 		require.NoError(t, db.Create(&attachment).Error)
 
 		pieceCID := model.CID(calculateCommp(t, generateRandomBytes(1000), 1024))
@@ -315,7 +279,7 @@ func TestDealPusher_RunSchedule_PDPRejectsPreparationWithOversizedPiece(t *testi
 			AttachmentID:  &attachment.ID,
 			PreparationID: &prep.ID,
 			PieceCID:      pieceCID,
-			PieceSize:     1 << 31, // 2 GiB, above current 1 GiB minus FR32 overhead PDP limit.
+			PieceSize:     1 << 31, // 2 GiB, above current 1 GiB minus FR32 overhead PDP limit
 			StoragePath:   "car-1",
 		}
 		require.NoError(t, db.Create(&car).Error)
@@ -327,15 +291,13 @@ func TestDealPusher_RunSchedule_PDPRejectsPreparationWithOversizedPiece(t *testi
 			TotalDealNumber: 1,
 		}
 		require.NoError(t, db.Create(&schedule).Error)
-		schedule.Preparation = &model.Preparation{Wallet: &wallet}
+		schedule.Preparation = &model.Preparation{Wallet: &walletObj}
 
-		psm := &proofSetManagerMock{proofSetID: 42}
-		conf := &txConfirmerMock{}
+		psm := &proofSetManagerMock{dataSetID: 42}
 		d := &DealPusher{
 			dbNoContext:              db,
 			keyStore:                 ks,
 			pdpProofSetManager:       psm,
-			pdpTxConfirmer:           conf,
 			pdpSchedulingConfig:      defaultPDPSchedulingConfig(),
 			scheduleDealTypeResolver: func(_ *model.Schedule) model.DealType { return model.DealTypePDP },
 		}
@@ -344,8 +306,7 @@ func TestDealPusher_RunSchedule_PDPRejectsPreparationWithOversizedPiece(t *testi
 		require.Error(t, err)
 		require.Equal(t, model.ScheduleError, state)
 		require.ErrorContains(t, err, "piece limit is 1 GiB minus FR32 overhead")
-		require.Empty(t, conf.txHash)
-		require.Empty(t, psm.pieceCIDs)
+		require.Empty(t, psm.calls)
 
 		var deals []model.Deal
 		require.NoError(t, db.Where("schedule_id = ?", schedule.ID).Find(&deals).Error)
