@@ -3,14 +3,13 @@ package dealpusher
 import (
 	"context"
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"math/big"
 	"strings"
 	"sync"
 	"time"
 
-	cockroach "github.com/cockroachdb/errors"
+	"github.com/cockroachdb/errors"
 	synapse "github.com/data-preservation-programs/go-synapse"
 	"github.com/data-preservation-programs/go-synapse/constants"
 	"github.com/data-preservation-programs/go-synapse/pdp"
@@ -76,13 +75,13 @@ func NewOnChainPDP(ctx context.Context, cfg OnChainPDPConfig) (*OnChainPDP, erro
 
 	ethClient, err := ethclient.DialContext(ctx, cfg.RPCURL)
 	if err != nil {
-		return nil, cockroach.Wrap(err, "failed to connect to FEVM RPC")
+		return nil, errors.Wrap(err, "failed to connect to FEVM RPC")
 	}
 
 	network, chainIDInt64, err := synapse.DetectNetwork(ctx, ethClient)
 	if err != nil {
 		ethClient.Close()
-		return nil, cockroach.Wrap(err, "failed to detect FEVM network")
+		return nil, errors.Wrap(err, "failed to detect FEVM network")
 	}
 	chainID := big.NewInt(chainIDInt64)
 
@@ -103,7 +102,7 @@ func NewOnChainPDP(ctx context.Context, cfg OnChainPDPConfig) (*OnChainPDP, erro
 	spReg, err := spregistry.NewService(ethClient, spRegAddr, nil, chainID)
 	if err != nil {
 		ethClient.Close()
-		return nil, cockroach.Wrap(err, "failed to bind ServiceProviderRegistry")
+		return nil, errors.Wrap(err, "failed to bind ServiceProviderRegistry")
 	}
 
 	Logger.Infow("initialized FWSS-pull adapter",
@@ -154,13 +153,13 @@ func (o *OnChainPDP) PullPiecesToFWSS(
 	payerAddr := evmSigner.EVMAddress()
 	clientDelegated, err := commonToDelegatedAddress(payerAddr)
 	if err != nil {
-		return PDPPullResult{}, cockroach.Wrap(err, "derive delegated payer address")
+		return PDPPullResult{}, errors.Wrap(err, "derive delegated payer address")
 	}
 	clientAddrStr := clientDelegated.String()
 
 	info, err := o.lookupSPInfo(ctx, provider)
 	if err != nil {
-		return PDPPullResult{}, cockroach.Wrap(err, "SP service-URL lookup")
+		return PDPPullResult{}, errors.Wrap(err, "SP service-URL lookup")
 	}
 
 	// Convert v1 piece CIDs to CommPv2 (what FWSS / Curio expect).
@@ -171,7 +170,7 @@ func (o *OnChainPDP) PullPiecesToFWSS(
 		payloadSize := uint64(p.PieceSize) * 127 / 128
 		v2, err := commcid.PieceCidV2FromV1(p.PieceCID, payloadSize)
 		if err != nil {
-			return PDPPullResult{}, cockroach.Wrapf(err, "convert piece %s to CommPv2", p.PieceCID)
+			return PDPPullResult{}, errors.Wrapf(err, "convert piece %s to CommPv2", p.PieceCID)
 		}
 		pieceCIDsV2[i] = v2
 		pullInputs[i] = pdp.PullPieceInput{
@@ -227,11 +226,11 @@ func (o *OnChainPDP) addToExisting(
 
 	addResp, err := pdpServer.AddPieces(ctx, int(existing.SetID), pieceCIDsV2, addExtra)
 	if err != nil {
-		return PDPPullResult{}, cockroach.Wrap(err, "POST /pdp/data-sets/{id}/pieces")
+		return PDPPullResult{}, errors.Wrap(err, "POST /pdp/data-sets/{id}/pieces")
 	}
 	status, err := pdpServer.WaitForPieceAddition(ctx, int(existing.SetID), addResp.TxHash, cfg.PullTimeout)
 	if err != nil {
-		return PDPPullResult{}, cockroach.Wrap(err, "wait for add-pieces tx")
+		return PDPPullResult{}, errors.Wrap(err, "wait for add-pieces tx")
 	}
 	if status.AddMessageOK == nil || !*status.AddMessageOK {
 		return PDPPullResult{}, fmt.Errorf("add-pieces tx %s did not confirm successfully", addResp.TxHash)
@@ -241,7 +240,7 @@ func (o *OnChainPDP) addToExisting(
 		Model(&model.PDPProofSet{}).
 		Where("set_id = ?", existing.SetID).
 		UpdateColumn("piece_count", gorm.Expr("piece_count + ?", len(pieceCIDsV2))).Error; err != nil {
-		return PDPPullResult{}, cockroach.Wrap(err, "increment piece_count")
+		return PDPPullResult{}, errors.Wrap(err, "increment piece_count")
 	}
 
 	return PDPPullResult{DataSetID: existing.SetID}, nil
@@ -275,7 +274,7 @@ func (o *OnChainPDP) createNewSet(
 	}
 	combined, err := pdp.EncodeCreateDataSetAndAddPiecesExtraData(createExtra, addExtra)
 	if err != nil {
-		return PDPPullResult{}, cockroach.Wrap(err, "wrap create+add extra data")
+		return PDPPullResult{}, errors.Wrap(err, "wrap create+add extra data")
 	}
 
 	if err := waitForPullComplete(ctx, pdpServer, pdp.PullPiecesOptions{
@@ -289,12 +288,12 @@ func (o *OnChainPDP) createNewSet(
 
 	createResp, err := pdpServer.CreateDataSetAndAddPieces(ctx, o.recordKeeper.Hex(), pieceCIDsV2, combined)
 	if err != nil {
-		return PDPPullResult{}, cockroach.Wrap(err, "POST /pdp/data-sets/create-and-add")
+		return PDPPullResult{}, errors.Wrap(err, "POST /pdp/data-sets/create-and-add")
 	}
 
 	status, err := pdpServer.WaitForDataSetCreation(ctx, createResp.TxHash, cfg.PullTimeout)
 	if err != nil {
-		return PDPPullResult{}, cockroach.Wrap(err, "wait for create-and-add tx")
+		return PDPPullResult{}, errors.Wrap(err, "wait for create-and-add tx")
 	}
 	if status.DataSetID == nil {
 		return PDPPullResult{}, fmt.Errorf("create-and-add tx %s confirmed but no dataSetId returned", createResp.TxHash)
@@ -316,7 +315,7 @@ func (o *OnChainPDP) createNewSet(
 		Where("set_id = ?", dataSetID).
 		Assign(row).
 		FirstOrCreate(&model.PDPProofSet{}).Error; err != nil {
-		return PDPPullResult{}, cockroach.Wrap(err, "persist new proof set")
+		return PDPPullResult{}, errors.Wrap(err, "persist new proof set")
 	}
 
 	return PDPPullResult{DataSetID: dataSetID}, nil
@@ -327,7 +326,7 @@ func (o *OnChainPDP) createNewSet(
 func waitForPullComplete(ctx context.Context, pdpServer *pdp.Server, opts pdp.PullPiecesOptions, timeout time.Duration) error {
 	resp, err := pdpServer.WaitForPullPieces(ctx, opts, timeout)
 	if err != nil {
-		return cockroach.Wrap(err, "wait for /pdp/piece/pull")
+		return errors.Wrap(err, "wait for /pdp/piece/pull")
 	}
 	switch resp.Status {
 	case pdp.PullStatusComplete:
@@ -342,7 +341,7 @@ func waitForPullComplete(ctx context.Context, pdpServer *pdp.Server, opts pdp.Pu
 func signCreateDataSetExtra(authHelper *pdp.AuthHelper, payer, payee common.Address, clientDataSetID *big.Int) (string, error) {
 	sig, err := authHelper.SignCreateDataSet(clientDataSetID, payee, nil)
 	if err != nil {
-		return "", cockroach.Wrap(err, "sign CreateDataSet")
+		return "", errors.Wrap(err, "sign CreateDataSet")
 	}
 	return pdp.EncodeDataSetCreateData(payer, clientDataSetID, nil, sig.Signature)
 }
@@ -353,7 +352,7 @@ func signAddPiecesExtra(authHelper *pdp.AuthHelper, clientDataSetID *big.Int, pi
 	nonce := big.NewInt(0)
 	sig, err := authHelper.SignAddPieces(clientDataSetID, nonce, pieceCIDsV2, nil)
 	if err != nil {
-		return "", cockroach.Wrap(err, "sign AddPieces")
+		return "", errors.Wrap(err, "sign AddPieces")
 	}
 	return pdp.EncodeAddPiecesExtraData(nonce, nil, sig.Signature)
 }
@@ -375,7 +374,7 @@ func (o *OnChainPDP) findProofSetWithRoom(ctx context.Context, clientAddress, pr
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
-	return nil, cockroach.Wrap(err, "query assembling proof sets")
+	return nil, errors.Wrap(err, "query assembling proof sets")
 }
 
 func (o *OnChainPDP) lookupSPInfo(ctx context.Context, provider string) (spInfo, error) {
@@ -386,14 +385,25 @@ func (o *OnChainPDP) lookupSPInfo(ctx context.Context, provider string) (spInfo,
 	}
 	o.spURLCacheMu.Unlock()
 
-	evmAddr, err := delegatedToCommonAddress(provider)
+	// schedule.Provider is the t0 form after StateLookupID; resolve to
+	// the delegated (f410) form via lotus if it's not already.
+	delegated := provider
+	if addr, perr := address.NewFromString(provider); perr != nil || addr.Protocol() != address.Delegated {
+		var robust string
+		if rerr := o.ethClient.Client().CallContext(ctx, &robust, "Filecoin.StateLookupRobustAddress", provider, nil); rerr != nil {
+			return spInfo{}, errors.Wrapf(rerr, "resolve robust address for provider %s", provider)
+		}
+		delegated = robust
+	}
+
+	evmAddr, err := delegatedToCommonAddress(delegated)
 	if err != nil {
-		return spInfo{}, cockroach.Wrapf(err, "decode provider address %s", provider)
+		return spInfo{}, errors.Wrapf(err, "decode provider address %s", delegated)
 	}
 
 	pi, err := o.spRegistry.GetProviderByAddress(ctx, evmAddr)
 	if err != nil {
-		return spInfo{}, cockroach.Wrapf(err, "ServiceProviderRegistry.getProviderByAddress(%s)", evmAddr.Hex())
+		return spInfo{}, errors.Wrapf(err, "ServiceProviderRegistry.getProviderByAddress(%s)", evmAddr.Hex())
 	}
 	if pi == nil {
 		return spInfo{}, fmt.Errorf("provider %s not registered in ServiceProviderRegistry", provider)
@@ -437,7 +447,7 @@ func delegatedToCommonAddress(s string) (common.Address, error) {
 func commonToDelegatedAddress(subaddr common.Address) (address.Address, error) {
 	addr, err := address.NewDelegatedAddress(10, subaddr.Bytes())
 	if err != nil {
-		return address.Undef, cockroach.Wrap(err, "encode delegated address")
+		return address.Undef, errors.Wrap(err, "encode delegated address")
 	}
 	return addr, nil
 }
