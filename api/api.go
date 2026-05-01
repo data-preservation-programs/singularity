@@ -281,7 +281,7 @@ func (s *Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 		if len(results) == 1 {
 			// Handle the returned error
 			if results[0].Interface() != nil {
-				err, ok := results[1].Interface().(error)
+				err, ok := results[0].Interface().(error)
 				if !ok {
 					return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler function signature"})
 				}
