@@ -115,6 +115,7 @@ func TestDealPusher_RunSchedule_PDPPushesBatchAndCreatesDeals(t *testing.T) {
 			PreparationID: &prep.ID,
 			PieceCID:      pieceCID,
 			PieceSize:     1024,
+			FileSize:      900,
 			StoragePath:   "car-1",
 		}
 		require.NoError(t, db.Create(&car).Error)
@@ -146,14 +147,15 @@ func TestDealPusher_RunSchedule_PDPPushesBatchAndCreatesDeals(t *testing.T) {
 		require.Len(t, psm.calls[0].pieces, 1)
 		require.Equal(t, cid.Cid(pieceCID), psm.calls[0].pieces[0].PieceCID)
 		require.Equal(t, int64(1024), psm.calls[0].pieces[0].PieceSize)
+		require.Equal(t, int64(900), psm.calls[0].pieces[0].PayloadSize)
 
 		var deals []model.Deal
 		require.NoError(t, db.Where("schedule_id = ?", schedule.ID).Find(&deals).Error)
 		require.Len(t, deals, 1)
 		require.Equal(t, model.DealTypePDP, deals[0].DealType)
 		require.Equal(t, model.DealProposed, deals[0].State)
-		require.Equal(t, pdpDealEpochSentinel, deals[0].StartEpoch)
-		require.Equal(t, pdpDealEpochSentinel, deals[0].EndEpoch)
+		require.Equal(t, PDPDealEpochSentinel, deals[0].StartEpoch)
+		require.Equal(t, PDPDealEpochSentinel, deals[0].EndEpoch)
 		require.NotNil(t, deals[0].ProofSetID)
 		require.Equal(t, uint64(42), *deals[0].ProofSetID)
 		require.NotNil(t, deals[0].WalletID)

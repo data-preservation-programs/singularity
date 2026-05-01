@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const pdpDealEpochSentinel = int32(math.MaxInt32)
+const PDPDealEpochSentinel = int32(math.MaxInt32)
 
 func defaultPDPSchedulingConfig() PDPSchedulingConfig {
 	return PDPSchedulingConfig{
@@ -193,8 +193,9 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 		pieceInputs := make([]PDPPieceInput, len(cars))
 		for i, car := range cars {
 			pieceInputs[i] = PDPPieceInput{
-				PieceCID:  cid.Cid(car.PieceCID),
-				PieceSize: car.PieceSize,
+				PieceCID:    cid.Cid(car.PieceCID),
+				PieceSize:   car.PieceSize,
+				PayloadSize: car.FileSize,
 			}
 		}
 
@@ -212,8 +213,8 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 				Provider:   schedule.Provider,
 				PieceCID:   car.PieceCID,
 				PieceSize:  car.PieceSize,
-				StartEpoch: pdpDealEpochSentinel,
-				EndEpoch:   pdpDealEpochSentinel,
+				StartEpoch: PDPDealEpochSentinel,
+				EndEpoch:   PDPDealEpochSentinel,
 				Verified:   schedule.Verified,
 				ScheduleID: &schedule.ID,
 				ClientID:   clientID,
