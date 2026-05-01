@@ -13,6 +13,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	commcid "github.com/filecoin-project/go-fil-commcid"
 	"github.com/gotidy/ptr"
 	"github.com/ipfs/boxo/blockservice"
 	"github.com/ipfs/boxo/exchange/offline"
@@ -448,5 +449,40 @@ func TestIPFSGateway_FileChanged(t *testing.T) {
 		rec := httptest.NewRecorder()
 		gw.ServeHTTP(rec, req)
 		require.Equal(t, http.StatusConflict, rec.Code)
+	})
+}
+
+func TestParsePieceCID(t *testing.T) {
+	commD := make([]byte, 32)
+	for i := range commD {
+		commD[i] = byte(i)
+	}
+	v1, err := commcid.DataCommitmentV1ToCID(commD)
+	require.NoError(t, err)
+	require.Equal(t, uint64(cid.FilCommitmentUnsealed), v1.Type())
+
+	// v2 piece CID carrying the same commitment; Curio/FWSS callers use this form
+	v2, err := commcid.PieceCidV2FromV1(v1, 1016)
+	require.NoError(t, err)
+	require.NotEqual(t, v1, v2)
+
+	t.Run("v1 passes through unchanged", func(t *testing.T) {
+		got, err := parsePieceCID(v1.String())
+		require.NoError(t, err)
+		require.Equal(t, v1, got)
+	})
+	t.Run("v2 normalizes to v1", func(t *testing.T) {
+		got, err := parsePieceCID(v2.String())
+		require.NoError(t, err)
+		require.Equal(t, v1, got)
+	})
+	t.Run("non-piece CID is rejected", func(t *testing.T) {
+		raw := cid.NewCidV1(cid.Raw, util.Hash([]byte("not a piece")))
+		_, err := parsePieceCID(raw.String())
+		require.Error(t, err)
+	})
+	t.Run("garbage is rejected", func(t *testing.T) {
+		_, err := parsePieceCID("not-a-cid")
+		require.Error(t, err)
 	})
 }
