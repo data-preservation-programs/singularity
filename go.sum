@@ -275,8 +275,8 @@ github.com/cronokirby/saferith v0.33.0 h1:TgoQlfsD4LIwx71+ChfRcIpjkw+RPOapDEVxa+
 github.com/cronokirby/saferith v0.33.0/go.mod h1:QKJhjoqUtBsXCAVEjw38mFqoi7DebT7kthcD7UzbnoA=
 github.com/cskr/pubsub v1.0.2 h1:vlOzMhl6PFn60gRlTQQsIfVwaPB/B/8MziK8FhEPt/0=
 github.com/cskr/pubsub v1.0.2/go.mod h1:/8MzYXk/NJAz782G8RPkFzXTZVu63VotefPnR9TIRis=
-github.com/data-preservation-programs/go-synapse v0.0.0-20260430215910-e59b042352fb h1:sAa+NZLPiw1CJUTKW9dRh1KevPjYuNdotWyRNX9vF4c=
-github.com/data-preservation-programs/go-synapse v0.0.0-20260430215910-e59b042352fb/go.mod h1:qgzPsiGWjTPT/oACA6Uj1+WsASwsYFW/iJ8AWacJdjc=
+github.com/data-preservation-programs/go-synapse v0.0.0-20260503115913-40ae25e74ba1 h1:SGQs5b7eyjycfxKDRHmzZW613BjjRkDT0XITafKK50A=
+github.com/data-preservation-programs/go-synapse v0.0.0-20260503115913-40ae25e74ba1/go.mod h1:qgzPsiGWjTPT/oACA6Uj1+WsASwsYFW/iJ8AWacJdjc=
 github.com/data-preservation-programs/table v0.0.3 h1:hboeauxPXybE8KlMA+RjDXz/J4xaG5CAFCcxyOm8yWo=
 github.com/data-preservation-programs/table v0.0.3/go.mod h1:sRGP/IuuqFc/y9QfmDyb5h6Q2wrnhhnBofEOj9aDRJg=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
