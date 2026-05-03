@@ -11,7 +11,7 @@ USAGE:
 COMMANDS:
    schedule         Schedule deals
    send-manual      Send a manual deal proposal to boost or legacy market
-   send-manual-pdp  Send a manual PDP deal on-chain
+   send-manual-pdp  Send a manual PDP deal via the FWSS-pull flow
    list             List all deals
    help, h          Shows a list of commands or help for one command
 
