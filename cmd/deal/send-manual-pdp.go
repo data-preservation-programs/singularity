@@ -18,9 +18,11 @@ import (
 
 var SendManualPDPCmd = &cli.Command{
 	Name:  "send-manual-pdp",
-	Usage: "Send a manual PDP deal on-chain",
-	Description: `Create/reuse a proof set and add a piece to it on-chain via PDPVerifier.
-  Example: singularity deal send-manual-pdp --client f1xxx --provider t410fxxx --piece-cid bagaxxxx --piece-size 1048576 --eth-rpc http://localhost:5700/rpc/v1`,
+	Usage: "Send a manual PDP deal via the FWSS-pull flow",
+	Description: `Push a single piece to an SP via Curio's /pdp/piece/pull, then trigger the
+SP's on-chain commit (createDataSet+addPieces if no assembling set yet, or addPieces
+into the existing one). Useful for e2e/diagnostic testing of the FWSS pull path.
+  Example: singularity deal send-manual-pdp --client f1xxx --provider t410fxxx --piece-cid bagaxxxx --piece-size 1048576 --eth-rpc http://localhost:5700/rpc/v1 --source-url-base https://static.example.org`,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "client",
@@ -34,12 +36,12 @@ var SendManualPDPCmd = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:     "piece-cid",
-			Usage:    "Piece CID (commp)",
+			Usage:    "Piece CID (commp v1)",
 			Required: true,
 		},
 		&cli.Int64Flag{
 			Name:     "piece-size",
-			Usage:    "Piece size in bytes",
+			Usage:    "Padded piece size in bytes",
 			Required: true,
 		},
 		&cli.StringFlag{
@@ -48,10 +50,21 @@ var SendManualPDPCmd = &cli.Command{
 			EnvVars:  []string{"ETH_RPC_URL"},
 			Required: true,
 		},
-		&cli.Uint64Flag{
-			Name:  "confirmation-depth",
-			Usage: "Blocks to wait for tx confirmation",
-			Value: 5,
+		&cli.StringFlag{
+			Name:     "source-url-base",
+			Usage:    "HTTPS base where Curio fetches the piece (sourceUrl = <base>/piece/<pieceCidV2>)",
+			EnvVars:  []string{"PDP_SOURCE_URL_BASE"},
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:    "record-keeper",
+			Usage:   "FWSS contract address. Defaults to network FWSS from go-synapse.",
+			EnvVars: []string{"PDP_RECORD_KEEPER"},
+		},
+		&cli.DurationFlag{
+			Name:  "pull-timeout",
+			Usage: "How long to wait for Curio to finish each phase",
+			Value: 5 * time.Minute,
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -61,13 +74,17 @@ var SendManualPDPCmd = &cli.Command{
 		}
 		defer closer.Close()
 
-		pdp, err := dealpusher.NewOnChainPDP(c.Context, db, c.String("eth-rpc"))
+		pdp, err := dealpusher.NewOnChainPDP(c.Context, dealpusher.OnChainPDPConfig{
+			DB:            db,
+			RPCURL:        c.String("eth-rpc"),
+			SourceURLBase: c.String("source-url-base"),
+			RecordKeeper:  c.String("record-keeper"),
+		})
 		if err != nil {
 			return errors.WithStack(err)
 		}
 		defer pdp.Close()
 
-		// load wallet
 		var walletObj model.Wallet
 		err = db.WithContext(c.Context).Where("address = ?", c.String("client")).First(&walletObj).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -86,56 +103,40 @@ var SendManualPDPCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
-		provider := c.String("provider")
-
-		cfg := dealpusher.PDPSchedulingConfig{
-			BatchSize:            1,
-			MaxPiecesPerProofSet: 1024,
-			ConfirmationDepth:    c.Uint64("confirmation-depth"),
-			PollingInterval:      5 * time.Second,
-		}
-
-		// ensure proof set exists (or create one)
-		fmt.Println("ensuring proof set...")
-		proofSetID, err := pdp.EnsureProofSet(c.Context, evmSigner, provider, cfg)
-		if err != nil {
-			return errors.Wrap(err, "failed to ensure proof set")
-		}
-		fmt.Printf("proof set ID: %d\n", proofSetID)
-
-		// parse piece cid
 		pieceCID, err := cid.Parse(c.String("piece-cid"))
 		if err != nil {
 			return errors.Wrap(err, "invalid piece CID")
 		}
-
-		// add piece to proof set
-		fmt.Println("submitting add-roots tx...")
 		pieceSize := c.Int64("piece-size")
-		queuedTx, err := pdp.QueueAddRoots(c.Context, evmSigner, proofSetID, []cid.Cid{pieceCID}, []int64{pieceSize}, cfg)
-		if err != nil {
-			return errors.Wrap(err, "failed to add roots")
-		}
-		fmt.Printf("tx: %s\n", queuedTx.Hash)
 
-		// wait for confirmation
-		fmt.Println("waiting for confirmation...")
-		receipt, err := pdp.WaitForConfirmations(c.Context, queuedTx.Hash, cfg.ConfirmationDepth, cfg.PollingInterval)
-		if err != nil {
-			return errors.Wrap(err, "tx failed")
+		cfg := dealpusher.PDPSchedulingConfig{
+			BatchSize:            1,
+			MaxPiecesPerProofSet: 1024,
+			PullTimeout:          c.Duration("pull-timeout"),
 		}
-		fmt.Printf("confirmed at block %d (gas: %d)\n", receipt.BlockNumber, receipt.GasUsed)
 
-		// save deal record
-		proofSetIDCopy := proofSetID
+		fmt.Println("pushing piece to SP via /pdp/piece/pull + on-chain commit...")
+		result, err := pdp.PullPiecesToFWSS(
+			c.Context,
+			evmSigner,
+			c.String("provider"),
+			[]dealpusher.PDPPieceInput{{PieceCID: pieceCID, PieceSize: pieceSize}},
+			cfg,
+		)
+		if err != nil {
+			return errors.Wrap(err, "FWSS pull push failed")
+		}
+		fmt.Printf("data set ID: %d\n", result.DataSetID)
+
+		dataSetIDCopy := result.DataSetID
 		dealModel := &model.Deal{
 			State:      model.DealProposed,
 			DealType:   model.DealTypePDP,
-			Provider:   provider,
+			Provider:   c.String("provider"),
 			PieceCID:   model.CID(pieceCID),
 			PieceSize:  pieceSize,
 			WalletID:   &walletObj.ID,
-			ProofSetID: &proofSetIDCopy,
+			ProofSetID: &dataSetIDCopy,
 		}
 		if err := db.WithContext(c.Context).Create(dealModel).Error; err != nil {
 			return errors.Wrap(err, "failed to save deal")

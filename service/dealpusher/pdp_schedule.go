@@ -11,8 +11,6 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/keystore"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-cid"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
@@ -24,8 +22,7 @@ func defaultPDPSchedulingConfig() PDPSchedulingConfig {
 	return PDPSchedulingConfig{
 		BatchSize:            128,
 		MaxPiecesPerProofSet: 1024,
-		ConfirmationDepth:    5,
-		PollingInterval:      30 * time.Second,
+		PullTimeout:          5 * time.Minute,
 	}
 }
 
@@ -65,37 +62,8 @@ func (d *DealPusher) validatePDPPreparationPieceSizes(ctx context.Context, sched
 	return errors.Wrap(err, "failed to validate preparation piece sizes for PDP")
 }
 
-// resolveProviderEVMAddress looks up the provider's Actor record and derives
-// the EVM address from its delegated (f410) filecoin address.
-func (d *DealPusher) resolveProviderEVMAddress(ctx context.Context, provider string) (common.Address, error) {
-	db := d.dbNoContext.WithContext(ctx)
-
-	var actor model.Actor
-	err := db.Where("address = ? OR id = ?", provider, provider).First(&actor).Error
-	if err != nil {
-		return common.Address{}, errors.Wrapf(err, "failed to resolve actor for provider %s", provider)
-	}
-
-	addr, err := address.NewFromString(actor.Address)
-	if err != nil {
-		return common.Address{}, errors.Wrapf(err, "failed to parse actor address %s", actor.Address)
-	}
-	if addr.Protocol() != address.Delegated {
-		return common.Address{}, fmt.Errorf("provider actor address %s is not a delegated (f410) address", actor.Address)
-	}
-
-	payload := addr.Payload()
-	// delegated address payload: first varint byte(s) for namespace, then 20 bytes for EVM address
-	// for f410 (namespace 10), payload[0] is the namespace varint, rest is the subaddress
-	if len(payload) < 21 {
-		return common.Address{}, fmt.Errorf("provider delegated address payload too short: %d bytes", len(payload))
-	}
-	// skip namespace varint (1 byte for namespace 10)
-	return common.BytesToAddress(payload[1:21]), nil
-}
-
 func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedule) (model.ScheduleState, error) {
-	if d.pdpProofSetManager == nil || d.pdpTxConfirmer == nil {
+	if d.pdpProofSetManager == nil {
 		return model.ScheduleError, errors.New("pdp scheduling dependencies are not configured")
 	}
 	cfg := d.pdpSchedulingConfig
@@ -104,12 +72,6 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 	}
 	if err := d.validatePDPPreparationPieceSizes(ctx, schedule); err != nil {
 		return model.ScheduleError, err
-	}
-
-	// resolve SP EVM address upfront -- needed for handoff after filling
-	spEVMAddr, err := d.resolveProviderEVMAddress(ctx, schedule.Provider)
-	if err != nil {
-		return model.ScheduleError, errors.Wrap(err, "failed to resolve provider EVM address for PDP handoff")
 	}
 
 	db := d.dbNoContext.WithContext(ctx)
@@ -150,10 +112,6 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 	if walletObj.ActorID != nil {
 		clientID = *walletObj.ActorID
 	}
-
-	// track the current proof set so we can propose transfer when it fills
-	var currentProofSetID uint64
-	var currentProofSetPieceCount int
 
 	var timer *time.Timer
 	current := sumResult{}
@@ -204,45 +162,15 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 		}
 
 		if scheduleComplete {
-			// propose transfer for any partially-filled proof set before exiting
-			if currentProofSetID != 0 && currentProofSetPieceCount > 0 {
-				if err := d.pdpProofSetManager.ProposeTransfer(ctx, evmSigner, currentProofSetID, spEVMAddr); err != nil {
-					return model.ScheduleError, errors.Wrap(err, "failed to propose transfer for final proof set")
-				}
-			}
 			if schedule.ScheduleCron != "" {
 				return "", nil
 			}
 			return model.ScheduleCompleted, nil
 		}
 
-		// cap batch to remaining room in current proof set
-		batchLimit := cfg.BatchSize
-		if currentProofSetID != 0 {
-			remaining := cfg.MaxPiecesPerProofSet - currentProofSetPieceCount
-			if remaining <= 0 {
-				// current proof set is full -- propose transfer and reset
-				if err := d.pdpProofSetManager.ProposeTransfer(ctx, evmSigner, currentProofSetID, spEVMAddr); err != nil {
-					return model.ScheduleError, errors.Wrap(err, "failed to propose transfer for full proof set")
-				}
-				currentProofSetID = 0
-				currentProofSetPieceCount = 0
-				continue
-			}
-			if remaining < batchLimit {
-				batchLimit = remaining
-			}
-		}
-
-		cars, err := d.findPDPCars(ctx, schedule, attachments, allowedPieceCIDs, overReplicatedCIDs, batchLimit)
+		cars, err := d.findPDPCars(ctx, schedule, attachments, allowedPieceCIDs, overReplicatedCIDs, cfg.BatchSize)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				// no more cars -- propose transfer for any partial proof set
-				if currentProofSetID != 0 && currentProofSetPieceCount > 0 {
-					if err := d.pdpProofSetManager.ProposeTransfer(ctx, evmSigner, currentProofSetID, spEVMAddr); err != nil {
-						return model.ScheduleError, errors.Wrap(err, "failed to propose transfer for final proof set")
-					}
-				}
 				if schedule.ScheduleCron != "" && schedule.ScheduleCronPerpetual {
 					return "", nil
 				}
@@ -251,11 +179,6 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 			return model.ScheduleError, err
 		}
 		if len(cars) == 0 {
-			if currentProofSetID != 0 && currentProofSetPieceCount > 0 {
-				if err := d.pdpProofSetManager.ProposeTransfer(ctx, evmSigner, currentProofSetID, spEVMAddr); err != nil {
-					return model.ScheduleError, errors.Wrap(err, "failed to propose transfer for final proof set")
-				}
-			}
 			if schedule.ScheduleCron != "" && schedule.ScheduleCronPerpetual {
 				return "", nil
 			}
@@ -267,44 +190,22 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 			}
 		}
 
-		proofSetID, err := d.pdpProofSetManager.EnsureProofSet(ctx, evmSigner, schedule.Provider, cfg)
-		if err != nil {
-			return model.ScheduleError, errors.Wrap(err, "failed to ensure PDP proof set")
-		}
-		if currentProofSetID == 0 {
-			currentProofSetID = proofSetID
-			// load existing piece count from DB in case we're resuming
-			var ps model.PDPProofSet
-			if err := db.Where("set_id = ?", proofSetID).First(&ps).Error; err == nil {
-				currentProofSetPieceCount = ps.PieceCount
+		pieceInputs := make([]PDPPieceInput, len(cars))
+		for i, car := range cars {
+			pieceInputs[i] = PDPPieceInput{
+				PieceCID:  cid.Cid(car.PieceCID),
+				PieceSize: car.PieceSize,
 			}
 		}
 
-		pieceCIDs := make([]cid.Cid, 0, len(cars))
-		pieceSizes := make([]int64, 0, len(cars))
-		for _, car := range cars {
-			pieceCIDs = append(pieceCIDs, cid.Cid(car.PieceCID))
-			pieceSizes = append(pieceSizes, car.PieceSize)
-		}
-		queuedTx, err := d.pdpProofSetManager.QueueAddRoots(ctx, evmSigner, proofSetID, pieceCIDs, pieceSizes, cfg)
+		result, err := d.pdpProofSetManager.PullPiecesToFWSS(ctx, evmSigner, schedule.Provider, pieceInputs, cfg)
 		if err != nil {
-			return model.ScheduleError, errors.Wrap(err, "failed to queue PDP root addition transaction")
+			return model.ScheduleError, errors.Wrap(err, "failed to push pieces via FWSS pull")
 		}
-
-		_, err = d.pdpTxConfirmer.WaitForConfirmations(ctx, queuedTx.Hash, cfg.ConfirmationDepth, cfg.PollingInterval)
-		if err != nil {
-			return model.ScheduleError, errors.Wrap(err, "failed waiting for PDP transaction confirmation")
-		}
-
-		// update durable piece count after confirmed on-chain add
-		if err := d.pdpProofSetManager.IncrementPieceCount(ctx, proofSetID, len(cars)); err != nil {
-			return model.ScheduleError, errors.Wrap(err, "failed to update proof set piece count")
-		}
-		currentProofSetPieceCount += len(cars)
 
 		deals := make([]model.Deal, len(cars))
 		for i, car := range cars {
-			proofSetIDCopy := proofSetID
+			proofSetIDCopy := result.DataSetID
 			deals[i] = model.Deal{
 				State:      model.DealProposed,
 				DealType:   model.DealTypePDP,
@@ -326,15 +227,6 @@ func (d *DealPusher) runPDPSchedule(ctx context.Context, schedule *model.Schedul
 		for _, car := range cars {
 			current.DealNumber++
 			current.DealSize += car.PieceSize
-		}
-
-		// check if proof set is now full
-		if currentProofSetPieceCount >= cfg.MaxPiecesPerProofSet {
-			if err := d.pdpProofSetManager.ProposeTransfer(ctx, evmSigner, currentProofSetID, spEVMAddr); err != nil {
-				return model.ScheduleError, errors.Wrap(err, "failed to propose transfer for full proof set")
-			}
-			currentProofSetID = 0
-			currentProofSetPieceCount = 0
 		}
 	}
 }

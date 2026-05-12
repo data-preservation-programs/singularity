@@ -11,12 +11,6 @@ func WithPDPProofSetManager(manager PDPProofSetManager) Option {
 	}
 }
 
-func WithPDPTransactionConfirmer(confirmer PDPTransactionConfirmer) Option {
-	return func(d *DealPusher) {
-		d.pdpTxConfirmer = confirmer
-	}
-}
-
 func WithPDPSchedulingConfig(cfg PDPSchedulingConfig) Option {
 	return func(d *DealPusher) {
 		d.pdpSchedulingConfig = cfg

@@ -12,10 +12,11 @@ OPTIONS:
    --no-automigrate                          skip automatic database migration and correctness checks on startup; only use if you run 'admin init' on every upgrade or manually before starting daemons (default: false)
    --deal-attempts value, -d value           Number of times to attempt a deal before giving up (default: 3)
    --max-replication-factor value, -M value  Max number of replicas for each individual PieceCID across all clients and providers (default: Unlimited)
-   --pdp-batch-size value                    Number of roots to include in each PDP add-roots transaction (default: 128)
-   --pdp-max-pieces-per-proofset value       Maximum pieces per proof set before handing off to the storage provider (default: 1024)
-   --pdp-confirmation-depth value            Number of block confirmations required for PDP transactions (default: 5)
-   --pdp-poll-interval value                 Polling interval for PDP transaction confirmation checks (default: 30s)
+   --pdp-batch-size value                    Number of pieces to include in each /pdp/piece/pull request (default: 128)
+   --pdp-max-pieces-per-proofset value       Maximum pieces per proof set before starting a new one (default: 1024)
+   --pdp-pull-timeout value                  How long to wait for Curio to finish pulling a batch (per request) (default: 5m0s)
+   --pdp-source-url-base value               HTTPS base URL where Curio fetches pieces from; sourceUrl is built as <base>/piece/<pieceCid> [$PDP_SOURCE_URL_BASE]
+   --pdp-record-keeper value                 FWSS contract address (recordKeeper). Defaults to the network default from go-synapse. [$PDP_RECORD_KEEPER]
    --eth-rpc value                           Ethereum RPC endpoint for FEVM (required to execute PDP and DDO schedules on-chain) [$ETH_RPC_URL]
    --ddo-contract value                      DDO Diamond proxy contract address [$DDO_CONTRACT_ADDRESS]
    --ddo-payments-contract value             DDO Payments proxy contract address [$DDO_PAYMENTS_CONTRACT_ADDRESS]
