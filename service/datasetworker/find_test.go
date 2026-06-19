@@ -13,6 +13,38 @@ import (
 	"gorm.io/gorm"
 )
 
+// A job whose preparation was deleted has attachment_id NULL (SET NULL cascade)
+// and stays Ready until the healthcheck reaper sweeps it. findJob must skip these
+// rather than claim them and nil-deref *job.Attachment downstream.
+func TestFindWorkSkipsOrphanedJob(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		thread := &Thread{
+			dbNoContext: db,
+			config:      Config{EnableScan: true, EnablePack: true, EnableDag: true},
+			logger:      logger.With("test", true),
+			id:          uuid.New(),
+		}
+
+		_, err := healthcheck.Register(ctx, thread.dbNoContext, thread.id, model.DatasetWorker, true)
+		require.NoError(t, err)
+
+		for _, jt := range []model.JobType{model.Scan, model.Pack, model.DagGen} {
+			err = db.Create(&model.Job{
+				AttachmentID: nil,
+				State:        model.Ready,
+				Type:         jt,
+			}).Error
+			require.NoError(t, err)
+		}
+
+		for _, jt := range []model.JobType{model.Scan, model.Pack, model.DagGen} {
+			found, err := thread.findJob(ctx, []model.JobType{jt})
+			require.NoError(t, err)
+			require.Nil(t, found, "orphaned %s job must not be claimed", jt)
+		}
+	})
+}
+
 func TestFindPackWork(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		thread := &Thread{
