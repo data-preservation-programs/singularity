@@ -38,7 +38,9 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 					Strength: "UPDATE",
 					Options:  "SKIP LOCKED",
 				}).
-					Where("type = ? AND (state = ? OR (state = ? AND worker_id IS NULL))", jobType, model.Ready, model.Processing).
+					// attachment_id IS NOT NULL skips jobs orphaned by a deleted
+					// preparation (SET NULL cascade); the reaper deletes those.
+					Where("type = ? AND attachment_id IS NOT NULL AND (state = ? OR (state = ? AND worker_id IS NULL))", jobType, model.Ready, model.Processing).
 					First(&job).Error
 				if err != nil {
 					if errors.Is(err, gorm.ErrRecordNotFound) {
