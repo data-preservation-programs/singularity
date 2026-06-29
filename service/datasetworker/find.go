@@ -33,12 +33,16 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 	for _, jobType := range typesOrdered {
 		err := database.DoRetry(ctx, func() error {
 			return db.Transaction(func(db *gorm.DB) error {
-				// First, lock and claim the job without preloading (preload can interfere with locking)
+				// First, lock and claim the job without preloading (preload can interfere with locking).
+				// attachment_id IS NOT NULL skips orphans: jobs.attachment_id is ON DELETE SET NULL, so
+				// deleting a prep leaves its jobs behind with state=ready and a null FK. Claiming one
+				// would nil-deref *job.Attachment in the run loop. The healthcheck sweep deletes these
+				// eventually but it races worker pickup -- filter here too.
 				err := db.Clauses(clause.Locking{
 					Strength: "UPDATE",
 					Options:  "SKIP LOCKED",
 				}).
-					Where("type = ? AND (state = ? OR (state = ? AND worker_id IS NULL))", jobType, model.Ready, model.Processing).
+					Where("type = ? AND attachment_id IS NOT NULL AND (state = ? OR (state = ? AND worker_id IS NULL))", jobType, model.Ready, model.Processing).
 					First(&job).Error
 				if err != nil {
 					if errors.Is(err, gorm.ErrRecordNotFound) {

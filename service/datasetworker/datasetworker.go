@@ -299,13 +299,20 @@ func (w *Thread) run(ctx context.Context) (retErr error) {
 		}
 
 		w.stateMonitor.AddJob(job.ID, workCancel)
-		switch job.Type {
-		case model.Scan:
-			err = w.scan(workCtx, *job.Attachment)
-		case model.Pack:
-			err = w.pack(workCtx, *job)
-		case model.DagGen:
-			err = w.ExportDag(workCtx, *job)
+		// belt-and-suspenders: findJob filters attachment_id IS NOT NULL, but if a job slips through
+		// without its Attachment preloaded (e.g. row was orphaned between claim and preload) we'd
+		// otherwise nil-deref *job.Attachment below. Mark it errored and move on.
+		if job.Attachment == nil {
+			err = errors.Errorf("job %d has no attachment (orphaned by prep deletion)", job.ID)
+		} else {
+			switch job.Type {
+			case model.Scan:
+				err = w.scan(workCtx, *job.Attachment)
+			case model.Pack:
+				err = w.pack(workCtx, *job)
+			case model.DagGen:
+				err = w.ExportDag(workCtx, *job)
+			}
 		}
 		w.stateMonitor.RemoveJob(job.ID)
 		if workCtx.Err() != nil && ctx.Err() == nil {
