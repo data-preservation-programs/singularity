@@ -88,6 +88,11 @@ func Pack(
 	job model.Job,
 ) (*model.Car, error) {
 	db = db.WithContext(ctx)
+	// Attachment is nil when the job was orphaned by a deleted preparation; guard
+	// against the SET NULL cascade racing the reaper rather than panicking.
+	if job.Attachment == nil || job.Attachment.Preparation == nil {
+		return nil, errors.Errorf("job %d has no attachment, likely orphaned by a deleted preparation", job.ID)
+	}
 	pieceSize := job.Attachment.Preparation.GetMinPieceSize()
 	// storageWriter can be nil for inline preparation
 	storageID, storageWriter, err := storagesystem.GetRandomOutputWriter(ctx, job.Attachment.Preparation.OutputStorages)
