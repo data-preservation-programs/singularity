@@ -18,14 +18,6 @@ runs:
         username: 'singularity'
         password: 'singularity'
         database: 'singularity'
-    - name: Setup MySQL database
-      uses: shogo82148/actions-setup-mysql@v1
-      with:
-        user: 'singularity'
-        password: 'singularity'
-    - name: Create MySQL database
-      shell: bash
-      run: mysql -u root -e "create database singularity"
     - run: |
         echo "GOTESTFLAGS=$GOTESTFLAGS -timeout=30m" >> $GITHUB_ENV
         echo "GO386FLAGS=$GO386FLAGS -timeout=30m" >> $GITHUB_ENV

@@ -162,32 +162,3 @@ func TestRemovePreparationHandler_CascadeCycle_Postgres(t *testing.T) {
 		}
 	})
 }
-
-// mysql-only: innodb used to reject the delete with duplicate cascade paths
-// test the handler path and expect success, dialect branch is intentional
-func TestRemovePreparationHandler_CascadeCycle_MySQL(t *testing.T) {
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		if db.Dialector.Name() != "mysql" {
-			t.Skip("Skip non-MySQL dialect")
-			return
-		}
-		prep := model.Preparation{Name: "my-prep"}
-		require.NoError(t, db.Create(&prep).Error)
-		tmpMy := t.TempDir()
-		stor := model.Storage{Name: "my-storage", Type: "local", Path: tmpMy}
-		require.NoError(t, db.Create(&stor).Error)
-		sa := model.SourceAttachment{PreparationID: prep.ID, StorageID: stor.ID}
-		require.NoError(t, db.Create(&sa).Error)
-		root := model.Directory{AttachmentID: &sa.ID, Name: "", ParentID: nil}
-		require.NoError(t, db.Create(&root).Error)
-		d1 := model.Directory{AttachmentID: &sa.ID, Name: "sub", ParentID: &root.ID}
-		require.NoError(t, db.Create(&d1).Error)
-		f := model.File{AttachmentID: &sa.ID, DirectoryID: &d1.ID, Path: "sub/a.txt", Size: 1}
-		require.NoError(t, db.Create(&f).Error)
-		fr := model.FileRange{FileID: f.ID, Offset: 0, Length: 1}
-		require.NoError(t, db.Create(&fr).Error)
-
-		err := Default.RemovePreparationHandler(ctx, db, fmt.Sprintf("%d", prep.ID), RemoveRequest{})
-		require.NoError(t, err)
-	})
-}

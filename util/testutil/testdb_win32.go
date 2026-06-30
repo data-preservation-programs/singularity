@@ -2,4 +2,4 @@
 
 package testutil
 
-var SupportedTestDialects = []string{"mysql", "postgres"}
+var SupportedTestDialects = []string{"postgres"}

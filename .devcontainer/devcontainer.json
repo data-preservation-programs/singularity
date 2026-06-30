@@ -5,8 +5,7 @@
         "args": {
             "GO_VERSION": "1.25",
             "DEBIAN_CODENAME": "trixie",
-            "PG_MAJOR": "16",
-            "MARIADB_MAJOR": "12.0.2"
+            "PG_MAJOR": "16"
         }
     },
     "customizations": {
@@ -27,14 +26,10 @@
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/singularity,type=bind,consistency=cached,relabel=private",
     "workspaceFolder": "/workspaces/singularity",
     "postCreateCommand": "/bin/bash -lc '${containerWorkspaceFolder}/.devcontainer/post-create.sh'",
-	"postStartCommand": "/bin/bash -lc '${containerWorkspaceFolder}/.devcontainer/start-postgres.sh && ${containerWorkspaceFolder}/.devcontainer/start-mysql.sh'",
+	"postStartCommand": "/bin/bash -lc '${containerWorkspaceFolder}/.devcontainer/start-postgres.sh'",
     "remoteUser": "vscode",
     "containerEnv": {
         "GOPATH": "/home/vscode/go",
-        "MYSQL_DATABASE": "singularity",
-        "MYSQL_USER": "singularity",
-        "MYSQL_PASSWORD": "singularity",
-        "MYSQL_SOCKET": "/home/vscode/.local/share/mysql/mysql.sock",
         "TMPDIR": "/home/vscode/.local/share/tmp",
         "GOTMPDIR": "/home/vscode/.local/share/tmp",
         "PGDATA": "/home/vscode/.local/share/pg/pgdata",
