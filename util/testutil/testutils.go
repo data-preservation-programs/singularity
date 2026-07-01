@@ -55,9 +55,19 @@ const TestWalletAddr = "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa"
 
 const TestPrivateKeyHex = "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a226b35507976337148327349586343595a58594f5775453149326e32554539436861556b6c4e36695a5763453d227d"
 
-// TestLotusAPI is the Lotus API endpoint to use for tests
-// Using /rpc/v1 (stable) instead of deprecated /rpc/v0
-const TestLotusAPI = "https://api.node.glif.io/rpc/v1"
+// TestLotusAPI defaults to the self-hosted forest gateway; glif rate-limited CI.
+var TestLotusAPI = forestRPC("SINGULARITY_TEST_LOTUS_API", "https://static.187.115.235.167.clients.your-server.de/rpc/v1")
+
+func forestRPC(override, base string) string {
+	if v := os.Getenv(override); v != "" {
+		return v
+	}
+	// gate rejects untokened requests; carry FOREST_JWT as a query param
+	if tok := os.Getenv("FOREST_JWT"); tok != "" {
+		return base + "?access_token=" + tok
+	}
+	return base
+}
 
 // SkipIfNotExternalAPI skips the test if SINGULARITY_TEST_EXTERNAL_API is not set
 // Use this for tests that make external API calls (e.g., Lotus/Filecoin APIs)

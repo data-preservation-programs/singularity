@@ -16,7 +16,7 @@ func TestDefaultValue(t *testing.T) {
 
 func TestCalibNet(t *testing.T) {
 	// This test may fail when calibnet resets
-	err := Initialize(context.Background(), "https://api.calibration.node.glif.io/rpc/v1", "")
+	err := Initialize(context.Background(), testutil.CalibnetRPC, "")
 	require.NoError(t, err)
 	require.EqualValues(t, 1667326380, GenesisTimestamp)
 }
