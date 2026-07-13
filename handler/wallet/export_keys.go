@@ -177,10 +177,8 @@ func HasPrivateKeyColumn(db *gorm.DB) bool {
 	switch dialect {
 	case "sqlite":
 		db.Raw("SELECT COUNT(*) FROM pragma_table_info('actors') WHERE name = 'private_key'").Scan(&count)
-	case "postgres":
+	default: // postgres
 		db.Raw("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'actors' AND column_name = 'private_key'").Scan(&count)
-	default: // mysql
-		db.Raw("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'actors' AND column_name = 'private_key'").Scan(&count)
 	}
 	return count > 0
 }

@@ -82,81 +82,32 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 		require.NoError(t, err)
 		return
 	}
-	// Use UUID for database names to ensure uniqueness and avoid MySQL's 64-character limit
-	// Remove hyphens to make it a valid database identifier
 	dbName := "test_" + strings.ReplaceAll(uuid.New().String(), "-", "")
-	switch dialect {
-	case "mysql":
-		socket := os.Getenv("MYSQL_SOCKET")
-		connStr = "mysql://singularity:singularity@unix(" + socket + ")/mysql?parseTime=true"
-	case "postgres":
-		pgPort := os.Getenv("PGPORT")
-		connStr = "postgres://singularity@localhost:" + pgPort + "/postgres?sslmode=disable"
-	default:
+	if dialect != "postgres" {
 		require.Fail(t, "Unsupported dialect: "+dialect)
 	}
-	// Skip initial connection test - databases will be created during testing
-	// Create database using shell commands to avoid driver transaction issues
-	switch dialect {
-	case "postgres":
-		// Use createdb command for PostgreSQL with UTF-8 encoding
-		cmd := exec.Command("createdb", "-h", "localhost", "-p", os.Getenv("PGPORT"), "-U", "singularity", "-E", "UTF8", dbName)
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			t.Logf("Failed to create PostgreSQL database %s: %v, output: %s", dbName, err, string(output))
-			return nil, nil, ""
-		}
-		t.Logf("Created PostgreSQL database %s", dbName)
-	case "mysql":
-		// Use mysql command for MySQL with UTF-8 character set
-		socket := os.Getenv("MYSQL_SOCKET")
-		cmd := exec.Command("mariadb", "--socket="+socket, "-usingularity", "-psingularity", "-e", "CREATE DATABASE "+dbName)
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			t.Logf("Failed to create MySQL database %s: %v, output: %s", dbName, err, string(output))
-			return nil, nil, ""
-		}
-		t.Logf("Created MySQL database %s", dbName)
-	default:
-		t.Logf("Unsupported dialect for shell database creation: %s", dialect)
+	pgPort := os.Getenv("PGPORT")
+	connStr = "postgres://singularity@localhost:" + pgPort + "/postgres?sslmode=disable"
+	cmd := exec.Command("createdb", "-h", "localhost", "-p", pgPort, "-U", "singularity", "-E", "UTF8", dbName)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Logf("Failed to create PostgreSQL database %s: %v, output: %s", dbName, err, string(output))
 		return nil, nil, ""
 	}
-	// Replace database name in connection string
-	if strings.Contains(connStr, "postgres?") {
-		connStr = strings.ReplaceAll(connStr, "postgres?", dbName+"?")
-	} else if strings.Contains(connStr, "mysql?") {
-		connStr = strings.ReplaceAll(connStr, "mysql?", dbName+"?")
-	}
+	t.Logf("Created PostgreSQL database %s", dbName)
+	connStr = strings.ReplaceAll(connStr, "postgres?", dbName+"?")
 	var closer2 io.Closer
 	db, closer2, err = database.OpenWithLogger(connStr)
 	if err != nil {
 		t.Logf("Failed to connect to test database %s: %v", dbName, err)
-		// Cleanup using shell commands
-		switch dialect {
-		case "postgres":
-			cmd := exec.Command("dropdb", "-h", "localhost", "-p", os.Getenv("PGPORT"), "-U", "singularity", dbName)
-			cmd.Run() // Ignore errors during cleanup
-		case "mysql":
-			socket := os.Getenv("MYSQL_SOCKET")
-			cmd := exec.Command("mariadb", "--socket="+socket, "-usingularity", "-psingularity", "-e", "DROP DATABASE "+dbName)
-			cmd.Run() // Ignore errors during cleanup
-		}
+		exec.Command("dropdb", "-h", "localhost", "-p", pgPort, "-U", "singularity", dbName).Run()
 		return nil, nil, ""
 	}
 	closer = CloserFunc(func() error {
 		if closer2 != nil {
 			_ = closer2.Close()
 		}
-		// Cleanup using shell commands
-		switch dialect {
-		case "postgres":
-			cmd := exec.Command("dropdb", "-h", "localhost", "-p", os.Getenv("PGPORT"), "-U", "singularity", dbName)
-			cmd.Run() // Ignore errors during cleanup
-		case "mysql":
-			socket := os.Getenv("MYSQL_SOCKET")
-			cmd := exec.Command("mariadb", "--socket="+socket, "-usingularity", "-psingularity", "-e", "DROP DATABASE "+dbName)
-			cmd.Run() // Ignore errors during cleanup
-		}
+		exec.Command("dropdb", "-h", "localhost", "-p", pgPort, "-U", "singularity", dbName).Run()
 		return nil
 	})
 	return

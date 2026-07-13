@@ -167,20 +167,12 @@ func migrateFKConstraints(db *gorm.DB) error {
 		var deleteRule string
 		var err error
 
-		if dialect == "postgres" {
-			err = db.Raw(`
-				SELECT rc.delete_rule
-				FROM information_schema.referential_constraints rc
-				JOIN information_schema.table_constraints tc ON rc.constraint_name = tc.constraint_name
-				WHERE tc.table_name = ? AND tc.constraint_name = ?
-			`, fk.table, fk.constraint).Scan(&deleteRule).Error
-		} else if dialect == "mysql" {
-			err = db.Raw(`
-				SELECT DELETE_RULE
-				FROM information_schema.REFERENTIAL_CONSTRAINTS
-				WHERE TABLE_NAME = ? AND CONSTRAINT_NAME = ?
-			`, fk.table, fk.constraint).Scan(&deleteRule).Error
-		}
+		err = db.Raw(`
+			SELECT rc.delete_rule
+			FROM information_schema.referential_constraints rc
+			JOIN information_schema.table_constraints tc ON rc.constraint_name = tc.constraint_name
+			WHERE tc.table_name = ? AND tc.constraint_name = ?
+		`, fk.table, fk.constraint).Scan(&deleteRule).Error
 
 		if err != nil {
 			// Constraint might not exist yet (new install), skip
@@ -200,32 +192,18 @@ func migrateFKConstraints(db *gorm.DB) error {
 
 		logger.Infow("migrating FK constraint to SET NULL", "table", fk.table, "constraint", fk.constraint)
 
-		// Drop and recreate with SET NULL
-		if dialect == "postgres" {
-			// Postgres DDL is transactional - wrap DROP+ADD so failure rolls back both
-			// Use NOT VALID to skip row validation - existing rows were valid under CASCADE,
-			// so they're still valid under SET NULL.
-			err = db.Transaction(func(tx *gorm.DB) error {
-				if err := tx.Exec(`ALTER TABLE ` + fk.table + ` DROP CONSTRAINT ` + fk.constraint).Error; err != nil {
-					return err
-				}
-				return tx.Exec(`ALTER TABLE ` + fk.table + ` ADD CONSTRAINT ` + fk.constraint +
-					` FOREIGN KEY (` + fk.column + `) REFERENCES ` + fk.refTable + `(id) ON DELETE SET NULL NOT VALID`).Error
-			})
-			if err != nil {
-				return errors.Wrapf(err, "failed to migrate constraint %s", fk.constraint)
+		// Drop and recreate with SET NULL.
+		// Postgres DDL is transactional -- wrap DROP+ADD so failure rolls back both.
+		// NOT VALID skips row validation -- existing rows were valid under CASCADE.
+		err = db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Exec(`ALTER TABLE ` + fk.table + ` DROP CONSTRAINT ` + fk.constraint).Error; err != nil {
+				return err
 			}
-		} else if dialect == "mysql" {
-			// MySQL DDL causes implicit commit, so no transaction benefit here
-			err = db.Exec(`ALTER TABLE ` + fk.table + ` DROP FOREIGN KEY ` + fk.constraint).Error
-			if err != nil {
-				return errors.Wrapf(err, "failed to drop constraint %s", fk.constraint)
-			}
-			err = db.Exec(`ALTER TABLE ` + fk.table + ` ADD CONSTRAINT ` + fk.constraint +
-				` FOREIGN KEY (` + fk.column + `) REFERENCES ` + fk.refTable + `(id) ON DELETE SET NULL`).Error
-			if err != nil {
-				return errors.Wrapf(err, "failed to create constraint %s", fk.constraint)
-			}
+			return tx.Exec(`ALTER TABLE ` + fk.table + ` ADD CONSTRAINT ` + fk.constraint +
+				` FOREIGN KEY (` + fk.column + `) REFERENCES ` + fk.refTable + `(id) ON DELETE SET NULL NOT VALID`).Error
+		})
+		if err != nil {
+			return errors.Wrapf(err, "failed to migrate constraint %s", fk.constraint)
 		}
 	}
 
@@ -403,23 +381,13 @@ func dropDealActorFK(db *gorm.DB) error {
 	constraint := "fk_deals_actor"
 	var exists bool
 
-	if dialect == "postgres" {
-		err := db.Raw(`
-			SELECT EXISTS (
-				SELECT 1 FROM information_schema.table_constraints
-				WHERE table_name = 'deals' AND constraint_name = ?
-			)`, constraint).Scan(&exists).Error
-		if err != nil {
-			return errors.Wrapf(err, "failed to check constraint %s", constraint)
-		}
-	} else if dialect == "mysql" {
-		err := db.Raw(`
-			SELECT COUNT(*) > 0 FROM information_schema.TABLE_CONSTRAINTS
-			WHERE TABLE_NAME = 'deals' AND CONSTRAINT_NAME = ?
-		`, constraint).Scan(&exists).Error
-		if err != nil {
-			return errors.Wrapf(err, "failed to check constraint %s", constraint)
-		}
+	err := db.Raw(`
+		SELECT EXISTS (
+			SELECT 1 FROM information_schema.table_constraints
+			WHERE table_name = 'deals' AND constraint_name = ?
+		)`, constraint).Scan(&exists).Error
+	if err != nil {
+		return errors.Wrapf(err, "failed to check constraint %s", constraint)
 	}
 
 	if !exists {
@@ -427,11 +395,7 @@ func dropDealActorFK(db *gorm.DB) error {
 	}
 
 	logger.Infow("dropping legacy deal-actor FK constraint", "constraint", constraint)
-	if dialect == "postgres" {
-		return db.Exec(`ALTER TABLE deals DROP CONSTRAINT ` + constraint).Error
-	}
-	// mysql
-	return db.Exec(`ALTER TABLE deals DROP FOREIGN KEY ` + constraint).Error
+	return db.Exec(`ALTER TABLE deals DROP CONSTRAINT ` + constraint).Error
 }
 
 // backfillDealWalletID sets wallet_id for existing deals that have a client_id
@@ -507,33 +471,6 @@ func stripWalletAssignmentFKs(db *gorm.DB) error {
 		}
 		if err := db.Exec(`ALTER TABLE wallet_assignments DROP CONSTRAINT IF EXISTS fk_wallet_assignments_preparation`).Error; err != nil {
 			return errors.Wrap(err, "drop fk_wallet_assignments_preparation")
-		}
-		return nil
-	case "mysql":
-		// mysql has no DROP FOREIGN KEY IF EXISTS pre-8.0.19; check
-		// existence first so a re-run doesn't fail on a missing FK.
-		var fkCount int64
-		if err := db.Raw(`SELECT COUNT(*) FROM information_schema.table_constraints
-			WHERE table_schema = DATABASE() AND table_name = 'wallet_assignments'
-			AND constraint_name = ? AND constraint_type = 'FOREIGN KEY'`,
-			"fk_wallet_assignments_wallet").Scan(&fkCount).Error; err != nil {
-			return errors.Wrap(err, "check fk_wallet_assignments_wallet")
-		}
-		if fkCount > 0 {
-			if err := db.Exec(`ALTER TABLE wallet_assignments DROP FOREIGN KEY fk_wallet_assignments_wallet`).Error; err != nil {
-				return errors.Wrap(err, "drop fk_wallet_assignments_wallet")
-			}
-		}
-		if err := db.Raw(`SELECT COUNT(*) FROM information_schema.table_constraints
-			WHERE table_schema = DATABASE() AND table_name = 'wallet_assignments'
-			AND constraint_name = ? AND constraint_type = 'FOREIGN KEY'`,
-			"fk_wallet_assignments_preparation").Scan(&fkCount).Error; err != nil {
-			return errors.Wrap(err, "check fk_wallet_assignments_preparation")
-		}
-		if fkCount > 0 {
-			if err := db.Exec(`ALTER TABLE wallet_assignments DROP FOREIGN KEY fk_wallet_assignments_preparation`).Error; err != nil {
-				return errors.Wrap(err, "drop fk_wallet_assignments_preparation")
-			}
 		}
 		return nil
 	}
