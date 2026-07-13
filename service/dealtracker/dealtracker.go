@@ -442,7 +442,9 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		return errors.Wrapf(err, "failed to get lotus head time from %s", d.lotusURL)
 	}
 
-	var lastEpoch int32
+	// derive from head so expiration works even if the market stream is empty;
+	// the trackDeal callback can still bump it higher if a deal reports newer
+	lastEpoch := int32(epochutil.TimeToEpoch(headTime))
 
 	db := d.dbNoContext.WithContext(ctx)
 	var actors []model.Actor

@@ -202,7 +202,7 @@ func TestRunOnce_DoesNotEpochExpireDDODeals(t *testing.T) {
 		url, server := setupTestServerWithBody(t, `{}`)
 		defer server.Close()
 
-		tracker := NewDealTracker(db, 0, url, testutil.TestLotusAPI, "", true)
+		tracker := NewDealTracker(db, 0, url, testutil.TestLotusAPI, testutil.TestLotusToken, true)
 		require.NoError(t, tracker.runOnce(ctx))
 
 		var ddoActive model.Deal
