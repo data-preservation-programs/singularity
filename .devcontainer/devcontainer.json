@@ -39,7 +39,9 @@
         "GOTMPDIR": "/home/vscode/.local/share/tmp",
         "PGDATA": "/home/vscode/.local/share/pg/pgdata",
         "PGPORT": "55432",
-        "PGSOCK_DIR": "/home/vscode/.local/share/pg"
+        "PGSOCK_DIR": "/home/vscode/.local/share/pg",
+        "FOREST_JWT": "${localEnv:FOREST_JWT}",
+        "SINGULARITY_TEST_EXTERNAL_API": "${localEnv:SINGULARITY_TEST_EXTERNAL_API}"
     },
     "runArgs": ["--userns=keep-id"],
     "containerUser": "vscode"

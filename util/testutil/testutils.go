@@ -56,27 +56,36 @@ const TestWalletAddr = "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa"
 const TestPrivateKeyHex = "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a226b35507976337148327349586343595a58594f5775453149326e32554539436861556b6c4e36695a5763453d227d"
 
 // TestLotusAPI defaults to the self-hosted forest gateway; glif rate-limited CI.
-var TestLotusAPI = forestRPC("SINGULARITY_TEST_LOTUS_API", "https://static.187.115.235.167.clients.your-server.de/rpc/v1")
+var TestLotusAPI = envOr("SINGULARITY_TEST_LOTUS_API", "https://static.187.115.235.167.clients.your-server.de/rpc/v1")
 
-func forestRPC(override, base string) string {
-	if v := os.Getenv(override); v != "" {
+// TestLotusToken is the bearer token for the forest gateway; empty in local
+// dev and on fork PRs (see SkipIfNotExternalAPI).
+var TestLotusToken = os.Getenv("FOREST_JWT")
+
+func envOr(name, def string) string {
+	if v := os.Getenv(name); v != "" {
 		return v
 	}
-	// gate rejects untokened requests; carry FOREST_JWT as a query param
-	if tok := os.Getenv("FOREST_JWT"); tok != "" {
-		return base + "?access_token=" + tok
-	}
-	return base
+	return def
 }
 
-// SkipIfNotExternalAPI skips the test if SINGULARITY_TEST_EXTERNAL_API is not set
-// Use this for tests that make external API calls (e.g., Lotus/Filecoin APIs)
-// These are skipped by default because external APIs may be unreliable or rate-limited
+// SkipIfNotExternalAPI skips the test if external API access isn't configured.
+// Two conditions must hold: SINGULARITY_TEST_EXTERNAL_API opts in, and either
+// FOREST_JWT is set or one of the endpoint overrides
+// (SINGULARITY_TEST_LOTUS_API / SINGULARITY_TEST_CALIBNET_RPC) points at
+// something that doesn't need the gateway's bearer auth. Fork PRs and local
+// devs without a token skip cleanly instead of hitting a 401.
 func SkipIfNotExternalAPI(t *testing.T) {
 	t.Helper()
 	if os.Getenv("SINGULARITY_TEST_EXTERNAL_API") == "" {
 		t.Skip("Skipping external API test. Set SINGULARITY_TEST_EXTERNAL_API=true to run")
 	}
+	if os.Getenv("FOREST_JWT") == "" &&
+		os.Getenv("SINGULARITY_TEST_LOTUS_API") == "" &&
+		os.Getenv("SINGULARITY_TEST_CALIBNET_RPC") == "" {
+		t.Skip("Skipping: FOREST_JWT not set and no endpoint override")
+	}
+	t.Logf("external API: lotus=%s calibnet=%s token=%t", TestLotusAPI, CalibnetRPC, TestLotusToken != "")
 }
 
 func EscapePath(p string) string {

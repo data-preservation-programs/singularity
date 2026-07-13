@@ -41,11 +41,18 @@ func StartAnvil(t *testing.T, upstreamRPC string) *AnvilInstance {
 		t.Fatalf("finding free port: %v", err)
 	}
 
-	cmd := exec.Command("anvil",
+	args := []string{
 		"--fork-url", upstreamRPC,
 		"--port", fmt.Sprintf("%d", port),
 		"--silent",
-	)
+	}
+	// forest gateway needs bearer auth; anvil supports --fork-header
+	haveTok := os.Getenv("FOREST_JWT") != ""
+	if haveTok {
+		args = append(args, "--fork-header", "Authorization: Bearer "+os.Getenv("FOREST_JWT"))
+	}
+	t.Logf("anvil forking %s (auth=%t)", upstreamRPC, haveTok)
+	cmd := exec.Command("anvil", args...)
 	cmd.Stdout = os.Stderr
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {

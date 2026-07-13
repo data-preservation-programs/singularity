@@ -25,24 +25,15 @@ func TestNextPowerOfTwo(t *testing.T) {
 
 func TestNewLotusClient(t *testing.T) {
 	testutil.SkipIfNotExternalAPI(t)
-	for _, token := range []string{""} {
-		t.Run(token, func(t *testing.T) {
-			client := NewLotusClient(testutil.TestLotusAPI, token)
-			resp, err := client.Call(context.Background(), "Filecoin.Version")
-			if token != "" {
-				require.Error(t, err)
-				require.ErrorContains(t, err, "401")
-				return
-			}
-			require.NoError(t, err)
-			require.NotNil(t, resp.Result)
-		})
-	}
+	client := NewLotusClient(testutil.TestLotusAPI, testutil.TestLotusToken)
+	resp, err := client.Call(context.Background(), "Filecoin.Version")
+	require.NoError(t, err)
+	require.NotNil(t, resp.Result)
 }
 
 func TestGetLotusHeadTime(t *testing.T) {
 	testutil.SkipIfNotExternalAPI(t)
-	headTime, err := GetLotusHeadTime(context.Background(), testutil.TestLotusAPI, "")
+	headTime, err := GetLotusHeadTime(context.Background(), testutil.TestLotusAPI, testutil.TestLotusToken)
 	require.NoError(t, err)
 	require.NotZero(t, headTime)
 }
