@@ -296,7 +296,7 @@ type CarBlock struct {
 	CarBlockLength int32      `cbor:"3,keyasint,omitempty" json:"carBlockLength"`                                                       // Length of the block in the Car, including varint, CID and raw block
 	Varint         []byte     `cbor:"4,keyasint,omitempty" json:"varint"`                                                               // Varint is the varint that represents the length of the block and the CID.
 	RawBlock       []byte     `cbor:"5,keyasint,omitempty" json:"rawBlock"`                                                             // Raw block
-	FileOffset     int64      `cbor:"6,keyasint,omitempty" json:"fileOffset"`                                                           // Offset of the block in the File
+	FileOffset     int64      `cbor:"6,keyasint,omitempty" gorm:"index:idx_car_blocks_file_span,priority:2" json:"fileOffset"`          // Offset of the block in the File
 
 	// Internal Caching
 	blockLength int32 // Block length in bytes
@@ -304,7 +304,7 @@ type CarBlock struct {
 	// Associations - SET NULL for fast prep deletion, async cleanup
 	CarID  *CarID  `cbor:"-"                    gorm:"index"                                          json:"carId"`
 	Car    *Car    `cbor:"-"                    gorm:"foreignKey:CarID;constraint:OnDelete:SET NULL"  json:"car,omitempty"  swaggerignore:"true"`
-	FileID *FileID `cbor:"7,keyasint,omitempty" gorm:"index"                                         json:"fileId"`
+	FileID *FileID `cbor:"7,keyasint,omitempty" gorm:"index:idx_car_blocks_file_span,priority:1"            json:"fileId"`
 	File   *File   `cbor:"-"                    gorm:"foreignKey:FileID;constraint:OnDelete:SET NULL" json:"file,omitempty" swaggerignore:"true"`
 }
 
