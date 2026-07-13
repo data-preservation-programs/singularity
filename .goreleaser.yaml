@@ -1,28 +1,48 @@
 version: 2
 
+# linux + windows only; darwin is built on a macos runner via .goreleaser.darwin.yaml
+# because zig's shipped libc has no mach/mach_vm.h header (prometheus/client_golang
+# CGO stub for macOS process metrics). native clang on macos-latest handles that.
 builds:
-  - env:
-      - CGO_ENABLED=0
+  - id: singularity-nixwin
+    env:
+      - CGO_ENABLED=1
     binary: singularity
     goos:
       - linux
       - windows
-      - darwin
     goarch:
       - amd64
       - arm64
+    overrides:
+      - goos: linux
+        goarch: amd64
+        env:
+          - CC=zig cc -target x86_64-linux-gnu
+          - CXX=zig c++ -target x86_64-linux-gnu
+      - goos: linux
+        goarch: arm64
+        env:
+          - CC=zig cc -target aarch64-linux-gnu
+          - CXX=zig c++ -target aarch64-linux-gnu
+      - goos: windows
+        goarch: amd64
+        env:
+          - CC=zig cc -target x86_64-windows-gnu
+          - CXX=zig c++ -target x86_64-windows-gnu
+      - goos: windows
+        goarch: arm64
+        env:
+          - CC=zig cc -target aarch64-windows-gnu
+          - CXX=zig c++ -target aarch64-windows-gnu
     mod_timestamp: '{{.CommitTimestamp}}'
 
 archives:
   - format_overrides:
       - goos: windows
-        format: zip
-      - goos: darwin
-        format: zip
+        formats: [zip]
     name_template: >-
-      {{ .ProjectName }}_{{ .Version }}_
-      {{- if eq .Os "darwin" }}mac_os
-      {{- else }}{{ .Os }}{{ end }}_{{ .Arch }}
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
     files:
       - LICENSE
       - README.md
@@ -34,7 +54,9 @@ release:
 changelog:
   disable: true
 
+# separate checksums file per runner so ubuntu and macos don't overwrite each other
 checksum:
+  name_template: 'checksums-nixwin.txt'
   disable: false
 
 nfpms:
