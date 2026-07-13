@@ -29,10 +29,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
-      # zig cc provides the C cross-toolchain for linux/windows targets so CGO deps
-      # (blst) compile. darwin cross doesn't work with zig -- macOS SDK headers
-      # aren't shipped -- so darwin runs on macos-latest with native clang.
-      # curl the tarball directly; mlugg/setup-zig@v1's mirror pool was 404/503-ing.
+      # curl zig directly; setup-zig actions have unreliable mirror pools
       - name: Set up Zig
         if: matrix.needs_zig
         run: |
@@ -48,10 +45,6 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          # workflow_dispatch runs from a branch (no tag at HEAD); snapshot mode
-          # builds all targets without trying to publish, for CI iteration.
-          args: >-
-            release --clean --config ${{ matrix.config }}
-            ${{ github.event_name == 'workflow_dispatch' && '--snapshot' || '' }}
+          args: release --clean --config ${{ matrix.config }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

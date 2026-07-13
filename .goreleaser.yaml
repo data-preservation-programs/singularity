@@ -1,8 +1,5 @@
 version: 2
 
-# linux + windows only; darwin is built on a macos runner via .goreleaser.darwin.yaml
-# because zig's shipped libc has no mach/mach_vm.h header (prometheus/client_golang
-# CGO stub for macOS process metrics). native clang on macos-latest handles that.
 builds:
   - id: singularity-nixwin
     env:
@@ -54,7 +51,6 @@ release:
 changelog:
   disable: true
 
-# separate checksums file per runner so ubuntu and macos don't overwrite each other
 checksum:
   name_template: 'checksums-nixwin.txt'
   disable: false
