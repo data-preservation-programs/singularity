@@ -1,0 +1,35 @@
+version: 2
+
+project_name: singularity
+
+builds:
+  - id: singularity-darwin
+    env:
+      - CGO_ENABLED=1
+    binary: singularity
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    mod_timestamp: '{{.CommitTimestamp}}'
+
+archives:
+  - format_overrides:
+      - goos: darwin
+        formats: [zip]
+    name_template: '{{ .ProjectName }}_{{ .Version }}_mac_os_{{ .Arch }}'
+    files:
+      - LICENSE
+      - README.md
+      - docs/*
+
+release:
+  mode: keep-existing
+
+changelog:
+  disable: true
+
+checksum:
+  name_template: 'checksums-darwin.txt'
+  disable: false

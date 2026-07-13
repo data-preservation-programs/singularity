@@ -8,8 +8,18 @@ on:
     types: [completed]
 jobs:
   bin-releaser:
-    name: Release Binaries
-    runs-on: ubuntu-latest
+    name: Release Binaries (${{ matrix.runner }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            config: .goreleaser.yaml
+            needs_zig: true
+          - runner: macos-latest
+            config: .goreleaser.darwin.yaml
+            needs_zig: false
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -19,11 +29,22 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
+      # curl zig directly; setup-zig actions have unreliable mirror pools
+      - name: Set up Zig
+        if: matrix.needs_zig
+        run: |
+          set -eu
+          ZV=0.14.1
+          curl -sL https://ziglang.org/download/${ZV}/zig-x86_64-linux-${ZV}.tar.xz -o /tmp/zig.tar.xz
+          mkdir -p "$HOME/zig-${ZV}"
+          tar -xJf /tmp/zig.tar.xz -C "$HOME/zig-${ZV}" --strip-components=1
+          echo "$HOME/zig-${ZV}" >> "$GITHUB_PATH"
+          "$HOME/zig-${ZV}/zig" version
       - name: Release Binaries
         uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser
           version: latest
-          args: ${{ github.event_name == 'pull_request' && 'release --snapshot --skip-publish' || 'release --clean' }}
+          args: release --clean --config ${{ matrix.config }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
