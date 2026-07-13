@@ -338,7 +338,7 @@ func TestRunOnce(t *testing.T) {
 		url, server := setupTestServerWithBody(t, string(body))
 		defer server.Close()
 		require.NoError(t, err)
-		tracker := NewDealTracker(db, time.Minute, url, testutil.TestLotusAPI, "", true)
+		tracker := NewDealTracker(db, time.Minute, url, testutil.TestLotusAPI, testutil.TestLotusToken, true)
 		err = tracker.runOnce(context.Background())
 		require.NoError(t, err)
 		var allDeals []model.Deal
@@ -403,7 +403,7 @@ func TestRunOnce_DoesNotEpochExpirePDPDeals(t *testing.T) {
 		url, server := setupTestServerWithBody(t, `{}`)
 		defer server.Close()
 
-		tracker := NewDealTracker(db, time.Minute, url, testutil.TestLotusAPI, "", true)
+		tracker := NewDealTracker(db, time.Minute, url, testutil.TestLotusAPI, testutil.TestLotusToken, true)
 		require.NoError(t, tracker.runOnce(ctx))
 
 		var marketDeal model.Deal

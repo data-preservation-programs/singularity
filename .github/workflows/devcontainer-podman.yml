@@ -54,6 +54,9 @@ jobs:
           disable-docker: true
           cache-storage: true
 
+      # containerEnv in devcontainer.json pulls these via ${localEnv:...} at
+      # container start; scope the secret to this step only. FOREST_JWT is
+      # empty on fork PRs (GitHub policy); SkipIfNotExternalAPI catches that.
       - name: Build devcontainer
         id: build
         uses: parkan/github-actions/devcontainer-build@v3
@@ -61,6 +64,9 @@ jobs:
           workspace-folder: .
           container-runtime: podman
           container-id-label: ci=podman
+        env:
+          FOREST_JWT: ${{ secrets.FOREST_JWT }}
+          SINGULARITY_TEST_EXTERNAL_API: 'true'
 
       - name: Generate swagger code
         if: steps.codegen.outputs.needed == 'true'
@@ -103,7 +109,8 @@ jobs:
         with:
           container-id: ${{ steps.build.outputs.container-id }}
           command: >
-            cd /workspaces/singularity && mkdir -p artifacts && make test GOTESTSUM_ARGS="--junitfile artifacts/unit-tests.xml"
+            cd /workspaces/singularity && mkdir -p artifacts &&
+            make test GOTESTSUM_ARGS="--junitfile artifacts/unit-tests.xml"
           container-runtime: podman
 
       - name: Run integration tests
