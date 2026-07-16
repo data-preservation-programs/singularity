@@ -52,7 +52,7 @@ var ListWalletsCmd = &cli.Command{
 
 var DetachWalletCmd = &cli.Command{
 	Name:      "detach-wallet",
-	Usage:     "Detach a wallet to a preparation",
+	Usage:     "Detach a wallet from a preparation",
 	ArgsUsage: "<preparation id|name> <wallet_id>",
 	Category:  "Wallet Management",
 	Before:    cliutil.CheckNArgs,

@@ -1,7 +1,5 @@
 package dealpusher
 
-import "github.com/data-preservation-programs/singularity/model"
-
 // Option customizes DealPusher initialization.
 type Option func(*DealPusher)
 
@@ -14,12 +12,6 @@ func WithPDPProofSetManager(manager PDPProofSetManager) Option {
 func WithPDPSchedulingConfig(cfg PDPSchedulingConfig) Option {
 	return func(d *DealPusher) {
 		d.pdpSchedulingConfig = cfg
-	}
-}
-
-func WithScheduleDealTypeResolver(resolver func(schedule *model.Schedule) model.DealType) Option {
-	return func(d *DealPusher) {
-		d.scheduleDealTypeResolver = resolver
 	}
 }
 

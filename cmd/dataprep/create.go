@@ -42,7 +42,7 @@ var CreateCmd = &cli.Command{
 		&cli.StringSliceFlag{
 			Name:     "local-output",
 			Category: "Quick creation with local output paths",
-			Usage:    "The local output path to be used for the preparation. This is a convenient flag that will create a output storage with the provided path",
+			Usage:    "The local output path to be used for the preparation. This is a convenient flag that will create an output storage with the provided path",
 		},
 		&cli.StringFlag{
 			Name:  "max-size",

@@ -115,7 +115,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 			reader := io.LimitReader(clonedReader, end-start)
 			buffer := make([]byte, 4096)
 			if !cctx.Bool("quiet") {
-				_, _ = fmt.Fprintf(cctx.App.Writer, "[Thread %d] Downloading part %d - %d\n", i, end, start)
+				_, _ = fmt.Fprintf(cctx.App.Writer, "[Thread %d] Downloading part %d - %d\n", i, start, end)
 			}
 			for {
 				if ctx.Err() != nil {

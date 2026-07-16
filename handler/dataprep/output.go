@@ -56,7 +56,7 @@ func (DefaultHandler) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, 
 		}).Error
 	})
 	if util.IsDuplicateKeyError(err) {
-		return nil, errors.Wrapf(handlererror.ErrDuplicateRecord, "output storage %s is already attached to preparation %d", output, id)
+		return nil, errors.Wrapf(handlererror.ErrDuplicateRecord, "output storage %s is already attached to preparation %s", output, id)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -97,7 +97,7 @@ func _() {}
 // It ensures that the output storage and Preparation both exist before attempting the removal.
 // Special checks are in place to ensure:
 //  1. The output storage is currently attached to the Preparation.
-//  2. Removing the only output storage while using encryption is disallowed.
+//  2. Removing the only output storage is disallowed unless DeleteAfterExport is off and inline storage is allowed.
 //
 // Parameters:
 //   - ctx: The context for database transactions and other operations.

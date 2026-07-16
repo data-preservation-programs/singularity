@@ -404,14 +404,9 @@ var logger = logging.Logger("api")
 //
 // Parameters:
 //   - ctx: A context.Context used to control the server's lifecycle and propagate cancellation.
+//   - exitErr: A channel that receives the terminal error (or nil) once the server has shut down.
 //
 // Returns:
-//   - A slice of channels (service.Done) that signal when different parts of the service
-//     have completed their work. This includes:
-//     1. The main echo server's completion.
-//     2. The host's completion.
-//     3. Completion of analytics event flushing.
-//   - A channel (service.Fail) that reports errors that occur while the server is running.
 //   - An error if there is an issue during the initialization phase, otherwise nil.
 func (s *Server) Start(ctx context.Context, exitErr chan<- error) error {
 	err := analytics.Init(ctx, s.db)

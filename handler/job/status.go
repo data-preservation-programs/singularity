@@ -40,7 +40,7 @@ func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id stri
 	var preparation model.Preparation
 	err := preparation.FindByIDOrName(db, id, "OutputStorages")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d cannot be found", id)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %s cannot be found", id)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)

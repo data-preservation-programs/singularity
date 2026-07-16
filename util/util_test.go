@@ -7,7 +7,6 @@ import (
 
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/libp2p/go-libp2p/core/crypto"
-	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/require"
 )
 
@@ -87,53 +86,6 @@ func TestPackJobSlice(t *testing.T) {
 	}
 }
 
-func TestChunkMapKeys(t *testing.T) {
-	tests := []struct {
-		name      string
-		m         map[string]int
-		chunkSize int
-	}{
-		{
-			name:      "basic case",
-			m:         map[string]int{"a": 1, "b": 2, "c": 3, "d": 4, "e": 5, "f": 6, "g": 7},
-			chunkSize: 3,
-		},
-		{
-			name:      "chunkSize greater than map size",
-			m:         map[string]int{"a": 1, "b": 2, "c": 3},
-			chunkSize: 5,
-		},
-		{
-			name:      "empty map",
-			m:         map[string]int{},
-			chunkSize: 2,
-		},
-		{
-			name:      "chunkSize zero",
-			m:         map[string]int{"a": 1, "b": 2, "c": 3, "d": 4, "e": 5},
-			chunkSize: 0,
-		},
-		{
-			name:      "chunkSize equals map size",
-			m:         map[string]int{"a": 1, "b": 2, "c": 3, "d": 4, "e": 5},
-			chunkSize: 5,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := ChunkMapKeys(tt.m, tt.chunkSize)
-			if tt.chunkSize <= 0 {
-				require.Equal(t, [][]string(nil), result)
-				return
-			}
-			total := underscore.SumMap(result, func(keys []string) int {
-				return len(keys)
-			})
-			require.Equal(t, len(tt.m), total)
-		})
-	}
-}
 func TestGenerateNewPeer(t *testing.T) {
 	privateBytes, publicBytes, peerID, err := GenerateNewPeer()
 

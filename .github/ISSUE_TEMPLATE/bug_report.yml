@@ -60,7 +60,6 @@ body:
       description: What database backend are you using?
       options:
         - SQLite
-        - MySQL
         - PostgreSQL
     validations:
       required: true

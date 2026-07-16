@@ -2,7 +2,6 @@ package pdptracker
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 
 	"github.com/cockroachdb/errors"
@@ -12,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-cid"
-	"github.com/multiformats/go-varint"
 )
 
 const pdpDefaultPageSize uint64 = 100
@@ -121,29 +119,6 @@ func (c *ChainPDPClient) GetActivePieces(ctx context.Context, setID uint64) ([]c
 	}
 
 	return result, nil
-}
-
-func delegatedAddressToCommon(addr address.Address) (common.Address, error) {
-	if addr == address.Undef {
-		return common.Address{}, errors.New("client address is required")
-	}
-	if addr.Protocol() != address.Delegated {
-		return common.Address{}, fmt.Errorf("client address must be delegated (f4), got protocol %d", addr.Protocol())
-	}
-
-	namespace, n, err := varint.FromUvarint(addr.Payload())
-	if err != nil {
-		return common.Address{}, errors.Wrap(err, "failed to decode delegated namespace")
-	}
-	subaddr := addr.Payload()[n:]
-	if namespace != 10 {
-		return common.Address{}, fmt.Errorf("unsupported delegated namespace %d", namespace)
-	}
-	if len(subaddr) != common.AddressLength {
-		return common.Address{}, fmt.Errorf("invalid delegated address length: %d", len(subaddr))
-	}
-
-	return common.BytesToAddress(subaddr), nil
 }
 
 func commonToDelegatedAddress(subaddr common.Address) (address.Address, error) {

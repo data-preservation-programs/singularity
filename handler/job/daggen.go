@@ -9,7 +9,7 @@ import (
 
 // StartDagGenHandler initiates the start of a Directed Acyclic Graph (DAG) generation job for a given source storage.
 //
-// This function is a wrapper around the more general `StartJobHandler` function and sets the job type to 'Scan'.
+// This function is a wrapper around the more general `StartJobHandler` function and sets the job type to 'DagGen'.
 //
 // Parameters:
 //   - ctx: The context for database transactions and other operations.
@@ -44,7 +44,7 @@ func _() {}
 
 // PauseDagGenHandler pauses an ongoing Directed Acyclic Graph (DAG) generation job for a given source storage.
 //
-// This function is a wrapper around the more general `PauseJobHandler` function, specifically for pausing 'Scan' type jobs.
+// This function is a wrapper around the more general `PauseJobHandler` function, specifically for pausing 'DagGen' type jobs.
 //
 // Parameters:
 //   - ctx: The context for database transactions and other operations.
