@@ -211,7 +211,6 @@ type ProofSetHandoffState string
 
 const (
 	ProofSetAssembling  ProofSetHandoffState = "assembling"
-	ProofSetProposed    ProofSetHandoffState = "proposed"
 	ProofSetTransferred ProofSetHandoffState = "transferred"
 )
 
