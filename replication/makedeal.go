@@ -648,7 +648,7 @@ func queueDealEvent(deal model.Deal) {
 		Client:     deal.ClientID,
 		Verified:   deal.Verified,
 		StartEpoch: deal.StartEpoch,
-		EndEpoch:   deal.EndEpoch - deal.StartEpoch,
+		EndEpoch:   deal.EndEpoch,
 	}
 	analytics.Default.QueueDealEvent(dealEvent)
 }
