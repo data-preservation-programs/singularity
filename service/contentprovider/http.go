@@ -31,6 +31,7 @@ type HTTPServer struct {
 	enablePiece         bool
 	enablePieceMetadata bool
 	enableIPFS          bool
+	ipfsSpanConfig      store.SpanConfig
 }
 
 func (*HTTPServer) Name() string {
@@ -107,7 +108,7 @@ func (s *HTTPServer) Start(ctx context.Context, exitErr chan<- error) error {
 	}
 	var bs *store.StorageBlockStore
 	if s.enableIPFS {
-		bs = &store.StorageBlockStore{DBNoContext: s.dbNoContext}
+		bs = store.NewStorageBlockStore(s.dbNoContext, s.ipfsSpanConfig)
 		wrapped := &errorMappingBlockStore{inner: bs}
 		exch := offline.Exchange(wrapped)
 		bsvc := blockservice.New(wrapped, exch)

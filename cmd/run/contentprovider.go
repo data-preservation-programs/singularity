@@ -1,8 +1,11 @@
 package run
 
 import (
+	"time"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
+	"github.com/data-preservation-programs/singularity/store"
 	"github.com/urfave/cli/v2"
 )
 
@@ -36,6 +39,37 @@ var ContentProviderCmd = &cli.Command{
 			Usage:    "Enable trustless IPFS gateway on /ipfs/",
 			Value:    true,
 		},
+		&cli.IntFlag{
+			Category: "HTTP IPFS Gateway",
+			Name:     "ipfs-span-blocks",
+			Usage:    "Blocks (~1MiB each) fetched per backend read",
+			Value:    8,
+		},
+		&cli.IntFlag{
+			Category: "HTTP IPFS Gateway",
+			Name:     "ipfs-prefetch-spans",
+			Usage:    "Spans prefetched ahead on sequential access",
+			Value:    2,
+		},
+		&cli.IntFlag{
+			Category: "HTTP IPFS Gateway",
+			Name:     "ipfs-max-backend-reads",
+			Usage:    "Max concurrent source storage reads across all requests",
+			Value:    64,
+		},
+		&cli.IntFlag{
+			Category:    "HTTP IPFS Gateway",
+			Name:        "ipfs-cache-blocks",
+			Usage:       "Block cache capacity in blocks (~1MiB each); 0 sizes it to max-backend-reads * span-blocks * (1 + prefetch-spans)",
+			Value:       0,
+			DefaultText: "derived",
+		},
+		&cli.DurationFlag{
+			Category: "HTTP IPFS Gateway",
+			Name:     "ipfs-read-timeout",
+			Usage:    "Max duration of a single backend span read once it holds a connection slot",
+			Value:    2 * time.Minute,
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := openAndMigrate(c)
@@ -49,7 +83,14 @@ var ContentProviderCmd = &cli.Command{
 				EnablePiece:         c.Bool("enable-http-piece"),
 				EnablePieceMetadata: c.Bool("enable-http-piece-metadata"),
 				EnableIPFS:          c.Bool("enable-http-ipfs"),
-				Bind:                c.String("http-bind"),
+				IPFSSpan: store.SpanConfig{
+					SpanBlocks:      c.Int("ipfs-span-blocks"),
+					PrefetchSpans:   c.Int("ipfs-prefetch-spans"),
+					MaxBackendReads: c.Int("ipfs-max-backend-reads"),
+					CacheBlocks:     c.Int("ipfs-cache-blocks"),
+					ReadTimeout:     c.Duration("ipfs-read-timeout"),
+				},
+				Bind: c.String("http-bind"),
 			},
 		}
 

@@ -88,6 +88,14 @@ func AutoMigrate(db *gorm.DB) error {
 		return errors.Wrap(err, "failed to migrate FK constraints")
 	}
 
+	// Drop the single-column file_id index on car_blocks -- superseded by the
+	// idx_car_blocks_file_span (file_id, file_offset) prefix. Runs after
+	// AutoMigrate so the composite exists before the old one goes away.
+	// GORM never drops indexes on its own, so existing installs need this.
+	if err := db.Exec(`DROP INDEX IF EXISTS idx_car_blocks_file_id`).Error; err != nil {
+		return errors.Wrap(err, "failed to drop redundant car_blocks file_id index")
+	}
+
 	logger.Debug("Creating instance id")
 	err = db.Clauses(clause.OnConflict{
 		DoNothing: true,

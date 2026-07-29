@@ -14,7 +14,12 @@ OPTIONS:
 
    HTTP IPFS Gateway
 
-   --enable-http-ipfs  Enable trustless IPFS gateway on /ipfs/ (default: true)
+   --enable-http-ipfs              Enable trustless IPFS gateway on /ipfs/ (default: true)
+   --ipfs-cache-blocks value       Block cache capacity in blocks (~1MiB each); 0 sizes it to max-backend-reads * span-blocks * (1 + prefetch-spans) (default: derived)
+   --ipfs-max-backend-reads value  Max concurrent source storage reads across all requests (default: 64)
+   --ipfs-prefetch-spans value     Spans prefetched ahead on sequential access (default: 2)
+   --ipfs-read-timeout value       Max duration of a single backend span read once it holds a connection slot (default: 2m0s)
+   --ipfs-span-blocks value        Blocks (~1MiB each) fetched per backend read (default: 8)
 
    HTTP Piece Metadata Retrieval
 
