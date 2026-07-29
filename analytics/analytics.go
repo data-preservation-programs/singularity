@@ -27,8 +27,8 @@ var logger = log.Logger("analytics")
 
 // Init initializes the global variables 'Instance' and 'Enabled' based on values stored in the database
 // and environment variables respectively. The function uses the 'instance_id' key to fetch the 'Instance'
-// value from the database. If the 'Instance' value is already set, the function returns early. If the environment
-// variable 'SINGULARITY_ANALYTICS' is set to "0", 'Enabled' is set to false.
+// value from the database. If the 'Instance' value is already set, the function returns early. Analytics are
+// opt-in: unless the environment variable 'SINGULARITY_ANALYTICS' is set to "1", 'Enabled' is set to false.
 //
 // Parameters:
 //   - ctx: The context for managing timeouts and cancellation.

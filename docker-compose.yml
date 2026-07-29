@@ -1,5 +1,3 @@
-version: "2.1"
-
 services:
   db:
     image: postgres:15
@@ -22,6 +20,8 @@ services:
     image: ghcr.io/data-preservation-programs/singularity:main
     command: admin init
     restart: on-failure # Restart only on failure
+    environment:
+      DATABASE_CONNECTION_STRING: postgres://postgres:postgres@db:5432/singularity
     depends_on:
       db:
         condition: service_healthy

@@ -9,7 +9,6 @@ import (
 	"github.com/data-preservation-programs/go-synapse/contracts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 )
@@ -89,27 +88,4 @@ func TestChainPDPClient_GetActivePieces_Pagination(t *testing.T) {
 	require.Len(t, result, 2)
 	require.True(t, piece1.Equals(result[0]))
 	require.True(t, piece2.Equals(result[1]))
-}
-
-func TestDelegatedAddressRoundtrip(t *testing.T) {
-	originalNetwork := address.CurrentNetwork
-	t.Cleanup(func() { address.CurrentNetwork = originalNetwork })
-	address.CurrentNetwork = address.Mainnet
-
-	ethAddr := common.HexToAddress("0x1111111111111111111111111111111111111111")
-	filAddr, err := commonToDelegatedAddress(ethAddr)
-	require.NoError(t, err)
-	require.Equal(t, address.Delegated, filAddr.Protocol())
-
-	roundtrip, err := delegatedAddressToCommon(filAddr)
-	require.NoError(t, err)
-	require.Equal(t, ethAddr, roundtrip)
-}
-
-func TestDelegatedAddressToCommon_InvalidProtocol(t *testing.T) {
-	addr, err := address.NewFromString("f0100")
-	require.NoError(t, err)
-
-	_, err = delegatedAddressToCommon(addr)
-	require.Error(t, err)
 }

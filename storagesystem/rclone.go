@@ -91,7 +91,7 @@ func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, w
 	if ctx.Err() != nil {
 		return
 	}
-	logger.Infow("Scan: listing path", "type", h.fs.String(), "path", path)
+	logger.Debugw("Scan: listing path", "type", h.fs.String(), "path", path)
 	entries, err := h.fs.List(ctx, path)
 	if err != nil {
 		err = errors.Wrapf(err, "list path: %s", path)

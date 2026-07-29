@@ -18,7 +18,7 @@ type CreateRequest struct {
 	OutputStorages    []string `json:"outputStorages"`                          // Name of Output storage systems to be used for the output
 	MaxSizeStr        string   `default:"31.5GiB"     json:"maxSize"`           // Maximum size of the CAR files to be created
 	PieceSizeStr      string   `default:""            json:"pieceSize"`         // Target piece size of the CAR files used for piece commitment calculation
-	MinPieceSizeStr   string   `default:"1MiB"        json:"minPieceSize"`      // Minimum piece size for the preparation, applies only to DAG and remainer pieces
+	MinPieceSizeStr   string   `default:"1MiB"        json:"minPieceSize"`      // Minimum piece size for the preparation, applies only to DAG and remainder pieces
 	DeleteAfterExport bool     `default:"false"       json:"deleteAfterExport"` // Whether to delete the source files after export
 	NoInline          bool     `default:"false"       json:"noInline"`          // Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage.
 	NoDag             bool     `default:"false"       json:"noDag"`             // Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.
@@ -28,7 +28,7 @@ type CreateRequest struct {
 // The function checks the validity of the input parameters such as maxSize, pieceSize, and
 // the existence of source and output storages. The function also ensures that provided
 // parameters meet certain criteria, like the pieceSize being a power of two, and maxSize
-// allowing for padding. The encryption and storages compatibility is also validated.
+// allowing for padding.
 //
 // Parameters:
 //   - ctx: The context for database transactions and other operations.
@@ -38,7 +38,7 @@ type CreateRequest struct {
 // Returns:
 //   - A pointer to the validated Preparation model which can be used for subsequent operations.
 //   - An error, if any occurred during the validation. This includes errors such as invalid
-//     parameter values, storage not found, or incompatibility between encryption and storage options.
+//     parameter values or storage not found.
 //
 // Note:
 // If certain parameters are not provided in the request, they are computed based on certain

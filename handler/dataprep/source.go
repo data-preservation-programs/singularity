@@ -68,7 +68,7 @@ func (DefaultHandler) AddSourceStorageHandler(ctx context.Context, db *gorm.DB, 
 		return nil
 	})
 	if util.IsDuplicateKeyError(err) {
-		return nil, errors.Wrapf(handlererror.ErrDuplicateRecord, "source storage %s is already attached to preparation %d", source, id)
+		return nil, errors.Wrapf(handlererror.ErrDuplicateRecord, "source storage %s is already attached to preparation %s", source, id)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)

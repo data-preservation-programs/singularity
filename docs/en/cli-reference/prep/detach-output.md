@@ -1,9 +1,9 @@
-# Detach a output storage to a preparation
+# Detach an output storage from a preparation
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity prep detach-output - Detach a output storage to a preparation
+   singularity prep detach-output - Detach an output storage from a preparation
 
 USAGE:
    singularity prep detach-output [command options] <preparation id|name> <storage id|name>

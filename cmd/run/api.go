@@ -19,12 +19,11 @@ var APICmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		// run automigrate + legacy key check before handing off to api.Run,
 		// which opens its own db connection internally
-		db, closer, err := openAndMigrate(c)
+		_, closer, err := openAndMigrate(c)
 		if err != nil {
 			return err
 		}
 		closer.Close()
-		_ = db
 
 		return api.Run(c)
 	},

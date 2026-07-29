@@ -66,7 +66,7 @@ func (DefaultHandler) AttachHandler(
 }
 
 // @ID AttachWallet
-// @Summary Attach a new wallet with a preparation
+// @Summary Attach a new wallet to a preparation
 // @Tags Wallet Association
 // @Produce json
 // @Accept json

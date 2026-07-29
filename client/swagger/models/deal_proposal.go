@@ -44,7 +44,7 @@ type DealProposal struct {
 	// Price in FIL per deal
 	PricePerDeal float64 `json:"pricePerDeal,omitempty"`
 
-	// Price in FIL  per GiB
+	// Price in FIL per GiB
 	PricePerGb float64 `json:"pricePerGb,omitempty"`
 
 	// Price in FIL per GiB per epoch

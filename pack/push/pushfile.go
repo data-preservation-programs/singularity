@@ -96,7 +96,7 @@ func PushFile(
 		Hash:             hashValue,
 	}
 
-	logger.Infow("new file", "file", file)
+	logger.Debugw("new file", "file", file)
 	err = EnsureParentDirectories(ctx, db, &file, rootID, directoryCache)
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
