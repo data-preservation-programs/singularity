@@ -127,7 +127,9 @@ func exportOneKey(db *gorm.DB, ks keystore.KeyStore, actor legacyActorRow) (expo
 		// wallet exists, link actor if not already linked
 		if existing.ActorID == nil {
 			existing.ActorID = &actor.ID
-			db.Save(&existing)
+			if err := db.Save(&existing).Error; err != nil {
+				return false, fmt.Sprintf("actor %s: failed to link actor to existing wallet: %v", actor.ID, err)
+			}
 		}
 		// verify the key file exists and contains a valid key for this address
 		stored, err := ks.Get(existing.KeyPath)
@@ -160,7 +162,9 @@ func exportOneKey(db *gorm.DB, ks keystore.KeyStore, actor legacyActorRow) (expo
 		ActorID:  &actor.ID,
 	}
 	if err := db.Create(&w).Error; err != nil {
-		ks.Delete(keyName)
+		if delErr := ks.Delete(keyName); delErr != nil {
+			logger.Warnw("failed to clean up key after wallet create failure", "keyName", keyName, "error", delErr)
+		}
 		return false, fmt.Sprintf("actor %s: wallet create failed: %v", actor.ID, err)
 	}
 

@@ -23,7 +23,7 @@ func (DefaultHandler) DetachHandler(
 	var preparation model.Preparation
 	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Wallet")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", preparationID)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %s not found", preparationID)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -51,7 +51,7 @@ func (DefaultHandler) DetachHandler(
 }
 
 // @ID DetachWallet
-// @Summary Detach a new wallet from a preparation
+// @Summary Detach a wallet from a preparation
 // @Tags Wallet Association
 // @Produce json
 // @Accept json

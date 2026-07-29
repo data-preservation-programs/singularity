@@ -19,6 +19,7 @@ type config struct {
 func applyOptions(opts ...Option) *config {
 	cfg := &config{
 		LruSize:         defaultLruSize,
+		LruTimeout:      defaultLruTimeout,
 		ErrorLruSize:    defaultErrorLruSize,
 		ErrorLruTimeout: defaultErrorLruTimeout,
 	}

@@ -333,7 +333,7 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 		}
 		if fileInfo.Size() != car.FileSize {
 			file.Close()
-			errs = append(errs, errors.Wrapf(err, "CAR file size mismatch for %s. expected %d, actual %d.", car.StoragePath, car.FileSize, fileInfo.Size()))
+			errs = append(errs, errors.Errorf("CAR file size mismatch for %s. expected %d, actual %d.", car.StoragePath, car.FileSize, fileInfo.Size()))
 			continue
 		}
 		return file, fileInfo.ModTime(), nil

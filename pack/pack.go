@@ -29,6 +29,9 @@ import (
 
 var logger = log.Logger("pack")
 
+// carHeaderOnlyThreshold is the maximum CAR offset for a CAR that contains only a header and no blocks.
+const carHeaderOnlyThreshold = 65
+
 // GetCommp calculates the data commitment (CommP) and the piece size based on the
 // provided commp.Calc instance and target piece size. It ensures that the
 // calculated piece size matches the target piece size specified. If necessary,
@@ -143,7 +146,7 @@ func Pack(
 			}
 			tempFile.Close()
 
-			if assembler.carOffset <= 65 {
+			if assembler.carOffset <= carHeaderOnlyThreshold {
 				return nil, errors.WithStack(ErrNoContent)
 			}
 
@@ -200,7 +203,7 @@ func Pack(
 			}
 			fileSize = obj.Size()
 
-			if assembler.carOffset <= 65 {
+			if assembler.carOffset <= carHeaderOnlyThreshold {
 				return nil, errors.WithStack(ErrNoContent)
 			}
 
@@ -212,7 +215,7 @@ func Pack(
 
 		defer func() {
 			if !carGenerated && obj != nil {
-				removeCtx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+				removeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				err := storageWriter.Remove(removeCtx, obj)
 				if err != nil {
 					logger.Errorf("failed to remove temporary CAR file %s: %v", filename, err)
@@ -235,7 +238,7 @@ func Pack(
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		if assembler.carOffset <= 65 {
+		if assembler.carOffset <= carHeaderOnlyThreshold {
 			return nil, errors.WithStack(ErrNoContent)
 		}
 		pieceCid, finalPieceSize, err = GetCommp(calc, uint64(pieceSize))
@@ -440,7 +443,7 @@ func Pack(
 				for dirID, dirDetail := range tree.Cache() {
 					bytes, err := dirDetail.Data.MarshalBinary(ctx)
 					if err != nil {
-						return errors.Wrap(err, "failed to marshall directory data")
+						return errors.Wrap(err, "failed to marshal directory data")
 					}
 					node, _ := dirDetail.Data.Node()
 					err = db.Model(&model.Directory{}).Where("id = ?", dirID).Updates(map[string]any{
@@ -460,7 +463,7 @@ func Pack(
 		}
 	}
 
-	logger.With("jobsID", job.ID).Info("finished packing")
+	logger.With("jobID", job.ID).Info("finished packing")
 	if job.Attachment.Preparation.DeleteAfterExport && len(job.Attachment.Preparation.OutputStorages) > 0 {
 		logger.Info("Deleting original data source")
 		for _, file := range updatedFiles {

@@ -12,8 +12,8 @@ CATEGORY:
    Utility
 
 DESCRIPTION:
-   This commands can be used to prepare a dataset from a local path with minimum configurable parameters.
-   For more advanced usage, please use the subcommands under `storage` and `data-prep`.
+   This command can be used to prepare a dataset from a local path with minimum configurable parameters.
+   For more advanced usage, please use the subcommands under `storage` and `prep`.
    You can also use this command for benchmarking with in-memory database and inline preparation, i.e.
      mkdir dataset
      truncate -s 1024G dataset/1T.bin

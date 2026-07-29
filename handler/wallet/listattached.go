@@ -17,7 +17,7 @@ func (DefaultHandler) ListAttachedHandler(
 	var preparation model.Preparation
 	err := preparation.FindByIDOrName(db, preparationID, "Wallet")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", preparationID)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %s not found", preparationID)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)

@@ -16,6 +16,7 @@ var VersionCmd = &cli.Command{
 		buildInfo, ok := debug.ReadBuildInfo()
 		if !ok {
 			fmt.Println("unknown version")
+			return nil
 		}
 
 		version := buildInfo.Main.Version

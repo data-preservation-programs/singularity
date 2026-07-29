@@ -82,7 +82,7 @@ Notes:
 		&cli.Float64Flag{
 			Name:     "price-per-gb",
 			Category: "Deal Proposal",
-			Usage:    "Price in FIL  per GiB",
+			Usage:    "Price in FIL per GiB",
 			Value:    0,
 		},
 		&cli.Float64Flag{

@@ -80,7 +80,6 @@ type Lister interface {
 	List(ctx context.Context, path string) ([]fs.DirEntry, error)
 
 	// Scan scans the data source starting at the given path and returns a channel of entries.
-	// The `last` parameter is used to resume scanning from the last entry returned by a previous scan. It is exclusive.
 	// The returned entries must be sorted by path in ascending order.
 	Scan(ctx context.Context, path string) <-chan Entry
 
@@ -104,17 +103,6 @@ type Reader interface {
 	// The `length` parameter specifies the number of bytes to read.
 	// This method is most likely used for retrieving a single block of data.
 	Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error)
-}
-
-// EmptyReadCloser is a ReadCloser that always returns EOF.
-type EmptyReadCloser struct{}
-
-func (e *EmptyReadCloser) Read(p []byte) (n int, err error) {
-	return 0, io.EOF
-}
-
-func (e *EmptyReadCloser) Close() error {
-	return nil
 }
 
 type Backend struct {

@@ -102,7 +102,7 @@ func (d *DagGenerator) Read(p []byte) (int, error) {
 	d.dirCIDs[dir.ID] = dir.CID
 	blks, err := daggen.UnmarshalToBlocks(dir.Data)
 	if err != nil {
-		return 0, errors.Wrapf(err, "failed to unmarshall directory %d to blocks", dir.ID)
+		return 0, errors.Wrapf(err, "failed to unmarshal directory %d to blocks", dir.ID)
 	}
 	readers := make([]io.Reader, 0, len(blks)*3)
 	for _, blk := range blks {
@@ -167,7 +167,7 @@ var ErrDagDisabled = errors.New("dag generation is disabled for this preparation
 //
 // Parameters:
 //   - ctx context.Context: The context to control cancellations and timeouts.
-//   - source model.Source: The source for which the DAG needs to be generated.
+//   - job model.Job: The DagGen job whose attachment identifies the source for which the DAG needs to be generated.
 //
 // The function performs several database and file system operations,
 // each of which might result in an error. Errors are wrapped with context

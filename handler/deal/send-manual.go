@@ -25,14 +25,14 @@ type Proposal struct {
 	HTTPHeaders     []string `json:"httpHeaders"`                          // http headers to be passed with the request (i.e. key=value)
 	URLTemplate     string   `json:"urlTemplate"`                          // URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
 	PricePerGBEpoch float64  `default:"0"          json:"pricePerGbEpoch"` // Price in FIL per GiB per epoch
-	PricePerGB      float64  `default:"0"          json:"pricePerGb"`      // Price in FIL  per GiB
+	PricePerGB      float64  `default:"0"          json:"pricePerGb"`      // Price in FIL per GiB
 	PricePerDeal    float64  `default:"0"          json:"pricePerDeal"`    // Price in FIL per deal
 	RootCID         string   `default:"bafkqaaa"   json:"rootCid"`         // Root CID that is required as part of the deal proposal, if empty, will be set to empty CID
 	Verified        bool     `default:"true"       json:"verified"`        // Whether the deal should be verified
 	IPNI            bool     `default:"true"       json:"ipni"`            // Whether the deal should be IPNI
 	KeepUnsealed    bool     `default:"true"       json:"keepUnsealed"`    // Whether the deal should be kept unsealed
 	StartDelay      string   `default:"72h"        json:"startDelay"`      // Deal start delay in epoch or in duration format, i.e. 1000, 72h
-	Duration        string   `default:"12740h"     json:"duration"`        // Duration in epoch or in duration format, i.e. 1500000, 2400h
+	Duration        string   `default:"12840h"     json:"duration"`        // Duration in epoch or in duration format, i.e. 1500000, 2400h
 	ClientAddress   string   `json:"clientAddress"`                        // Client address
 	ProviderID      string   `json:"providerId"`                           // Provider ID
 	PieceCID        string   `json:"pieceCid"`                             // Piece CID

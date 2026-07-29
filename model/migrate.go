@@ -218,7 +218,7 @@ func migrateFKConstraints(db *gorm.DB) error {
 	return nil
 }
 
-// sequenceTable maps table names to their primary key column for sequence fixing.
+// sequenceTables lists tables whose sequences need fixing.
 // Only tables with numeric auto-increment PKs are included.
 var sequenceTables = []string{
 	"preparations",

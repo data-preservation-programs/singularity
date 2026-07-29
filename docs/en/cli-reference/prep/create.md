@@ -25,7 +25,7 @@ OPTIONS:
 
    Quick creation with local output paths
 
-   --local-output value [ --local-output value ]  The local output path to be used for the preparation. This is a convenient flag that will create a output storage with the provided path
+   --local-output value [ --local-output value ]  The local output path to be used for the preparation. This is a convenient flag that will create an output storage with the provided path
 
    Quick creation with local source paths
 
