@@ -230,6 +230,9 @@ func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, leng
 	}
 	option := &fs.SeekOption{Offset: offset}
 	reader, err := object.Open(ctx, option)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "failed to open object %s", path)
+	}
 	readerWithRetry := &readerWithRetry{
 		ctx:                     ctx,
 		object:                  object,

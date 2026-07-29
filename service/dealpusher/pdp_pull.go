@@ -21,6 +21,7 @@ import (
 	"github.com/filecoin-project/go-address"
 	commcid "github.com/filecoin-project/go-fil-commcid"
 	"github.com/ipfs/go-cid"
+	"github.com/multiformats/go-varint"
 	"gorm.io/gorm"
 )
 
@@ -437,11 +438,18 @@ func delegatedToCommonAddress(s string) (common.Address, error) {
 	if addr.Protocol() != address.Delegated {
 		return common.Address{}, fmt.Errorf("address %s is not delegated (f410)", s)
 	}
-	payload := addr.Payload()
-	if len(payload) < 21 {
-		return common.Address{}, fmt.Errorf("delegated payload too short: %d", len(payload))
+	namespace, n, err := varint.FromUvarint(addr.Payload())
+	if err != nil {
+		return common.Address{}, fmt.Errorf("failed to decode delegated namespace: %w", err)
 	}
-	return common.BytesToAddress(payload[1:21]), nil
+	if namespace != 10 {
+		return common.Address{}, fmt.Errorf("unsupported delegated namespace %d", namespace)
+	}
+	subaddr := addr.Payload()[n:]
+	if len(subaddr) != common.AddressLength {
+		return common.Address{}, fmt.Errorf("invalid delegated address length: %d", len(subaddr))
+	}
+	return common.BytesToAddress(subaddr), nil
 }
 
 func commonToDelegatedAddress(subaddr common.Address) (address.Address, error) {
