@@ -33,7 +33,7 @@ var PauseDagGenCmd = &cli.Command{
 	Name:      "pause-daggen",
 	Usage:     "Pause a DAG generation job",
 	Category:  "Job Management",
-	ArgsUsage: "<preparation_id> <storage_name>",
+	ArgsUsage: "<preparation id|name> <storage id|name>",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)

@@ -53,7 +53,7 @@ type ScheduleUpdateRequest struct {
 	// Price in FIL per deal
 	PricePerDeal float64 `json:"pricePerDeal,omitempty"`
 
-	// Price in FIL  per GiB
+	// Price in FIL per GiB
 	PricePerGb float64 `json:"pricePerGb,omitempty"`
 
 	// Price in FIL per GiB per epoch
@@ -62,7 +62,7 @@ type ScheduleUpdateRequest struct {
 	// Schedule cron pattern
 	ScheduleCron string `json:"scheduleCron,omitempty"`
 
-	// Whether a cron schedule should run in definitely
+	// Whether a cron schedule should run indefinitely
 	ScheduleCronPerpetual bool `json:"scheduleCronPerpetual,omitempty"`
 
 	// Number of deals per scheduled time

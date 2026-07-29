@@ -66,7 +66,7 @@ type ClientService interface {
 }
 
 /*
-AttachWallet attaches a new wallet with a preparation
+AttachWallet attaches a new wallet to a preparation
 */
 func (a *Client) AttachWallet(params *AttachWalletParams, opts ...ClientOption) (*AttachWalletOK, error) {
 	// NOTE: parameters are not validated before sending
@@ -109,7 +109,7 @@ func (a *Client) AttachWallet(params *AttachWalletParams, opts ...ClientOption) 
 }
 
 /*
-DetachWallet detaches a new wallet from a preparation
+DetachWallet detaches a wallet from a preparation
 */
 func (a *Client) DetachWallet(params *DetachWalletParams, opts ...ClientOption) (*DetachWalletOK, error) {
 	// NOTE: parameters are not validated before sending

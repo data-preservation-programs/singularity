@@ -101,8 +101,5 @@ func retryOn(err error) bool {
 	emsg := err.Error()
 	return strings.Contains(emsg, sqlSerializationFailure) ||
 		strings.Contains(emsg, "database is locked") ||
-		strings.Contains(emsg, "database table is locked") ||
-		// MySQL/InnoDB serialization conflict
-		strings.Contains(emsg, "Record has changed since last read") ||
-		strings.Contains(emsg, "Error 1020 (HY000)")
+		strings.Contains(emsg, "database table is locked")
 }

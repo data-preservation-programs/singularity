@@ -265,34 +265,30 @@ func (*DealTracker) Name() string {
 	return "DealTracker"
 }
 
-// Start starts the DealTracker and returns a list of service.Done channels, a service.Fail channel, and an error.
+// Start starts the DealTracker, delivering the terminal error (or nil) on exitErr once it has shut down.
 //
-// The Start method takes a context.Context as input and performs the following steps:
+// The Start method performs the following steps:
 //
-//  1. Defines a getState function that returns a healthcheck.State with JobType set to model.DealTracking.
+//  1. Registers the worker using healthcheck.Register with the provided context, dbNoContext, workerID, model.DealTracker worker type, and false for the force flag.
+//     - If an error occurs during registration, it returns the error wrapped with an appropriate message.
+//     - If another worker is already running, it logs a warning and checks if d.once is true. If d.once is true,
+//     it returns an error indicating that another worker is already running.
 //
-//  2. Registers the worker using healthcheck.Register with the provided context, dbNoContext, workerID, getState function, and false for the force flag.
-//     - If an error occurs during registration, it returns nil for the service.Done channels, nil for the service.Fail channel, and the error wrapped with an appropriate message.
-//     - If another worker is already running, it logs a warning and checks if d.once is true. If d.once is true, it returns nil for the service.Done channels,
-//     nil for the service.Fail channel, and an error indicating that another worker is already running.
+//  2. Logs a warning message and waits for 1 minute before retrying.
+//     - If the context is done during the wait, it returns the context error.
 //
-//  3. Logs a warning message and waits for 1 minute before retrying.
-//     - If the context is done during the wait, it returns nil for the service.Done channels, nil for the service.Fail channel, and the context error.
+//  3. Starts reporting health using healthcheck.StartReportHealth with the provided context, dbNoContext, workerID, and worker type in a separate goroutine.
 //
-//  4. Starts reporting health using healthcheck.StartReportHealth with the provided context, dbNoContext, workerID, and getState function in a separate goroutine.
-//
-//  5. Runs the main loop in a separate goroutine.
+//  4. Runs the main loop in a separate goroutine.
 //     - Calls d.runOnce to execute the main logic of the DealTracker.
 //     - If an error occurs during execution, it logs an error message.
 //     - If d.once is true, it returns from the goroutine.
 //     - Waits for the specified interval before running the next iteration.
 //     - If the context is done during the wait, it returns from the goroutine.
 //
-//  6. Cleans up resources when the context is done.
+//  5. Cleans up resources when the context is done.
 //     - Calls d.cleanup to perform cleanup operations.
 //     - If an error occurs during cleanup, it logs an error message.
-//
-//  7. Returns a list of service.Done channels containing healthcheckDone, runDone, and cleanupDone, the service.Fail channel fail, and nil for the error.
 func (d *DealTracker) Start(ctx context.Context, exitErr chan<- error) error {
 	var regTimer *time.Timer
 	for {
@@ -636,7 +632,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	if result.Error != nil {
 		return errors.WithStack(result.Error)
 	}
-	Logger.Infof("marked %d deal as proposal_expired", result.RowsAffected)
+	Logger.Infof("marked %d deals as proposal_expired", result.RowsAffected)
 
 	if err := d.trackDDOAllocations(ctx); err != nil {
 		Logger.Errorw("failed to track DDO allocations", "error", err)

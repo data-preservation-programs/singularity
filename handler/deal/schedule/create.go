@@ -30,7 +30,7 @@ type CreateRequest struct {
 	HTTPHeaders           []string `json:"httpHeaders"`                                  // http headers to be passed with the request (i.e. key=value)
 	URLTemplate           string   `json:"urlTemplate"`                                  // URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
 	PricePerGBEpoch       float64  `default:"0"                  json:"pricePerGbEpoch"` // Price in FIL per GiB per epoch
-	PricePerGB            float64  `default:"0"                  json:"pricePerGb"`      // Price in FIL  per GiB
+	PricePerGB            float64  `default:"0"                  json:"pricePerGb"`      // Price in FIL per GiB
 	PricePerDeal          float64  `default:"0"                  json:"pricePerDeal"`    // Price in FIL per deal
 	Verified              bool     `default:"true"               json:"verified"`        // Whether the deal should be verified
 	IPNI                  bool     `default:"true"               json:"ipni"`            // Whether the deal should be IPNI
@@ -38,7 +38,7 @@ type CreateRequest struct {
 	StartDelay            string   `default:"72h"                json:"startDelay"`      // Deal start delay in epoch or in duration format, i.e. 1000, 72h
 	Duration              string   `default:"12840h"             json:"duration"`        // Duration in epoch or in duration format, i.e. 1500000, 2400h
 	ScheduleCron          string   `json:"scheduleCron"`                                 // Schedule cron pattern
-	ScheduleCronPerpetual bool     `json:"scheduleCronPerpetual"`                        // Whether a cron schedule should run in definitely
+	ScheduleCronPerpetual bool     `json:"scheduleCronPerpetual"`                        // Whether a cron schedule should run indefinitely
 	ScheduleDealNumber    int      `json:"scheduleDealNumber"`                           // Number of deals per scheduled time
 	TotalDealNumber       int      `json:"totalDealNumber"`                              // Total number of deals
 	ScheduleDealSize      string   `json:"scheduleDealSize"`                             // Size of deals per schedule trigger in human readable format, i.e. 100 TiB
@@ -148,7 +148,7 @@ func buildSchedule(
 	var preparation model.Preparation
 	err := preparation.FindByIDOrName(db, request.Preparation, "Wallet")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", request.Preparation)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %s not found", request.Preparation)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)

@@ -24,7 +24,7 @@ Users will appreciate Singularity's ability to maintain dataset hierarchies. Fol
 
 ## Content Distribution
 
-Beyond preparation, Singularity doubles as a nimble storage provider, eliminating traditional storage provider operations like sealing and proving. Users can effortlessly download either CAR files or original files from Singularity using a range of protocols, including Graphsync, HTTP, and Bitswap.
+Beyond preparation, Singularity doubles as a nimble storage provider, eliminating traditional storage provider operations like sealing and proving. Users can effortlessly download either CAR files or original files from Singularity over HTTP (trustless gateway and piece retrieval).
 
 ### Efficient CAR Distribution
 
@@ -32,7 +32,7 @@ With inline preparation in play, storage providers can swiftly download CAR file
 
 ### Convenient Content Retrieval
 
-For all prepared files, Singularity offers Graphsync/HTTP/Bitswap retrievals. This feature positions Singularity as an alternative to a traditional storage provider, bypassing the need for storage proofs.
+For all prepared files, Singularity offers HTTP retrievals (trustless gateway and piece retrieval). This feature positions Singularity as an alternative to a traditional storage provider, bypassing the need for storage proofs.
 
 ## Deal Making
 

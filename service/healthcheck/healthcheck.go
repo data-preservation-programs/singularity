@@ -21,11 +21,6 @@ var (
 
 var cleanupInterval = time.Minute * 5
 
-type State struct {
-	JobType   model.JobType
-	WorkingOn string
-}
-
 var logger = log.Logger("healthcheck")
 
 // StartHealthCheckCleanup continuously runs the HealthCheckCleanup function
@@ -218,8 +213,7 @@ func execBatchDelete(db *gorm.DB, dialect, table, column string, limit int) *gor
 //   - err: An error that will be nil if no errors occurred.
 //
 // The function first gets the hostname of the machine where it's running. If it fails to get the hostname, it returns an error.
-// Then it gets the current state of the worker using the getState function.
-// It then creates a new worker model with the provided workerID, the current time as the last heartbeat, the hostname, and the work type and working on values from the state.
+// It then creates a new worker model with the provided workerID, the current time as the last heartbeat, the hostname, and the provided worker type.
 //
 // If allowDuplicate is set to false, the function checks if there are any active workers with the same work type and whose last heartbeat is not stale.
 // If there are such workers, it sets alreadyRunning to true and returns.
@@ -261,8 +255,7 @@ func Register(ctx context.Context, db *gorm.DB, workerID uuid.UUID, workerType m
 // The workerID is used to uniquely identify the worker.
 //
 // The function first gets the hostname of the machine where it's running. If it fails to get the hostname, it logs an error and returns.
-// Then it gets the current state of the worker using the getState function.
-// It then creates a new worker model with the provided workerID, the current time as the last heartbeat, the hostname, and the work type and working on values from the state.
+// It then creates a new worker model with the provided workerID, the current time as the last heartbeat, the hostname, and the provided worker type.
 //
 // The function then tries to create the worker in the database or update the existing worker if one with the same ID already exists.
 // The update will set the last heartbeat, work type, working on, and hostname fields to the values from the worker model.
@@ -294,9 +287,6 @@ func ReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, workerTy
 // StartReportHealth continuously runs the ReportHealth function at intervals
 // specified by the reportInterval. This function is responsible for reporting
 // the health status of a worker to a centralized store (e.g., a database).
-//
-// The health status of the worker is determined by calling the provided getState
-// function, which should return the current state of the worker.
 //
 // This function is designed to be run as a background task and will continue to
 // run until the passed context is cancelled.

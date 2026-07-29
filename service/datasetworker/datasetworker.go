@@ -205,10 +205,6 @@ func (w Worker) Run(ctx context.Context) error {
 	return errors.WithStack(err)
 }
 
-func (w Worker) Name() string {
-	return "Preparation Worker Main"
-}
-
 func (w *Thread) handleWorkComplete(ctx context.Context, jobID model.JobID) error {
 	return database.DoRetry(ctx, func() error {
 		return w.dbNoContext.WithContext(ctx).Model(&model.Job{}).Where("id = ?", jobID).Updates(map[string]any{
@@ -246,8 +242,8 @@ func (w *Thread) handleWorkError(ctx context.Context, jobID model.JobID, err err
 // It continually looks for work to process, handles errors, and reports updates:
 //  1. It attempts to find work to do. The types of work are defined by WorkType enumeration (e.g., Scan, Pack, Dag).
 //  2. It processes the found work based on its type, reporting errors if they occur.
-//  3. If an error occurs, it either exits or waits for a minute before looking for more work, based on the configuration.
-//  4. If no work is found, it either exits or waits for 15 seconds before looking for more work, based on the configuration.
+//  3. If an error occurs, it either exits or waits with configurable exponential backoff before looking for more work, based on the configuration.
+//  4. If no work is found, it either exits or waits with configurable exponential backoff before looking for more work, based on the configuration.
 //  5. It gracefully stops if the provided context is cancelled.
 //
 // Parameters:

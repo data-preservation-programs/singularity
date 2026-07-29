@@ -1434,7 +1434,7 @@ const docTemplate = `{
                 "tags": [
                     "Wallet Association"
                 ],
-                "summary": "Attach a new wallet with a preparation",
+                "summary": "Attach a new wallet to a preparation",
                 "operationId": "AttachWallet",
                 "parameters": [
                     {
@@ -1483,7 +1483,7 @@ const docTemplate = `{
                 "tags": [
                     "Wallet Association"
                 ],
-                "summary": "Detach a new wallet from a preparation",
+                "summary": "Detach a wallet from a preparation",
                 "operationId": "DetachWallet",
                 "parameters": [
                     {
@@ -6664,7 +6664,7 @@ const docTemplate = `{
                     "default": "31.5GiB"
                 },
                 "minPieceSize": {
-                    "description": "Minimum piece size for the preparation, applies only to DAG and remainer pieces",
+                    "description": "Minimum piece size for the preparation, applies only to DAG and remainder pieces",
                     "type": "string",
                     "default": "1MiB"
                 },
@@ -6868,7 +6868,7 @@ const docTemplate = `{
                 "duration": {
                     "description": "Duration in epoch or in duration format, i.e. 1500000, 2400h",
                     "type": "string",
-                    "default": "12740h"
+                    "default": "12840h"
                 },
                 "fileSize": {
                     "description": "File size in bytes for boost to fetch the CAR file",
@@ -6905,7 +6905,7 @@ const docTemplate = `{
                     "default": 0
                 },
                 "pricePerGb": {
-                    "description": "Price in FIL  per GiB",
+                    "description": "Price in FIL per GiB",
                     "type": "number",
                     "default": 0
                 },
@@ -7704,7 +7704,7 @@ const docTemplate = `{
                     "default": 0
                 },
                 "pricePerGb": {
-                    "description": "Price in FIL  per GiB",
+                    "description": "Price in FIL per GiB",
                     "type": "number",
                     "default": 0
                 },
@@ -7722,7 +7722,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "scheduleCronPerpetual": {
-                    "description": "Whether a cron schedule should run in definitely",
+                    "description": "Whether a cron schedule should run indefinitely",
                     "type": "boolean"
                 },
                 "scheduleDealNumber": {
@@ -7819,7 +7819,7 @@ const docTemplate = `{
                     "default": 0
                 },
                 "pricePerGb": {
-                    "description": "Price in FIL  per GiB",
+                    "description": "Price in FIL per GiB",
                     "type": "number",
                     "default": 0
                 },
@@ -7833,7 +7833,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "scheduleCronPerpetual": {
-                    "description": "Whether a cron schedule should run in definitely",
+                    "description": "Whether a cron schedule should run indefinitely",
                     "type": "boolean"
                 },
                 "scheduleDealNumber": {

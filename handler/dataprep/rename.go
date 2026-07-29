@@ -37,7 +37,7 @@ func (DefaultHandler) RenamePreparationHandler(
 ) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	if util.IsAllDigits(request.Name) || request.Name == "" {
-		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "preparation name %s cannot be all digits or empty", name)
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "preparation name %s cannot be all digits or empty", request.Name)
 	}
 
 	var preparation model.Preparation
