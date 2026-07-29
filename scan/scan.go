@@ -19,10 +19,6 @@ var logger = log.Logger("scan")
 // that are not already in the database and adds them. Existing files that have
 // not yet been packaged into jobs are grouped into jobs of a specified size.
 //
-// The scan starts from the last scanned path, ensuring incremental scanning, and updates
-// the `last_scanned_path` field of the SourceAttachment after each file to allow
-// resuming interrupted scans.
-//
 // Parameters:
 //   - ctx: Context for timeout and cancellation.
 //   - db: A pointer to a gorm.DB object, providing database access.
@@ -90,7 +86,7 @@ func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) e
 			return errors.Wrapf(err, "failed to push file %s", entry.Info.Remote())
 		}
 		if file == nil {
-			logger.Infow("file already exists", "path", entry.Info.Remote())
+			logger.Debugw("file already exists", "path", entry.Info.Remote())
 			continue
 		}
 

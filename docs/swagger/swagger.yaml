@@ -45,7 +45,7 @@ definitions:
       minPieceSize:
         default: 1MiB
         description: Minimum piece size for the preparation, applies only to DAG and
-          remainer pieces
+          remainder pieces
         type: string
       name:
         description: Name of the preparation
@@ -188,7 +188,7 @@ definitions:
         description: Client address
         type: string
       duration:
-        default: 12740h
+        default: 12840h
         description: Duration in epoch or in duration format, i.e. 1500000, 2400h
         type: string
       fileSize:
@@ -219,7 +219,7 @@ definitions:
         type: number
       pricePerGb:
         default: 0
-        description: Price in FIL  per GiB
+        description: Price in FIL per GiB
         type: number
       pricePerGbEpoch:
         default: 0
@@ -799,7 +799,7 @@ definitions:
         type: number
       pricePerGb:
         default: 0
-        description: Price in FIL  per GiB
+        description: Price in FIL per GiB
         type: number
       pricePerGbEpoch:
         default: 0
@@ -812,7 +812,7 @@ definitions:
         description: Schedule cron pattern
         type: string
       scheduleCronPerpetual:
-        description: Whether a cron schedule should run in definitely
+        description: Whether a cron schedule should run indefinitely
         type: boolean
       scheduleDealNumber:
         description: Number of deals per scheduled time
@@ -888,7 +888,7 @@ definitions:
         type: number
       pricePerGb:
         default: 0
-        description: Price in FIL  per GiB
+        description: Price in FIL per GiB
         type: number
       pricePerGbEpoch:
         default: 0
@@ -898,7 +898,7 @@ definitions:
         description: Schedule cron pattern
         type: string
       scheduleCronPerpetual:
-        description: Whether a cron schedule should run in definitely
+        description: Whether a cron schedule should run indefinitely
         type: boolean
       scheduleDealNumber:
         description: Number of deals per scheduled time
@@ -16500,7 +16500,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.HTTPError'
-      summary: Detach a new wallet from a preparation
+      summary: Detach a wallet from a preparation
       tags:
       - Wallet Association
     post:
@@ -16533,7 +16533,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.HTTPError'
-      summary: Attach a new wallet with a preparation
+      summary: Attach a new wallet to a preparation
       tags:
       - Wallet Association
   /preparation/{name}:

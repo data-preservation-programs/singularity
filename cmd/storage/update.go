@@ -72,7 +72,7 @@ var HTTPClientConfigFlagsForUpdate = []cli.Flag{
 	},
 	&cli.StringSliceFlag{
 		Name:     "client-header",
-		Usage:    "Set HTTP header for all transactions (i.e. key=value). This will replace the existing header values. To remove a header, use --http-header \"key=\"\". To remove all headers, use --http-header \"\"",
+		Usage:    "Set HTTP header for all transactions (i.e. key=value). This will replace the existing header values. To remove a header, use --client-header \"key=\"\". To remove all headers, use --client-header \"\"",
 		Category: "Client Config",
 	},
 	&cli.BoolFlag{

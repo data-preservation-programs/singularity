@@ -235,7 +235,7 @@ func (d DealMakerImpl) GetMinCollateral(ctx context.Context, pieceSize int64, ve
 	bound := new(DealProviderCollateralBound)
 	err := d.lotusClient.CallFor(ctx, bound, "Filecoin.StateDealProviderCollateralBounds", pieceSize, verified, nil)
 	if err != nil {
-		return big.Int{}, errors.Wrapf(err, "failed to get deal provider collateral bounds with pieceSize %d and verified %s", pieceSize, verified)
+		return big.Int{}, errors.Wrapf(err, "failed to get deal provider collateral bounds with pieceSize %d and verified %t", pieceSize, verified)
 	}
 
 	logger.Debugw("got deal provider collateral bounds", "pieceSize", pieceSize, "verified", verified, "bound", bound)
@@ -665,7 +665,7 @@ func (m MinerInfoFetcher) GetProviderInfo(ctx context.Context, provider string) 
 		return nil, errors.Wrapf(err, "failed to get miner info, miner: %s", provider)
 	}
 
-	logger.Debug("got miner info", "miner", provider, "minerInfo", minerInfo)
+	logger.Debugw("got miner info", "miner", provider, "minerInfo", minerInfo)
 	minerInfo.Multiaddrs = make([]multiaddr.Multiaddr, len(minerInfo.MultiaddrsBase64Encoded))
 	for i, addr := range minerInfo.MultiaddrsBase64Encoded {
 		decoded, err := base64.StdEncoding.DecodeString(addr)

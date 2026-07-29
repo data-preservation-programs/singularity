@@ -28,13 +28,13 @@ COMMANDS:
      create         Create a new preparation
      list           List all preparations
      attach-source  Attach a source storage to a preparation
-     attach-output  Attach a output storage to a preparation
-     detach-output  Detach a output storage to a preparation
+     attach-output  Attach an output storage to a preparation
+     detach-output  Detach an output storage from a preparation
      explore        Explore prepared source by path
    Wallet Management:
      attach-wallet  Attach a wallet to a preparation
      list-wallets   List attached wallets with a preparation
-     detach-wallet  Detach a wallet to a preparation
+     detach-wallet  Detach a wallet from a preparation
 
 OPTIONS:
    --help, -h  show help

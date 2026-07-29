@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 )
 
@@ -29,7 +28,7 @@ const (
 	DealTypeMarket DealType = "market"
 	// DealTypePDP represents f41 PDP (Proof of Data Possession) deals
 	DealTypePDP DealType = "pdp"
-	// DealTypeDDO represents DDO (Decentralized Data Onboarding) allocation deals
+	// DealTypeDDO represents DDO (Direct Data Onboarding) allocation deals
 	DealTypeDDO DealType = "ddo"
 )
 
@@ -97,11 +96,6 @@ var ScheduleStateStrings = []string{
 	string(SchedulePaused),
 	string(ScheduleError),
 	string(ScheduleCompleted),
-}
-
-func StoragePricePerEpochToPricePerDeal(price string, dealSize int64, durationEpoch int32) float64 {
-	pricePerEpoch, _ := strconv.ParseFloat(price, 64)
-	return pricePerEpoch / 1e18 / (float64(dealSize) / float64(1<<35)) * float64(durationEpoch)
 }
 
 type DealID uint64

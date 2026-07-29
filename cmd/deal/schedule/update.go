@@ -163,13 +163,13 @@ var UpdateCmd = &cli.Command{
 			Name:     "max-pending-deal-size",
 			Category: "Restrictions",
 			Aliases:  []string{"pending-size"},
-			Usage:    "Max pending deal sizes overall for this request, i.e. 1000",
+			Usage:    "Max pending deal sizes overall for this request, i.e. 100TiB",
 		},
 		&cli.IntFlag{
 			Name:     "max-pending-deal-number",
 			Category: "Restrictions",
 			Aliases:  []string{"pending-number"},
-			Usage:    "Max pending deal number overall for this request, i.e. 100TiB",
+			Usage:    "Max pending deal number overall for this request, i.e. 1000",
 		},
 		&cli.StringSliceFlag{
 			Name:     "allowed-piece-cid",

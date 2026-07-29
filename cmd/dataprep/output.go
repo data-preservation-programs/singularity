@@ -10,7 +10,7 @@ import (
 
 var AttachOutputCmd = &cli.Command{
 	Name:      "attach-output",
-	Usage:     "Attach a output storage to a preparation",
+	Usage:     "Attach an output storage to a preparation",
 	ArgsUsage: "<preparation id|name> <storage id|name>",
 	Category:  "Preparation Management",
 	Before:    cliutil.CheckNArgs,
@@ -31,7 +31,7 @@ var AttachOutputCmd = &cli.Command{
 
 var DetachOutputCmd = &cli.Command{
 	Name:      "detach-output",
-	Usage:     "Detach a output storage to a preparation",
+	Usage:     "Detach an output storage from a preparation",
 	ArgsUsage: "<preparation id|name> <storage id|name>",
 	Category:  "Preparation Management",
 	Before:    cliutil.CheckNArgs,

@@ -38,7 +38,7 @@ func (DefaultHandler) RenameStorageHandler(
 ) (*model.Storage, error) {
 	db = db.WithContext(ctx)
 	if util.IsAllDigits(request.Name) || request.Name == "" {
-		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "storage name %s cannot be all digits or empty", name)
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "storage name %s cannot be all digits or empty", request.Name)
 	}
 
 	var storage model.Storage

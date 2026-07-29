@@ -132,17 +132,16 @@ func (pr *PieceReader) Clone() *PieceReader {
 }
 
 // NewPieceReader is a function that creates a new PieceReader.
-// It takes a context, a Car model, a Source model, a slice of CarBlock models, a slice of File models, and a HandlerResolver as input.
+// It takes a context, a Car model, a Storage model, a slice of CarBlock models, and a slice of File models as input.
 // It validates the input data and returns an error if any of it is invalid.
 // The returned PieceReader starts at the beginning of the data (position 0).
 //
 // Parameters:
 //   - ctx: The context for the new PieceReader. This can be used to cancel operations or set deadlines.
 //   - car: A Car model that represents the CAR (Content Addressable Archive) file being read.
-//   - source: A Source model that represents the source of the data.
+//   - storage: A Storage model that represents the storage backend holding the data.
 //   - carBlocks: A slice of CarBlock models that represent the blocks of data in the CAR file.
 //   - files: A slice of File models that represent the files of data being read.
-//   - resolver: A HandlerResolver that is used to resolve the handler for the source of the data.
 //
 // Returns:
 //   - A new PieceReader that has been initialized with the provided data, and an error if the initialization failed.
@@ -309,7 +308,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		file := pr.files[*carBlock.FileID]
 		fileOffset := pr.pos - carBlock.CarOffset - int64(len(carBlock.Varint)) - int64(cid.Cid(carBlock.CID).ByteLen())
 		fileOffset += carBlock.FileOffset
-		logger.Infow("reading file", "path", file.Path, "offset", fileOffset)
+		logger.Debugw("reading file", "path", file.Path, "offset", fileOffset)
 		var obj fs.Object
 		pr.reader, obj, err = pr.handler.Read(pr.ctx, file.Path, fileOffset, file.Size-fileOffset)
 		if err != nil {

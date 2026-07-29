@@ -24,8 +24,8 @@ var PrepCmd = &cli.Command{
 	Before:    cliutil.CheckNArgs,
 	ArgsUsage: "<path>",
 	Usage:     "Prepare a dataset from a local path",
-	Description: "This commands can be used to prepare a dataset from a local path with minimum configurable parameters.\n" +
-		"For more advanced usage, please use the subcommands under `storage` and `data-prep`.\n" +
+	Description: "This command can be used to prepare a dataset from a local path with minimum configurable parameters.\n" +
+		"For more advanced usage, please use the subcommands under `storage` and `prep`.\n" +
 		"You can also use this command for benchmarking with in-memory database and inline preparation, i.e.\n" +
 		"  mkdir dataset\n" +
 		"  truncate -s 1024G dataset/1T.bin\n" +

@@ -231,7 +231,7 @@ func (c ClientConfig) String() string {
 		values = append(values, "headers:<hidden>")
 	}
 	if c.DisableHTTP2 != nil {
-		values = append(values, "disableHTTP2"+strconv.FormatBool(*c.DisableHTTP2))
+		values = append(values, "disableHTTP2:"+strconv.FormatBool(*c.DisableHTTP2))
 	}
 	if c.DisableHTTPKeepAlives != nil {
 		values = append(values, "disableHTTPKeepAlives:"+strconv.FormatBool(*c.DisableHTTPKeepAlives))
@@ -327,7 +327,7 @@ var JobStateStrings = []string{
 }
 
 const (
-	// Created means the job has been created is not ready for processing.
+	// Created means the job has been created and is not ready for processing.
 	Created JobState = "created"
 	// Ready means the job is ready for processing.
 	Ready JobState = "ready"
