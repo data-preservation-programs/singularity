@@ -15536,7 +15536,7 @@ info:
     name: MIT + Apache 2.0
     url: https://github.com/data-preservation-programs/singularity/blob/main/LICENSE
   title: Singularity API
-  version: beta
+  version: 1.0.0
 paths:
   /deal:
     post:

@@ -17,7 +17,7 @@
             "name": "MIT + Apache 2.0",
             "url": "https://github.com/data-preservation-programs/singularity/blob/main/LICENSE"
         },
-        "version": "beta"
+        "version": "1.0.0"
     },
     "basePath": "/api",
     "paths": {
