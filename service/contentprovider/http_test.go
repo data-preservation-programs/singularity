@@ -301,7 +301,7 @@ func TestHTTPServerHandler(t *testing.T) {
 }
 
 func makeGatewayHandler(db *gorm.DB) http.Handler {
-	bs := &store.StorageBlockStore{DBNoContext: db}
+	bs := store.NewStorageBlockStore(db, store.SpanConfig{})
 	wrapped := &errorMappingBlockStore{inner: bs}
 	exch := offline.Exchange(wrapped)
 	bsvc := blockservice.New(wrapped, exch)

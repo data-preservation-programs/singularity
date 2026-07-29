@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/store"
 	logging "github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
@@ -22,6 +23,7 @@ type HTTPConfig struct {
 	EnablePiece         bool
 	EnablePieceMetadata bool
 	EnableIPFS          bool
+	IPFSSpan            store.SpanConfig
 	Bind                string
 }
 
@@ -35,6 +37,7 @@ func NewService(db *gorm.DB, config Config) (*Service, error) {
 			enablePiece:         config.HTTP.EnablePiece,
 			enablePieceMetadata: config.HTTP.EnablePieceMetadata,
 			enableIPFS:          config.HTTP.EnableIPFS,
+			ipfsSpanConfig:      config.HTTP.IPFSSpan,
 		})
 	}
 
