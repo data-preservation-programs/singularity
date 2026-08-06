@@ -39,10 +39,9 @@ func (c PDPSchedulingConfig) Validate() error {
 // PDPPieceInput names a piece the scheduler wants pushed to the SP. The
 // implementation constructs the SP-side source URL.
 type PDPPieceInput struct {
-	PieceCID cid.Cid
-	// PieceSize is the padded piece size, needed for CommPv2 conversion
-	// before signing.
-	PieceSize int64
+	PieceCID    cid.Cid
+	PieceSize   int64 // padded
+	PayloadSize int64 // real CAR bytes; encoded into the CommPv2 CID, fetched over HTTP
 }
 
 // PDPPullResult reports the outcome of a /pdp/piece/pull batch.

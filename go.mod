@@ -441,3 +441,6 @@ require (
 replace github.com/filecoin-project/lassie => github.com/parkan/lassie v0.0.0-20251028120409-065e9fd563ad
 
 replace github.com/rclone/rclone => github.com/parkan/rclone v0.0.0-20260317152005-3777b647816d
+
+// fork tolerates null blocks in shovel's indexer; revert when upstreamed
+replace github.com/indexsupply/shovel => github.com/parkan/shovel v0.1.9-0.20260501183017-e5c6add716cf

@@ -44,6 +44,11 @@ into the existing one). Useful for e2e/diagnostic testing of the FWSS pull path.
 			Usage:    "Padded piece size in bytes",
 			Required: true,
 		},
+		&cli.Int64Flag{
+			Name:     "payload-size",
+			Usage:    "Real CAR file size in bytes (the data the SP will fetch). The CommPv2 piece CID encodes this size; SP zero-fills locally up to PieceSize when computing CommP.",
+			Required: true,
+		},
 		&cli.StringFlag{
 			Name:     "eth-rpc",
 			Usage:    "FEVM JSON-RPC endpoint",
@@ -108,6 +113,7 @@ into the existing one). Useful for e2e/diagnostic testing of the FWSS pull path.
 			return errors.Wrap(err, "invalid piece CID")
 		}
 		pieceSize := c.Int64("piece-size")
+		payloadSize := c.Int64("payload-size")
 
 		cfg := dealpusher.PDPSchedulingConfig{
 			BatchSize:            1,
@@ -120,7 +126,7 @@ into the existing one). Useful for e2e/diagnostic testing of the FWSS pull path.
 			c.Context,
 			evmSigner,
 			c.String("provider"),
-			[]dealpusher.PDPPieceInput{{PieceCID: pieceCID, PieceSize: pieceSize}},
+			[]dealpusher.PDPPieceInput{{PieceCID: pieceCID, PieceSize: pieceSize, PayloadSize: payloadSize}},
 			cfg,
 		)
 		if err != nil {
@@ -135,6 +141,8 @@ into the existing one). Useful for e2e/diagnostic testing of the FWSS pull path.
 			Provider:   c.String("provider"),
 			PieceCID:   model.CID(pieceCID),
 			PieceSize:  pieceSize,
+			StartEpoch: dealpusher.PDPDealEpochSentinel,
+			EndEpoch:   dealpusher.PDPDealEpochSentinel,
 			WalletID:   &walletObj.ID,
 			ProofSetID: &dataSetIDCopy,
 		}
