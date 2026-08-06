@@ -14,6 +14,7 @@ import (
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/data-preservation-programs/singularity/util"
+	commcid "github.com/filecoin-project/go-fil-commcid"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/ipfs/boxo/blockservice"
 	"github.com/ipfs/boxo/exchange/offline"
@@ -207,9 +208,9 @@ func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 //   - An error if there was a problem handling the request.
 func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 	id := c.Param("id")
-	pieceCid, err := cid.Parse(id)
+	pieceCid, err := parsePieceCID(id)
 	if err != nil {
-		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
+		return c.String(http.StatusBadRequest, err.Error())
 	}
 
 	// filter to rows with an attachment -- orphaned cars (attachment_id NULL
@@ -248,6 +249,26 @@ func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 
 func (s *HTTPServer) getMetadataHandler(c echo.Context) error {
 	return GetMetadataHandler(c, s.dbNoContext.WithContext(c.Request().Context()))
+}
+
+// parsePieceCID accepts either a v1 (FilCommitmentUnsealed multicodec) or
+// v2 (raw multicodec with PieceMh hash carrying CommP + payload size) CID
+// and returns the v1 form. Curio and other FWSS-mediated callers use v2
+// CIDs in their /piece/<cid> URLs; the singularity store still indexes by
+// v1, so we normalize on input.
+func parsePieceCID(id string) (cid.Cid, error) {
+	c, err := cid.Parse(id)
+	if err != nil {
+		return cid.Undef, fmt.Errorf("failed to parse piece CID: %w", err)
+	}
+	if c.Type() == cid.FilCommitmentUnsealed {
+		return c, nil
+	}
+	v1, _, err := commcid.PieceCidV1FromV2(c)
+	if err != nil {
+		return cid.Undef, fmt.Errorf("CID %s is neither v1 commp nor a v2 piece CID: %w", id, err)
+	}
+	return v1, nil
 }
 
 type PieceMetadata struct {
@@ -383,12 +404,9 @@ func SetCommonHeaders(c echo.Context, pieceCid string) {
 //   - An error if there was a problem handling the request.
 func (s *HTTPServer) handleGetPiece(c echo.Context) error {
 	id := c.Param("id")
-	pieceCid, err := cid.Parse(id)
+	pieceCid, err := parsePieceCID(id)
 	if err != nil {
-		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
-	}
-	if pieceCid.Type() != cid.FilCommitmentUnsealed {
-		return c.String(http.StatusBadRequest, "CID is not a commp")
+		return c.String(http.StatusBadRequest, err.Error())
 	}
 
 	reader, lastModified, err := s.findPiece(c.Request().Context(), pieceCid)
