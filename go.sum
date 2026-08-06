@@ -673,8 +673,6 @@ github.com/huin/goupnp v1.3.0 h1:UvLUlWDNpoUdYzb2TCn+MuTWtcjXKSza2n6CBdQ0xXc=
 github.com/huin/goupnp v1.3.0/go.mod h1:gnGPsThkYa7bFi/KWmEysQRf48l2dvR5bxr2OFckNX8=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
-github.com/indexsupply/shovel v0.1.9-0.20260111041930-aea8d42c335c h1:w/28kFk3BSpsdRbTyAWJAnCt224qASF+FK92nlq/OBY=
-github.com/indexsupply/shovel v0.1.9-0.20260111041930-aea8d42c335c/go.mod h1:2fbvQP5CghUhrRn/XEQtwHXt51oaefJc0xqbAH+TTBE=
 github.com/internxt/rclone-adapter v0.0.0-20260220172730-613f4cc8b8fd h1:dSIuz2mpJAPQfhHYtG57D0qwSkgC/vQ69gHfeyQ4kxA=
 github.com/internxt/rclone-adapter v0.0.0-20260220172730-613f4cc8b8fd/go.mod h1:vdPya4AIcDjvng4ViaAzqjegJf0VHYpYHQguFx5xBp0=
 github.com/ipfs/bbloom v0.0.4 h1:Gi+8EGJ2y5qiD5FbsbpX/TMNcJw8gSqr7eyjHa4Fhvs=
@@ -1081,6 +1079,8 @@ github.com/parkan/lassie v0.0.0-20251028120409-065e9fd563ad h1:q56OIYelfaF5vvhyj
 github.com/parkan/lassie v0.0.0-20251028120409-065e9fd563ad/go.mod h1:P+HSZ4olI9imIXijFMLATQxfxu6erhWTtihKarK5tbs=
 github.com/parkan/rclone v0.0.0-20260317152005-3777b647816d h1:/PsMYjkePqFFCS8itIvzEMzC2MhTSssz9x+X8LJd6rc=
 github.com/parkan/rclone v0.0.0-20260317152005-3777b647816d/go.mod h1:0yvNwdX/c+ZOHm275UV7IpknJiWe/E/5U0uChfkXMGs=
+github.com/parkan/shovel v0.1.9-0.20260501183017-e5c6add716cf h1:ovBnvAdiiACV1EVRUrntNb4BxFiFOcOcYIIkYeyEJ3w=
+github.com/parkan/shovel v0.1.9-0.20260501183017-e5c6add716cf/go.mod h1:2fbvQP5CghUhrRn/XEQtwHXt51oaefJc0xqbAH+TTBE=
 github.com/parnurzeal/gorequest v0.2.16 h1:T/5x+/4BT+nj+3eSknXmCTnEVGSzFzPGdpqmUVVZXHQ=
 github.com/parnurzeal/gorequest v0.2.16/go.mod h1:3Kh2QUMJoqw3icWAecsyzkpY7UzRfDhbRdTjtNwNiUE=
 github.com/patrickmn/go-cache v2.1.0+incompatible h1:HRMgzkcYKYpi3C8ajMPV8OFXaaRUnok+kx1WdO15EQc=
