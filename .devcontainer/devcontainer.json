@@ -3,7 +3,7 @@
     "build": {
         "dockerfile": "Dockerfile",
         "args": {
-            "GO_VERSION": "1.25",
+            "GO_VERSION": "1.26",
             "DEBIAN_CODENAME": "trixie",
             "PG_MAJOR": "16"
         }
