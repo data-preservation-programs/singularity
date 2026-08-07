@@ -443,11 +443,9 @@ func (s *Server) Start(ctx context.Context, exitErr chan<- error) error {
 			return nil
 		},
 	}))
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-	}))
+	// no CORS: the API is unauthenticated and operator-only, and the bundled
+	// dashboard + swagger UI are same-origin. A wildcard Access-Control-Allow-Origin
+	// let any page the operator visited drive the API cross-origin.
 
 	//nolint:contextcheck
 	s.setupRoutes(e)

@@ -12,8 +12,8 @@ var APICmd = &cli.Command{
 		NoAutoMigrateFlag,
 		&cli.StringFlag{
 			Name:  "bind",
-			Usage: "Bind address for the API server",
-			Value: ":9090",
+			Usage: "Bind address for the API server. The API is unauthenticated and operator-only -- bind beyond loopback only behind an authenticating proxy.",
+			Value: "127.0.0.1:9090",
 		},
 	},
 	Action: func(c *cli.Context) error {

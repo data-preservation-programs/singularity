@@ -17,3 +17,7 @@ wget https://raw.githubusercontent.com/data-preservation-programs/singularity/ma
 docker-compose up
 ```
 Executing the above commands will set up a PostgreSQL database and launch the necessary Singularity services, including the API and a dataset worker.
+
+## Filecoin RPC Endpoint
+
+For the deal-pusher and deal-tracker, we recommend running your own [Forest](https://github.com/ChainSafe/forest) node as the Filecoin RPC endpoint rather than relying on shared public gateways, which are prone to rate limits and reliability gaps under production load.

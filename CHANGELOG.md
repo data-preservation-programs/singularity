@@ -1,110 +1,57 @@
-# Changelog - v0.7.0
+# Changelog
 
-## Migration Guide
+All notable changes to Singularity are recorded here. This file tracks **final
+releases only** -- release candidates ship as GitHub pre-releases and are not
+listed. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
+and the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### From v0.5.x / v0.6.x
+Each release's full narrative notes -- migration steps, infrastructure readiness,
+and the complete PR list -- live in its
+[GitHub release](https://github.com/data-preservation-programs/singularity/releases).
 
-#### Database Migration
+## [Unreleased]
 
-The database schema has changed significantly. Run the following after upgrading:
+## [1.0.0] "Cygnus" -- 2026-08-07
 
-```bash
-singularity admin init
-```
+First major release since v0.5.17, superseding the v0.6/v0.7 release-candidate
+line. See the [full release notes](https://github.com/data-preservation-programs/singularity/releases/tag/v1.0.0)
+for migration steps and the PDP/DDO infrastructure-readiness matrix.
 
-This will auto-migrate the schema. Key changes:
-- Foreign keys changed from CASCADE to SET NULL for performance
-- New indexes added for job and preparation cleanup
+### Highlights
 
-`admin init` is generally cheap to run if schema is healthy so it's advisable to automate as a pre-start script in orchestration, however the initial migration for 0.7.0 may need some time due to index rebuilds so it is advisable to halt other services and run `admin init` standalone in this one case.
+- Experimental **PDP** warm-storage and **DDO** cold-storage deal types
+  (`--deal-type pdp|ddo`) on the FWSS registry; legacy `market` (f05) remains
+  the default.
+- **Trustless IPFS gateway** (`/ipfs/`) on the content-provider, with parallel
+  span-read block retrieval.
+- **Wallet/Actor model split**: private keys move out of the database into a
+  filesystem keystore (`singularity wallet export-keys`).
+- **Bounded-time preparation deletes** via nullable foreign keys plus a reaper
+  task, instead of cascades.
+- **Devcontainer-based CI on podman**, mirroring the local dev environment.
 
-#### Breaking: MongoDB Removed
+### Breaking
 
-MongoDB backend import is no longer supported. If you were using MongoDB (singularity v1):
+- **MongoDB and MySQL/MariaDB backends removed** -- export to PostgreSQL before
+  upgrading.
+- **Wallet keys must be exported to a keystore**; the old `wallets` table is
+  split into `wallets` and `actors`, and private keys are dropped from the DB.
+- **Schedules carry an explicit `--deal-type`**; `--replication N` is removed
+  from `create-batch` (use repeatable `--deal-type` / `--provider`).
+- **Foreign keys switched to `SET NULL`** -- `admin init` drops and re-creates
+  them; the first run on a large dataset may take several minutes for index
+  rebuilds, so run it standalone.
+- **API defaults (operator-only)**: default bind is now `127.0.0.1:9090` (was
+  `0.0.0.0:9090`; widen with `--bind`), the wildcard CORS middleware is removed,
+  and secret-named config values are masked in JSON API responses.
 
-1. Export your data from v1
-2. Upgrade to v0.6.0-RC2 and import to PostgreSQL/YugabyteDB (MySQL strongly discouraged, sqlite only for very small deployments)
-3. Then upgrade to v0.7.0
+### Fixed
 
-#### Sequence Reset (PostgreSQL/YugabyteDB)
+- Large preparation and job deletes no longer stall on FK cascade scans.
+- `car_blocks.file_id IS NULL` is treated as valid intermediate data, not an
+  orphan.
+- Numerous smaller correctness fixes in the deal tracker, dataset worker, and
+  API error paths (see the full release notes).
 
-**Automatic**: `singularity admin init` now detects and fixes stale sequences automatically. This handles the common case of importing data with explicit IDs (e.g., from MySQL backup).
-
-**Manual**: If needed, a standalone script is available at `scripts/fix-sequences-after-import.sql`.
-
-#### Piece Type Classification
-
-**Automatic**: `singularity admin init` now infers `piece_type` for CAR files that predate this column, classifying them as `data` (contains file content) or `dag` (directory metadata only). This is a no-op if all pieces are already labeled.
-
-**Manual**: A standalone script is available at `scripts/infer_piece_type.sql` for inspection or manual runs.
-
-#### Curio Compatibility (DAG Pieces)
-
-If DAG pieces were rejected by Curio, you will need to regenerate them:
-
-1. Run `singularity admin init` to classify existing pieces
-2. Delete the rejected DAG pieces using `singularity prep delete-piece`
-3. Re-run `singularity prep start-daggen` on affected preparations to create Curio-compatible pieces
-
----
-
-## Features
-
-- **prep delete-piece command** - Delete specific pieces from a preparation (#602)
-- **Small piece padding** - Pad very small pieces with literal zeroes for curio compatibility (#595)
-
-## Bug Fixes
-
-- **S3 car file renames** - Fix car file renames on S3-type remotes (#598)
-- **Remote storage padding** - Use local tmpfile for padding small pieces on remote/non-appendable storage (#597)
-- **Deadlocks resolved** - Fix remaining deadlocks in prep deletion and job claiming (#596)
-- **Download flags** - Harmonize download flags across commands (#599, closes #460)
-- **FK re-scanning** - Avoid re-scanning known valid foreign keys during cleanup (#601)
-- **docker-compose env var** - Fix singularity_init container environment variable (#526)
-- **prep add-piece CLI** - Fix parser bug treating positional args as subcommands; auto-lookup existing pieces by CID for piece consolidation workflows (#607)
-
-## Database & Performance
-
-- **Nullable FKs for massive deletes** - Use nullable foreign keys and pointers for fast bulk deletion; orphaned objects cleaned up via reaper task in batches (#600)
-- **Indexes for FK cleanup** - Add indexes on jobs/preps foreign keys for faster operations
-- **SKIP LOCKED for job claiming** - Prevent deadlocks during concurrent job acquisition
-- **Deferred association loading** - Load associations after claiming to reduce lock contention
-
-## Infrastructure
-
-- **MongoDB removed** - Remove legacy MongoDB support (#588)
-- **Devcontainer CI** - Add devcontainer-based CI workflow with PostgreSQL and MySQL (#586)
-- **Distroless runner** - Use distroless container image for smaller footprint (#592)
-- **Dependency upgrades** - Significantly update gorm, boxo, rclone, libp2p, and security packages (#591, #589)
-- **Swagger fixes** - Remove hardcoded host, dedupe storage type fields, bump go-swagger to v0.33.1 (#605, #606, #608)
-
-## Breaking Changes
-
-- MongoDB backend no longer supported
-
----
-
-## PRs Included
-
-| PR | Title |
-|----|-------|
-| #608 | bump go-swagger to v0.33.1 |
-| #607 | fix add-piece to lookup existing pieces by CID |
-| #606 | dedupe fields in storage types codegen |
-| #605 | remove hardcoded @host in swagger |
-| #602 | feat: add prep delete-piece command |
-| #601 | hotfix: avoid re-scanning known valid FKs |
-| #600 | give in and use nullable FKs/pointers for massive deletes |
-| #599 | harmonize download flags, closes #460 |
-| #598 | fix: correctly rename cars on S3 type remotes |
-| #597 | hotfix: use local tmpfile for padding small pieces |
-| #596 | fix remaining deadlocks + prep deletion |
-| #595 | Pad very small pieces with literal zeroes |
-| #592 | update runner image |
-| #591 | improve lotus API test survivability |
-| #589 | chore/update |
-| #588 | remove legacy mongodb |
-| #586 | Devcontainer-based CI flow |
-| #526 | fix docker-compose.yml singularity_init container env var |
-| #519 | chore: bump version to v0.6.0-RC3 |
-| #516 | Fix: restore version.json to v0.6.0-RC2 |
+[Unreleased]: https://github.com/data-preservation-programs/singularity/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/data-preservation-programs/singularity/releases/tag/v1.0.0

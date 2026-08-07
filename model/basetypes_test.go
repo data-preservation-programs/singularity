@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -44,6 +45,53 @@ func TestClientConfigMarshal(t *testing.T) {
 
 	str := c.String()
 	require.Equal(t, "connectTimeout:1s timeout:1s expectContinueTimeout:1s insecureSkipVerify:true noGzip:true userAgent:x caCert:x clientCert:x clientKey:x headers:<hidden> disableHTTP2:true disableHTTPKeepAlives:true retryMaxCount:10 retryDelay:1s retryBackoff:1s retryBackoffExponential:1 skipInaccessibleFile:true useServerModTime:true lowLevelRetries:10 scanConcurrency:10", str)
+}
+
+func TestConfigMapRedaction(t *testing.T) {
+	m := ConfigMap{
+		"access_key_id":     "AKIAPUBLIC",
+		"secret_access_key": "supersecret",
+		"region":            "us-east-1",
+	}
+
+	// API-facing JSON marshal redacts secret-named values, keeps the rest
+	data, err := json.Marshal(m)
+	require.NoError(t, err)
+	var out map[string]string
+	require.NoError(t, json.Unmarshal(data, &out))
+	require.Equal(t, redactedSecret, out["secret_access_key"])
+	require.Equal(t, redactedSecret, out["access_key_id"])
+	require.Equal(t, "us-east-1", out["region"])
+
+	// persistence keeps the real values
+	v, err := m.Value()
+	require.NoError(t, err)
+	var back ConfigMap
+	require.NoError(t, back.Scan(v))
+	require.Equal(t, "supersecret", back["secret_access_key"])
+	require.Equal(t, "AKIAPUBLIC", back["access_key_id"])
+}
+
+func TestClientConfigHeaderRedaction(t *testing.T) {
+	c := ClientConfig{Headers: map[string]string{"Authorization": "Bearer tok", "X-Trace": "1"}}
+
+	// API-facing JSON marshal hides header values (they carry credentials)
+	data, err := json.Marshal(c)
+	require.NoError(t, err)
+	var out struct {
+		Headers map[string]string `json:"headers"`
+	}
+	require.NoError(t, json.Unmarshal(data, &out))
+	require.Equal(t, redactedSecret, out.Headers["Authorization"])
+	require.Equal(t, redactedSecret, out.Headers["X-Trace"])
+
+	// persistence keeps the real values
+	v, err := c.Value()
+	require.NoError(t, err)
+	var back ClientConfig
+	require.NoError(t, back.Scan(v))
+	require.Equal(t, "Bearer tok", back.Headers["Authorization"])
+	require.Equal(t, "1", back.Headers["X-Trace"])
 }
 
 var TestCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("test")))

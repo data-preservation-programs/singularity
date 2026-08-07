@@ -140,7 +140,22 @@ func (ss StringSlice) Value() (driver.Value, error) {
 }
 
 func (m ConfigMap) Value() (driver.Value, error) {
-	return json.Marshal(m)
+	// persistence keeps real values -- marshal the plain map to bypass the
+	// redacting MarshalJSON below
+	return json.Marshal(map[string]string(m))
+}
+
+// MarshalJSON redacts secret-named values in API responses. Value() bypasses
+// this for persistence, and the rclone backend build reads the map directly.
+func (m ConfigMap) MarshalJSON() ([]byte, error) {
+	redacted := make(map[string]string, len(m))
+	for k, v := range m {
+		if v != "" && IsSecretConfigName(k) {
+			v = redactedSecret
+		}
+		redacted[k] = v
+	}
+	return json.Marshal(redacted)
 }
 
 func (ss *StringSlice) Scan(src any) error {
@@ -171,6 +186,9 @@ func (m *ConfigMap) Scan(src any) error {
 	return json.Unmarshal(source, m)
 }
 
+// redactedSecret replaces secret config and header values in JSON API responses.
+const redactedSecret = "[redacted]"
+
 func IsSecretConfigName(key string) bool {
 	k := strings.ToLower(key)
 	return strings.Contains(k, "secret") || strings.Contains(k, "pass") || strings.Contains(k, "token") || strings.Contains(k, "key")
@@ -195,7 +213,25 @@ func (m ConfigMap) String() string {
 }
 
 func (c ClientConfig) Value() (driver.Value, error) { //nolint:recvcheck
-	return json.Marshal(c)
+	// persistence keeps real values -- the alias has no MarshalJSON, so this
+	// bypasses the header redaction below
+	type alias ClientConfig
+	return json.Marshal(alias(c))
+}
+
+// MarshalJSON redacts header values in API responses. Value() bypasses this
+// for persistence.
+func (c ClientConfig) MarshalJSON() ([]byte, error) { //nolint:recvcheck
+	type alias ClientConfig
+	redacted := alias(c)
+	if len(redacted.Headers) > 0 {
+		headers := make(map[string]string, len(redacted.Headers))
+		for k := range redacted.Headers {
+			headers[k] = redactedSecret
+		}
+		redacted.Headers = headers
+	}
+	return json.Marshal(redacted)
 }
 
 func (c ClientConfig) String() string {
