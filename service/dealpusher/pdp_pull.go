@@ -163,21 +163,9 @@ func (o *OnChainPDP) PullPiecesToFWSS(
 		return PDPPullResult{}, errors.Wrap(err, "SP service-URL lookup")
 	}
 
-	// Convert v1 piece CIDs to CommPv2 (what FWSS / Curio expect).
-	pieceCIDsV2 := make([]cid.Cid, len(pieces))
-	pullInputs := make([]pdp.PullPieceInput, len(pieces))
-	for i, p := range pieces {
-		// FR32 padding: padded = raw * 128/127, raw = padded * 127/128.
-		payloadSize := uint64(p.PieceSize) * 127 / 128
-		v2, err := commcid.PieceCidV2FromV1(p.PieceCID, payloadSize)
-		if err != nil {
-			return PDPPullResult{}, errors.Wrapf(err, "convert piece %s to CommPv2", p.PieceCID)
-		}
-		pieceCIDsV2[i] = v2
-		pullInputs[i] = pdp.PullPieceInput{
-			PieceCID:  v2.String(),
-			SourceURL: o.sourceURLBase + "/piece/" + v2.String(),
-		}
+	pieceCIDsV2, pullInputs, err := buildPullInputs(pieces, o.sourceURLBase)
+	if err != nil {
+		return PDPPullResult{}, err
 	}
 
 	existing, err := o.findProofSetWithRoom(ctx, clientAddrStr, provider, cfg.MaxPiecesPerProofSet)
@@ -339,6 +327,26 @@ func waitForPullComplete(ctx context.Context, pdpServer *pdp.Server, opts pdp.Pu
 	}
 }
 
+func buildPullInputs(pieces []PDPPieceInput, sourceURLBase string) ([]cid.Cid, []pdp.PullPieceInput, error) {
+	cidsV2 := make([]cid.Cid, len(pieces))
+	inputs := make([]pdp.PullPieceInput, len(pieces))
+	for i, p := range pieces {
+		if p.PayloadSize <= 0 {
+			return nil, nil, fmt.Errorf("piece %s missing PayloadSize", p.PieceCID)
+		}
+		v2, err := commcid.PieceCidV2FromV1(p.PieceCID, uint64(p.PayloadSize))
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "convert piece %s to CommPv2", p.PieceCID)
+		}
+		cidsV2[i] = v2
+		inputs[i] = pdp.PullPieceInput{
+			PieceCID:  v2.String(),
+			SourceURL: sourceURLBase + "/piece/" + v2.String(),
+		}
+	}
+	return cidsV2, inputs, nil
+}
+
 func signCreateDataSetExtra(authHelper *pdp.AuthHelper, payer, payee common.Address, clientDataSetID *big.Int) (string, error) {
 	sig, err := authHelper.SignCreateDataSet(clientDataSetID, payee, nil)
 	if err != nil {
@@ -348,14 +356,17 @@ func signCreateDataSetExtra(authHelper *pdp.AuthHelper, payer, payee common.Addr
 }
 
 func signAddPiecesExtra(authHelper *pdp.AuthHelper, clientDataSetID *big.Int, pieceCIDsV2 []cid.Cid) (string, error) {
-	// FWSS uses (payer, clientDataSetId) as the cross-tx replay key, not
-	// the addPieces in-extraData nonce; zero is fine here.
-	nonce := big.NewInt(0)
-	sig, err := authHelper.SignAddPieces(clientDataSetID, nonce, pieceCIDsV2, nil)
+	// fresh random; FWSS uses clientNonces[payer][nonce] as addPieces replay key
+	nonce := randomClientDataSetID()
+	// FWSS validates metadataKeys.length == pieces.length and rejects with
+	// MetadataArrayCountMismatch otherwise. Pass an empty inner slice per
+	// piece (no metadata key/value pairs, but the outer dimension must match).
+	metadata := make([][]pdp.MetadataEntry, len(pieceCIDsV2))
+	sig, err := authHelper.SignAddPieces(clientDataSetID, nonce, pieceCIDsV2, metadata)
 	if err != nil {
 		return "", errors.Wrap(err, "sign AddPieces")
 	}
-	return pdp.EncodeAddPiecesExtraData(nonce, nil, sig.Signature)
+	return pdp.EncodeAddPiecesExtraData(nonce, metadata, sig.Signature)
 }
 
 func (o *OnChainPDP) findProofSetWithRoom(ctx context.Context, clientAddress, provider string, maxPieces int) (*model.PDPProofSet, error) {

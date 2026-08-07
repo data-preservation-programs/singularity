@@ -19,6 +19,7 @@ OPTIONS:
    --provider value         Storage provider f4/t4 address
    --piece-cid value        Piece CID (commp v1)
    --piece-size value       Padded piece size in bytes (default: 0)
+   --payload-size value     Real CAR file size in bytes (the data the SP will fetch). The CommPv2 piece CID encodes this size; SP zero-fills locally up to PieceSize when computing CommP. (default: 0)
    --eth-rpc value          FEVM JSON-RPC endpoint [$ETH_RPC_URL]
    --source-url-base value  HTTPS base where Curio fetches the piece (sourceUrl = <base>/piece/<pieceCidV2>) [$PDP_SOURCE_URL_BASE]
    --record-keeper value    FWSS contract address. Defaults to network FWSS from go-synapse. [$PDP_RECORD_KEEPER]
