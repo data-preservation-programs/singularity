@@ -78,3 +78,27 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
+      # debug variant: same binary on the distroless :debug base (busybox shell),
+      # published as the same tags with a -debug suffix. reuses the cached builder
+      # stage from the step above, so it only rebuilds the tiny runtime layer.
+      - name: Extract metadata (debug)
+        id: meta-debug
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          flavor: suffix=-debug,onlatest=true
+          tags: |
+            type=semver,pattern={{raw}},value=${{ needs.prepare-checkout.outputs.tag }}
+            type=raw,value=${{ needs.prepare-checkout.outputs.tag }}
+      - name: Build and push Docker image (debug)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          build-args: |
+            RUNTIME_BASE=gcr.io/distroless/cc-debian12:debug
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.meta-debug.outputs.tags }}
+          labels: ${{ steps.meta-debug.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
