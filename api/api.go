@@ -371,7 +371,7 @@ func (s *Server) setupRoutes(e *echo.Echo) {
 	e.GET("/api/piece/:id/metadata", s.getMetadataHandler)
 
 	// Deal Schedule
-	e.POST("/api/send_deal", s.toEchoHandler(s.dealHandler.SendManualHandler))
+	e.POST("/api/send_deal", s.toEchoHandler(s.sendManualAndSave))
 	e.POST("/api/schedule", s.toEchoHandler(s.scheduleHandler.CreateHandler))
 	e.GET("/api/schedule", s.toEchoHandler(s.scheduleHandler.ListHandler))
 	e.POST("/api/schedule/:id/pause", s.toEchoHandler(s.scheduleHandler.PauseHandler))
@@ -530,4 +530,17 @@ func httpResponseFromError(c echo.Context, e error) error {
 
 	logger.Errorf("%+v", e)
 	return c.JSON(httpStatusCode, HTTPError{Err: e.Error()})
+}
+
+// sendManualAndSave persists accepted API proposals without replaying submission.
+func (s *Server) sendManualAndSave(ctx context.Context, db *gorm.DB, maker replication.DealMaker, request deal.Proposal) (*model.Deal, error) {
+		result, err := s.dealHandler.SendManualHandler(ctx, db, maker, request)
+		if err != nil {
+					return nil, err
+				}
+		err = database.DoRetry(ctx, func() error { return db.WithContext(ctx).Create(result).Error })
+		if err != nil {
+					return nil, err
+				}
+		return result, nil
 }
